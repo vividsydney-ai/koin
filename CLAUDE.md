@@ -15,10 +15,12 @@ Every lesson must cite a Tier 1 source before publish. Trust is the product.
 ### Workflow (always)
 1. Read TASKS.md — find first [ ] task
 2. Read RULES.md — do not violate hard stops
-3. Read VISION.md — if ambiguity, consult context
-4. Read SCHEMA.md — schema is canonical
-5. Read AGENTS.md — check current role and scope
-6. Plan → Execute → Verify → Document
+3. Read CONTEXT.md — use the shared domain language
+4. Read ADL.md — respect recorded architecture decisions
+5. Read VISION.md — if ambiguity, consult context
+6. Read SCHEMA.md — schema is canonical
+7. Read AGENTS.md — check current role, scope, and pre-flight checklist
+8. Plan → Write tests → Implement → Verify → Document
 
 ### Verification is mandatory
 After every task, run VERIFIER.md gates. Do not self-certify.
@@ -43,6 +45,8 @@ If verification fails, halt and update progress.md with the failure reason.
 | TASKS.md | Build task list. Find first [ ] item |
 | RULES.md | Growing rules. Read-only unless human edits |
 | VISION.md | Product context, design tokens, stack |
+| CONTEXT.md | Shared domain language and terminology |
+| ADL.md | Architecture decision log |
 | SCHEMA.md | Full DB schema + RLS + seed order |
 | SOURCES.md | 32 seed sources with URLs |
 | AGENTS.md | Role definitions, maker/checker split |

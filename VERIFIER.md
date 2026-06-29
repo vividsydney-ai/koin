@@ -24,6 +24,10 @@
 ## Phase-specific gates
 
 ### Phase 1: Schema & Migrations
+- Gate 2a: TDD compliance
+  - Verify: tests exist for the current vertical slice before or alongside implementation
+  - Verify: test files are in /tests/ or co-located with the code they cover
+  - Fail: halt. Write tests first.
 - Gate 3: `npx supabase db reset` — exits 0
 - Gate 4: All user-sensitive tables have RLS enabled
   - Check: `SELECT tablename FROM pg_tables WHERE tablename IN (...)` AND RLS is ON
