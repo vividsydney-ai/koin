@@ -9,12 +9,15 @@ export default function AuthCallbackPage() {
 
   useEffect(() => {
     const handleCallback = async () => {
-      const { error } = await supabase.auth.exchangeCodeForSession(window.location.search);
+      const search = window.location.search;
+      console.log("OAuth callback triggered", search);
+      const { data, error } = await supabase.auth.exchangeCodeForSession(search);
       if (error) {
         console.error("OAuth callback error:", error.message);
-        router.replace("/login?error=oauth");
+        router.replace(`/login?error=oauth&message=${encodeURIComponent(error.message)}`);
         return;
       }
+      console.log("OAuth callback success", data.session ? "session set" : "no session");
       router.replace("/");
     };
 
