@@ -56,10 +56,18 @@ Use this file to record significant technical and product decisions. Each entry 
 **Consequences:** Every migration must include RLS policies; complex cross-user queries need secure RPCs or views.
 **Reversible?** Partial — moving to a custom API would require rewriting auth logic.
 
-### ADL-006: Client-side authentication for Capacitor
+### ADL-006: Client-side authentication with platform-aware storage
 **Date:** 2026-06-30
-**Decision:** Use client-side Supabase Auth with Capacitor Preferences for session storage, rather than Next.js server actions + middleware.
-**Alternatives considered:** Next.js SSR auth with server actions and middleware; custom JWT backend
-**Rationale:** The app is built as a static export for Capacitor, which disables Next.js server-side features (server actions, API routes, middleware). Client-side auth fits the Capacitor runtime and avoids localStorage, which is forbidden by project rules.
-**Consequences:** Route guards are implemented in client components via `useAuth`. OAuth callbacks are handled by a client-side page. Session tokens are stored in Capacitor Preferences.
+**Decision:** Use client-side Supabase Auth with platform-aware session storage: Capacitor Preferences on native iOS/Android, cookies on the web.
+**Alternatives considered:** Capacitor Preferences everywhere (violates no-localStorage rule on web); Next.js SSR auth with server actions and middleware; custom JWT backend
+**Rationale:** The app is built as a static export for Capacitor, which disables Next.js server-side features (server actions, API routes, middleware). Client-side auth fits the Capacitor runtime. Cookies keep the web deployment compliant with the no-localStorage rule.
+**Consequences:** Route guards are implemented in client components via `useAuth`. OAuth callbacks are handled by a client-side page. Session tokens are stored in Capacitor Preferences on native and in cookies on web.
 **Reversible?** Partial — if we later add a server-rendered web deployment, we can add a parallel SSR auth path without removing the client-side one.
+
+### ADL-007: Pivot to web-first delivery, pause native apps
+**Date:** 2026-06-30
+**Decision:** Ship the MVP as a browser-based web app (PWA) and pause the Capacitor iOS/Android native track.
+**Alternatives considered:** Continue native-only Capacitor build; build both web and native in parallel; full SSR rewrite
+**Rationale:** A web app can be distributed instantly via a link, requires no app store review, and lets us validate product demand with Indonesian users faster. Native apps can be re-enabled from the archived mobile branch once retention/engagement justifies the App Store / Play Store overhead.
+**Consequences:** Removes `ios/`, `android/`, `capacitor.config.ts`, and native plugin wrappers from the active branch. Session storage moves from Capacitor Preferences to cookies to respect the no-localStorage rule. Static-export deployment remains compatible with Vercel/Netlify static hosting.
+**Reversible?** Yes — the mobile work remains in `main`/`mobile-paused` and can be merged back later.

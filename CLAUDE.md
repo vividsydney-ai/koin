@@ -3,7 +3,7 @@
 # Scopes: Project-level. For global rules, see ~/.claude/CLAUDE.md
 
 ## WHAT
-Koin is a mobile-first financial literacy web app for Indonesian Gen Z.
+Koin is a web-first financial literacy app for Indonesian Gen Z.
 Duolingo meets paper trading for money. Built on official Indonesian regulatory sources (OJK, BI, IDX).
 
 ## WHY

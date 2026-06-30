@@ -1,5 +1,7 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { Capacitor } from "@capacitor/core";
 import { Preferences } from "@capacitor/preferences";
+import { cookieStorage } from "./storage";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -8,8 +10,13 @@ function isBrowser(): boolean {
   return typeof window !== "undefined";
 }
 
-// Custom storage adapter using Capacitor Preferences in the native app,
-// falling back to no-op during SSR/SSG.
+function isNativePlatform(): boolean {
+  return isBrowser() && Capacitor.isNativePlatform();
+}
+
+// Capacitor Preferences for iOS/Android; cookies for web.
+// Cookies avoid localStorage (forbidden by project rules) while keeping
+// the native path functional if the mobile branch is reactivated.
 const capacitorStorage = {
   getItem: async (key: string): Promise<string | null> => {
     if (!isBrowser()) return null;
@@ -26,9 +33,11 @@ const capacitorStorage = {
   },
 };
 
+export const authStorage = isNativePlatform() ? capacitorStorage : cookieStorage;
+
 export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    storage: capacitorStorage,
+    storage: authStorage,
     autoRefreshToken: isBrowser(),
     persistSession: isBrowser(),
     detectSessionInUrl: isBrowser(),

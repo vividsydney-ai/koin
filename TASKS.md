@@ -40,14 +40,14 @@
 - [ ] Seed 010: dev test data (2 test users, sample progress, streaks, portfolios, trades)
 - [ ] Seed 011: content_variants (3–5 examples and 10–20 questions per launch lesson)
 
-## PHASE 1b — Capacitor Mobile Shell
-- [ ] Install Capacitor core + iOS + Android packages
-- [ ] Configure capacitor.config.ts with app ID, name, webDir
-- [ ] Add cap:sync, cap:open:ios, cap:open:android scripts
-- [ ] Generate iOS and Android native projects
+## PHASE 1b — Capacitor Mobile Shell (paused on web-mvp branch)
+- [x] Install Capacitor core + iOS + Android packages
+- [x] Configure capacitor.config.ts with app ID, name, webDir
+- [x] Add cap:sync, cap:open:ios, cap:open:android scripts
+- [x] Generate iOS and Android native projects
 - [ ] Test build on iOS simulator and Android emulator
-- [ ] Add native share sheet plugin stub
-- [ ] Add push notification plugin architecture (stub delivery)
+- [x] Add native share sheet plugin stub
+- [x] Add push notification plugin architecture (stub delivery)
 
 ## PHASE 2 — Auth + Shell
 - [ ] Supabase Auth: email + Google OAuth
