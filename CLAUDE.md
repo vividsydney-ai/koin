@@ -53,6 +53,22 @@ If verification fails, halt and update progress.md with the failure reason.
 | VERIFIER.md | Automated gates. Run after every task |
 | progress.md | Live state. Update after every session |
 
+## Agent skills
+
+This repo also uses `mattpocock/skills` conventions.
+
+### Issue tracker
+
+Issues live in Linear under team `KO`: https://linear.app/vnsavitri/team/KO/overview. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Canonical roles mapped to Linear labels: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context repo: read `CONTEXT.md` and `ADL.md` at the repo root before exploring. See `docs/agents/domain.md`.
+
 ### Hooks
 - /hooks: configured in .claude/settings.json
 - PreToolUse: route destructive commands to Opus for approval
