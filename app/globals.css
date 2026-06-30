@@ -1,23 +1,25 @@
 @import "tailwindcss";
 
 :root {
-  --color-primary: #01696f;
+  /* Koin design system — mobile-first financial literacy for Indonesian Gen Z */
+  --color-primary: #ff6b4a;
   --color-primary-foreground: #ffffff;
-  --color-background: #f7f6f2;
+  --color-background: #faf9f6;
   --color-surface: #ffffff;
-  --color-muted: #f0efea;
-  --color-foreground: #1a1a1a;
-  --color-muted-foreground: #6b6b6b;
+  --color-muted: #f2f0eb;
+  --color-foreground: #1c1917;
+  --color-muted-foreground: #78716c;
   --color-success: #16a34a;
   --color-warning: #f59e0b;
   --color-danger: #dc2626;
   --color-info: #2563eb;
   --color-streak: #f97316;
-  --color-xp: #01696f;
+  --color-xp: #ff6b4a;
   --color-koin-points: #eab308;
-  --radius-default: 0.5rem;
+  --radius-sm: 0.5rem;
   --radius-md: 0.75rem;
   --radius-lg: 1rem;
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 @theme inline {
@@ -35,11 +37,11 @@
   --color-streak: var(--color-streak);
   --color-xp: var(--color-xp);
   --color-koin-points: var(--color-koin-points);
-  --radius-default: var(--radius-default);
+  --radius-sm: var(--radius-sm);
   --radius-md: var(--radius-md);
   --radius-lg: var(--radius-lg);
-  --font-sans: "Satoshi", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Cabinet Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
 
 body {
@@ -47,10 +49,38 @@ body {
   color: var(--color-foreground);
   font-family: var(--font-sans);
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Minimum touch target helper */
 .touch-target {
   min-height: 44px;
   min-width: 44px;
+}
+
+.step-enter {
+  animation: stepEnter 320ms var(--ease-out-quart) both;
+}
+
+@keyframes stepEnter {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Smooth reduced-motion-aware transitions */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
