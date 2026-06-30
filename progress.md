@@ -3,10 +3,10 @@
 # v2: MVP reshaped around paper trading. Original v1 loop files archived in /_archived.
 
 ## Last completed task
-KO-24 — Auth foundation complete. Login, signup, protected routes, and OAuth callback implemented.
+KO-25 — Onboarding flow complete. /onboarding page saves profile and settings, useAuth redirects appropriately.
 
 ## Current session scope
-KO-25 — Onboarding flow
+KO-26 — App shell with bottom navigation
 
 ## Maker status
 [x] Migration 001 complete
@@ -15,18 +15,19 @@ KO-25 — Onboarding flow
 [x] Content variants seeded (40 variants)
 [x] Phase 1b Capacitor shell complete
 [x] KO-24 Auth foundation
-[ ] KO-25 Onboarding flow in progress
+[x] KO-25 Onboarding flow
+[ ] KO-26 App shell with bottom navigation in progress
 
 ## Checker status
 [x] All reference tables verified in remote Supabase
 [x] content_variants count: 40
-[x] Test suite: 22 passing
+[x] Test suite: 25 passing
 [x] pnpm build passes
 [x] pnpm cap:sync passes
 
 ## Gate result
-[x] Gate KO-24 — passed
-[ ] Gate KO-25 — not started
+[x] Gate KO-25 — passed
+[ ] Gate KO-26 — not started
 
 ## Blockers
 (none)
