@@ -3,34 +3,30 @@
 # v2: MVP reshaped around paper trading. Original v1 loop files archived in /_archived.
 
 ## Last completed task
-KO-23 — Native plugin stubs complete. Share and push notification wrappers integrated, demo page added, tests passing.
+Phase 1b — Capacitor Mobile Shell complete. KO-7 (Phase 2) sliced into KO-24–KO-27.
 
 ## Current session scope
-Phase 1b — Capacitor Mobile Shell complete (pending user iOS Simulator verification).
+KO-24 — Auth foundation: login, signup, and protected routes
 
 ## Maker status
 [x] Migration 001 complete
 [x] Migrations 002–014 complete
 [x] Seed data complete
 [x] Content variants seeded (40 variants)
-[x] KO-20 Capacitor core configuration
-[x] KO-21 iOS project generated
-[x] KO-22 Android project generated
-[x] KO-23 Native plugin stubs
+[x] Phase 1b Capacitor shell complete
+[x] KO-7 Phase 2 sliced
+[ ] KO-24 Auth foundation in progress
 
 ## Checker status
 [x] All reference tables verified in remote Supabase
 [x] content_variants count: 40
-[x] Capacitor config tests pass (6/6)
-[x] Native wrapper tests pass (3/3)
+[x] Test suite: 17 passing
 [x] pnpm build passes
 [x] pnpm cap:sync passes
 
 ## Gate result
-[x] Gate KO-20 (Capacitor core config) — passed
-[x] Gate KO-23 (Native plugin stubs) — passed
-[ ] Gate KO-21 (iOS Simulator launch) — pending user verification
-[ ] Gate KO-22 (Android Emulator launch) — pending user verification
+[x] Gate KO-20, KO-23 — passed
+[ ] Gate KO-24 — not started
 
 ## Blockers
 (none)
