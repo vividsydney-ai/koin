@@ -26,6 +26,7 @@ Pivot to web-first MVP on branch `web-mvp`. Native iOS/Android track paused.
 [x] Pivot: add PWA manifest and icons
 [x] Pivot: archive native-only tests on web-mvp branch
 [x] Pivot: verify build/tests on web-mvp branch
+[x] Deploy web-mvp to Vercel: https://koin-web-mvp.vercel.app
 
 ## Checker status
 [x] All reference tables verified in remote Supabase
