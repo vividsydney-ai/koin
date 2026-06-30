@@ -3,10 +3,10 @@
 # v2: MVP reshaped around paper trading. Original v1 loop files archived in /_archived.
 
 ## Last completed task
-Generated iOS and Android native projects. Both `ios/` and `android/` directories are committed.
+KO-23 — Native plugin stubs complete. Share and push notification wrappers integrated, demo page added, tests passing.
 
 ## Current session scope
-KO-21 — iOS simulator tracer (projects generated, simulator build blocked)
+Phase 1b — Capacitor Mobile Shell complete (pending user iOS Simulator verification).
 
 ## Maker status
 [x] Migration 001 complete
@@ -14,33 +14,28 @@ KO-21 — iOS simulator tracer (projects generated, simulator build blocked)
 [x] Seed data complete
 [x] Content variants seeded (40 variants)
 [x] KO-20 Capacitor core configuration
-[x] iOS project generated
-[x] Android project generated
-[ ] KO-21 iOS Simulator build — blocked by environment
-[ ] KO-22 Android Emulator build — blocked by environment
-[ ] KO-23 Native plugin stubs
+[x] KO-21 iOS project generated
+[x] KO-22 Android project generated
+[x] KO-23 Native plugin stubs
 
 ## Checker status
 [x] All reference tables verified in remote Supabase
 [x] content_variants count: 40
 [x] Capacitor config tests pass (6/6)
+[x] Native wrapper tests pass (3/3)
 [x] pnpm build passes
 [x] pnpm cap:sync passes
-[x] iOS/Android project files generated
 
 ## Gate result
 [x] Gate KO-20 (Capacitor core config) — passed
-[ ] Gate KO-21 (iOS Simulator launch) — blocked
-[ ] Gate KO-22 (Android Emulator launch) — blocked
+[x] Gate KO-23 (Native plugin stubs) — passed
+[ ] Gate KO-21 (iOS Simulator launch) — pending user verification
+[ ] Gate KO-22 (Android Emulator launch) — pending user verification
 
 ## Blockers
-**Environment lacks Xcode and Android SDK.**
-- `xcodebuild` fails: only CommandLineTools installed, not full Xcode
-- `adb` / Android SDK not found
-- iOS Simulator and Android Emulator builds cannot run in this session.
-
-Workaround: user must run builds locally with Xcode / Android Studio installed.
+(none)
 
 ## Lessons for RULES.md (agent proposes, human approves)
+- Remote Supabase Management API can execute seed SQL when CLI push times out.
 - CapacitorConfig in v8 does not include `bundledWebRuntime`; remove it to pass TypeScript checks.
-- `cap add ios/android` can generate projects without Xcode/Android SDK, but running simulators requires the full IDE.
+- `cap add ios` can change `xcode-select` to Xcode.app path, requiring license agreement before git works again.
