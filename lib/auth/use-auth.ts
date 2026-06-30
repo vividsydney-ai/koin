@@ -3,11 +3,13 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "./client";
+import { getProfile, type Profile } from "@/lib/profile/client";
 import type { User } from "@supabase/supabase-js";
 
 export function useAuth(requireAuth = true) {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -22,9 +24,21 @@ export function useAuth(requireAuth = true) {
         if (requireAuth) {
           router.replace("/login");
         }
-      } else {
-        setUser(data.user);
+        setLoading(false);
+        return;
       }
+
+      setUser(data.user);
+
+      const userProfile = await getProfile(data.user.id);
+      if (!mounted) return;
+      setProfile(userProfile);
+
+      if (requireAuth && userProfile && !userProfile.onboarding_completed) {
+        router.replace("/onboarding");
+        return;
+      }
+
       setLoading(false);
     };
 
@@ -44,5 +58,5 @@ export function useAuth(requireAuth = true) {
     };
   }, [router, requireAuth]);
 
-  return { user, loading };
+  return { user, profile, loading };
 }

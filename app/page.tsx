@@ -5,7 +5,7 @@ import { signOut } from "@/lib/auth/client";
 import { useRouter } from "next/navigation";
 
 export default function Home() {
-  const { user, loading } = useAuth(true);
+  const { user, profile, loading } = useAuth(true);
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -24,7 +24,9 @@ export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-background p-6">
       <div className="max-w-md space-y-6 text-center">
-        <h1 className="text-3xl font-display font-bold text-foreground">Welcome to Koin</h1>
+        <h1 className="text-3xl font-display font-bold text-foreground">
+          Welcome{profile?.display_name ? `, ${profile.display_name}` : " to Koin"}
+        </h1>
         <p className="text-muted-foreground">
           Signed in as <span className="text-foreground">{user?.email}</span>
         </p>

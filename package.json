@@ -18,7 +18,7 @@
     "supabase:start": "supabase start",
     "supabase:stop": "supabase stop",
     "supabase:reset": "supabase db reset",
-    "supabase:gen-types": "supabase gen types typescript --local > src/types/supabase.ts"
+    "supabase:gen-types": "supabase gen types typescript --linked > types/supabase.ts"
   },
   "dependencies": {
     "@capacitor/android": "^8.4.1",
