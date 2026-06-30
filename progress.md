@@ -27,6 +27,7 @@ Pivot to web-first MVP on branch `web-mvp`. Native iOS/Android track paused.
 [x] Pivot: archive native-only tests on web-mvp branch
 [x] Pivot: verify build/tests on web-mvp branch
 [x] Deploy web-mvp to Vercel: https://koin-web-mvp.vercel.app
+[x] Content prototype: /learn/inflation-101 with animated visual + quiz
 
 ## Checker status
 [x] All reference tables verified in remote Supabase
