@@ -3,10 +3,10 @@
 # v2: MVP reshaped around paper trading. Original v1 loop files archived in /_archived.
 
 ## Last completed task
-KO-20 — Capacitor core configuration complete. Capacitor installed, configured, build passes, cap sync passes.
+Generated iOS and Android native projects. Both `ios/` and `android/` directories are committed.
 
 ## Current session scope
-KO-21 — iOS simulator tracer
+KO-21 — iOS simulator tracer (projects generated, simulator build blocked)
 
 ## Maker status
 [x] Migration 001 complete
@@ -14,28 +14,33 @@ KO-21 — iOS simulator tracer
 [x] Seed data complete
 [x] Content variants seeded (40 variants)
 [x] KO-20 Capacitor core configuration
-[ ] KO-21 iOS simulator tracer in progress
-[ ] KO-22 Android emulator tracer
+[x] iOS project generated
+[x] Android project generated
+[ ] KO-21 iOS Simulator build — blocked by environment
+[ ] KO-22 Android Emulator build — blocked by environment
 [ ] KO-23 Native plugin stubs
 
 ## Checker status
 [x] All reference tables verified in remote Supabase
 [x] content_variants count: 40
-[x] Capacitor config tests pass (4/4)
+[x] Capacitor config tests pass (6/6)
 [x] pnpm build passes
 [x] pnpm cap:sync passes
+[x] iOS/Android project files generated
 
 ## Gate result
-[x] Gate 2a (TDD compliance) — tests exist
-[x] Gate 3 (schema applied)
-[x] Gate 4 (RLS enabled)
-[x] Gate 5 (seed data inserts cleanly)
-[x] Gate 6 (schema matches SCHEMA.md)
 [x] Gate KO-20 (Capacitor core config) — passed
+[ ] Gate KO-21 (iOS Simulator launch) — blocked
+[ ] Gate KO-22 (Android Emulator launch) — blocked
 
 ## Blockers
-(none)
+**Environment lacks Xcode and Android SDK.**
+- `xcodebuild` fails: only CommandLineTools installed, not full Xcode
+- `adb` / Android SDK not found
+- iOS Simulator and Android Emulator builds cannot run in this session.
+
+Workaround: user must run builds locally with Xcode / Android Studio installed.
 
 ## Lessons for RULES.md (agent proposes, human approves)
-- Remote Supabase Management API can execute seed SQL when CLI push times out.
 - CapacitorConfig in v8 does not include `bundledWebRuntime`; remove it to pass TypeScript checks.
+- `cap add ios/android` can generate projects without Xcode/Android SDK, but running simulators requires the full IDE.
