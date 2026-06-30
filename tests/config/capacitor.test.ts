@@ -25,4 +25,12 @@ describe("Capacitor configuration", () => {
     expect(pkg.scripts["cap:open:ios"]).toBeDefined();
     expect(pkg.scripts["cap:open:android"]).toBeDefined();
   });
+
+  it("has generated iOS project", () => {
+    expect(existsSync(resolve(__dirname, "../../ios/App/App.xcodeproj"))).toBe(true);
+  });
+
+  it("has generated Android project", () => {
+    expect(existsSync(resolve(__dirname, "../../android/app/build.gradle"))).toBe(true);
+  });
 });
