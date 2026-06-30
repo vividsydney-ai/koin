@@ -5,6 +5,9 @@
 ## Last completed task
 KO-26 — App shell with bottom navigation complete.
 
+## Last completed task
+KO-27 — Profile page complete.
+
 ## Current session scope
 Pivot to web-first MVP on branch `web-mvp`. Native iOS/Android track paused.
 
@@ -13,27 +16,27 @@ Pivot to web-first MVP on branch `web-mvp`. Native iOS/Android track paused.
 [x] Migrations 002–014 complete
 [x] Seed data complete
 [x] Content variants seeded (40 variants)
-[x] Phase 1b Capacitor shell complete (archived on `main`)
+[x] Phase 1b Capacitor shell complete (preserved on `web-mvp`)
 [x] KO-24 Auth foundation
 [x] KO-25 Onboarding flow
 [x] KO-26 App shell with bottom navigation
-[ ] KO-27 Profile page in progress
-[ ] Pivot: remove native targets
-[ ] Pivot: replace Capacitor Preferences with cookie storage
-[ ] Pivot: add PWA manifest
-[ ] Pivot: verify build/tests on web-mvp branch
+[x] KO-27 Profile page
+[x] Pivot: create `web-mvp` branch and push to remote
+[x] Pivot: platform-aware auth storage (Preferences native / cookies web)
+[x] Pivot: add PWA manifest and icons
+[x] Pivot: verify build/tests on web-mvp branch
 
 ## Checker status
 [x] All reference tables verified in remote Supabase
 [x] content_variants count: 40
-[x] Test suite: 27 passing (pre-pivot)
-[x] pnpm build passes (pre-pivot)
-[x] pnpm cap:sync passes (pre-pivot; now removed)
+[x] Test suite: 27 passing
+[x] pnpm build passes
+[x] `web-mvp` branch pushed to origin
 
 ## Gate result
 [x] Gate KO-26 — passed
-[ ] Gate KO-27 — not started
-[ ] Gate web pivot — pending build + test verification
+[x] Gate KO-27 — passed
+[x] Gate web pivot — passed
 
 ## Blockers
 (none)
@@ -42,5 +45,5 @@ Pivot to web-first MVP on branch `web-mvp`. Native iOS/Android track paused.
 - Remote Supabase Management API can execute seed SQL when CLI push times out.
 - CapacitorConfig in v8 does not include `bundledWebRuntime`; remove it to pass TypeScript checks.
 - `cap add ios` can change `xcode-select` to Xcode.app path, requiring license agreement before git works again.
-- Client-side auth in Capacitor requires Capacitor Preferences (or similar) to avoid localStorage.
-- For web-only delivery, cookie storage replaces Capacitor Preferences and respects the no-localStorage rule.
+- Client-side auth can stay platform-aware: Capacitor Preferences on native, cookies on web, both respecting the no-localStorage rule.
+- Pivoting to web-first preserves native code on the same branch while adding PWA metadata and web-safe storage.
