@@ -55,3 +55,11 @@ Use this file to record significant technical and product decisions. Each entry 
 **Rationale:** Database-level enforcement is harder to bypass and aligns with Supabase best practices. Fits the small-team, fast-shipping model.
 **Consequences:** Every migration must include RLS policies; complex cross-user queries need secure RPCs or views.
 **Reversible?** Partial — moving to a custom API would require rewriting auth logic.
+
+### ADL-006: Client-side authentication for Capacitor
+**Date:** 2026-06-30
+**Decision:** Use client-side Supabase Auth with Capacitor Preferences for session storage, rather than Next.js server actions + middleware.
+**Alternatives considered:** Next.js SSR auth with server actions and middleware; custom JWT backend
+**Rationale:** The app is built as a static export for Capacitor, which disables Next.js server-side features (server actions, API routes, middleware). Client-side auth fits the Capacitor runtime and avoids localStorage, which is forbidden by project rules.
+**Consequences:** Route guards are implemented in client components via `useAuth`. OAuth callbacks are handled by a client-side page. Session tokens are stored in Capacitor Preferences.
+**Reversible?** Partial — if we later add a server-rendered web deployment, we can add a parallel SSR auth path without removing the client-side one.
