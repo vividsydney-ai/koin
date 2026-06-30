@@ -24,6 +24,7 @@ Pivot to web-first MVP on branch `web-mvp`. Native iOS/Android track paused.
 [x] Pivot: create `web-mvp` branch and push to remote
 [x] Pivot: platform-aware auth storage (Preferences native / cookies web)
 [x] Pivot: add PWA manifest and icons
+[x] Pivot: archive native-only tests on web-mvp branch
 [x] Pivot: verify build/tests on web-mvp branch
 
 ## Checker status
