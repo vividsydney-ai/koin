@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { PriceRiseAnimation } from "@/components/lesson/PriceRiseAnimation";
 import { QuizCard } from "@/components/lesson/QuizCard";
 
@@ -13,10 +14,14 @@ const STEPS = [
 ];
 
 export default function InflationLessonPage() {
+  const router = useRouter();
   const [step, setStep] = useState(0);
   const [quizDone, setQuizDone] = useState(false);
 
   const nextStep = () => setStep((s) => Math.min(s + 1, STEPS.length - 1));
+  const finishLesson = () => router.push("/learn");
+
+  const isLastStep = step === STEPS.length - 1;
 
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col bg-background">
@@ -64,11 +69,11 @@ export default function InflationLessonPage() {
       {/* Bottom nav */}
       <footer className="border-t border-muted/60 bg-surface px-5 py-4">
         <button
-          onClick={nextStep}
+          onClick={isLastStep ? finishLesson : nextStep}
           disabled={step === 3 && !quizDone}
           className="flex w-full items-center justify-center gap-2 rounded-radius-md bg-primary py-3.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all duration-200 hover:bg-primary/90 active:scale-[0.98] disabled:opacity-50"
         >
-          {step === 4 ? "Finish lesson" : "Continue"}
+          {isLastStep ? "Finish lesson" : "Continue"}
           <svg
             className="h-4 w-4"
             viewBox="0 0 24 24"

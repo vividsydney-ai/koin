@@ -2,19 +2,19 @@
 
 :root {
   /* Koin design system — mobile-first financial literacy for Indonesian Gen Z */
-  --color-primary: #ff6b4a;
+  --color-primary: #01696f;
   --color-primary-foreground: #ffffff;
-  --color-background: #faf9f6;
+  --color-background: #f7f6f2;
   --color-surface: #ffffff;
-  --color-muted: #f2f0eb;
-  --color-foreground: #1c1917;
-  --color-muted-foreground: #78716c;
+  --color-muted: #f0efea;
+  --color-foreground: #1a1a1a;
+  --color-muted-foreground: #6b6b6b;
   --color-success: #16a34a;
   --color-warning: #f59e0b;
   --color-danger: #dc2626;
   --color-info: #2563eb;
   --color-streak: #f97316;
-  --color-xp: #ff6b4a;
+  --color-xp: #01696f;
   --color-koin-points: #eab308;
   --radius-sm: 0.5rem;
   --radius-md: 0.75rem;
