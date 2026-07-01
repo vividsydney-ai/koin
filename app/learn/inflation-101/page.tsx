@@ -249,7 +249,7 @@ function SourceStep({ quizPassed }: { quizPassed: boolean }) {
           </span>
         </div>
         <a
-          href="https://www.bi.go.id/id/moneter/inflasi/Default.aspx"
+          href="https://www.bi.go.id/en/fungsi-utama/moneter/inflasi/default.aspx"
           target="_blank"
           rel="noreferrer"
           className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
