@@ -2,24 +2,37 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { getAllLessons } from "@/lib/lessons/client";
+import { getAllLessons, getLessonProgress } from "@/lib/lessons/client";
+import { useAuth } from "@/lib/auth/use-auth";
 import type { Lesson } from "@/lib/lessons/client";
 
 export default function LearnPage() {
-  const [lessons, setLessons] = useState<Pick<Lesson, "id" | "slug" | "title" | "lessonNumber" | "difficulty" | "xpReward" | "estimatedMinutes" | "summary">[]>([]);
+  const { user } = useAuth(true);
+  const [lessons, setLessons] = useState<
+    Pick<Lesson, "id" | "slug" | "title" | "lessonNumber" | "difficulty" | "xpReward" | "estimatedMinutes" | "summary">[]
+  >([]);
+  const [progress, setProgress] = useState<Record<string, "locked" | "available" | "in_progress" | "completed"> | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let mounted = true;
-    getAllLessons().then((data) => {
+    const load = async () => {
+      setLoading(true);
+      const [all, userProgress] = await Promise.all([
+        getAllLessons(),
+        user ? getLessonProgress(user.id) : Promise.resolve(null),
+      ]);
       if (!mounted) return;
-      setLessons(data);
+      setLessons(all);
+      setProgress(userProgress);
       setLoading(false);
-    });
+    };
+
+    load();
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [user]);
 
   return (
     <div className="p-5 pb-28">
@@ -36,8 +49,13 @@ export default function LearnPage() {
         </div>
       ) : (
         <div className="space-y-3">
-          {lessons.map((lesson) => (
-            <LessonCard key={lesson.id} lesson={lesson} />
+          {lessons.map((lesson, index) => (
+            <LessonCard
+              key={lesson.id}
+              lesson={lesson}
+              status={progress?.[lesson.id] ?? "locked"}
+              previousCompleted={index === 0 || progress?.[lessons[index - 1]?.id] === "completed"}
+            />
           ))}
         </div>
       )}
@@ -47,11 +65,15 @@ export default function LearnPage() {
 
 function LessonCard({
   lesson,
+  status,
+  previousCompleted,
 }: {
   lesson: Pick<Lesson, "id" | "slug" | "title" | "lessonNumber" | "difficulty" | "xpReward" | "estimatedMinutes" | "summary">;
+  status: "locked" | "available" | "in_progress" | "completed";
+  previousCompleted: boolean;
 }) {
-  // For the MVP, lock lessons beyond the first three until previous ones are completed.
-  const isLocked = lesson.lessonNumber > 3;
+  const isCompleted = status === "completed";
+  const isLocked = status === "locked" && !previousCompleted;
 
   const content = (
     <div
@@ -62,10 +84,14 @@ function LessonCard({
       <div className="flex items-start gap-4">
         <span
           className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold ${
-            isLocked ? "bg-muted text-muted-foreground" : "bg-primary/10 text-primary"
+            isCompleted
+              ? "bg-success text-white"
+              : isLocked
+                ? "bg-muted text-muted-foreground"
+                : "bg-primary/10 text-primary"
           }`}
         >
-          {lesson.lessonNumber}
+          {isCompleted ? "✓" : lesson.lessonNumber}
         </span>
 
         <div className="min-w-0 flex-1">

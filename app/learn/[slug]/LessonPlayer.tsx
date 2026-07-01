@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   getLessonBySlug,
@@ -15,6 +15,7 @@ import {
 import { useAuth } from "@/lib/auth/use-auth";
 import { QuizEngine } from "@/components/lesson/QuizEngine";
 import { validateQuestion, applyParameters, type ProcessedQuestion } from "@/lib/lessons/question";
+import { completeLesson, type CompletionResult } from "@/lib/lessons/completion";
 
 const STEPS = [
   { id: "intro", label: "Intro" },
@@ -34,6 +35,11 @@ export default function LessonPlayer({ slug }: { slug: string }) {
   const [loading, setLoading] = useState(true);
   const [step, setStep] = useState(0);
   const [quizDone, setQuizDone] = useState(false);
+  const [quizCorrect, setQuizCorrect] = useState<boolean | null>(null);
+  const [completionResult, setCompletionResult] = useState<CompletionResult | null>(null);
+  const [completing, setCompleting] = useState(false);
+  const [showSummary, setShowSummary] = useState(false);
+  const startTimeRef = useRef<number>(Date.now());
 
   useEffect(() => {
     let mounted = true;
@@ -94,8 +100,32 @@ export default function LessonPlayer({ slug }: { slug: string }) {
 
 
   const nextStep = () => setStep((s) => Math.min(s + 1, STEPS.length - 1));
-  const finishLesson = () => router.push("/learn");
   const isLastStep = step === STEPS.length - 1;
+
+  const finishLesson = async () => {
+    if (showSummary) {
+      router.push("/learn");
+      return;
+    }
+    if (!user || !lesson) return;
+
+    setCompleting(true);
+    const timeSpentSeconds = Math.max(1, Math.round((Date.now() - startTimeRef.current) / 1000));
+    const result = await completeLesson({
+      userId: user.id,
+      lessonId: lesson.id,
+      score: quizCorrect ? 1 : 0,
+      maxScore: 1,
+      answersJson: activeQuestion?.variantId
+        ? [{ variant_id: activeQuestion.variantId, correct: quizCorrect ?? false }]
+        : [],
+      timeSpentSeconds,
+      quizCorrect: quizCorrect ?? false,
+    });
+    setCompletionResult(result);
+    setShowSummary(true);
+    setCompleting(false);
+  };
 
   if (loading) {
     return (
@@ -147,29 +177,38 @@ export default function LessonPlayer({ slug }: { slug: string }) {
       </header>
 
       <main className="flex-1 px-5 py-7">
-        <div key={step} className="step-enter">
-          {step === 0 && <IntroStep lesson={lesson} />}
-          {step === 1 && <ConceptStep lesson={lesson} />}
-          {step === 2 && <ExampleStep lesson={lesson} exampleVariant={exampleVariant} />}
-          {step === 3 && (
-            <QuizStep
-              question={activeQuestion}
-              onNext={nextStep}
-              onComplete={() => setQuizDone(true)}
-            />
+        <div key={showSummary ? "summary" : step} className="step-enter">
+          {showSummary ? (
+            <CompletionStep result={completionResult} lesson={lesson} />
+          ) : (
+            <>
+              {step === 0 && <IntroStep lesson={lesson} />}
+              {step === 1 && <ConceptStep lesson={lesson} />}
+              {step === 2 && <ExampleStep lesson={lesson} exampleVariant={exampleVariant} />}
+              {step === 3 && (
+                <QuizStep
+                  question={activeQuestion}
+                  onNext={nextStep}
+                  onComplete={(correct) => {
+                    setQuizDone(true);
+                    setQuizCorrect(correct);
+                  }}
+                />
+              )}
+              {step === 4 && <SourceStep sources={sources} quizPassed={quizDone} xpReward={lesson.xpReward} />}
+            </>
           )}
-          {step === 4 && <SourceStep sources={sources} quizPassed={quizDone} xpReward={lesson.xpReward} />}
         </div>
       </main>
 
       <footer className="border-t border-muted/60 bg-surface px-5 py-4">
         <button
-          onClick={isLastStep ? finishLesson : nextStep}
-          disabled={step === 3 && !quizDone}
+          onClick={isLastStep || showSummary ? finishLesson : nextStep}
+          disabled={(step === 3 && !quizDone) || completing}
           className="flex w-full items-center justify-center gap-2 rounded-radius-md bg-primary py-3.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all duration-200 hover:bg-primary/90 active:scale-[0.98] disabled:opacity-50"
         >
-          {isLastStep ? "Finish lesson" : "Continue"}
-          <ArrowRightIcon />
+          {showSummary ? "Back to Learn" : isLastStep ? "Finish lesson" : "Continue"}
+          {!showSummary && <ArrowRightIcon />}
         </button>
       </footer>
     </div>
@@ -248,7 +287,7 @@ function QuizStep({
 }: {
   question: ProcessedQuestion | null;
   onNext: () => void;
-  onComplete: () => void;
+  onComplete: (correct: boolean) => void;
 }) {
   if (!question) {
     return (
@@ -279,7 +318,7 @@ function QuizStep({
       <QuizEngine
         question={question}
         seed={seed}
-        onComplete={() => onComplete()}
+        onComplete={(correct) => onComplete(correct)}
       />
     </div>
   );
@@ -347,6 +386,73 @@ function SourceStep({
         Koin only teaches from licensed Indonesian regulators and verified institutions. If you see unsourced advice,
         question it.
       </p>
+    </div>
+  );
+}
+
+function CompletionStep({
+  result,
+  lesson,
+}: {
+  result: CompletionResult | null;
+  lesson: Lesson;
+}) {
+  const router = useRouter();
+  const xpEarned = result?.xpEarned ?? lesson.xpReward;
+  const quizBonus = result?.quizBonus ?? 0;
+  const streakDays = result?.streakDays ?? 0;
+  const badges = result?.badgesEarned ?? [];
+  const nextSlug = result?.nextLessonSlug ?? null;
+
+  return (
+    <div className="flex flex-col items-center text-center">
+      <div className="mb-6 flex h-28 w-28 items-center justify-center rounded-full bg-success/10">
+        <CheckIcon />
+      </div>
+      <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-success">Lesson complete</span>
+      <h2 className="mt-2 text-[28px] font-bold leading-[1.15] tracking-tight text-foreground">
+        +{xpEarned} XP
+      </h2>
+      {quizBonus > 0 && (
+        <p className="mt-1 text-sm font-medium text-xp">Includes +{quizBonus} quiz bonus</p>
+      )}
+
+      <div className="mt-6 grid w-full grid-cols-2 gap-3">
+        <div className="rounded-radius-lg bg-streak/10 p-4 text-center">
+          <div className="text-xl font-bold text-streak">{streakDays}d</div>
+          <div className="text-xs font-medium text-streak/80">Streak</div>
+        </div>
+        <div className="rounded-radius-lg bg-xp/10 p-4 text-center">
+          <div className="text-xl font-bold text-xp">{lesson.xpReward}</div>
+          <div className="text-xs font-medium text-xp/80">Base XP</div>
+        </div>
+      </div>
+
+      {badges.length > 0 && (
+        <div className="mt-6 w-full rounded-radius-lg border border-warning/20 bg-warning/5 p-4 text-left">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-warning">Badge earned</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {badges.map((badge) => (
+              <span
+                key={badge.slug}
+                className="inline-flex items-center gap-1.5 rounded-full bg-surface px-3 py-1.5 text-sm font-medium text-foreground shadow-sm"
+              >
+                <span>{badge.icon}</span>
+                {badge.name}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {nextSlug && (
+        <button
+          onClick={() => router.push(`/learn/${nextSlug}`)}
+          className="mt-6 w-full rounded-radius-md border border-primary bg-primary/5 py-3.5 text-sm font-semibold text-primary transition-colors hover:bg-primary/10"
+        >
+          Next lesson
+        </button>
+      )}
     </div>
   );
 }

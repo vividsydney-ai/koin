@@ -168,6 +168,26 @@ interface AttemptAnswer {
   variant_id?: string;
 }
 
+export async function getLessonProgress(
+  userId: string
+): Promise<Record<string, "locked" | "available" | "in_progress" | "completed"> | null> {
+  const { data, error } = await supabase
+    .from("lesson_progress")
+    .select("lesson_id, status")
+    .eq("user_id", userId);
+
+  if (error) {
+    console.error("getLessonProgress error:", error.message);
+    return null;
+  }
+
+  const map: Record<string, "locked" | "available" | "in_progress" | "completed"> = {};
+  for (const row of data ?? []) {
+    map[row.lesson_id] = row.status as "locked" | "available" | "in_progress" | "completed";
+  }
+  return map;
+}
+
 export async function getRecentAttemptVariantIds(
   userId: string,
   lessonId: string,
