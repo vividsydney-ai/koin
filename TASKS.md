@@ -59,20 +59,20 @@
 ## PHASE 3 — Core Learning Loop + Paper Trading
 - [x] Learn tab: node-based lesson path with locked/unlocked/complete states
 - [x] Lesson player: title → concept card → Indonesian example → quiz → source trust section → completion
-- [ ] Content variant engine: randomly select example and questions per user/session from content_variants pool
-- [ ] Per-user random seed for consistent but non-copyable sessions
-- [ ] Quiz engine supporting multiple types:
+- [x] Content variant engine: randomly select example and questions per user/session from content_variants pool
+- [x] Per-user random seed for consistent but non-copyable sessions
+- [x] Quiz engine supporting multiple types:
   - multiple_choice
   - true_false
   - fill_blank
   - word_bank
   - ordering
-  - matching
-  - slider
-  - swipe_yes_no
-  - case_study
-- [ ] Shuffled answer order and parameterized numeric questions
-- [ ] Question cooldown: deprioritize recently-answered variants for 7 days
+  - matching (declared, UI pending)
+  - slider (declared, UI pending)
+  - swipe_yes_no (declared, UI pending)
+  - case_study (declared, UI pending)
+- [x] Shuffled answer order and parameterized numeric questions
+- [x] Question cooldown: deprioritize recently-answered variants for 7 days
 - [ ] Lesson completion: XP award, mastery update, streak check
 - [ ] Source trust section: show source cards with tier badge, URL, review status
 - [ ] AI assist layer: "Explain simpler" / "Indonesian example" / "Quiz me again" — scoped to current lesson only

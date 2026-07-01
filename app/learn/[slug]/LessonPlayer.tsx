@@ -1,19 +1,20 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   getLessonBySlug,
   getLessonVariants,
   getLessonSources,
+  getRecentAttemptVariantIds,
   seededIndex,
   type Lesson,
   type ContentVariant,
   type LessonSource,
-  type QuizQuestion,
 } from "@/lib/lessons/client";
 import { useAuth } from "@/lib/auth/use-auth";
-import { QuizCard } from "@/components/lesson/QuizCard";
+import { QuizEngine } from "@/components/lesson/QuizEngine";
+import { validateQuestion, applyParameters, type ProcessedQuestion } from "@/lib/lessons/question";
 
 const STEPS = [
   { id: "intro", label: "Intro" },
@@ -28,7 +29,7 @@ export default function LessonPlayer({ slug }: { slug: string }) {
   const { user } = useAuth(true);
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [exampleVariant, setExampleVariant] = useState<ContentVariant | null>(null);
-  const [questionVariant, setQuestionVariant] = useState<ContentVariant | null>(null);
+  const [activeQuestion, setActiveQuestion] = useState<ProcessedQuestion | null>(null);
   const [sources, setSources] = useState<LessonSource[]>([]);
   const [loading, setLoading] = useState(true);
   const [step, setStep] = useState(0);
@@ -44,21 +45,43 @@ export default function LessonPlayer({ slug }: { slug: string }) {
         return;
       }
 
-      const [exampleVariants, questionVariants, sourceData] = await Promise.all([
+      const [exampleVariants, questionVariants, sourceData, recentIds] = await Promise.all([
         getLessonVariants(data.id, "example"),
         getLessonVariants(data.id, "question"),
         getLessonSources(data.id),
+        user ? getRecentAttemptVariantIds(user.id, data.id) : Promise.resolve(new Set<string>()),
       ]);
 
       if (!mounted) return;
 
       const seed = user ? `${user.id}:${data.id}:${todayKey()}` : `${data.id}:${todayKey()}`;
       const example = exampleVariants[seededIndex(seed, exampleVariants.length)] ?? null;
-      const question = questionVariants[seededIndex(seed + ":q", questionVariants.length)] ?? null;
+
+      const eligibleQuestions = questionVariants.filter((v) => !recentIds.has(v.id));
+      const pool = eligibleQuestions.length > 0 ? eligibleQuestions : questionVariants;
+      const selectedVariant = pool[seededIndex(`${seed}:q`, pool.length)] ?? null;
+
+      let processedQuestion: ProcessedQuestion | null = null;
+      if (selectedVariant) {
+        const validated = validateQuestion(selectedVariant.body);
+        if (validated) {
+          processedQuestion = {
+            ...applyParameters(seed, validated),
+            variantId: selectedVariant.id,
+          };
+        }
+      }
+      // Fallback to legacy lesson.quizData if no valid variant exists.
+      if (!processedQuestion && data.quizData.length > 0) {
+        const validated = validateQuestion(data.quizData[0]);
+        if (validated) {
+          processedQuestion = applyParameters(seed, validated);
+        }
+      }
 
       setLesson(data);
       setExampleVariant(example);
-      setQuestionVariant(question);
+      setActiveQuestion(processedQuestion);
       setSources(sourceData);
       setLoading(false);
     };
@@ -69,15 +92,6 @@ export default function LessonPlayer({ slug }: { slug: string }) {
     };
   }, [slug, user]);
 
-  const activeQuestion = useMemo<QuizQuestion | null>(() => {
-    if (questionVariant?.body && questionVariant.variantType === "question") {
-      const body = questionVariant.body as unknown as QuizQuestion;
-      if (body.question && body.answer && Array.isArray(body.options)) {
-        return body;
-      }
-    }
-    return lesson?.quizData?.[0] ?? null;
-  }, [questionVariant, lesson]);
 
   const nextStep = () => setStep((s) => Math.min(s + 1, STEPS.length - 1));
   const finishLesson = () => router.push("/learn");
@@ -232,7 +246,7 @@ function QuizStep({
   onNext,
   onComplete,
 }: {
-  question: QuizQuestion | null;
+  question: ProcessedQuestion | null;
   onNext: () => void;
   onComplete: () => void;
 }) {
@@ -251,6 +265,8 @@ function QuizStep({
     );
   }
 
+  const seed = question.variantId ?? "legacy";
+
   return (
     <div className="space-y-5">
       <div>
@@ -260,12 +276,10 @@ function QuizStep({
         </h2>
       </div>
 
-      <QuizCard
-        question={question.question}
-        options={question.options.map((label) => ({ label, value: label }))}
-        correctValue={question.answer}
-        explanation={question.explanation}
-        onComplete={onComplete}
+      <QuizEngine
+        question={question}
+        seed={seed}
+        onComplete={() => onComplete()}
       />
     </div>
   );

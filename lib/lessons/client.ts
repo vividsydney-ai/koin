@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/auth/client";
+import type { QuizQuestion } from "./question";
 
 export interface Lesson {
   id: string;
@@ -17,21 +18,15 @@ export interface Lesson {
   quizData: QuizQuestion[];
 }
 
-export interface QuizQuestion {
-  type: "multiple_choice" | "true_false";
-  question: string;
-  answer: string;
-  options: string[];
-  explanation: string;
-}
-
 export interface ContentVariant {
   id: string;
-  variantType: "explanation" | "example" | "question" | "case_study";
+  variantType: "explanation" | "example" | "question";
   body: Record<string, unknown>;
   difficulty: string | null;
   topicTag: string | null;
 }
+
+export type { QuizQuestion };
 
 export interface LessonSource {
   id: string;
@@ -167,14 +162,37 @@ export async function getAllLessons(): Promise<
   );
 }
 
-// Deterministic pseudo-random index based on a seed string.
-// Same user + lesson + day will get the same variant, but different users see different variants.
-export function seededIndex(seed: string, length: number): number {
-  if (length <= 1) return 0;
-  let hash = 0;
-  for (let i = 0; i < seed.length; i++) {
-    hash = (hash << 5) - hash + seed.charCodeAt(i);
-    hash |= 0;
+export { seededIndex, seededShuffle } from "./random";
+
+interface AttemptAnswer {
+  variant_id?: string;
+}
+
+export async function getRecentAttemptVariantIds(
+  userId: string,
+  lessonId: string,
+  days = 7
+): Promise<Set<string>> {
+  const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+
+  const { data, error } = await supabase
+    .from("lesson_attempts")
+    .select("answers_json")
+    .eq("user_id", userId)
+    .eq("lesson_id", lessonId)
+    .gte("created_at", since);
+
+  if (error || !data) {
+    console.error("getRecentAttemptVariantIds error:", error?.message);
+    return new Set();
   }
-  return Math.abs(hash) % length;
+
+  const ids = new Set<string>();
+  for (const row of data) {
+    const answers = (row.answers_json ?? []) as AttemptAnswer[];
+    for (const answer of answers) {
+      if (answer?.variant_id) ids.add(answer.variant_id);
+    }
+  }
+  return ids;
 }

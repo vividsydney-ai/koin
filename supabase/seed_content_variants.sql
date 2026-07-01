@@ -453,6 +453,30 @@ BEGIN
     'intermediate',
     'risk_return'
   ),
+  (
+    v_risk_return,
+    'question',
+    jsonb_build_object(
+      'type', 'multiple_choice',
+      'difficulty', 'intermediate',
+      'question', 'Jika Rp {{amount}} diinvestasikan dengan imbal hasil rata-rata {{rate}}% per tahun, berapa nilai perkiraan setelah {{years}} tahun (bunga majemuk)?',
+      'options', jsonb_build_array(
+        'Rp {{amount * (1 + rate/100) ** years}}',
+        'Rp {{amount + rate * years}}',
+        'Rp {{amount * years}}',
+        'Rp {{amount * rate}}'
+      ),
+      'answer', 'Rp {{amount * (1 + rate/100) ** years}}',
+      'explanation', 'Bunga majemuk menghitung pertumbuhan dari modal dan imbal hasil yang sudah diperoleh: nilai = modal × (1 + rate)^tahun.',
+      'parameters', jsonb_build_object(
+        'amount', jsonb_build_object('min', 1000000, 'max', 5000000, 'step', 500000),
+        'rate', jsonb_build_object('min', 5, 'max', 12, 'step', 1),
+        'years', jsonb_build_object('min', 5, 'max', 15, 'step', 1)
+      )
+    ),
+    'intermediate',
+    'risk_return'
+  ),
 
   -- ==================== IDX BASICS ====================
   -- examples
