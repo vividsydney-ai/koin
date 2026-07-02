@@ -99,6 +99,13 @@ function StreakCard({ streak }: { streak: StreakSummary | null }) {
   const days = streak?.currentStreakDays ?? 0;
   const status = streak?.streakStatus ?? "active";
   const atRisk = status === "at_risk";
+  const frozen = status === "frozen";
+  const broken = status === "broken";
+
+  let statusText = "Keep learning daily to build it.";
+  if (broken) statusText = "Streak lost. Start a new one today!";
+  else if (frozen) statusText = "Freeze used — you're still in the game.";
+  else if (atRisk) statusText = "Complete a lesson today to keep it alive.";
 
   return (
     <div className="rounded-radius-lg border border-muted/60 bg-surface p-4 shadow-sm">
@@ -106,10 +113,10 @@ function StreakCard({ streak }: { streak: StreakSummary | null }) {
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Streak</p>
           <p className="mt-1 text-2xl font-bold text-foreground">{days} day{days === 1 ? "" : "s"}</p>
-          <p className="text-xs text-muted-foreground">Keep learning daily to build it.</p>
+          <p className={`text-xs ${atRisk || broken ? "text-danger" : frozen ? "text-warning" : "text-muted-foreground"}`}>{statusText}</p>
         </div>
-        <div className={`flex h-14 w-14 items-center justify-center rounded-full text-2xl ${atRisk ? "bg-warning/10" : "bg-streak/10"}`}>
-          {atRisk ? "⚠️" : "🔥"}
+        <div className={`flex h-14 w-14 items-center justify-center rounded-full text-2xl ${broken ? "bg-danger/10" : atRisk ? "bg-warning/10" : frozen ? "bg-info/10" : "bg-streak/10"}`}>
+          {broken ? "💔" : atRisk ? "⚠️" : frozen ? "🧊" : "🔥"}
         </div>
       </div>
     </div>
@@ -164,6 +171,9 @@ function XpLevelCard({ xp }: { xp: XpSummary | null }) {
           </div>
         )}
       </div>
+      {current?.description && (
+        <p className="mt-2 text-xs italic text-muted-foreground">{current.description}</p>
+      )}
       {next && (
         <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-muted">
           <div className="h-full rounded-full bg-xp transition-all" style={{ width: `${progress}%` }} />

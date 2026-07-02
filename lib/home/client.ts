@@ -14,6 +14,7 @@ export interface XpSummary {
     name: string;
     nameId: string;
     xpRequired: number;
+    description: string | null;
   } | null;
   nextLevel: {
     id: number;
@@ -81,7 +82,7 @@ export async function getStreak(userId: string): Promise<StreakSummary | null> {
 export async function getXpSummary(userId: string): Promise<XpSummary> {
   const [{ data: xpData, error: xpError }, { data: levels, error: levelsError }] = await Promise.all([
     supabase.from("xp_events").select("xp_amount").eq("user_id", userId),
-    supabase.from("levels").select("id, name, name_id, xp_required").order("xp_required", { ascending: true }),
+    supabase.from("levels").select("id, name, name_id, xp_required, description").order("xp_required", { ascending: true }),
   ]);
 
   if (xpError) console.error("getXpSummary xp error:", xpError.message);
@@ -101,6 +102,7 @@ export async function getXpSummary(userId: string): Promise<XpSummary> {
         name: level.name,
         nameId: level.name_id,
         xpRequired: level.xp_required,
+        description: level.description,
       };
       const next = sortedLevels[i + 1];
       if (next) {
