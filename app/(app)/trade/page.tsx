@@ -14,6 +14,8 @@ import {
   type Trade,
   type MarketData,
 } from "@/lib/trading/client";
+import { getTradeOnboardingStatus, type TradeOnboardingStatus } from "@/lib/trading/onboarding";
+import TradeOnboarding from "./TradeOnboarding";
 
 const SHARES_PER_LOT = 100;
 
@@ -27,6 +29,8 @@ export default function TradePage() {
   const [executing, setExecuting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [onboardingStatus, setOnboardingStatus] = useState<TradeOnboardingStatus | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   const [symbol, setSymbol] = useState("");
   const [tradeType, setTradeType] = useState<"buy" | "sell">("buy");
@@ -37,16 +41,18 @@ export default function TradePage() {
     setLoading(true);
     setError(null);
     try {
-      const [p, h, t, m] = await Promise.all([
+      const [p, h, t, m, status] = await Promise.all([
         getPortfolio(user.id),
         getHoldings(user.id),
         getTrades(user.id),
         getMarketData(),
+        getTradeOnboardingStatus(user.id),
       ]);
       setPortfolio(p);
       setHoldings(h);
       setTrades(t);
       setMarketData(m);
+      setOnboardingStatus(status);
       if (!symbol && m.length > 0) {
         setSymbol(m[0].symbol);
       }
@@ -131,8 +137,35 @@ export default function TradePage() {
           <div className="h-48 animate-pulse rounded-radius-lg bg-muted" />
           <div className="h-48 animate-pulse rounded-radius-lg bg-muted" />
         </div>
+      ) : !onboardingStatus?.requiredLessonsCompleted ? (
+        <LockedState
+          completedSlugs={onboardingStatus?.completedLessonSlugs ?? []}
+          totalRequired={3}
+        />
+      ) : !onboardingStatus?.onboardingCompleted || showOnboarding ? (
+        <TradeOnboarding
+          userId={user!.id}
+          onComplete={() => {
+            setShowOnboarding(false);
+            loadAll();
+          }}
+          onClose={
+            onboardingStatus?.onboardingCompleted
+              ? () => setShowOnboarding(false)
+              : undefined
+          }
+        />
       ) : (
         <div className="space-y-5">
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => setShowOnboarding(true)}
+              className="text-xs font-semibold text-primary hover:underline"
+            >
+              Replay onboarding
+            </button>
+          </div>
+
           <PortfolioSummaryCard
             portfolio={portfolio}
             portfolioValue={portfolioValue}
@@ -162,6 +195,30 @@ export default function TradePage() {
           <TradesCard trades={trades} />
         </div>
       )}
+
+    </div>
+  );
+}
+
+function LockedState({
+  completedSlugs,
+  totalRequired,
+}: {
+  completedSlugs: string[];
+  totalRequired: number;
+}) {
+  return (
+    <div className="rounded-radius-lg border border-dashed border-muted bg-surface p-6 text-center">
+      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-warning/10 text-2xl">
+        🔒
+      </div>
+      <h2 className="mt-4 text-lg font-bold text-foreground">Trade is locked</h2>
+      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+        Complete the first {totalRequired} lessons in the Learn tab to unlock paper trading.
+      </p>
+      <p className="mt-4 text-xs text-muted-foreground">
+        Progress: {completedSlugs.length} / {totalRequired} required lessons
+      </p>
     </div>
   );
 }
