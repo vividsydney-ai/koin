@@ -23,6 +23,7 @@ describe("completeLesson", () => {
         lesson_xp: 50,
         quiz_bonus: 10,
         streak_days: 2,
+        streak_status: "active",
         badges_earned: [{ slug: "first_lesson", name: "First Lesson", icon: "📚" }],
         next_lesson_slug: "budgeting-101",
       },
@@ -54,6 +55,7 @@ describe("completeLesson", () => {
       lessonXp: 50,
       quizBonus: 10,
       streakDays: 2,
+      streakStatus: "active",
       badgesEarned: [{ slug: "first_lesson", name: "First Lesson", icon: "📚" }],
       nextLessonSlug: "budgeting-101",
     });

@@ -21,6 +21,7 @@ export interface CompletionResult {
   lessonXp: number;
   quizBonus: number;
   streakDays: number;
+  streakStatus: "active" | "at_risk" | "frozen" | "broken";
   badgesEarned: EarnedBadge[];
   nextLessonSlug: string | null;
 }
@@ -47,6 +48,7 @@ export async function completeLesson(input: CompletionInput): Promise<Completion
     lessonXp: Number(raw.lesson_xp ?? 0),
     quizBonus: Number(raw.quiz_bonus ?? 0),
     streakDays: Number(raw.streak_days ?? 0),
+    streakStatus: (raw.streak_status as CompletionResult["streakStatus"]) ?? "active",
     badgesEarned: Array.isArray(raw.badges_earned) ? (raw.badges_earned as EarnedBadge[]) : [],
     nextLessonSlug: typeof raw.next_lesson_slug === "string" ? raw.next_lesson_slug : null,
   };
