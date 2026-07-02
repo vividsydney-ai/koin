@@ -86,14 +86,14 @@
 - [x] First-trade badge and onboarding trade flow
 - [x] Risk profile starter quiz
 
-## PHASE 4 — Streaks, Gamification, Koin Points
-- [ ] Streak engine: daily check-in logic, freeze logic, streak lost state
-- [ ] XP system: award on lesson complete, quiz bonus, streak milestone, first trade
-- [ ] Level progression: unlock message per level
-- [ ] Badge award: trigger checks after lesson_complete, streak events, trade events, social actions
-- [ ] Koin Points engine: award on weekly leaderboard rank, streak milestones, graduation, lesson completion
-- [ ] Koin Points balance visible on Home and Profile
-- [ ] Home dashboard: streak card, today's lesson/cta, portfolio snapshot, Koin Points, leaderboard snippet, recent badge
+## PHASE 4 — Streaks, Gamification, Koin Points (DONE)
+- [x] Streak engine: daily check-in logic, freeze logic, streak lost state
+- [x] XP system: award on lesson complete, quiz bonus, streak milestone, first trade
+- [x] Level progression: unlock message per level
+- [x] Badge award: trigger checks after lesson_complete, streak events, trade events
+- [x] Koin Points engine: award on streak milestones and lesson completion
+- [x] Koin Points balance visible on Home and Profile
+- [x] Home dashboard: streak card, today's lesson/cta, portfolio snapshot, Koin Points, leaderboard snippet, recent badge
 
 ## PHASE 5 — Social + Graduation
 - [ ] Friend invite: generate code, share link, accept flow
