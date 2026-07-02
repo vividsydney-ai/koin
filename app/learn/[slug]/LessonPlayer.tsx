@@ -61,6 +61,12 @@ export default function LessonPlayer({ slug }: { slug: string }) {
     let mounted = true;
     const load = async () => {
       setLoading(true);
+      setStep(0);
+      setQuizDone(false);
+      setQuizCorrect(null);
+      setCompletionResult(null);
+      setCompletionError(null);
+      setShowSummary(false);
       const data = await getLessonBySlug(slug);
       if (!mounted || !data) {
         setLoading(false);

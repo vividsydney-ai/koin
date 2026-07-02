@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/auth/client";
+import { getPortfolio, getHoldings, getMarketData } from "@/lib/trading/client";
 
 export interface StreakSummary {
   currentStreakDays: number;
@@ -217,9 +218,42 @@ export async function getContinueLesson(userId: string): Promise<ContinueLesson 
   return null;
 }
 
-export async function getPortfolioSnapshot(_userId: string): Promise<PortfolioSnapshot | null> {
-  // Placeholder until paper trading is built.
-  return null;
+export async function getPortfolioSnapshot(userId: string): Promise<PortfolioSnapshot | null> {
+  const [portfolio, holdings, marketData] = await Promise.all([
+    getPortfolio(userId),
+    getHoldings(userId),
+    getMarketData(),
+  ]);
+
+  if (!portfolio) return null;
+
+  let holdingsValue = 0;
+  let topHolding: { symbol: string; value: number } | null = null;
+
+  for (const h of holdings) {
+    const price =
+      marketData.find((m) => m.symbol === h.symbol)?.closePrice ??
+      h.currentPrice ??
+      h.averageCost;
+    const value = h.shares * price;
+    holdingsValue += value;
+
+    if (!topHolding || value > topHolding.value) {
+      topHolding = { symbol: h.symbol, value };
+    }
+  }
+
+  const totalValue = portfolio.cashBalance + holdingsValue;
+  const totalReturnPct =
+    portfolio.startingCash > 0
+      ? ((totalValue - portfolio.startingCash) / portfolio.startingCash) * 100
+      : 0;
+
+  return {
+    totalValue,
+    totalReturnPct,
+    topHolding,
+  };
 }
 
 export async function getLeaderboardSnippet(_userId: string): Promise<LeaderboardEntry[]> {
