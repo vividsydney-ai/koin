@@ -56,7 +56,7 @@
 - [x] Protected route middleware
 - [x] Profile page: avatar, streak, XP, level, Koin Points, badges, portfolio snapshot
 
-## PHASE 3 — Core Learning Loop + Paper Trading
+## PHASE 3A — Core Learning Loop (DONE)
 - [x] Learn tab: node-based lesson path with locked/unlocked/complete states
 - [x] Lesson player: title → concept card → Indonesian example → quiz → source trust section → completion
 - [x] Content variant engine: randomly select example and questions per user/session from content_variants pool
@@ -71,11 +71,16 @@
   - slider (declared, UI pending)
   - swipe_yes_no (declared, UI pending)
   - case_study (declared, UI pending)
+- [x] 10+ variants per implemented question type across launch lessons
+- [x] 3+ example variants per launch lesson
 - [x] Shuffled answer order and parameterized numeric questions
 - [x] Question cooldown: deprioritize recently-answered variants for 7 days
 - [x] Lesson completion: XP award, mastery update, streak check
 - [x] Source trust section: show source cards with tier badge, URL, review status
+- [x] Source URL verification test: all cited source URLs reachable (2xx/3xx/403), no dead/made-up links
 - [x] AI assist layer: "Explain simpler" / "Indonesian example" / "Quiz me again" — scoped to current lesson only
+
+## PHASE 3B — Paper Trading
 - [x] Paper trading sandbox: portfolio, holdings, buy/sell, lot-based orders
 - [ ] Market data seed and daily price update architecture
 - [ ] First-trade badge and onboarding trade flow
