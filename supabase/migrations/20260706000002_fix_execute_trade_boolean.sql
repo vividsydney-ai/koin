@@ -1,6 +1,6 @@
--- Migration 019: Atomic paper trade execution RPC
--- Handles buy/sell validation, portfolio/holdings updates, trade logging,
--- first-trade badge award, and Koin Points for first trade.
+-- Migration 021: Fix execute_trade first-trade count variable type
+-- The variable was declared as BOOLEAN but assigned COUNT(*), causing
+-- "operator does not exist: boolean = integer" on the first trade.
 
 CREATE OR REPLACE FUNCTION execute_trade(
   p_user_id UUID,
