@@ -73,9 +73,9 @@
   - case_study (declared, UI pending)
 - [x] Shuffled answer order and parameterized numeric questions
 - [x] Question cooldown: deprioritize recently-answered variants for 7 days
-- [ ] Lesson completion: XP award, mastery update, streak check
-- [ ] Source trust section: show source cards with tier badge, URL, review status
-- [ ] AI assist layer: "Explain simpler" / "Indonesian example" / "Quiz me again" — scoped to current lesson only
+- [x] Lesson completion: XP award, mastery update, streak check
+- [x] Source trust section: show source cards with tier badge, URL, review status
+- [x] AI assist layer: "Explain simpler" / "Indonesian example" / "Quiz me again" — scoped to current lesson only
 - [ ] Paper trading sandbox: portfolio, holdings, buy/sell, lot-based orders
 - [ ] Market data seed and daily price update architecture
 - [ ] First-trade badge and onboarding trade flow

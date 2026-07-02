@@ -37,6 +37,8 @@ export interface LessonSource {
   sourceTier: number;
   citationLabel: string | null;
   isPrimary: boolean;
+  relevanceType: "primary" | "supporting" | "further_reading";
+  status: "verified" | "needs_review" | string;
 }
 
 export async function getLessonBySlug(slug: string): Promise<Lesson | null> {
@@ -106,7 +108,9 @@ export async function getLessonVariants(
 export async function getLessonSources(lessonId: string): Promise<LessonSource[]> {
   const { data, error } = await supabase
     .from("lesson_sources")
-    .select("source_id, citation_label, is_primary, sources(source_code, title, organization, url, source_tier)")
+    .select(
+      "source_id, citation_label, is_primary, relevance_type, sources(source_code, title, organization, url, source_tier, status)"
+    )
     .eq("lesson_id", lessonId)
     .order("display_order", { ascending: true });
 
@@ -129,6 +133,8 @@ export async function getLessonSources(lessonId: string): Promise<LessonSource[]
           sourceTier: source.source_tier,
           citationLabel: row.citation_label,
           isPrimary: row.is_primary,
+          relevanceType: row.relevance_type ?? "supporting",
+          status: source.status ?? "needs_review",
         };
       })
       .filter(Boolean) as LessonSource[]
