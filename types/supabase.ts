@@ -1832,6 +1832,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_friend_invite: {
+        Args: { p_invite_code: string; p_user_id: string }
+        Returns: Json
+      }
       award_koin_points: {
         Args: {
           p_amount: number
@@ -1855,6 +1859,7 @@ export type Database = {
         }
         Returns: Json
       }
+      create_friend_invite: { Args: { p_user_id: string }; Returns: Json }
       execute_trade: {
         Args: {
           p_lot_count: number
