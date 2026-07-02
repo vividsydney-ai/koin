@@ -80,11 +80,11 @@
 - [x] Source URL verification test: all cited source URLs reachable (2xx/3xx/403), no dead/made-up links
 - [x] AI assist layer: "Explain simpler" / "Indonesian example" / "Quiz me again" — scoped to current lesson only
 
-## PHASE 3B — Paper Trading
+## PHASE 3B — Paper Trading (DONE)
 - [x] Paper trading sandbox: portfolio, holdings, buy/sell, lot-based orders
-- [ ] Market data seed and daily price update architecture
-- [ ] First-trade badge and onboarding trade flow
-- [ ] Risk profile starter quiz
+- [x] Market data seed and daily price update architecture
+- [x] First-trade badge and onboarding trade flow
+- [x] Risk profile starter quiz
 
 ## PHASE 4 — Streaks, Gamification, Koin Points
 - [ ] Streak engine: daily check-in logic, freeze logic, streak lost state
