@@ -1846,6 +1846,7 @@ export type Database = {
         }
         Returns: Json
       }
+      check_graduation: { Args: { p_user_id: string }; Returns: Json }
       check_in_streak: { Args: { p_user_id: string }; Returns: Json }
       complete_lesson: {
         Args: {
