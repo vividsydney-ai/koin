@@ -3,7 +3,7 @@
 # v2: MVP reshaped around paper trading. Original v1 loop files archived in /_archived.
 
 ## Last completed task
-AI assist layer — Explain simpler / Indonesian example / Quiz me again, scoped to current lesson.
+Home dashboard — streak, today's lesson CTA, XP/level progress, Koin Points, latest badge, paper-trading and leaderboard placeholders.
 
 ## Current session scope
 Pivot to web-first MVP on branch `web-mvp`. Native iOS/Android track paused.
@@ -12,6 +12,8 @@ Pivot to web-first MVP on branch `web-mvp`. Native iOS/Android track paused.
 [x] Migration 001 complete
 [x] Migrations 002–014 complete
 [x] Migration 016: public read RLS for sources and lesson_sources
+[x] Migration 017: public read RLS for badges
+[x] Migration 018: public read RLS for levels and topics
 [x] Seed data complete
 [x] Content variants seeded (40 variants)
 [x] Phase 1b Capacitor shell complete (preserved on `web-mvp`)
@@ -25,6 +27,7 @@ Pivot to web-first MVP on branch `web-mvp`. Native iOS/Android track paused.
 [x] Fix: robust completion error handling + secondary "Back to Learn" CTA in summary
 [x] Source trust section: primary/supporting/further-reading source cards with tier, URL, review status
 [x] AI assist layer: Explain simpler / Indonesian example / Quiz me again (current-lesson scoped)
+[x] Home dashboard: streak, today's lesson CTA, XP/level, Koin Points, latest badge, placeholders for paper trading + leaderboard
 [x] Pivot: create `web-mvp` branch and push to remote
 [x] Pivot: platform-aware auth storage (Preferences native / cookies web)
 [x] Pivot: add PWA manifest and icons
@@ -40,10 +43,10 @@ Pivot to web-first MVP on branch `web-mvp`. Native iOS/Android track paused.
 ## Checker status
 [x] All reference tables verified in remote Supabase
 [x] content_variants count: 40
-[x] Test suite: 65 passing
+[x] Test suite: 72 passing
 [x] pnpm build passes
 [x] `web-mvp` branch pushed to origin
-[x] Migration 016 applied to remote Supabase
+[x] Migrations 016–018 applied to remote Supabase
 
 ## Gate result
 [x] Gate KO-26 — passed
@@ -52,6 +55,7 @@ Pivot to web-first MVP on branch `web-mvp`. Native iOS/Android track paused.
 [x] Gate KO-30 — passed
 [x] Gate source trust section — passed
 [x] Gate AI assist layer — passed
+[x] Gate Home dashboard — passed
 
 ## Blockers
 (none)
