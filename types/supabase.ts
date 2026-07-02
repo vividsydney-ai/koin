@@ -1689,6 +1689,7 @@ export type Database = {
           notifications_enabled: boolean | null
           show_on_leaderboard: boolean | null
           streak_reminder_time: string | null
+          trade_onboarding_completed: boolean | null
           updated_at: string | null
           user_id: string
           weekly_report_enabled: boolean | null
@@ -1697,6 +1698,7 @@ export type Database = {
           notifications_enabled?: boolean | null
           show_on_leaderboard?: boolean | null
           streak_reminder_time?: string | null
+          trade_onboarding_completed?: boolean | null
           updated_at?: string | null
           user_id: string
           weekly_report_enabled?: boolean | null
@@ -1705,6 +1707,7 @@ export type Database = {
           notifications_enabled?: boolean | null
           show_on_leaderboard?: boolean | null
           streak_reminder_time?: string | null
+          trade_onboarding_completed?: boolean | null
           updated_at?: string | null
           user_id?: string
           weekly_report_enabled?: boolean | null
@@ -1829,7 +1832,57 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      award_koin_points: {
+        Args: {
+          p_amount: number
+          p_description?: string
+          p_source_id?: string
+          p_source_type: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
+      check_in_streak: { Args: { p_user_id: string }; Returns: Json }
+      complete_lesson: {
+        Args: {
+          p_answers_json: Json
+          p_lesson_id: string
+          p_max_score: number
+          p_quiz_correct: boolean
+          p_score: number
+          p_time_spent_seconds: number
+          p_user_id: string
+        }
+        Returns: Json
+      }
+      execute_trade: {
+        Args: {
+          p_lot_count: number
+          p_symbol: string
+          p_trade_type: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
+      get_latest_market_data: {
+        Args: never
+        Returns: {
+          close_price: number
+          company_name: string
+          id: string
+          symbol: string
+          trade_date: string
+          volume: number
+        }[]
+      }
+      recompute_streak_status: { Args: { p_user_id: string }; Returns: Json }
+      seed_next_market_data: {
+        Args: { p_trade_date?: string }
+        Returns: {
+          close_price: number
+          symbol: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
