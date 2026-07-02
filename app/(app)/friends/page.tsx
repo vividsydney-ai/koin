@@ -3,11 +3,13 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth/use-auth";
 import { createFriendInvite, acceptFriendInvite, getFriends, type FriendInvite, type Friend } from "@/lib/friends/client";
+import { getWeeklyLeaderboard, type WeeklyLeaderboard } from "@/lib/home/client";
 
 export default function FriendsPage() {
   const { user, profile, loading: authLoading } = useAuth(true);
   const [invite, setInvite] = useState<FriendInvite | null>(null);
   const [friends, setFriends] = useState<Friend[]>([]);
+  const [leaderboard, setLeaderboard] = useState<WeeklyLeaderboard | null>(null);
   const [codeInput, setCodeInput] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -17,9 +19,13 @@ export default function FriendsPage() {
     const load = async () => {
       if (!user) return;
       setLoading(true);
-      const [friendsData] = await Promise.all([getFriends(user.id)]);
+      const [friendsData, leaderboardData] = await Promise.all([
+        getFriends(user.id),
+        getWeeklyLeaderboard(user.id, "friends"),
+      ]);
       if (!mounted) return;
       setFriends(friendsData);
+      setLeaderboard(leaderboardData);
       setLoading(false);
     };
     load();
@@ -107,6 +113,14 @@ export default function FriendsPage() {
               </div>
             )}
           </section>
+
+          {leaderboard && (
+            <section>
+              <h2 className="mb-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">Weekly leaderboard</h2>
+              <LeaderboardSection title="XP" entries={leaderboard.xp} valueKey="xpThisWeek" />
+              <LeaderboardSection title="Koin Points" entries={leaderboard.koinPoints} valueKey="koinPointsThisWeek" />
+            </section>
+          )}
         </div>
       )}
     </main>
@@ -206,6 +220,40 @@ function InviteSection({
           </p>
         )}
       </form>
+    </div>
+  );
+}
+
+function LeaderboardSection({
+  title,
+  entries,
+  valueKey,
+}: {
+  title: string;
+  entries: { rank: number; displayName: string; xpThisWeek?: number; koinPointsThisWeek?: number; isCurrentUser: boolean }[];
+  valueKey: "xpThisWeek" | "koinPointsThisWeek";
+}) {
+  if (entries.length === 0) return null;
+
+  return (
+    <div className="mt-3 rounded-radius-lg border border-muted/60 bg-surface p-4 shadow-sm">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">{title}</p>
+      <div className="mt-2 space-y-1">
+        {entries.map((entry) => (
+          <div
+            key={entry.rank + entry.displayName}
+            className={`flex items-center justify-between rounded-radius-md px-2 py-1.5 ${entry.isCurrentUser ? "bg-primary/5" : ""}`}
+          >
+            <div className="flex items-center gap-2">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-muted text-[10px] font-bold text-muted-foreground">
+                {entry.rank}
+              </span>
+              <span className="text-sm text-foreground">{entry.displayName}</span>
+            </div>
+            <span className="text-xs font-semibold text-xp">{(entry[valueKey] ?? 0).toLocaleString("id-ID")}</span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

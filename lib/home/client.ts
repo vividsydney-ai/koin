@@ -58,6 +58,19 @@ export interface LeaderboardEntry {
   isCurrentUser: boolean;
 }
 
+export interface KoinPointsLeaderboardEntry {
+  rank: number;
+  displayName: string;
+  koinPointsThisWeek: number;
+  isCurrentUser: boolean;
+}
+
+export interface WeeklyLeaderboard {
+  weekStart: string;
+  xp: LeaderboardEntry[];
+  koinPoints: KoinPointsLeaderboardEntry[];
+}
+
 export async function getStreak(userId: string): Promise<StreakSummary | null> {
   const { data, error } = await supabase
     .from("streaks")
@@ -258,7 +271,61 @@ export async function getPortfolioSnapshot(userId: string): Promise<PortfolioSna
   };
 }
 
-export async function getLeaderboardSnippet(_userId: string): Promise<LeaderboardEntry[]> {
-  // Placeholder until social leaderboard is built.
-  return [];
+export async function getLeaderboardSnippet(userId: string): Promise<LeaderboardEntry[]> {
+  const { data, error } = await supabase.rpc("get_weekly_leaderboard", {
+    p_user_id: userId,
+    p_scope: "friends",
+  });
+
+  if (error || !data) {
+    console.error("getLeaderboardSnippet error:", error?.message);
+    return [];
+  }
+
+  const raw = data as {
+    week_start: string;
+    xp: { rank: number; display_name: string; xp_this_week: number; is_current_user: boolean }[];
+    koin_points: { rank: number; display_name: string; koin_points_this_week: number; is_current_user: boolean }[];
+  };
+
+  return (raw.xp ?? []).map((entry) => ({
+    rank: entry.rank,
+    displayName: entry.display_name,
+    xpThisWeek: entry.xp_this_week,
+    isCurrentUser: entry.is_current_user,
+  }));
+}
+
+export async function getWeeklyLeaderboard(userId: string, scope: "global" | "friends"): Promise<WeeklyLeaderboard | null> {
+  const { data, error } = await supabase.rpc("get_weekly_leaderboard", {
+    p_user_id: userId,
+    p_scope: scope,
+  });
+
+  if (error || !data) {
+    console.error("getWeeklyLeaderboard error:", error?.message);
+    return null;
+  }
+
+  const raw = data as {
+    week_start: string;
+    xp: { rank: number; display_name: string; xp_this_week: number; is_current_user: boolean }[];
+    koin_points: { rank: number; display_name: string; koin_points_this_week: number; is_current_user: boolean }[];
+  };
+
+  return {
+    weekStart: raw.week_start,
+    xp: (raw.xp ?? []).map((entry) => ({
+      rank: entry.rank,
+      displayName: entry.display_name,
+      xpThisWeek: entry.xp_this_week,
+      isCurrentUser: entry.is_current_user,
+    })),
+    koinPoints: (raw.koin_points ?? []).map((entry) => ({
+      rank: entry.rank,
+      displayName: entry.display_name,
+      koinPointsThisWeek: entry.koin_points_this_week,
+      isCurrentUser: entry.is_current_user,
+    })),
+  };
 }

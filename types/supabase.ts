@@ -1880,6 +1880,10 @@ export type Database = {
           volume: number
         }[]
       }
+      get_weekly_leaderboard: {
+        Args: { p_scope: string; p_user_id: string }
+        Returns: Json
+      }
       recompute_streak_status: { Args: { p_user_id: string }; Returns: Json }
       seed_next_market_data: {
         Args: { p_trade_date?: string }
