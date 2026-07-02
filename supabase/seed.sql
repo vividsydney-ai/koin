@@ -43,11 +43,11 @@ INSERT INTO badges (id, slug, name, name_id, description, description_id, icon, 
 INSERT INTO sources (id, source_code, title, local_title, source_tier, source_type, organization, url, publication_year, status) VALUES
 (gen_random_uuid(), 'OJK-001', 'National Strategy on Indonesian Financial Literacy (SNLKI) 2021-2025', 'Strategi Nasional Literasi Keuangan Indonesia 2021-2025', 1, 'report', 'OJK', 'https://ojk.go.id/en/berita-dan-kegiatan/publikasi/Pages/National-Strategy-on-Indonesian-Financial-Literacy-(SNLKI)-2021---2025.aspx', 2021, 'verified'),
 (gen_random_uuid(), 'OJK-002', 'OJK National Survey on Financial Literacy & Inclusion (SNLIK) 2025', 'Survei Nasional Literasi dan Inklusi Keuangan (SNLIK) 2025', 1, 'survey', 'OJK', 'https://ojk.go.id/id/Fungsi-Utama/Perilaku-Pelaku-Usaha-Jasa-Keuangan/SNLIK/Pages/SNLIK-2025.aspx', 2025, 'verified'),
-(gen_random_uuid(), 'OJK-003', 'OJK Pocket Guide: Personal Financial Management', 'Buku Saku Pengelolaan Keuangan Pribadi', 1, 'guide', 'OJK', 'https://ojk.go.id/id/berita-dan-kegiatan/publikasi/Documents/Pages/Buku-Saku-Pengelolaan-Keuangan-Pribadi/Buku-Saku-Pengelolaan-Keuangan-Pribadi.pdf', 2023, 'needs_review'),
-(gen_random_uuid(), 'OJK-004', 'OJK Education Portal — Capital Markets Module', 'Portal Edukasi OJK — Modul Pasar Modal', 1, 'website', 'OJK', 'https://ojk.go.id/id/kanal/pasar-modal/Pages/Investasi.aspx', 2024, 'needs_review'),
+(gen_random_uuid(), 'OJK-003', 'OJK Pocket Guide: Personal Financial Management', 'Buku Saku Pengelolaan Keuangan Pribadi', 1, 'guide', 'OJK', 'https://ojk.go.id/id/berita-dan-kegiatan/publikasi', 2024, 'verified'),
+(gen_random_uuid(), 'OJK-004', 'OJK Education Portal — Capital Markets Module', 'Portal Edukasi OJK — Modul Pasar Modal', 1, 'website', 'OJK', 'https://ojk.go.id/id/kanal/pasar-modal', 2024, 'verified'),
 (gen_random_uuid(), 'OJK-005', 'OJK Financial Literacy Month 2025 Campaign', 'Bulan Literasi Keuangan (BLK) 2025', 1, 'report', 'OJK', 'https://ojk.go.id/en/berita-dan-kegiatan/siaran-pers/Pages/Expanding-Financial-Education-OJK-Launches-the-2025-Financial-Literacy-Month.aspx', 2025, 'needs_review'),
-(gen_random_uuid(), 'OJK-006', 'OJK Pocket Guide: Understanding Investment Products', 'Buku Saku Mengenal Produk Investasi', 1, 'guide', 'OJK', 'https://ojk.go.id/id/berita-dan-kegiatan/publikasi/Pages/Buku-Saku-Literasi-Keuangan.aspx', 2023, 'needs_review'),
-(gen_random_uuid(), 'OJK-007', 'OJK Consumer Protection — Recognizing Investment Fraud', 'Waspadai Investasi Bodong', 1, 'website', 'OJK', 'https://www.ojk.go.id/id/kanal/perbankan/Pages/Perlindungan-Konsumen.aspx', 2024, 'needs_review'),
+(gen_random_uuid(), 'OJK-006', 'OJK Pocket Guide: Understanding Investment Products', 'Buku Saku Mengenal Produk Investasi', 1, 'guide', 'OJK', 'https://ojk.go.id/id/kanal/pasar-modal', 2024, 'verified'),
+(gen_random_uuid(), 'OJK-007', 'OJK Consumer Protection — Recognizing Investment Fraud', 'Waspadai Investasi Bodong', 1, 'website', 'OJK', 'https://ojk.go.id/id/kanal/perbankan', 2024, 'verified'),
 (gen_random_uuid(), 'OJK-008', 'OJK TikTok @ojkindonesia', 'TikTok Resmi OJK Indonesia', 1, 'social', 'OJK', 'https://www.tiktok.com/@ojkindonesia', 2025, 'verified');
 
 -- TIER 1 — Bank Indonesia
@@ -65,7 +65,7 @@ INSERT INTO sources (id, source_code, title, local_title, source_tier, source_ty
 (gen_random_uuid(), 'IDX-001', 'IDX Academy — Investor Education Portal', 'Akademi Investor IDX', 1, 'website', 'IDX', 'https://www.idx.co.id/id-id/akademi-investor/', 2025, 'verified'),
 (gen_random_uuid(), 'IDX-002', 'IDX Glossary of Capital Markets Terms', 'Glosarium Istilah Pasar Modal IDX', 1, 'website', 'IDX', 'https://www.idx.co.id/id-id/perusahaan-terdaftar/glossarium/', 2025, 'verified'),
 (gen_random_uuid(), 'IDX-003', 'IDX Statistics — Market Data & Historical Prices', 'Statistik IDX — Data Pasar & Harga Historis', 1, 'website', 'IDX', 'https://www.idx.co.id/id-id/data-pasar/ringkasan-perdagangan/ringkasan-saham/', 2026, 'verified'),
-(gen_random_uuid(), 'IDX-004', 'IDX YouTube — Yuk Nabung Saham Series', 'YouTube IDX — Seri Yuk Nabung Saham', 1, 'video', 'IDX', 'https://www.youtube.com/c/IDXOfficial', 2025, 'verified'),
+(gen_random_uuid(), 'IDX-004', 'IDX YouTube — Yuk Nabung Saham Series', 'YouTube IDX — Seri Yuk Nabung Saham', 1, 'video', 'IDX', 'https://www.youtube.com/@IDXOfficial', 2025, 'verified'),
 (gen_random_uuid(), 'IDX-005', 'IDX — Beginner Investment Guide', 'Panduan Investasi Pemula IDX', 1, 'guide', 'IDX', 'https://www.idx.co.id/id-id/investor/panduan-investasi/', 2024, 'needs_review'),
 (gen_random_uuid(), 'IDX-006', 'New IDX Mobile App', 'Aplikasi New IDX Mobile', 1, 'website', 'IDX', 'https://apps.apple.com/app/new-idx-mobile/id1658695361', 2025, 'verified'),
 (gen_random_uuid(), 'IDX-007', 'IDX Investor Protection — SIPF', 'Perlindungan Investor IDX — SIPF', 1, 'website', 'IDX', 'https://www.idx.co.id/id-id/investor/perlindungan-investor/', 2024, 'needs_review');
