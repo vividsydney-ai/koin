@@ -76,7 +76,7 @@
 - [x] Lesson completion: XP award, mastery update, streak check
 - [x] Source trust section: show source cards with tier badge, URL, review status
 - [x] AI assist layer: "Explain simpler" / "Indonesian example" / "Quiz me again" — scoped to current lesson only
-- [ ] Paper trading sandbox: portfolio, holdings, buy/sell, lot-based orders
+- [x] Paper trading sandbox: portfolio, holdings, buy/sell, lot-based orders
 - [ ] Market data seed and daily price update architecture
 - [ ] First-trade badge and onboarding trade flow
 - [ ] Risk profile starter quiz
