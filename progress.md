@@ -3,10 +3,10 @@
 # v2: MVP reshaped around paper trading. Original v1 loop files archived in /_archived.
 
 ## Last completed task
-Content variant expansion — Migration 016 added 50 localized examples and 55 quiz items across the 5 launch lessons (10 examples + 11 questions per lesson). Variants span multiple question types (multiple_choice, true_false, fill_blank, word_bank, ordering) and use real Tier 1 source URLs verified by the existing URL test. Deployed to https://koin-web-mvp.vercel.app/.
+Phase 6 adaptive lesson triggers — Migrations 017 and 018 added 4 behavioral lessons (loss-aversion-101, diversification-101, confidence-101, volatility-101), their source links, reviews, content variants, trigger rules, and the evaluation engine. A `check_adaptive_triggers` RPC and an after-insert trigger on `trades` generate `user_lesson_recommendations` for panic sells, concentrated holdings, inactivity, and portfolio drawdowns. Recommendation cards now appear on Home and Learn tabs. Tests: 99 passed, 1 skipped. Deployed to https://koin-web-mvp.vercel.app/.
 
 ## Current session scope
-Web-first MVP on branch `web-mvp`. Phases 1–5 complete. Phase 6 (Adaptive Lessons + Library + Polish) is next. Native iOS/Android track remains paused.
+Web-first MVP on branch `web-mvp`. Phases 1–5 complete. Phase 6 in progress: adaptive triggers done, remaining Phase 6 items are Library tab, lesson expansion to 15, recommended resources, empty states, analytics events, notification queue, and final QA. Native iOS/Android track remains paused.
 
 ## Important scope change
 Phase 3 was split into Phase 3A (Core Learning Loop) and Phase 3B (Paper Trading). TASKS.md and this file reflect the split.
@@ -30,6 +30,7 @@ Phase 3 was split into Phase 3A (Core Learning Loop) and Phase 3B (Paper Trading
 [x] Seed data complete
 [x] Content variants seeded (40 variants)
 [x] Content variants expanded via Migration 016 (50 examples + 55 questions; 10 examples + 11 questions per launch lesson)
+[x] Behavioral adaptive lessons added via Migrations 017–018 (4 lessons, trigger engine, recommendation UI)
 [x] Phase 1b Capacitor shell complete (preserved on `web-mvp`)
 [x] KO-24 Auth foundation
 [x] KO-25 Onboarding flow
@@ -59,9 +60,10 @@ Phase 3 was split into Phase 3A (Core Learning Loop) and Phase 3B (Paper Trading
 
 ## Checker status
 [x] All reference tables verified in remote Supabase
-[x] content_variants count: 95 (40 original + 55 expansion)
-[x] Test suite: 85 passing, 1 skipped
+[x] content_variants count: 131 (40 original + 55 expansion + 36 behavioral adaptive variants)
+[x] Test suite: 99 passing, 1 skipped
 [x] Source URL verification test: all source URLs return 2xx/3xx (no dead links)
+[x] Adaptive trigger engine migrated and deployed
 [x] npm run build passes
 [x] `web-mvp` branch pushed to origin
 [x] Migrations 016–029 applied to remote Supabase
@@ -80,6 +82,7 @@ Phase 3 was split into Phase 3A (Core Learning Loop) and Phase 3B (Paper Trading
 [x] Gate Phase 4 — passed
 [x] Gate Phase 5 — passed
 [x] Gate content variant expansion — passed
+[x] Gate Phase 6 adaptive triggers — passed
 
 ## Blockers
 - `UpdateGoal` tool is not exposed in this agent environment. The system expects me to call it to mark goals active/complete/blocked, but it is missing from the available tool list. I report completion in text and continue work, but the goal state stays active/paused until the human closes it or the environment exposes the tool.

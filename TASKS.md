@@ -106,12 +106,12 @@
 - [x] Cohort support: join by invite code (for school/group use later)
 
 ## PHASE 6 — Adaptive Lessons + Library
-- [ ] Lesson triggers based on trading behavior:
+- [x] Lesson triggers based on trading behavior:
   - Panic sell → loss aversion lesson
   - Concentrated holdings → diversification lesson
   - No trade for N days → confidence / risk tolerance lesson
   - Portfolio drawdown → volatility / emotional control lesson
-- [ ] User lesson recommendations table and UI
+- [x] User lesson recommendations table and UI
 - [ ] Expand from 5 to 15 lessons
 - [ ] Library tab: browse sources by topic/tier/type/language
 - [ ] Recommended resources: books, videos per lesson

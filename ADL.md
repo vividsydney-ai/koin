@@ -72,6 +72,14 @@ Use this file to record significant technical and product decisions. Each entry 
 **Consequences:** TASKS.md and Linear now list Phase 3A and Phase 3B independently. Existing Phase 3 issues were renamed/split into KO-8 (Phase 3A) and KO-34 (Phase 3B).
 **Reversible?** Yes — can be collapsed back into one phase label if reporting overhead is not worth it.
 
+### ADL-010: Adaptive lesson triggers run inside the database
+**Date:** 2026-07-06
+**Decision:** Implement adaptive lesson recommendations as PostgreSQL functions and triggers, evaluated after each trade and on Home page load, rather than in the frontend or a separate job service.
+**Alternatives considered:** Client-side evaluation after every trade; scheduled edge function; application server cron job
+**Rationale:** Database-side evaluation guarantees consistency, works even if the client connection is flaky, and reacts immediately to trading events. It also keeps recommendation logic close to the data it inspects (trades, holdings, portfolios) and avoids exposing raw behavioral SQL to the client.
+**Consequences:** Adds `evaluate_adaptive_triggers`, `check_adaptive_triggers` RPC, and an after-insert trigger on `trades`. Logic for panic sell, concentration, inactivity, and drawdown lives in SQL and must be versioned via migrations.
+**Reversible?** Partial — can replace with an external scheduler later, but the trigger would need to be removed and client calls redirected.
+
 ### ADL-009: Content variant expansion to 10 examples + 11 questions per launch lesson
 **Date:** 2026-07-06
 **Decision:** Increase the `content_variants` pool so every launch lesson has at least 10 example variants and 11 question variants spanning multiple quiz types.
