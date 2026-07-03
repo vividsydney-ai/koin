@@ -42,12 +42,17 @@ export default function TradeOnboarding({ userId, onComplete, onClose }: TradeOn
     return "aggressive";
   };
 
+  // Normalize raw score (4–16) to schema range 1–10.
+  const normalizeRiskScore = (score: number): number => {
+    return Math.round(((score - 4) / 12) * 9 + 1);
+  };
+
   const handleFinish = async () => {
     setSubmitting(true);
     setFinishError(null);
     try {
       await saveRiskProfile(userId, {
-        riskScore,
+        riskScore: normalizeRiskScore(riskScore),
         riskLabel: getRiskLabel(riskScore),
       });
       await completeTradeOnboarding(userId);
