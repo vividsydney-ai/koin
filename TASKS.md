@@ -95,14 +95,14 @@
 - [x] Koin Points balance visible on Home and Profile
 - [x] Home dashboard: streak card, today's lesson/cta, portfolio snapshot, Koin Points, leaderboard snippet, recent badge
 
-## PHASE 5 — Social + Graduation
-- [ ] Friend invite: generate code, share link, accept flow
-- [ ] Friends list + weekly leaderboard (top 10 by XP and by Koin Points this week)
-- [ ] Graduation check: detect 3x–5x portfolio value, issue certificate
-- [ ] Certificate screen with shareable card
-- [ ] Brokerage recommendation screen (Bibit, Ajaib, Stockbit, IPOT, Bareksa)
-- [ ] Shareable progress card (OG image or canvas-rendered PNG)
-- [ ] Cohort support: join by invite code (for school/group use later)
+## PHASE 5 — Social + Graduation (DONE)
+- [x] Friend invite: generate code, share link, accept flow
+- [x] Friends list + weekly leaderboard (top 10 by XP and by Koin Points this week)
+- [x] Graduation check: detect 3x–5x portfolio value, issue certificate
+- [x] Certificate screen with shareable card
+- [x] Brokerage recommendation screen (Bibit, Ajaib, Stockbit, IPOT, Bareksa)
+- [x] Shareable progress card (canvas-rendered PNG)
+- [x] Cohort support: join by invite code (for school/group use later)
 
 ## PHASE 6 — Adaptive Lessons + Library
 - [ ] Lesson triggers based on trading behavior:
