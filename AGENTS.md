@@ -27,7 +27,8 @@ Fail: Write specific failure reason to progress.md, halt
 ## Gate protocol (what "done" means — never agent opinion)
 Phase 1 (migrations): supabase db reset exits 0, supabase gen types exits 0, tests exist for each migration slice
 Phase 2 (auth): auth tests pass, middleware test pass
-Phase 3 (lesson player + paper trading): lesson completion flow + first paper trade end-to-end pass
+Phase 3A (core learning loop): lesson completion flow, content variants, source verification, quiz randomization pass
+Phase 3B (paper trading): first paper trade end-to-end pass, market data, trade onboarding, risk profile
 Phase 4 (streaks + Koin Points): streak unit tests pass; Koin Points award on leaderboard/streak/graduation works
 Phase 5 (social + graduation): friendship + leaderboard integration tests pass; graduation at 3x–5x issues certificate + brokerage recommendations
 Phase 6 (adaptive lessons): lesson triggers fire on panic sell, concentration, inactivity, and portfolio drawdown

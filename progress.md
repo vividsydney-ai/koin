@@ -3,10 +3,13 @@
 # v2: MVP reshaped around paper trading. Original v1 loop files archived in /_archived.
 
 ## Last completed task
-Home dashboard — streak, today's lesson CTA, XP/level progress, Koin Points, latest badge, paper-trading and leaderboard placeholders.
+Phase 5 — Social + Graduation: friend invites, friends list, weekly leaderboards (XP and Koin Points), graduation detection, certificate screen, brokerage recommendations, shareable progress card, cohort join-by-code.
 
 ## Current session scope
-Pivot to web-first MVP on branch `web-mvp`. Native iOS/Android track paused.
+Web-first MVP on branch `web-mvp`. Phases 1–5 complete. Phase 6 (Adaptive Lessons + Library + Polish) is next. Native iOS/Android track remains paused.
+
+## Important scope change
+Phase 3 was split into Phase 3A (Core Learning Loop) and Phase 3B (Paper Trading). TASKS.md and this file reflect the split.
 
 ## Maker status
 [x] Migration 001 complete
@@ -14,6 +17,16 @@ Pivot to web-first MVP on branch `web-mvp`. Native iOS/Android track paused.
 [x] Migration 016: public read RLS for sources and lesson_sources
 [x] Migration 017: public read RLS for badges
 [x] Migration 018: public read RLS for levels and topics
+[x] Migration 019: execute_trade RPC and paper trading fixes
+[x] Migrations 020–021: content_variants and source URL fixes
+[x] Migration 022: market_data daily update architecture
+[x] Migration 023: trade onboarding settings
+[x] Migration 024: streak check-in RPC with freeze/break logic
+[x] Migration 025: Koin Points award engine
+[x] Migration 026: friend invite RPCs
+[x] Migration 027: weekly leaderboard RPC
+[x] Migration 028: graduation check RPC
+[x] Migration 029: cohort join-by-code RPC
 [x] Seed data complete
 [x] Content variants seeded (40 variants)
 [x] Phase 1b Capacitor shell complete (preserved on `web-mvp`)
@@ -27,7 +40,10 @@ Pivot to web-first MVP on branch `web-mvp`. Native iOS/Android track paused.
 [x] Fix: robust completion error handling + secondary "Back to Learn" CTA in summary
 [x] Source trust section: primary/supporting/further-reading source cards with tier, URL, review status
 [x] AI assist layer: Explain simpler / Indonesian example / Quiz me again (current-lesson scoped)
-[x] Home dashboard: streak, today's lesson CTA, XP/level, Koin Points, latest badge, placeholders for paper trading + leaderboard
+[x] Phase 3A — Core Learning Loop: content variants, source verification, per-session randomization
+[x] Phase 3B — Paper Trading: market data, gated trade onboarding, risk profile quiz, first-trade flow
+[x] Phase 4 — Streaks, Gamification, Koin Points: streak engine, XP awards, badge triggers, Koin Points, Home dashboard
+[x] Phase 5 — Social + Graduation: friend invites, leaderboards, graduation certificate, brokerage recs, progress card, cohorts
 [x] Pivot: create `web-mvp` branch and push to remote
 [x] Pivot: platform-aware auth storage (Preferences native / cookies web)
 [x] Pivot: add PWA manifest and icons
@@ -43,10 +59,11 @@ Pivot to web-first MVP on branch `web-mvp`. Native iOS/Android track paused.
 ## Checker status
 [x] All reference tables verified in remote Supabase
 [x] content_variants count: 40
-[x] Test suite: 72 passing
-[x] pnpm build passes
+[x] Test suite: 85 passing, 1 skipped
+[x] npm run build passes
 [x] `web-mvp` branch pushed to origin
-[x] Migrations 016–018 applied to remote Supabase
+[x] Migrations 016–029 applied to remote Supabase
+[x] Vercel deployment smoke check: 200 OK
 
 ## Gate result
 [x] Gate KO-26 — passed
@@ -56,9 +73,13 @@ Pivot to web-first MVP on branch `web-mvp`. Native iOS/Android track paused.
 [x] Gate source trust section — passed
 [x] Gate AI assist layer — passed
 [x] Gate Home dashboard — passed
+[x] Gate Phase 3A — passed
+[x] Gate Phase 3B — passed
+[x] Gate Phase 4 — passed
+[x] Gate Phase 5 — passed
 
 ## Blockers
-(none)
+- `UpdateGoal` tool is not exposed in this agent environment. The system expects me to call it to mark goals active/complete/blocked, but it is missing from the available tool list. I report completion in text and continue work, but the goal state stays active/paused until the human closes it or the environment exposes the tool.
 
 ## Lessons for RULES.md (agent proposes, human approves)
 - Remote Supabase Management API can execute seed SQL when CLI push times out.
@@ -67,3 +88,4 @@ Pivot to web-first MVP on branch `web-mvp`. Native iOS/Android track paused.
 - Client-side auth can stay platform-aware: Capacitor Preferences on native, cookies on web, both respecting the no-localStorage rule.
 - Pivoting to web-first preserves native code on the same branch while adding PWA metadata and web-safe storage.
 - Reference tables (sources, lesson_sources) need explicit SELECT policies when RLS is enabled; "public read" intent must be enforced in code.
+- Static export on Vercel means public share links for runtime-generated IDs (e.g., certificate share_public_id) cannot be pre-rendered; share via native share API instead.
