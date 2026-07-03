@@ -15,6 +15,7 @@ export default function TradeOnboarding({ userId, onComplete, onClose }: TradeOn
   const [step, setStep] = useState(1);
   const [riskAnswers, setRiskAnswers] = useState<Record<number, number>>({});
   const [submitting, setSubmitting] = useState(false);
+  const [finishError, setFinishError] = useState<string | null>(null);
 
   const handleNext = () => {
     if (step < TOTAL_STEPS) {
@@ -43,6 +44,7 @@ export default function TradeOnboarding({ userId, onComplete, onClose }: TradeOn
 
   const handleFinish = async () => {
     setSubmitting(true);
+    setFinishError(null);
     try {
       await saveRiskProfile(userId, {
         riskScore,
@@ -51,7 +53,9 @@ export default function TradeOnboarding({ userId, onComplete, onClose }: TradeOn
       await completeTradeOnboarding(userId);
       onComplete();
     } catch (e) {
+      const message = e instanceof Error ? e.message : "Could not save onboarding. Please try again.";
       console.error(e);
+      setFinishError(message);
     } finally {
       setSubmitting(false);
     }
@@ -109,6 +113,11 @@ export default function TradeOnboarding({ userId, onComplete, onClose }: TradeOn
         </div>
 
         <div className="border-t border-muted px-5 py-4">
+          {finishError && (
+            <div className="mb-3 rounded-radius-md border border-danger/30 bg-danger/5 px-3 py-2.5 text-sm text-danger">
+              {finishError}
+            </div>
+          )}
           <div className="flex gap-3">
             {step > 1 && (
               <button

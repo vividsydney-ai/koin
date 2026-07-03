@@ -59,10 +59,14 @@ export async function getTradeOnboardingStatus(userId: string): Promise<TradeOnb
 }
 
 export async function completeTradeOnboarding(userId: string): Promise<void> {
-  const { error } = await supabase
-    .from("user_settings")
-    .update({ trade_onboarding_completed: true })
-    .eq("user_id", userId);
+  const { error } = await supabase.from("user_settings").upsert(
+    {
+      user_id: userId,
+      trade_onboarding_completed: true,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "user_id" }
+  );
 
   if (error) {
     console.error("completeTradeOnboarding error:", error.message);
