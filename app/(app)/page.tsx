@@ -20,6 +20,12 @@ import {
   type LeaderboardEntry,
 } from "@/lib/home/client";
 import { ProgressCardModal, type ProgressCardData } from "@/components/ProgressCard";
+import {
+  getLessonRecommendations,
+  checkAdaptiveTriggers,
+  dismissRecommendation,
+  type LessonRecommendation,
+} from "@/lib/adaptive/client";
 
 export default function Home() {
   const { user, profile, loading: authLoading } = useAuth(true);
@@ -30,6 +36,7 @@ export default function Home() {
   const [continueLesson, setContinueLesson] = useState<ContinueLesson | null>(null);
   const [portfolio, setPortfolio] = useState<PortfolioSnapshot | null>(null);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [recommendations, setRecommendations] = useState<LessonRecommendation[]>([]);
   const [loading, setLoading] = useState(true);
   const [showProgressCard, setShowProgressCard] = useState(false);
 
@@ -47,6 +54,11 @@ export default function Home() {
         getPortfolioSnapshot(user.id),
         getLeaderboardSnippet(user.id),
       ]);
+
+      // Refresh adaptive recommendations in the background (inactivity / drawdown checks).
+      await checkAdaptiveTriggers();
+      const recommendationData = await getLessonRecommendations(user.id);
+
       if (!mounted) return;
       setStreak(streakData);
       setXp(xpData);
@@ -55,6 +67,7 @@ export default function Home() {
       setContinueLesson(lessonData);
       setPortfolio(portfolioData);
       setLeaderboard(leaderboardData);
+      setRecommendations(recommendationData);
       setLoading(false);
     };
     load();
@@ -92,6 +105,13 @@ export default function Home() {
       ) : (
         <div className="space-y-4">
           <StreakCard streak={streak} />
+          <RecommendationsCard
+            recommendations={recommendations}
+            onDismiss={async (id) => {
+              await dismissRecommendation(id);
+              setRecommendations((prev) => prev.filter((r) => r.id !== id));
+            }}
+          />
           <ContinueLessonCard lesson={continueLesson} />
           <XpLevelCard xp={xp} />
           <div className="grid grid-cols-2 gap-3">
@@ -291,6 +311,48 @@ function LeaderboardCard({ entries }: { entries: LeaderboardEntry[] }) {
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+function RecommendationsCard({
+  recommendations,
+  onDismiss,
+}: {
+  recommendations: LessonRecommendation[];
+  onDismiss: (id: string) => void;
+}) {
+  if (recommendations.length === 0) return null;
+
+  return (
+    <div className="space-y-3">
+      {recommendations.map((rec) => (
+        <div
+          key={rec.id}
+          className="relative rounded-radius-lg border border-primary/30 bg-primary/5 p-4 shadow-sm"
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">Recommended for you</p>
+              <p className="mt-1 font-semibold text-foreground">{rec.title}</p>
+              <p className="text-sm leading-relaxed text-muted-foreground">{rec.reason}</p>
+              <Link
+                href={`/learn/${rec.slug}`}
+                className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-primary"
+              >
+                Start lesson <ArrowRightIcon />
+              </Link>
+            </div>
+            <button
+              onClick={() => onDismiss(rec.id)}
+              className="shrink-0 rounded-radius-md p-2 text-muted-foreground hover:bg-primary/10 hover:text-foreground"
+              aria-label="Dismiss recommendation"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

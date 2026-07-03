@@ -5,6 +5,11 @@ import Link from "next/link";
 import { getAllLessons, getLessonProgress } from "@/lib/lessons/client";
 import { useAuth } from "@/lib/auth/use-auth";
 import type { Lesson } from "@/lib/lessons/client";
+import {
+  getLessonRecommendations,
+  dismissRecommendation,
+  type LessonRecommendation,
+} from "@/lib/adaptive/client";
 
 export default function LearnPage() {
   const { user } = useAuth(true);
@@ -12,19 +17,22 @@ export default function LearnPage() {
     Pick<Lesson, "id" | "slug" | "title" | "lessonNumber" | "difficulty" | "xpReward" | "estimatedMinutes" | "summary">[]
   >([]);
   const [progress, setProgress] = useState<Record<string, "locked" | "available" | "in_progress" | "completed"> | null>(null);
+  const [recommendations, setRecommendations] = useState<LessonRecommendation[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let mounted = true;
     const load = async () => {
       setLoading(true);
-      const [all, userProgress] = await Promise.all([
+      const [all, userProgress, recs] = await Promise.all([
         getAllLessons(),
         user ? getLessonProgress(user.id) : Promise.resolve(null),
+        user ? getLessonRecommendations(user.id) : Promise.resolve([]),
       ]);
       if (!mounted) return;
       setLessons(all);
       setProgress(userProgress);
+      setRecommendations(recs);
       setLoading(false);
     };
 
@@ -40,6 +48,41 @@ export default function LearnPage() {
         <h1 className="text-2xl font-bold tracking-tight text-foreground">Learn</h1>
         <p className="mt-1 text-sm text-muted-foreground">Bite-sized money lessons, one concept at a time.</p>
       </header>
+
+      {recommendations.length > 0 && !loading && (
+        <div className="mb-4 space-y-3">
+          {recommendations.map((rec) => (
+            <div
+              key={rec.id}
+              className="relative rounded-radius-lg border border-primary/30 bg-primary/5 p-4 shadow-sm"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">Recommended for you</p>
+                  <p className="mt-1 font-semibold text-foreground">{rec.title}</p>
+                  <p className="text-sm leading-relaxed text-muted-foreground">{rec.reason}</p>
+                  <Link
+                    href={`/learn/${rec.slug}`}
+                    className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-primary"
+                  >
+                    Start lesson <span aria-hidden>→</span>
+                  </Link>
+                </div>
+                <button
+                  onClick={async () => {
+                    await dismissRecommendation(rec.id);
+                    setRecommendations((prev) => prev.filter((r) => r.id !== rec.id));
+                  }}
+                  className="shrink-0 rounded-radius-md p-2 text-muted-foreground hover:bg-primary/10 hover:text-foreground"
+                  aria-label="Dismiss recommendation"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {loading ? (
         <div className="space-y-3">
