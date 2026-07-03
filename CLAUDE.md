@@ -27,10 +27,10 @@ After every task, run VERIFIER.md gates. Do not self-certify.
 If verification fails, halt and update progress.md with the failure reason.
 
 ### Git protocol
-- Branch: koin/<task-slug>-<date>
-- Commit every logical sub-step
-- PR description: link to task in TASKS.md, list schema changes, verify result
-- NEVER merge to main — draft PR only
+- Active integration branch: `web-mvp`. Commit and deploy directly from it.
+- Commit every logical sub-step with a clear message.
+- No branch-per-task or PR workflow for this MVP phase; `web-mvp` is the shipping branch.
+- Do not merge to `main` unless explicitly instructed.
 
 ### Hard constraints
 - No localStorage/sessionStorage (iframe crash)
@@ -51,6 +51,7 @@ If verification fails, halt and update progress.md with the failure reason.
 | SOURCES.md | 32 seed sources with URLs |
 | AGENTS.md | Role definitions, maker/checker split |
 | VERIFIER.md | Automated gates. Run after every task |
+| RECURRING.md | Periodic checks not tied to a task (source link rot, deps, Lighthouse) |
 | progress.md | Live state. Update after every session |
 
 ## Agent skills

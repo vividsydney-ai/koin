@@ -41,12 +41,13 @@
 - [x] Seed 011: content_variants (3–5 examples and 10–20 questions per launch lesson)
 - [x] Migration 016: content_variants expansion — 10 examples + 11 questions per launch lesson
 
-## PHASE 1b — Capacitor Mobile Shell (paused on web-mvp branch)
+## PHASE 1b — Capacitor Mobile Shell (PAUSED — native track)
+> Do not resume native iOS/Android work unless the human explicitly restarts it. `web-mvp` is the web-first shipping branch.
 - [x] Install Capacitor core + iOS + Android packages
 - [x] Configure capacitor.config.ts with app ID, name, webDir
 - [x] Add cap:sync, cap:open:ios, cap:open:android scripts
 - [x] Generate iOS and Android native projects
-- [ ] Test build on iOS simulator and Android emulator
+- [~] Test build on iOS simulator and Android emulator (paused — native app track on hold)
 - [x] Add native share sheet plugin stub
 - [x] Add push notification plugin architecture (stub delivery)
 

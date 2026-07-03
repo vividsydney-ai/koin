@@ -11,6 +11,16 @@ Web-first MVP on branch `web-mvp`. Phases 1–5 complete. Phase 6 in progress: a
 ## Important scope change
 Phase 3 was split into Phase 3A (Core Learning Loop) and Phase 3B (Paper Trading). TASKS.md and this file reflect the split.
 
+## Note for next agent (2026-07-03, doc-only session, no code changed)
+Added `RECURRING.md` at repo root — periodic checks not tied to a TASKS.md phase
+(source URL health, dependency audit, stale-queue review, content variant coverage,
+Lighthouse re-run). It's now listed in CLAUDE.md's file routing table; read it once
+if you're doing maintenance rather than a TASKS.md item. Two open items for the
+human, not resolved by the agent: the "UpdateGoal tool" blocker below looks stale,
+and some "Lessons for RULES.md" entries duplicate ADL-006. Full detail in
+`_sessions/session_20260703.md` (second entry). Next actual build task is still
+Phase 6 remainder, unchanged.
+
 ## Maker status
 [x] Migration 001 complete
 [x] Migrations 002–014 complete
@@ -86,7 +96,10 @@ Phase 3 was split into Phase 3A (Core Learning Loop) and Phase 3B (Paper Trading
 [x] Gate Phase 6 adaptive triggers — passed
 
 ## Blockers
-- `UpdateGoal` tool is not exposed in this agent environment. The system expects me to call it to mark goals active/complete/blocked, but it is missing from the available tool list. I report completion in text and continue work, but the goal state stays active/paused until the human closes it or the environment exposes the tool.
+None active.
+
+## Environment notes
+- `UpdateGoal` tool is not exposed in this agent environment. This is a known/stale limitation, not a blocker. Completion is tracked in `progress.md`, `TASKS.md`, and Linear instead.
 
 ## Lessons for RULES.md (agent proposes, human approves)
 - Remote Supabase Management API can execute seed SQL when CLI push times out.
