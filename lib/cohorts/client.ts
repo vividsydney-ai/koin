@@ -1,0 +1,53 @@
+import { supabase } from "@/lib/auth/client";
+
+export interface CohortMembership {
+  membershipId: string;
+  cohortId: string;
+  cohortName: string;
+  alreadyMember: boolean;
+}
+
+export async function joinCohortByCode(userId: string, code: string): Promise<CohortMembership | null> {
+  const { data, error } = await supabase.rpc("join_cohort_by_code", {
+    p_user_id: userId,
+    p_invite_code: code,
+  });
+
+  if (error || !data) {
+    console.error("joinCohortByCode error:", error?.message);
+    return null;
+  }
+
+  const raw = data as Record<string, unknown>;
+  return {
+    membershipId: String(raw.membership_id),
+    cohortId: String(raw.cohort_id),
+    cohortName: String(raw.cohort_name),
+    alreadyMember: Boolean(raw.already_member),
+  };
+}
+
+export interface Cohort {
+  id: string;
+  name: string;
+  joinedAt: string;
+}
+
+export async function getCohorts(userId: string): Promise<Cohort[]> {
+  const { data, error } = await supabase
+    .from("cohort_memberships")
+    .select("id, joined_at, cohort:cohorts(id, name)")
+    .eq("user_id", userId)
+    .order("joined_at", { ascending: false });
+
+  if (error) {
+    console.error("getCohorts error:", error.message);
+    return [];
+  }
+
+  return (data ?? []).map((row: any) => ({
+    id: row.cohort?.id ?? "",
+    name: row.cohort?.name ?? "Unknown",
+    joinedAt: row.joined_at,
+  }));
+}

@@ -1885,6 +1885,10 @@ export type Database = {
         Args: { p_scope: string; p_user_id: string }
         Returns: Json
       }
+      join_cohort_by_code: {
+        Args: { p_invite_code: string; p_user_id: string }
+        Returns: Json
+      }
       recompute_streak_status: { Args: { p_user_id: string }; Returns: Json }
       seed_next_market_data: {
         Args: { p_trade_date?: string }

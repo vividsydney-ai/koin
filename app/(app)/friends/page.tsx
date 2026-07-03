@@ -4,14 +4,18 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth/use-auth";
 import { createFriendInvite, acceptFriendInvite, getFriends, type FriendInvite, type Friend } from "@/lib/friends/client";
 import { getWeeklyLeaderboard, type WeeklyLeaderboard } from "@/lib/home/client";
+import { joinCohortByCode, getCohorts, type Cohort } from "@/lib/cohorts/client";
 
 export default function FriendsPage() {
   const { user, profile, loading: authLoading } = useAuth(true);
   const [invite, setInvite] = useState<FriendInvite | null>(null);
   const [friends, setFriends] = useState<Friend[]>([]);
+  const [cohorts, setCohorts] = useState<Cohort[]>([]);
   const [leaderboard, setLeaderboard] = useState<WeeklyLeaderboard | null>(null);
   const [codeInput, setCodeInput] = useState("");
+  const [cohortCodeInput, setCohortCodeInput] = useState("");
   const [message, setMessage] = useState<string | null>(null);
+  const [cohortMessage, setCohortMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -19,13 +23,15 @@ export default function FriendsPage() {
     const load = async () => {
       if (!user) return;
       setLoading(true);
-      const [friendsData, leaderboardData] = await Promise.all([
+      const [friendsData, leaderboardData, cohortsData] = await Promise.all([
         getFriends(user.id),
         getWeeklyLeaderboard(user.id, "friends"),
+        getCohorts(user.id),
       ]);
       if (!mounted) return;
       setFriends(friendsData);
       setLeaderboard(leaderboardData);
+      setCohorts(cohortsData);
       setLoading(false);
     };
     load();
@@ -57,6 +63,21 @@ export default function FriendsPage() {
       setFriends(friendsData);
     } else {
       setMessage("Invalid or expired invite code.");
+    }
+  };
+
+  const handleJoinCohort = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user || !cohortCodeInput.trim()) return;
+    setCohortMessage(null);
+    const result = await joinCohortByCode(user.id, cohortCodeInput.trim());
+    if (result) {
+      setCohortMessage(result.alreadyMember ? "You're already in this cohort." : `Joined ${result.cohortName}!`);
+      setCohortCodeInput("");
+      const cohortsData = await getCohorts(user.id);
+      setCohorts(cohortsData);
+    } else {
+      setCohortMessage("Cohort not found. Check the code and try again.");
     }
   };
 
@@ -121,6 +142,14 @@ export default function FriendsPage() {
               <LeaderboardSection title="Koin Points" entries={leaderboard.koinPoints} valueKey="koinPointsThisWeek" />
             </section>
           )}
+
+          <CohortSection
+            cohorts={cohorts}
+            codeInput={cohortCodeInput}
+            onCodeChange={setCohortCodeInput}
+            onJoin={handleJoinCohort}
+            message={cohortMessage}
+          />
         </div>
       )}
     </main>
@@ -221,6 +250,61 @@ function InviteSection({
         )}
       </form>
     </div>
+  );
+}
+
+function CohortSection({
+  cohorts,
+  codeInput,
+  onCodeChange,
+  onJoin,
+  message,
+}: {
+  cohorts: Cohort[];
+  codeInput: string;
+  onCodeChange: (value: string) => void;
+  onJoin: (e: React.FormEvent) => void;
+  message: string | null;
+}) {
+  return (
+    <section>
+      <h2 className="mb-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">Cohorts</h2>
+      <div className="rounded-radius-lg border border-muted/60 bg-surface p-4 shadow-sm">
+        <p className="text-xs text-muted-foreground">Join a class or group with an invite code.</p>
+        <form onSubmit={onJoin} className="mt-3 flex gap-2">
+          <input
+            type="text"
+            value={codeInput}
+            onChange={(e) => onCodeChange(e.target.value.toUpperCase())}
+            placeholder="Cohort code"
+            className="flex-1 rounded-radius-md border border-muted bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
+          />
+          <button
+            type="submit"
+            disabled={!codeInput.trim()}
+            className="rounded-radius-md bg-foreground px-4 py-2 text-sm font-semibold text-background disabled:opacity-50 active:opacity-90"
+          >
+            Join
+          </button>
+        </form>
+        {message && (
+          <p className={`mt-2 text-xs ${message.includes("Joined") || message.includes("already") ? "text-success" : "text-danger"}`}>
+            {message}
+          </p>
+        )}
+
+        {cohorts.length > 0 && (
+          <div className="mt-4 space-y-2">
+            {cohorts.map((cohort) => (
+              <div key={cohort.id} className="rounded-radius-md bg-muted px-3 py-2">
+                <p className="text-sm font-semibold text-foreground">{cohort.name}</p>
+                <p className="text-[10px] text-muted-foreground">Joined {new Date(cohort.joinedAt).toLocaleDateString("id-ID")}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
   );
 }
 
