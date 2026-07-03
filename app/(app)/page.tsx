@@ -19,6 +19,7 @@ import {
   type PortfolioSnapshot,
   type LeaderboardEntry,
 } from "@/lib/home/client";
+import { ProgressCardModal, type ProgressCardData } from "@/components/ProgressCard";
 
 export default function Home() {
   const { user, profile, loading: authLoading } = useAuth(true);
@@ -30,6 +31,7 @@ export default function Home() {
   const [portfolio, setPortfolio] = useState<PortfolioSnapshot | null>(null);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showProgressCard, setShowProgressCard] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -65,11 +67,20 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-background p-5 pb-28">
-      <header className="mb-6">
-        <p className="text-sm text-muted-foreground">Good to see you,</p>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">
-          {profile?.display_name ?? "Learner"}
-        </h1>
+      <header className="mb-6 flex items-start justify-between">
+        <div>
+          <p className="text-sm text-muted-foreground">Good to see you,</p>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            {profile?.display_name ?? "Learner"}
+          </h1>
+        </div>
+        <button
+          onClick={() => setShowProgressCard(true)}
+          className="rounded-radius-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground active:opacity-90"
+          aria-label="Share progress"
+        >
+          Share
+        </button>
       </header>
 
       {isLoading ? (
@@ -90,6 +101,20 @@ export default function Home() {
           <PortfolioCard portfolio={portfolio} />
           <LeaderboardCard entries={leaderboard} />
         </div>
+      )}
+
+      {showProgressCard && (
+        <ProgressCardModal
+          data={{
+            displayName: profile?.display_name ?? "Learner",
+            levelName: xp?.currentLevel?.name ?? "Newbie",
+            totalXp: xp?.totalXp ?? 0,
+            streakDays: streak?.currentStreakDays ?? 0,
+            koinPoints: koinPoints?.currentBalance ?? 0,
+            portfolioReturnPct: portfolio?.totalReturnPct ?? 0,
+          }}
+          onClose={() => setShowProgressCard(false)}
+        />
       )}
     </main>
   );
