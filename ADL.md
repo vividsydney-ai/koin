@@ -64,6 +64,22 @@ Use this file to record significant technical and product decisions. Each entry 
 **Consequences:** Route guards are implemented in client components via `useAuth`. OAuth callbacks are handled by a client-side page. Session tokens are stored in Capacitor Preferences on native and in cookies on web.
 **Reversible?** Partial — if we later add a server-rendered web deployment, we can add a parallel SSR auth path without removing the client-side one.
 
+### ADL-008: Split Phase 3 into 3A (Core Learning Loop) and 3B (Paper Trading)
+**Date:** 2026-07-02
+**Decision:** Treat the learning loop and paper trading as two separate phases in planning, tracking, and gating.
+**Alternatives considered:** Keep one combined Phase 3; split only after both were done
+**Rationale:** The two tracks have different success criteria (content/variant quality vs. trade execution/risk onboarding) and were built in distinct sprints. Separating them makes it clearer which gates apply and avoids a single overloaded phase definition.
+**Consequences:** TASKS.md and Linear now list Phase 3A and Phase 3B independently. Existing Phase 3 issues were renamed/split into KO-8 (Phase 3A) and KO-34 (Phase 3B).
+**Reversible?** Yes — can be collapsed back into one phase label if reporting overhead is not worth it.
+
+### ADL-009: Content variant expansion to 10 examples + 11 questions per launch lesson
+**Date:** 2026-07-06
+**Decision:** Increase the `content_variants` pool so every launch lesson has at least 10 example variants and 11 question variants spanning multiple quiz types.
+**Alternatives considered:** Keep 3–5 examples / 10–20 questions; generate variants with AI on demand
+**Rationale:** A larger, author-reviewed pool gives each new user/session a meaningfully different lesson, reducing answer copying and keeping content fresh. Static, pre-verified variants preserve source credibility; AI-on-the-fly risks hallucinated URLs and unsourced claims.
+**Consequences:** Migration 016 adds 50 examples and 55 questions. The existing variant-selection engine and cooldown logic automatically benefit from the larger pool. Authors must maintain the pool as lessons expand.
+**Reversible?** Partial — variants can be removed, but the migration has already been applied to production.
+
 ### ADL-007: Pivot to web-first delivery, pause native apps
 **Date:** 2026-06-30
 **Decision:** Ship the MVP as a browser-based web app (PWA) and pause the Capacitor iOS/Android native track.

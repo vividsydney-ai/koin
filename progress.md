@@ -3,7 +3,7 @@
 # v2: MVP reshaped around paper trading. Original v1 loop files archived in /_archived.
 
 ## Last completed task
-Phase 5 — Social + Graduation: friend invites, friends list, weekly leaderboards (XP and Koin Points), graduation detection, certificate screen, brokerage recommendations, shareable progress card, cohort join-by-code.
+Content variant expansion — Migration 016 added 50 localized examples and 55 quiz items across the 5 launch lessons (10 examples + 11 questions per lesson). Variants span multiple question types (multiple_choice, true_false, fill_blank, word_bank, ordering) and use real Tier 1 source URLs verified by the existing URL test. Deployed to https://koin-web-mvp.vercel.app/.
 
 ## Current session scope
 Web-first MVP on branch `web-mvp`. Phases 1–5 complete. Phase 6 (Adaptive Lessons + Library + Polish) is next. Native iOS/Android track remains paused.
@@ -29,6 +29,7 @@ Phase 3 was split into Phase 3A (Core Learning Loop) and Phase 3B (Paper Trading
 [x] Migration 029: cohort join-by-code RPC
 [x] Seed data complete
 [x] Content variants seeded (40 variants)
+[x] Content variants expanded via Migration 016 (50 examples + 55 questions; 10 examples + 11 questions per launch lesson)
 [x] Phase 1b Capacitor shell complete (preserved on `web-mvp`)
 [x] KO-24 Auth foundation
 [x] KO-25 Onboarding flow
@@ -58,8 +59,9 @@ Phase 3 was split into Phase 3A (Core Learning Loop) and Phase 3B (Paper Trading
 
 ## Checker status
 [x] All reference tables verified in remote Supabase
-[x] content_variants count: 40
+[x] content_variants count: 95 (40 original + 55 expansion)
 [x] Test suite: 85 passing, 1 skipped
+[x] Source URL verification test: all source URLs return 2xx/3xx (no dead links)
 [x] npm run build passes
 [x] `web-mvp` branch pushed to origin
 [x] Migrations 016–029 applied to remote Supabase
@@ -77,6 +79,7 @@ Phase 3 was split into Phase 3A (Core Learning Loop) and Phase 3B (Paper Trading
 [x] Gate Phase 3B — passed
 [x] Gate Phase 4 — passed
 [x] Gate Phase 5 — passed
+[x] Gate content variant expansion — passed
 
 ## Blockers
 - `UpdateGoal` tool is not exposed in this agent environment. The system expects me to call it to mark goals active/complete/blocked, but it is missing from the available tool list. I report completion in text and continue work, but the goal state stays active/paused until the human closes it or the environment exposes the tool.

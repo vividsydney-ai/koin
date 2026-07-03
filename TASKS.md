@@ -39,6 +39,7 @@
 - [x] Seed 009: brokerage_recommendations (Bibit, Ajaib, Stockbit, IPOT, Bareksa)
 - [x] Seed 010: dev test data (2 test users, sample progress, streaks, portfolios, trades)
 - [x] Seed 011: content_variants (3–5 examples and 10–20 questions per launch lesson)
+- [x] Migration 016: content_variants expansion — 10 examples + 11 questions per launch lesson
 
 ## PHASE 1b — Capacitor Mobile Shell (paused on web-mvp branch)
 - [x] Install Capacitor core + iOS + Android packages
