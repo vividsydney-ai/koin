@@ -3,10 +3,10 @@
 # v2: MVP reshaped around paper trading. Original v1 loop files archived in /_archived.
 
 ## Last completed task
-Phase 6 adaptive lesson triggers — Migrations 017 and 018 added 4 behavioral lessons (loss-aversion-101, diversification-101, confidence-101, volatility-101), their source links, reviews, content variants, trigger rules, and the evaluation engine. A `check_adaptive_triggers` RPC and an after-insert trigger on `trades` generate `user_lesson_recommendations` for panic sells, concentrated holdings, inactivity, and portfolio drawdowns. Recommendation cards now appear on Home and Learn tabs. Tests: 99 passed, 1 skipped. Deployed to https://koin-web-mvp.vercel.app/.
+Adaptive lesson content variant expansion — Migration 019 brought all 4 behavioral adaptive lessons up to 10 example variants and 11 question variants each (loss-aversion-101, diversification-101, confidence-101, volatility-101). Combined with Migrations 016 and 017, the full launch + adaptive curriculum now has 10 examples and 11+ questions per topic, all stored in `content_variants` and sourced from real Tier 1 URLs. Tests: 106 passed, 1 skipped. Deployed to https://koin-web-mvp.vercel.app/.
 
 ## Current session scope
-Web-first MVP on branch `web-mvp`. Phases 1–5 complete. Phase 6 in progress: adaptive triggers done, remaining Phase 6 items are Library tab, lesson expansion to 15, recommended resources, empty states, analytics events, notification queue, and final QA. Native iOS/Android track remains paused.
+Web-first MVP on branch `web-mvp`. Phases 1–5 complete. Phase 6 in progress: adaptive triggers + content done, remaining Phase 6 items are Library tab, lesson expansion from 9 to 15, recommended resources, empty states, analytics events, notification queue, and final QA. Native iOS/Android track remains paused.
 
 ## Important scope change
 Phase 3 was split into Phase 3A (Core Learning Loop) and Phase 3B (Paper Trading). TASKS.md and this file reflect the split.
@@ -27,6 +27,7 @@ Phase 3 was split into Phase 3A (Core Learning Loop) and Phase 3B (Paper Trading
 [x] Migration 027: weekly leaderboard RPC
 [x] Migration 028: graduation check RPC
 [x] Migration 029: cohort join-by-code RPC
+[x] Migration 019: adaptive content variant expansion (10 examples + 11 questions per behavioral lesson)
 [x] Seed data complete
 [x] Content variants seeded (40 variants)
 [x] Content variants expanded via Migration 016 (50 examples + 55 questions; 10 examples + 11 questions per launch lesson)
@@ -60,8 +61,8 @@ Phase 3 was split into Phase 3A (Core Learning Loop) and Phase 3B (Paper Trading
 
 ## Checker status
 [x] All reference tables verified in remote Supabase
-[x] content_variants count: 131 (40 original + 55 expansion + 36 behavioral adaptive variants)
-[x] Test suite: 99 passing, 1 skipped
+[x] content_variants count: 183 (40 original + 55 launch expansion + 88 adaptive expansion)
+[x] Test suite: 106 passing, 1 skipped
 [x] Source URL verification test: all source URLs return 2xx/3xx (no dead links)
 [x] Adaptive trigger engine migrated and deployed
 [x] npm run build passes
