@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { completeTradeOnboarding, saveRiskProfile, type RiskProfile } from "@/lib/trading/onboarding";
 
 const TOTAL_STEPS = 8;
@@ -42,9 +43,9 @@ export default function TradeOnboarding({ userId, onComplete, onClose }: TradeOn
     return "aggressive";
   };
 
-  // Normalize raw score (4–16) to schema range 1–10.
+  // Normalize raw score (0–16) to schema range 1–10 and clamp for safety.
   const normalizeRiskScore = (score: number): number => {
-    return Math.round(((score - 4) / 12) * 9 + 1);
+    return Math.min(10, Math.max(1, Math.round(((score - 4) / 12) * 9 + 1)));
   };
 
   const handleFinish = async () => {
@@ -81,7 +82,7 @@ export default function TradeOnboarding({ userId, onComplete, onClose }: TradeOn
               <p className="text-xs text-muted-foreground">
                 {step} / {TOTAL_STEPS}
               </p>
-              {onClose && (
+              {onClose ? (
                 <button
                   onClick={onClose}
                   className="text-xs font-semibold text-muted-foreground hover:text-foreground"
@@ -89,6 +90,13 @@ export default function TradeOnboarding({ userId, onComplete, onClose }: TradeOn
                 >
                   Close
                 </button>
+              ) : (
+                <Link
+                  href="/"
+                  className="text-xs font-semibold text-muted-foreground hover:text-foreground"
+                >
+                  Exit
+                </Link>
               )}
             </div>
           </div>
