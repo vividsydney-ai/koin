@@ -3,23 +3,20 @@
 # v2: MVP reshaped around paper trading. Original v1 loop files archived in /_archived.
 
 ## Last completed task
-Adaptive lesson content variant expansion — Migration 019 brought all 4 behavioral adaptive lessons up to 10 example variants and 11 question variants each (loss-aversion-101, diversification-101, confidence-101, volatility-101). Combined with Migrations 016 and 017, the full launch + adaptive curriculum now has 10 examples and 11+ questions per topic, all stored in `content_variants` and sourced from real Tier 1 URLs. Tests: 106 passed, 1 skipped. Deployed to https://koin-web-mvp.vercel.app/.
+Bug tracker sync + session handoff — Google Sheet bug tracker now auto-creates Linear issues in the "Koin Bugs" project with the `Bug` label and writes Linear IDs back to column O. Existing 5 bugs imported as KO-37..KO-41. Created `HANDOFF.md` and updated `CLAUDE.md` routing so the next agent can pick up from either bug-fixing or Phase 6 continuation.
 
 ## Current session scope
-Web-first MVP on branch `web-mvp`. Phases 1–5 complete. Phase 6 in progress: adaptive triggers + content done, remaining Phase 6 items are Library tab, lesson expansion from 9 to 15, recommended resources, empty states, analytics events, notification queue, and final QA. Native iOS/Android track remains paused.
+Web-first MVP on branch `web-mvp`. Phases 1–5 complete. Phase 6 adaptive triggers + content done. Next session decision:
+- Fix open bugs (KO-37..KO-41), or
+- Continue Phase 6: Library tab, lesson expansion 9→15, recommended resources, empty states, analytics events, notification queue, final QA. Native iOS/Android track remains paused.
 
 ## Important scope change
 Phase 3 was split into Phase 3A (Core Learning Loop) and Phase 3B (Paper Trading). TASKS.md and this file reflect the split.
 
-## Note for next agent (2026-07-03, doc-only session, no code changed)
-Added `RECURRING.md` at repo root — periodic checks not tied to a TASKS.md phase
-(source URL health, dependency audit, stale-queue review, content variant coverage,
-Lighthouse re-run). It's now listed in CLAUDE.md's file routing table; read it once
-if you're doing maintenance rather than a TASKS.md item. Two open items for the
-human, not resolved by the agent: the "UpdateGoal tool" blocker below looks stale,
-and some "Lessons for RULES.md" entries duplicate ADL-006. Full detail in
-`_sessions/session_20260703.md` (second entry). Next actual build task is still
-Phase 6 remainder, unchanged.
+## Note for next agent
+Read `HANDOFF.md` first — it contains the latest session state and the two possible
+next streams (fix open bugs KO-37..KO-41 vs. continue Phase 6). Also read
+`RECURRING.md` if you're doing maintenance rather than a TASKS.md item.
 
 ## Maker status
 [x] Migration 001 complete

@@ -26,7 +26,7 @@ Paste these IDs into the `Linear Issue ID` column in the sheet so future sync ru
 2. Go to **Extensions → Apps Script**.
 3. Replace the default `Code.gs` contents with the script below.
 4. Open **Project Settings** (gear icon) → **Script Properties** → **Add script property**:
-   - `LINEAR_API_KEY` — your Linear API key
+   - `LINEAR_API_KEY` — your Linear API key (paste into Script Properties, not the source code)
    - `LINEAR_TEAM_ID` — `a122d5d1-0b49-45b1-ac13-50e0939054cf`
    - `LINEAR_PROJECT_ID` — `97d59b53-c6d1-41aa-9663-ccd7e704e974`
    - `LINEAR_BUG_LABEL_ID` — `f61583a9-2410-4a92-961e-a70ffbc4c3b2`
