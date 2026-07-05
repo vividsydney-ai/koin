@@ -52,6 +52,7 @@ If verification fails, halt and update progress.md with the failure reason.
 | AGENTS.md | Role definitions, maker/checker split |
 | VERIFIER.md | Automated gates. Run after every task |
 | RECURRING.md | Periodic checks not tied to a task (source link rot, deps, Lighthouse) |
+| docs/BUG_TRACKER.md | Google Sheets ↔ Linear bug sync setup |
 | progress.md | Live state. Update after every session |
 
 ## Agent skills

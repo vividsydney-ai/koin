@@ -38,6 +38,7 @@ Phase 6 remainder, unchanged.
 [x] Migration 028: graduation check RPC
 [x] Migration 029: cohort join-by-code RPC
 [x] Migration 019: adaptive content variant expansion (10 examples + 11 questions per behavioral lesson)
+[x] Bug tracker: Linear project "Koin Bugs" + Bug label + Google Sheets Apps Script sync documented in docs/BUG_TRACKER.md
 [x] Seed data complete
 [x] Content variants seeded (40 variants)
 [x] Content variants expanded via Migration 016 (50 examples + 55 questions; 10 examples + 11 questions per launch lesson)
