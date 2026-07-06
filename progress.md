@@ -26,14 +26,10 @@
 - Open bugs (KO-37..KO-41) remain intentionally deferred on this branch.
 
 ## Last completed task
-Fixed the paper-trading onboarding RLS bug. Root cause: `user_settings` only had SELECT/UPDATE RLS policies, but `completeTradeOnboarding` uses `upsert`, which falls back to INSERT when the trigger-created row is missing. Added Migration 020 (`20260706000020_user_settings_insert_rls.sql`) with an INSERT policy restricted to `auth.uid() = user_id`. Pushed migration to remote Supabase.
-
-Gate output:
-- `npx tsc --noEmit`: clean
-- `npx vitest run`: 121 passed / 1 skipped
-- Diff scan: clean
-- Supabase remote push: Migration 020 applied
-- Vercel production deploy: Ready
+Linear sync for shipped fixes and the paper-trading RLS bug.
+- Marked KO-37, KO-38, KO-39, KO-40, KO-41 as Done.
+- Created KO-42 for the `user_settings` INSERT RLS bug and marked it Done.
+- All six issues now reflect the state of `web-koinaku` and the production deploy.
 
 ## Blockers / external follow-ups
 - Confirmation email deliverability is controlled by Supabase Auth, not app code. Ensure:
@@ -119,6 +115,7 @@ next streams (fix open bugs KO-37..KO-41 vs. continue Phase 6). Also read
 [x] KO-41 gate: `npx tsc --noEmit` clean; `npx vitest run` 114 passed / 1 skipped; diff scan clean
 [x] Phase 6 Library tab gate: `npx tsc --noEmit` clean; `npx vitest run` 115 passed / 1 skipped; diff scan clean
 [x] Phase 6 Empty states gate: `npx tsc --noEmit` clean; `npx vitest run` 118 passed / 1 skipped; diff scan clean
+[x] Linear sync: KO-37..KO-41 and KO-42 moved to Done
 
 ## Gate result
 [x] Gate KO-26 — passed
