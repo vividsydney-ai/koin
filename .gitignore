@@ -60,3 +60,6 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 .gstack/
+
+# Local QA screenshots
+tmp-screenshots/
