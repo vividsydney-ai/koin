@@ -26,17 +26,13 @@
 - Open bugs (KO-37..KO-41) remain intentionally deferred on this branch.
 
 ## Last completed task
-Updated auth pages on `web-koinaku` and fixed static-export routing on Vercel. Removed Google sign-in/sign-up buttons from `app/login/page.tsx` and `app/signup/page.tsx`; converted auth copy to English; improved email-verification UX. Added `cleanUrls: true` to `vercel.json` so `/login`, `/signup`, and other static routes serve correctly. Live at `https://koin-web-koinaku.vercel.app`.
+Fixed the paper-trading onboarding RLS bug. Root cause: `user_settings` only had SELECT/UPDATE RLS policies, but `completeTradeOnboarding` uses `upsert`, which falls back to INSERT when the trigger-created row is missing. Added Migration 020 (`20260706000020_user_settings_insert_rls.sql`) with an INSERT policy restricted to `auth.uid() = user_id`. Pushed migration to remote Supabase.
 
 Gate output:
 - `npx tsc --noEmit`: clean
-- `npx vitest run`: 118 passed / 1 skipped
+- `npx vitest run`: 121 passed / 1 skipped
 - Diff scan: clean
-
-Gate output:
-- `npx tsc --noEmit`: clean
-- `npx vitest run`: 118 passed / 1 skipped
-- Diff scan: clean
+- Supabase remote push: Migration 020 applied
 - Vercel production deploy: Ready
 
 ## Blockers / external follow-ups
