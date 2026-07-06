@@ -2,6 +2,29 @@
 # Loop reads and writes this. Human can also read to understand where we are.
 # v2: MVP reshaped around paper trading. Original v1 loop files archived in /_archived.
 
+## 2026-07-06 — Koinaku rebrand branch created
+
+- Created `web-koinaku` branch from `web-mvp`.
+- Applied Koinaku v2 design system (`koinaku-site-v2/design-system.html`):
+  - Rupiah-inspired color tokens: primary red `#c41f26`, secondary blue `#0a6f90`, etc.
+  - Fonts: Cabinet Grotesk (display) + Satoshi (body) via Fontshare.
+  - Updated `app/globals.css`, `lib/design-tokens.ts`, `app/layout.tsx`.
+- Rebuilt onboarding flow (`app/onboarding/page.tsx`) as a 5-step Koinaku-branded experience:
+  1. Welcome
+  2. Profile (name + age range chips)
+  3. Financial goal selector
+  4. Notification toggle
+  5. Ready summary
+- Styled login and signup pages with Koinaku tokens and Indonesian copy.
+- Localized bottom navigation labels to Indonesian (Beranda, Belajar, Trading, Teman, Pustaka, Profil).
+- Updated shell test to match new Indonesian labels.
+- Verification:
+  - `npx tsc --noEmit` ✅
+  - `npm run test` ✅ 106 passed, 1 skipped
+  - `npm run build` ✅ static export succeeds
+  - Browse screenshots of login/signup pages at 375px ✅
+- Open bugs (KO-37..KO-41) remain intentionally deferred on this branch.
+
 ## Last completed task
 Bug tracker sync + session handoff — Google Sheet bug tracker now auto-creates Linear issues in the "Koin Bugs" project with the `Bug` label and writes Linear IDs back to column O. Existing 5 bugs imported as KO-37..KO-41. Created `HANDOFF.md` and updated `CLAUDE.md` routing so the next agent can pick up from either bug-fixing or Phase 6 continuation.
 
