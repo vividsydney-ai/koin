@@ -80,16 +80,16 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-background p-5 pb-28">
-      <header className="mb-6 flex items-start justify-between">
-        <div>
+      <header className="mb-6 flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
           <p className="text-sm text-muted-foreground">Good to see you,</p>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          <h1 className="break-words text-xl font-bold leading-tight tracking-tight text-foreground text-balance sm:text-2xl">
             {profile?.display_name ?? "Learner"}
           </h1>
         </div>
         <button
           onClick={() => setShowProgressCard(true)}
-          className="rounded-radius-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground active:opacity-90"
+          className="shrink-0 rounded-radius-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground active:opacity-90"
           aria-label="Share progress"
         >
           Share

@@ -3,7 +3,7 @@
 # v2: MVP reshaped around paper trading. Original v1 loop files archived in /_archived.
 
 ## Last completed task
-KO-37 — Sign-up confirmation email fix on `web-mvp`. Added `emailRedirectTo` to `signUpWithEmail`, rebuilt `app/auth/callback/page.tsx` to handle both OAuth PKCE and email-confirmation tokens, updated `app/signup/page.tsx` to show a "Check your email" state when confirmation is required, and updated `app/login/page.tsx` to detect unconfirmed users and offer a resend button. Added `resendSignupEmail` helper and updated auth client tests.
+KO-38 + KO-39 — Mobile hero overlap and bottom-nav active highlight on `web-mvp`. Fixed the Home header in `app/(app)/page.tsx` so long display names wrap cleanly on 375 px/320 px viewports (text-balance, break-words, tighter leading, responsive sizing). Fixed `app/(app)/layout.tsx` so the Home tab is only active on the exact root path and nested routes correctly highlight their own tab; added `font-semibold` to the active state and preserved `aria-current="page"`. Added shell tests for root-path and nested-path active states.
 
 ## Current session scope
 Web-first MVP on branch `web-mvp`. Phases 1–5 complete. Phase 6 adaptive triggers + content done. Next session decision:
@@ -78,6 +78,7 @@ next streams (fix open bugs KO-37..KO-41 vs. continue Phase 6). Also read
 [x] Migrations 016–029 applied to remote Supabase
 [x] Vercel deployment smoke check: 200 OK
 [x] KO-37 gate: `npx tsc --noEmit` clean; `npx vitest run` 107 passed / 1 skipped; diff scan clean (no localStorage/sessionStorage)
+[x] KO-38 + KO-39 gate: `npx tsc --noEmit` clean; `npx vitest run` 109 passed / 1 skipped; diff scan clean
 
 ## Gate result
 [x] Gate KO-26 — passed
