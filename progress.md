@@ -26,12 +26,13 @@
 - Open bugs (KO-37..KO-41) remain intentionally deferred on this branch.
 
 ## Last completed task
-Unblocked the `web-mvp` → `web-koinaku` merge by switching nav labels to English across `app/(app)/layout.tsx` and `tests/app/shell.test.tsx`. The merged test file had contradictory Indonesian/English expectations; human directed "Do everything in English for now", so labels and tests were aligned to English. Post-merge gates now pass.
+Created a new Vercel project `koin-web-koinaku`, linked the repo, migrated environment variables from `koin-web-mvp`, and deployed `web-koinaku`. The first deploy failed because `middleware.ts` is incompatible with `output: "export"` (Edge Function referenced unsupported modules); removed `middleware.ts` since static export disables middleware anyway. Deploy succeeded and is live at `https://koin-web-koinaku.vercel.app`.
 
 Gate output:
 - `npx tsc --noEmit`: clean
 - `npx vitest run`: 118 passed / 1 skipped
 - Diff scan: clean
+- Vercel production deploy: Ready
 
 ## Current session scope
 Web-first MVP on branch `web-mvp`. Phases 1–5 complete. Phase 6 adaptive triggers + content done. Next session decision:

@@ -63,3 +63,4 @@ pnpm-debug.log*
 
 # Local QA screenshots
 tmp-screenshots/
+.env*
