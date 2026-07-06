@@ -23,6 +23,11 @@ vi.mock("@/lib/auth/client", () => ({
       }
       if (table === "user_settings") {
         return {
+          select: mocks.select.mockImplementation(() => ({
+            eq: mocks.eq.mockImplementation(() => ({
+              single: mocks.single,
+            })),
+          })),
           update: vi.fn().mockImplementation(() => ({
             eq: mocks.eq,
           })),
@@ -33,7 +38,7 @@ vi.mock("@/lib/auth/client", () => ({
   },
 }));
 
-import { getProfile, completeOnboarding } from "@/lib/profile/client";
+import { getProfile, getUserSettings, updateProfile, completeOnboarding } from "@/lib/profile/client";
 
 describe("profile client", () => {
   beforeEach(() => {
@@ -58,6 +63,26 @@ describe("profile client", () => {
 
     const profile = await getProfile("user-1");
     expect(profile).toBeNull();
+  });
+
+  it("getUserSettings returns settings data", async () => {
+    mocks.single.mockResolvedValueOnce({
+      data: { user_id: "user-1", notifications_enabled: true },
+      error: null,
+    });
+
+    const settings = await getUserSettings("user-1");
+    expect(settings).toEqual({ user_id: "user-1", notifications_enabled: true });
+  });
+
+  it("updateProfile updates profile and settings", async () => {
+    const result = await updateProfile({
+      userId: "user-1",
+      displayName: "Budi Updated",
+      notificationsEnabled: false,
+    });
+
+    expect(result.error).toBeUndefined();
   });
 
   it("completeOnboarding updates profile and settings", async () => {

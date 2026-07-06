@@ -114,20 +114,20 @@
   - Portfolio drawdown → volatility / emotional control lesson
 - [x] User lesson recommendations table and UI
 - [ ] Expand from 5 to 15 lessons
-- [ ] Library tab: browse sources by topic/tier/type/language
+- [x] Library tab: browse sources by topic/tier/type/language
 - [ ] Recommended resources: books, videos per lesson
-- [ ] All empty states designed (no friends, no lessons started, no holdings, streak lost, graduated, all done)
+- [x] All empty states designed (no friends, no lessons started, no holdings, streak lost, graduated, all done)
 - [ ] Analytics events: instrument all 16 events from spec plus trade and graduation events
 - [ ] Notification queue: stub delivery, architecture ready
 - [ ] Final QA: 375px mobile, 1280px desktop, dark mode, keyboard nav, WCAG AA
 
 ## Open bugs from bug tracker (next-session decision)
 > See `HANDOFF.md` and `docs/BUG_TRACKER.md` for full context. These are synced from the Google Sheet and live in Linear project "Koin Bugs".
-- [ ] KO-37 P0 — Sign-up confirmation email is not sent after registration
-- [ ] KO-38 P1 — Home page hero text overlaps on iPhone SE screen
-- [ ] KO-39 P1 — Bottom navigation does not highlight active page on mobile
-- [ ] KO-40 P2 — Paper trading page takes 4+ seconds to load on 3G connection
-- [ ] KO-41 P2 — Profile page is missing 'Edit Profile' button
+- [x] KO-37 P0 — Sign-up confirmation email is not sent after registration
+- [x] KO-38 P1 — Home page hero text overlaps on iPhone SE screen
+- [x] KO-39 P1 — Bottom navigation does not highlight active page on mobile
+- [x] KO-40 P2 — Paper trading page takes 4+ seconds to load on 3G connection
+- [x] KO-41 P2 — Profile page is missing 'Edit Profile' button
 
 ## PHASE 7 — Handoff
 - [ ] README with local setup steps

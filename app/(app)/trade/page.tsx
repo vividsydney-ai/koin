@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import dynamic from "next/dynamic";
 import { useAuth } from "@/lib/auth/use-auth";
 import {
   getPortfolio,
@@ -15,7 +16,9 @@ import {
   type MarketData,
 } from "@/lib/trading/client";
 import { getTradeOnboardingStatus, type TradeOnboardingStatus } from "@/lib/trading/onboarding";
-import TradeOnboarding from "./TradeOnboarding";
+import { EmptyState } from "@/components/EmptyState";
+
+const TradeOnboarding = dynamic(() => import("./TradeOnboarding"));
 
 const SHARES_PER_LOT = 100;
 
@@ -132,10 +135,11 @@ export default function TradePage() {
       </header>
 
       {loading ? (
-        <div className="space-y-3">
-          <div className="h-32 animate-pulse rounded-radius-lg bg-muted" />
-          <div className="h-48 animate-pulse rounded-radius-lg bg-muted" />
-          <div className="h-48 animate-pulse rounded-radius-lg bg-muted" />
+        <div className="space-y-5">
+          <PortfolioSummarySkeleton />
+          <OrderCardSkeleton />
+          <HoldingsCardSkeleton />
+          <TradesCardSkeleton />
         </div>
       ) : !onboardingStatus?.requiredLessonsCompleted ? (
         <LockedState
@@ -428,14 +432,11 @@ function HoldingsCard({
 }) {
   if (holdings.length === 0) {
     return (
-      <div className="rounded-radius-lg border border-dashed border-muted bg-surface p-4">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-          Holdings
-        </p>
-        <p className="mt-2 text-sm text-muted-foreground">
-          You don't own any stocks yet. Place your first buy order above.
-        </p>
-      </div>
+      <EmptyState
+        icon="📊"
+        title="No holdings yet"
+        description="You don't own any stocks. Place your first buy order above to start building your paper portfolio."
+      />
     );
   }
 
@@ -487,14 +488,11 @@ function HoldingsCard({
 function TradesCard({ trades }: { trades: Trade[] }) {
   if (trades.length === 0) {
     return (
-      <div className="rounded-radius-lg border border-dashed border-muted bg-surface p-4">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-          Recent trades
-        </p>
-        <p className="mt-2 text-sm text-muted-foreground">
-          No trades yet. Your history will appear here.
-        </p>
-      </div>
+      <EmptyState
+        icon="📝"
+        title="No trades yet"
+        description="Your buy and sell history will appear here once you make your first paper trade."
+      />
     );
   }
 
@@ -532,6 +530,97 @@ function TradesCard({ trades }: { trades: Trade[] }) {
             </p>
           </div>
         ))}
+      </div>
+    </div>
+  );
+}
+
+function PortfolioSummarySkeleton() {
+  return (
+    <div className="rounded-radius-lg border border-muted/60 bg-surface p-4 shadow-sm">
+      <div className="flex items-start justify-between">
+        <div className="w-full">
+          <div className="h-3 w-24 animate-pulse rounded bg-muted" />
+          <div className="mt-2 h-8 w-1/2 animate-pulse rounded bg-muted" />
+          <div className="mt-1 h-3 w-16 animate-pulse rounded bg-muted" />
+        </div>
+        <div className="text-right">
+          <div className="h-3 w-12 animate-pulse rounded bg-muted" />
+          <div className="mt-1 h-5 w-24 animate-pulse rounded bg-muted" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function OrderCardSkeleton() {
+  return (
+    <div className="rounded-radius-lg border border-muted/60 bg-surface p-4 shadow-sm">
+      <div className="h-3 w-24 animate-pulse rounded bg-muted" />
+      <div className="mt-4 grid grid-cols-2 gap-2 rounded-radius-md bg-muted p-1">
+        <div className="h-9 animate-pulse rounded-radius-sm bg-background" />
+        <div className="h-9 animate-pulse rounded-radius-sm bg-background" />
+      </div>
+      <div className="mt-4 space-y-4">
+        <div>
+          <div className="h-4 w-12 animate-pulse rounded bg-muted" />
+          <div className="mt-1.5 h-10 w-full animate-pulse rounded-radius-md bg-muted" />
+        </div>
+        <div>
+          <div className="h-4 w-24 animate-pulse rounded bg-muted" />
+          <div className="mt-1.5 h-10 w-full animate-pulse rounded-radius-md bg-muted" />
+        </div>
+        <div className="rounded-radius-md bg-muted p-3">
+          <div className="flex items-center justify-between">
+            <div className="h-4 w-28 animate-pulse rounded bg-background" />
+            <div className="h-4 w-20 animate-pulse rounded bg-background" />
+          </div>
+          <div className="mt-1 flex items-center justify-between">
+            <div className="h-4 w-12 animate-pulse rounded bg-background" />
+            <div className="h-4 w-24 animate-pulse rounded bg-background" />
+          </div>
+        </div>
+        <div className="h-12 w-full animate-pulse rounded-radius-md bg-muted" />
+      </div>
+    </div>
+  );
+}
+
+function HoldingsCardSkeleton() {
+  return (
+    <div className="rounded-radius-lg border border-muted/60 bg-surface p-4 shadow-sm">
+      <div className="h-3 w-20 animate-pulse rounded bg-muted" />
+      <div className="mt-3 space-y-3">
+        <div className="flex items-center justify-between rounded-radius-md border border-muted/40 bg-background p-3">
+          <div>
+            <div className="h-5 w-16 animate-pulse rounded bg-muted" />
+            <div className="mt-1 h-3 w-32 animate-pulse rounded bg-muted" />
+          </div>
+          <div className="text-right">
+            <div className="h-5 w-24 animate-pulse rounded bg-muted" />
+            <div className="mt-1 h-3 w-16 animate-pulse rounded bg-muted" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TradesCardSkeleton() {
+  return (
+    <div className="rounded-radius-lg border border-muted/60 bg-surface p-4 shadow-sm">
+      <div className="h-3 w-24 animate-pulse rounded bg-muted" />
+      <div className="mt-3 space-y-2">
+        <div className="flex items-center justify-between rounded-radius-md border border-muted/40 bg-background p-3">
+          <div className="flex items-center gap-3">
+            <div className="h-5 w-12 animate-pulse rounded-radius-sm bg-muted" />
+            <div>
+              <div className="h-4 w-12 animate-pulse rounded bg-muted" />
+              <div className="mt-1 h-3 w-28 animate-pulse rounded bg-muted" />
+            </div>
+          </div>
+          <div className="h-5 w-20 animate-pulse rounded bg-muted" />
+        </div>
       </div>
     </div>
   );

@@ -43,4 +43,30 @@ describe("App shell", () => {
     const learnLink = screen.getByText("Belajar").closest("a");
     expect(learnLink).toHaveAttribute("aria-current", "page");
   });
+
+  it("does not mark Home active on nested routes", () => {
+    usePathnameMock.mockReturnValue("/learn/inflation-101");
+
+    render(
+      <AppLayout>
+        <div>Child content</div>
+      </AppLayout>
+    );
+
+    const homeLink = screen.getByText("Home").closest("a");
+    expect(homeLink).not.toHaveAttribute("aria-current", "page");
+  });
+
+  it("marks Home active only on root path", () => {
+    usePathnameMock.mockReturnValue("/");
+
+    render(
+      <AppLayout>
+        <div>Child content</div>
+      </AppLayout>
+    );
+
+    const homeLink = screen.getByText("Home").closest("a");
+    expect(homeLink).toHaveAttribute("aria-current", "page");
+  });
 });

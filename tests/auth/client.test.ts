@@ -15,6 +15,7 @@ vi.mock("@supabase/supabase-js", () => ({
       getSession: vi.fn().mockResolvedValue({ data: { session: null }, error: null }),
       signInWithPassword: vi.fn().mockResolvedValue({ data: { user: null, session: null }, error: null }),
       signUp: vi.fn().mockResolvedValue({ data: { user: null, session: null }, error: null }),
+      resend: vi.fn().mockResolvedValue({ data: { user: null, session: null }, error: null }),
       signInWithOAuth: vi.fn().mockResolvedValue({ data: { url: "https://example.com" }, error: null }),
       signOut: vi.fn().mockResolvedValue({ error: null }),
       onAuthStateChange: vi.fn().mockReturnValue({ subscription: { unsubscribe: vi.fn() } }),
@@ -22,7 +23,14 @@ vi.mock("@supabase/supabase-js", () => ({
   }),
 }));
 
-import { supabase, signInWithEmail, signUpWithEmail, signInWithGoogle, signOut } from "@/lib/auth/client";
+import {
+  supabase,
+  signInWithEmail,
+  signUpWithEmail,
+  resendSignupEmail,
+  signInWithGoogle,
+  signOut,
+} from "@/lib/auth/client";
 
 describe("auth client", () => {
   it("exports a supabase client", () => {
@@ -38,12 +46,23 @@ describe("auth client", () => {
     });
   });
 
-  it("signUpWithEmail calls signUp", async () => {
+  it("signUpWithEmail calls signUp with email redirect", async () => {
     await signUpWithEmail("a@b.com", "password123", { name: "Budi" });
     expect(supabase.auth.signUp).toHaveBeenCalledWith({
       email: "a@b.com",
       password: "password123",
-      options: { data: { name: "Budi" } },
+      options: {
+        data: { name: "Budi" },
+        emailRedirectTo: expect.stringContaining("/auth/callback"),
+      },
+    });
+  });
+
+  it("resendSignupEmail calls auth.resend for signup", async () => {
+    await resendSignupEmail("a@b.com");
+    expect(supabase.auth.resend).toHaveBeenCalledWith({
+      type: "signup",
+      email: "a@b.com",
     });
   });
 

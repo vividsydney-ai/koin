@@ -174,24 +174,63 @@ export async function getTrades(userId: string): Promise<Trade[]> {
   );
 }
 
-export async function getMarketData(): Promise<MarketData[]> {
-  const { data, error } = await supabase.rpc("get_latest_market_data");
+const MARKET_DATA_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
-  if (error) {
-    console.error("getMarketData error:", error.message);
-    return [];
+const marketDataCache: {
+  data: MarketData[] | null;
+  promise: Promise<MarketData[]> | null;
+  timestamp: number;
+} = {
+  data: null,
+  promise: null,
+  timestamp: 0,
+};
+
+function mapMarketDataRow(row: Record<string, unknown>): MarketData {
+  return {
+    id: String(row.id),
+    symbol: String(row.symbol),
+    companyName: (row.company_name as string | null) ?? null,
+    tradeDate: String(row.trade_date),
+    closePrice: Number(row.close_price),
+    volume: (row.volume as number | null) ?? null,
+  };
+}
+
+export async function getMarketData(): Promise<MarketData[]> {
+  const now = Date.now();
+
+  // Return fresh cached data immediately.
+  if (marketDataCache.data && now - marketDataCache.timestamp < MARKET_DATA_TTL_MS) {
+    return marketDataCache.data;
   }
 
-  return (
-    (data as any[])?.map((row) => ({
-      id: row.id,
-      symbol: row.symbol,
-      companyName: row.company_name ?? null,
-      tradeDate: row.trade_date,
-      closePrice: Number(row.close_price),
-      volume: row.volume ?? null,
-    })) ?? []
-  );
+  // Deduplicate in-flight requests so concurrent callers share one network call.
+  if (!marketDataCache.promise) {
+    marketDataCache.promise = Promise.resolve(supabase.rpc("get_latest_market_data"))
+      .then(({ data, error }) => {
+        if (error) {
+          console.error("getMarketData error:", error.message);
+          return [];
+        }
+        const mapped = ((data as Record<string, unknown>[]) ?? []).map(mapMarketDataRow);
+        marketDataCache.data = mapped;
+        marketDataCache.timestamp = Date.now();
+        return mapped;
+      })
+      .finally(() => {
+        marketDataCache.promise = null;
+      });
+  }
+
+  return marketDataCache.promise;
+}
+
+/** Exported for tests. */
+export function __resetMarketDataCache() {
+  marketDataCache.data = null;
+  marketDataCache.promise = null;
+  marketDataCache.timestamp = 0;
 }
 
 export async function executeTrade(

@@ -26,7 +26,7 @@
 - Open bugs (KO-37..KO-41) remain intentionally deferred on this branch.
 
 ## Last completed task
-Bug tracker sync + session handoff — Google Sheet bug tracker now auto-creates Linear issues in the "Koin Bugs" project with the `Bug` label and writes Linear IDs back to column O. Existing 5 bugs imported as KO-37..KO-41. Created `HANDOFF.md` and updated `CLAUDE.md` routing so the next agent can pick up from either bug-fixing or Phase 6 continuation.
+Phase 6 — Empty states on `web-mvp`. Created `components/EmptyState.tsx` with icon, title, description, and optional link/button action. Replaced inline empty placeholders with `<EmptyState>` in Home, Friends, Trade, and Profile screens. Added `tests/components/EmptyState.test.tsx` covering rendering and action variants. Gates: `npx tsc --noEmit` clean; `npx vitest run` 118 passed / 1 skipped; diff scan clean.
 
 ## Current session scope
 Web-first MVP on branch `web-mvp`. Phases 1–5 complete. Phase 6 adaptive triggers + content done. Next session decision:
@@ -93,13 +93,19 @@ next streams (fix open bugs KO-37..KO-41 vs. continue Phase 6). Also read
 ## Checker status
 [x] All reference tables verified in remote Supabase
 [x] content_variants count: 183 (40 original + 55 launch expansion + 88 adaptive expansion)
-[x] Test suite: 106 passing, 1 skipped
+[x] Test suite: 107 passing, 1 skipped (KO-37 auth client tests added)
 [x] Source URL verification test: all source URLs return 2xx/3xx (no dead links)
 [x] Adaptive trigger engine migrated and deployed
 [x] npm run build passes
 [x] `web-mvp` branch pushed to origin
 [x] Migrations 016–029 applied to remote Supabase
 [x] Vercel deployment smoke check: 200 OK
+[x] KO-37 gate: `npx tsc --noEmit` clean; `npx vitest run` 107 passed / 1 skipped; diff scan clean (no localStorage/sessionStorage)
+[x] KO-38 + KO-39 gate: `npx tsc --noEmit` clean; `npx vitest run` 109 passed / 1 skipped; diff scan clean
+[x] KO-40 gate: `npx tsc --noEmit` clean; `npx vitest run` 112 passed / 1 skipped; diff scan clean
+[x] KO-41 gate: `npx tsc --noEmit` clean; `npx vitest run` 114 passed / 1 skipped; diff scan clean
+[x] Phase 6 Library tab gate: `npx tsc --noEmit` clean; `npx vitest run` 115 passed / 1 skipped; diff scan clean
+[x] Phase 6 Empty states gate: `npx tsc --noEmit` clean; `npx vitest run` 118 passed / 1 skipped; diff scan clean
 
 ## Gate result
 [x] Gate KO-26 — passed

@@ -20,6 +20,7 @@ import {
   type LeaderboardEntry,
 } from "@/lib/home/client";
 import { ProgressCardModal, type ProgressCardData } from "@/components/ProgressCard";
+import { EmptyState } from "@/components/EmptyState";
 import {
   getLessonRecommendations,
   checkAdaptiveTriggers,
@@ -80,16 +81,16 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-background p-5 pb-28">
-      <header className="mb-6 flex items-start justify-between">
-        <div>
+      <header className="mb-6 flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
           <p className="text-sm text-muted-foreground">Good to see you,</p>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          <h1 className="break-words text-xl font-bold leading-tight tracking-tight text-foreground text-balance sm:text-2xl">
             {profile?.display_name ?? "Learner"}
           </h1>
         </div>
         <button
           onClick={() => setShowProgressCard(true)}
-          className="rounded-radius-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground active:opacity-90"
+          className="shrink-0 rounded-radius-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground active:opacity-90"
           aria-label="Share progress"
         >
           Share
@@ -171,10 +172,12 @@ function StreakCard({ streak }: { streak: StreakSummary | null }) {
 function ContinueLessonCard({ lesson }: { lesson: ContinueLesson | null }) {
   if (!lesson) {
     return (
-      <div className="rounded-radius-lg border border-border/60 bg-surface p-4 shadow-sm">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Today's lesson</p>
-        <p className="mt-2 text-sm text-muted-foreground">You've completed all available lessons. Nice work!</p>
-      </div>
+      <EmptyState
+        icon="📚"
+        title="All lessons completed"
+        description="You've finished every available lesson. Check the Library for more trusted sources, or replay a favorite lesson."
+        action={{ label: "Browse Library", href: "/library" }}
+      />
     );
   }
 
@@ -241,17 +244,24 @@ function KoinPointsCard({ koinPoints }: { koinPoints: KoinPointsSummary | null }
 }
 
 function RecentBadgeCard({ badge }: { badge: RecentBadge | null }) {
+  if (!badge) {
+    return (
+      <EmptyState
+        icon="🏅"
+        title="No badges yet"
+        description="Finish a lesson, hit a streak, or make your first trade to earn your first badge."
+        action={{ label: "Start learning", href: "/learn" }}
+      />
+    );
+  }
+
   return (
     <div className="rounded-radius-lg border border-border/60 bg-surface p-4 shadow-sm">
       <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Latest badge</p>
-      {badge ? (
-        <div className="mt-2 flex items-center gap-2">
-          <span className="text-2xl">{badge.icon}</span>
-          <p className="text-sm font-semibold text-foreground">{badge.name}</p>
-        </div>
-      ) : (
-        <p className="mt-2 text-sm text-muted-foreground">No badges yet. Finish a lesson!</p>
-      )}
+      <div className="mt-2 flex items-center gap-2">
+        <span className="text-2xl">{badge.icon}</span>
+        <p className="text-sm font-semibold text-foreground">{badge.name}</p>
+      </div>
     </div>
   );
 }
@@ -259,10 +269,12 @@ function RecentBadgeCard({ badge }: { badge: RecentBadge | null }) {
 function PortfolioCard({ portfolio }: { portfolio: PortfolioSnapshot | null }) {
   if (!portfolio) {
     return (
-      <div className="rounded-radius-lg border border-dashed border-muted bg-surface p-4">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Paper trading</p>
-        <p className="mt-2 text-sm text-muted-foreground">Your portfolio snapshot will appear here once paper trading launches.</p>
-      </div>
+      <EmptyState
+        icon="📈"
+        title="Start paper trading"
+        description="Your portfolio snapshot will appear here once you unlock paper trading from the Trade tab."
+        action={{ label: "Go to Trade", href: "/trade" }}
+      />
     );
   }
 
@@ -290,10 +302,12 @@ function PortfolioCard({ portfolio }: { portfolio: PortfolioSnapshot | null }) {
 function LeaderboardCard({ entries }: { entries: LeaderboardEntry[] }) {
   if (entries.length === 0) {
     return (
-      <div className="rounded-radius-lg border border-dashed border-muted bg-surface p-4">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Leaderboard</p>
-        <p className="mt-2 text-sm text-muted-foreground">Invite friends to see who tops the weekly XP board.</p>
-      </div>
+      <EmptyState
+        icon="🏆"
+        title="No friends on the board"
+        description="Invite friends to see who tops the weekly XP and Koin Points boards."
+        action={{ label: "Invite friends", href: "/friends" }}
+      />
     );
   }
 

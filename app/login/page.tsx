@@ -3,21 +3,45 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { signInWithEmail, signInWithGoogle } from "@/lib/auth/client";
+import { signInWithEmail, signInWithGoogle, resendSignupEmail } from "@/lib/auth/client";
 
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showResend, setShowResend] = useState(false);
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setInfo(null);
+    setShowResend(false);
 
     const { error } = await signInWithEmail(email, password);
+    setLoading(false);
+
+    if (error) {
+      const message = error.message || "";
+      setError(message);
+      if (message.toLowerCase().includes("email not confirmed")) {
+        setShowResend(true);
+      }
+      return;
+    }
+
+    router.push("/");
+  };
+
+  const handleResend = async () => {
+    setLoading(true);
+    setError(null);
+    setInfo(null);
+
+    const { error } = await resendSignupEmail(email);
     setLoading(false);
 
     if (error) {
@@ -25,7 +49,7 @@ export default function LoginPage() {
       return;
     }
 
-    router.push("/");
+    setInfo("Verification email resent. Check your inbox.");
   };
 
   const handleGoogleLogin = async () => {
@@ -56,6 +80,10 @@ export default function LoginPage() {
           <p className="mb-4 rounded-lg border border-danger/20 bg-danger/5 p-3 text-sm text-danger">
             {error}
           </p>
+        )}
+
+        {info && (
+          <p className="rounded-radius-md bg-success/10 p-3 text-sm text-success">{info}</p>
         )}
 
         <form onSubmit={handleEmailLogin} className="space-y-4">
@@ -96,6 +124,17 @@ export default function LoginPage() {
           >
             {loading ? "Memuat..." : "Masuk"}
           </button>
+
+          {showResend && (
+            <button
+              type="button"
+              onClick={handleResend}
+              disabled={loading}
+              className="w-full touch-target rounded-radius-md border border-muted bg-surface px-4 py-3 font-medium text-foreground disabled:opacity-50"
+            >
+              {loading ? "Resending..." : "Resend verification email"}
+            </button>
+          )}
         </form>
 
         <div className="relative my-5">

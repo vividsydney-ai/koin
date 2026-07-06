@@ -19,6 +19,57 @@ export async function getProfile(userId: string): Promise<Profile | null> {
   return data;
 }
 
+export async function getUserSettings(userId: string): Promise<UserSettings | null> {
+  const { data, error } = await supabase
+    .from("user_settings")
+    .select("*")
+    .eq("user_id", userId)
+    .single();
+
+  if (error) {
+    console.error("getUserSettings error:", error.message);
+    return null;
+  }
+
+  return data;
+}
+
+export async function updateProfile(input: {
+  userId: string;
+  displayName: string;
+  notificationsEnabled: boolean;
+}): Promise<{ error?: string }> {
+  const now = new Date().toISOString();
+
+  const { error: profileError } = await supabase
+    .from("profiles")
+    .update({
+      display_name: input.displayName,
+      updated_at: now,
+    })
+    .eq("id", input.userId);
+
+  if (profileError) {
+    console.error("updateProfile profile error:", profileError.message);
+    return { error: profileError.message };
+  }
+
+  const { error: settingsError } = await supabase
+    .from("user_settings")
+    .update({
+      notifications_enabled: input.notificationsEnabled,
+      updated_at: now,
+    })
+    .eq("user_id", input.userId);
+
+  if (settingsError) {
+    console.error("updateProfile settings error:", settingsError.message);
+    return { error: settingsError.message };
+  }
+
+  return {};
+}
+
 export async function completeOnboarding(input: {
   userId: string;
   displayName: string;

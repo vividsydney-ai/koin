@@ -40,13 +40,18 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <nav className="fixed bottom-0 left-0 right-0 border-t border-border bg-surface">
         <ul className="mx-auto flex max-w-md justify-around">
           {NAV_ITEMS.map((item) => {
-            const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+            const isActive =
+              item.href === "/"
+                ? pathname === "/"
+                : pathname === item.href || pathname.startsWith(`${item.href}/`);
             return (
               <li key={item.href}>
                 <Link
                   href={item.href}
                   className={`flex min-h-[44px] min-w-[44px] flex-col items-center justify-center px-2 py-1 text-xs transition-colors ${
-                    isActive ? "text-primary" : "text-muted-foreground"
+                    isActive
+                      ? "font-semibold text-primary"
+                      : "font-normal text-muted-foreground"
                   }`}
                   aria-current={isActive ? "page" : undefined}
                 >
