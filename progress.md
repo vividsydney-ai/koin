@@ -26,13 +26,24 @@
 - Open bugs (KO-37..KO-41) remain intentionally deferred on this branch.
 
 ## Last completed task
-Fixed the `koin-web-koinaku` Vercel deployment returning 404. Root cause: the new project was created with framework preset "Other" and default output directory, so Vercel wasn't serving the Next.js static export from `out`. Added `vercel.json` with `"framework": null`, `"buildCommand": "next build"`, `"outputDirectory": "out"`, and removed the redundant `distDir: "out"` from `next.config.ts`. The site now loads at `https://koin-web-koinaku.vercel.app`.
+Updated auth pages on `web-koinaku`. Removed Google sign-in/sign-up buttons from `app/login/page.tsx` and `app/signup/page.tsx` per human direction. Converted auth copy to English and improved the email-verification UX with a spam-folder reminder and clearer resend messaging. The email confirmation flow code (KO-37) was already in place; if emails are still not arriving, the fix is in Supabase Auth settings (see blockers note).
+
+Gate output:
+- `npx tsc --noEmit`: clean
+- `npx vitest run`: 118 passed / 1 skipped
+- Diff scan: clean
 
 Gate output:
 - `npx tsc --noEmit`: clean
 - `npx vitest run`: 118 passed / 1 skipped
 - Diff scan: clean
 - Vercel production deploy: Ready
+
+## Blockers / external follow-ups
+- Confirmation email deliverability is controlled by Supabase Auth, not app code. Ensure:
+  1. Supabase Auth → URL Configuration → Redirect URLs includes `https://koin-web-koinaku.vercel.app/auth/callback`.
+  2. Supabase Auth → Email Templates → "Confirm signup" is enabled and the template uses `{{ .ConfirmationURL }}`.
+  3. For reliable delivery, configure a custom SMTP provider (SendGrid/Resend/etc.) in Supabase Auth → Providers → SMTP instead of using Supabase's default mailer.
 
 ## Current session scope
 Web-first MVP on branch `web-mvp`. Phases 1–5 complete. Phase 6 adaptive triggers + content done. Next session decision:
