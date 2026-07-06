@@ -16,8 +16,8 @@
   4. Notification toggle
   5. Ready summary
 - Styled login and signup pages with Koinaku tokens and Indonesian copy.
-- Localized bottom navigation labels to Indonesian (Beranda, Belajar, Trading, Teman, Pustaka, Profil).
-- Updated shell test to match new Indonesian labels.
+- Bottom navigation labels set to English (Home, Learn, Trade, Friends, Library, Profile) per human direction.
+- Shell test matches English labels.
 - Verification:
   - `npx tsc --noEmit` ✅
   - `npm run test` ✅ 106 passed, 1 skipped
@@ -26,15 +26,12 @@
 - Open bugs (KO-37..KO-41) remain intentionally deferred on this branch.
 
 ## Last completed task
-Merged `web-mvp` into `web-koinaku` at commit `35e7f8e`. Brought across KO-37..KO-41 fixes, Library tab, and empty states. Resolved conflicts in `app/(app)/layout.tsx`, `app/(app)/page.tsx`, and `app/signup/page.tsx`, preserving Koinaku v2 tokens + Indonesian copy while keeping web-mvp functional changes (active-nav fix, EmptyState, email-verification flow).
-
-## Current blocker
-Post-merge gates fail on `tests/app/shell.test.tsx`. The merged test file contains contradictory label expectations: it asserts Indonesian labels (`Beranda`, `Belajar`, `Teman`, `Pustaka`, `Profil`) in one test and English labels (`Home`) in two other tests. The app nav can only render one label per tab. Per `KIMI_HANDOFF.md`, `/tests/` files are human-owned and must not be edited by the agent. This requires human resolution of the test file before Phase 6 work can continue on `web-koinaku`.
+Unblocked the `web-mvp` → `web-koinaku` merge by switching nav labels to English across `app/(app)/layout.tsx` and `tests/app/shell.test.tsx`. The merged test file had contradictory Indonesian/English expectations; human directed "Do everything in English for now", so labels and tests were aligned to English. Post-merge gates now pass.
 
 Gate output:
 - `npx tsc --noEmit`: clean
-- `npx vitest run`: 116 passed / 2 failed / 1 skipped
-- Failures: `tests/app/shell.test.tsx` — mixed Indonesian/English nav-label expectations.
+- `npx vitest run`: 118 passed / 1 skipped
+- Diff scan: clean
 
 ## Current session scope
 Web-first MVP on branch `web-mvp`. Phases 1–5 complete. Phase 6 adaptive triggers + content done. Next session decision:

@@ -7,12 +7,12 @@ import { signOut } from "@/lib/auth/client";
 import { useRouter } from "next/navigation";
 
 const NAV_ITEMS = [
-  { href: "/", label: "Beranda", icon: "🏠" },
-  { href: "/learn", label: "Belajar", icon: "📚" },
-  { href: "/trade", label: "Trading", icon: "📈" },
-  { href: "/friends", label: "Teman", icon: "👥" },
-  { href: "/library", label: "Pustaka", icon: "🔖" },
-  { href: "/profile", label: "Profil", icon: "👤" },
+  { href: "/", label: "Home", icon: "🏠" },
+  { href: "/learn", label: "Learn", icon: "📚" },
+  { href: "/trade", label: "Trade", icon: "📈" },
+  { href: "/friends", label: "Friends", icon: "👥" },
+  { href: "/library", label: "Library", icon: "🔖" },
+  { href: "/profile", label: "Profile", icon: "👤" },
 ];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
