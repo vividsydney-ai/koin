@@ -3,7 +3,7 @@
 # v2: MVP reshaped around paper trading. Original v1 loop files archived in /_archived.
 
 ## Last completed task
-KO-38 + KO-39 — Mobile hero overlap and bottom-nav active highlight on `web-mvp`. Fixed the Home header in `app/(app)/page.tsx` so long display names wrap cleanly on 375 px/320 px viewports (text-balance, break-words, tighter leading, responsive sizing). Fixed `app/(app)/layout.tsx` so the Home tab is only active on the exact root path and nested routes correctly highlight their own tab; added `font-semibold` to the active state and preserved `aria-current="page"`. Added shell tests for root-path and nested-path active states.
+KO-40 — Paper trading 3G performance on `web-mvp`. Added a 5-minute in-memory cache + in-flight request deduplication to `getMarketData` in `lib/trading/client.ts`. Lazy-loaded `TradeOnboarding` in `app/(app)/trade/page.tsx` via `next/dynamic`. Replaced generic loading pulse blocks with realistic skeleton layouts for the portfolio summary, order card, holdings list, and recent trades so the initial paint shows the expected card structure immediately. Added `tests/trading/client.test.ts` covering cache hit, concurrent deduplication, and data mapping.
 
 ## Current session scope
 Web-first MVP on branch `web-mvp`. Phases 1–5 complete. Phase 6 adaptive triggers + content done. Next session decision:
@@ -79,6 +79,7 @@ next streams (fix open bugs KO-37..KO-41 vs. continue Phase 6). Also read
 [x] Vercel deployment smoke check: 200 OK
 [x] KO-37 gate: `npx tsc --noEmit` clean; `npx vitest run` 107 passed / 1 skipped; diff scan clean (no localStorage/sessionStorage)
 [x] KO-38 + KO-39 gate: `npx tsc --noEmit` clean; `npx vitest run` 109 passed / 1 skipped; diff scan clean
+[x] KO-40 gate: `npx tsc --noEmit` clean; `npx vitest run` 112 passed / 1 skipped; diff scan clean
 
 ## Gate result
 [x] Gate KO-26 — passed
