@@ -22,12 +22,12 @@ describe("App shell", () => {
       </AppLayout>
     );
 
-    expect(screen.getByText("Home")).toBeInTheDocument();
-    expect(screen.getByText("Learn")).toBeInTheDocument();
-    expect(screen.getByText("Trade")).toBeInTheDocument();
-    expect(screen.getByText("Friends")).toBeInTheDocument();
-    expect(screen.getByText("Library")).toBeInTheDocument();
-    expect(screen.getByText("Profile")).toBeInTheDocument();
+    expect(screen.getByText("Beranda")).toBeInTheDocument();
+    expect(screen.getByText("Belajar")).toBeInTheDocument();
+    expect(screen.getByText("Trading")).toBeInTheDocument();
+    expect(screen.getByText("Teman")).toBeInTheDocument();
+    expect(screen.getByText("Pustaka")).toBeInTheDocument();
+    expect(screen.getByText("Profil")).toBeInTheDocument();
     expect(screen.getByText("Child content")).toBeInTheDocument();
   });
 
@@ -40,7 +40,7 @@ describe("App shell", () => {
       </AppLayout>
     );
 
-    const learnLink = screen.getByText("Learn").closest("a");
+    const learnLink = screen.getByText("Belajar").closest("a");
     expect(learnLink).toHaveAttribute("aria-current", "page");
   });
 });

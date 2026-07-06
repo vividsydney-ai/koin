@@ -98,9 +98,9 @@ export default function Home() {
 
       {isLoading ? (
         <div className="space-y-3">
-          <div className="h-24 animate-pulse rounded-radius-lg bg-muted" />
-          <div className="h-32 animate-pulse rounded-radius-lg bg-muted" />
-          <div className="h-24 animate-pulse rounded-radius-lg bg-muted" />
+          <div className="h-24 animate-pulse rounded-radius-lg bg-surface-inset" />
+          <div className="h-32 animate-pulse rounded-radius-lg bg-surface-inset" />
+          <div className="h-24 animate-pulse rounded-radius-lg bg-surface-inset" />
         </div>
       ) : (
         <div className="space-y-4">
@@ -153,14 +153,14 @@ function StreakCard({ streak }: { streak: StreakSummary | null }) {
   else if (atRisk) statusText = "Complete a lesson today to keep it alive.";
 
   return (
-    <div className="rounded-radius-lg border border-muted/60 bg-surface p-4 shadow-sm">
+    <div className="rounded-radius-lg border border-border/60 bg-surface p-4 shadow-sm">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Streak</p>
           <p className="mt-1 text-2xl font-bold text-foreground">{days} day{days === 1 ? "" : "s"}</p>
           <p className={`text-xs ${atRisk || broken ? "text-danger" : frozen ? "text-warning" : "text-muted-foreground"}`}>{statusText}</p>
         </div>
-        <div className={`flex h-14 w-14 items-center justify-center rounded-full text-2xl ${broken ? "bg-danger/10" : atRisk ? "bg-warning/10" : frozen ? "bg-info/10" : "bg-streak/10"}`}>
+        <div className={`flex h-14 w-14 items-center justify-center rounded-full text-2xl ${broken ? "bg-danger/10" : atRisk ? "bg-warning/10" : frozen ? "bg-secondary/10" : "bg-primary/10"}`}>
           {broken ? "💔" : atRisk ? "⚠️" : frozen ? "🧊" : "🔥"}
         </div>
       </div>
@@ -171,7 +171,7 @@ function StreakCard({ streak }: { streak: StreakSummary | null }) {
 function ContinueLessonCard({ lesson }: { lesson: ContinueLesson | null }) {
   if (!lesson) {
     return (
-      <div className="rounded-radius-lg border border-muted/60 bg-surface p-4 shadow-sm">
+      <div className="rounded-radius-lg border border-border/60 bg-surface p-4 shadow-sm">
         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Today's lesson</p>
         <p className="mt-2 text-sm text-muted-foreground">You've completed all available lessons. Nice work!</p>
       </div>
@@ -202,7 +202,7 @@ function XpLevelCard({ xp }: { xp: XpSummary | null }) {
   const progress = xp && xp.xpToNextLevel ? Math.min(100, Math.round((xp.xpIntoLevel / xp.xpToNextLevel) * 100)) : 0;
 
   return (
-    <div className="rounded-radius-lg border border-muted/60 bg-surface p-4 shadow-sm">
+    <div className="rounded-radius-lg border border-border/60 bg-surface p-4 shadow-sm">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Level</p>
@@ -212,7 +212,7 @@ function XpLevelCard({ xp }: { xp: XpSummary | null }) {
         {next && (
           <div className="text-right">
             <p className="text-xs text-muted-foreground">Next: {next.name}</p>
-            <p className="text-xs font-medium text-xp">{xp?.xpIntoLevel ?? 0} / {xp?.xpToNextLevel ?? 0} XP</p>
+            <p className="text-xs font-medium text-secondary">{xp?.xpIntoLevel ?? 0} / {xp?.xpToNextLevel ?? 0} XP</p>
           </div>
         )}
       </div>
@@ -220,7 +220,7 @@ function XpLevelCard({ xp }: { xp: XpSummary | null }) {
         <p className="mt-2 text-xs italic text-muted-foreground">{current.description}</p>
       )}
       {next && (
-        <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-muted">
+        <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-surface-inset">
           <div className="h-full rounded-full bg-xp transition-all" style={{ width: `${progress}%` }} />
         </div>
       )}
@@ -232,7 +232,7 @@ function KoinPointsCard({ koinPoints }: { koinPoints: KoinPointsSummary | null }
   const balance = koinPoints?.currentBalance ?? 0;
 
   return (
-    <div className="rounded-radius-lg border border-muted/60 bg-surface p-4 shadow-sm">
+    <div className="rounded-radius-lg border border-border/60 bg-surface p-4 shadow-sm">
       <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Koin Points</p>
       <p className="mt-2 text-2xl font-bold text-foreground">{balance.toLocaleString("id-ID")}</p>
       <p className="text-xs text-muted-foreground">Earn more by ranking up.</p>
@@ -242,7 +242,7 @@ function KoinPointsCard({ koinPoints }: { koinPoints: KoinPointsSummary | null }
 
 function RecentBadgeCard({ badge }: { badge: RecentBadge | null }) {
   return (
-    <div className="rounded-radius-lg border border-muted/60 bg-surface p-4 shadow-sm">
+    <div className="rounded-radius-lg border border-border/60 bg-surface p-4 shadow-sm">
       <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Latest badge</p>
       {badge ? (
         <div className="mt-2 flex items-center gap-2">
@@ -269,7 +269,7 @@ function PortfolioCard({ portfolio }: { portfolio: PortfolioSnapshot | null }) {
   const positive = portfolio.totalReturnPct >= 0;
 
   return (
-    <div className="rounded-radius-lg border border-muted/60 bg-surface p-4 shadow-sm">
+    <div className="rounded-radius-lg border border-border/60 bg-surface p-4 shadow-sm">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Portfolio</p>
@@ -298,16 +298,16 @@ function LeaderboardCard({ entries }: { entries: LeaderboardEntry[] }) {
   }
 
   return (
-    <div className="rounded-radius-lg border border-muted/60 bg-surface p-4 shadow-sm">
+    <div className="rounded-radius-lg border border-border/60 bg-surface p-4 shadow-sm">
       <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Weekly leaderboard</p>
       <div className="mt-3 space-y-2">
         {entries.map((entry) => (
           <div key={entry.displayName + entry.rank} className={`flex items-center justify-between rounded-radius-md px-3 py-2 ${entry.isCurrentUser ? "bg-primary/5" : "bg-background"}`}>
             <div className="flex items-center gap-3">
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-muted text-xs font-bold text-muted-foreground">{entry.rank}</span>
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-surface-inset text-xs font-bold text-muted-foreground">{entry.rank}</span>
               <span className="text-sm font-medium text-foreground">{entry.displayName}</span>
             </div>
-            <span className="text-sm font-semibold text-xp">{entry.xpThisWeek.toLocaleString("id-ID")} XP</span>
+            <span className="text-sm font-semibold text-secondary">{entry.xpThisWeek.toLocaleString("id-ID")} XP</span>
           </div>
         ))}
       </div>
