@@ -26,7 +26,7 @@
 - Open bugs (KO-37..KO-41) remain intentionally deferred on this branch.
 
 ## Last completed task
-Created a new Vercel project `koin-web-koinaku`, linked the repo, migrated environment variables from `koin-web-mvp`, and deployed `web-koinaku`. The first deploy failed because `middleware.ts` is incompatible with `output: "export"` (Edge Function referenced unsupported modules); removed `middleware.ts` since static export disables middleware anyway. Deploy succeeded and is live at `https://koin-web-koinaku.vercel.app`.
+Fixed the `koin-web-koinaku` Vercel deployment returning 404. Root cause: the new project was created with framework preset "Other" and default output directory, so Vercel wasn't serving the Next.js static export from `out`. Added `vercel.json` with `"framework": null`, `"buildCommand": "next build"`, `"outputDirectory": "out"`, and removed the redundant `distDir: "out"` from `next.config.ts`. The site now loads at `https://koin-web-koinaku.vercel.app`.
 
 Gate output:
 - `npx tsc --noEmit`: clean
