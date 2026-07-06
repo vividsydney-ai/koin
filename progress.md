@@ -3,7 +3,7 @@
 # v2: MVP reshaped around paper trading. Original v1 loop files archived in /_archived.
 
 ## Last completed task
-KO-40 — Paper trading 3G performance on `web-mvp`. Added a 5-minute in-memory cache + in-flight request deduplication to `getMarketData` in `lib/trading/client.ts`. Lazy-loaded `TradeOnboarding` in `app/(app)/trade/page.tsx` via `next/dynamic`. Replaced generic loading pulse blocks with realistic skeleton layouts for the portfolio summary, order card, holdings list, and recent trades so the initial paint shows the expected card structure immediately. Added `tests/trading/client.test.ts` covering cache hit, concurrent deduplication, and data mapping.
+KO-41 — Profile Edit Profile button on `web-mvp`. Added an "Edit" button to `app/(app)/profile/page.tsx` that opens a modal for editing display name and streak-reminder notification preference. Created `app/(app)/profile/EditProfileModal.tsx` using `react-hook-form` and Zod validation. Added `getUserSettings` and `updateProfile` helpers to `lib/profile/client.ts`. Added profile client tests for settings read and profile update.
 
 ## Current session scope
 Web-first MVP on branch `web-mvp`. Phases 1–5 complete. Phase 6 adaptive triggers + content done. Next session decision:
@@ -80,6 +80,7 @@ next streams (fix open bugs KO-37..KO-41 vs. continue Phase 6). Also read
 [x] KO-37 gate: `npx tsc --noEmit` clean; `npx vitest run` 107 passed / 1 skipped; diff scan clean (no localStorage/sessionStorage)
 [x] KO-38 + KO-39 gate: `npx tsc --noEmit` clean; `npx vitest run` 109 passed / 1 skipped; diff scan clean
 [x] KO-40 gate: `npx tsc --noEmit` clean; `npx vitest run` 112 passed / 1 skipped; diff scan clean
+[x] KO-41 gate: `npx tsc --noEmit` clean; `npx vitest run` 114 passed / 1 skipped; diff scan clean
 
 ## Gate result
 [x] Gate KO-26 — passed

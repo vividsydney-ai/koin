@@ -3,9 +3,10 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth/use-auth";
-import { supabase, signOut } from "@/lib/auth/client";
+import { signOut } from "@/lib/auth/client";
 import { getUserStats, type UserStats } from "@/lib/gamification/client";
 import { getPortfolioSnapshot, type PortfolioSnapshot } from "@/lib/portfolio/client";
+import EditProfileModal from "./EditProfileModal";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -13,6 +14,8 @@ export default function ProfilePage() {
   const [stats, setStats] = useState<UserStats | null>(null);
   const [portfolio, setPortfolio] = useState<PortfolioSnapshot | null>(null);
   const [dataLoading, setDataLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [displayName, setDisplayName] = useState(profile?.display_name ?? user?.email ?? "Koin Learner");
 
   useEffect(() => {
     if (!user) return;
@@ -36,6 +39,12 @@ export default function ProfilePage() {
     };
   }, [user]);
 
+  useEffect(() => {
+    if (profile?.display_name) {
+      setDisplayName(profile.display_name);
+    }
+  }, [profile?.display_name]);
+
   const handleLogout = async () => {
     await signOut();
     router.replace("/login");
@@ -49,7 +58,6 @@ export default function ProfilePage() {
     );
   }
 
-  const displayName = profile?.display_name ?? user?.email ?? "Koin Learner";
   const initials = displayName
     .split(" ")
     .map((n) => n[0])
@@ -63,8 +71,10 @@ export default function ProfilePage() {
         <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary text-2xl font-bold text-primary-foreground">
           {initials}
         </div>
-        <div>
-          <h1 className="text-2xl font-display font-bold text-foreground">{displayName}</h1>
+        <div className="min-w-0 flex-1">
+          <h1 className="break-words text-2xl font-display font-bold leading-tight text-foreground text-balance">
+            {displayName}
+          </h1>
           <p className="text-sm text-muted-foreground">{user?.email}</p>
           {stats?.level && (
             <span className="mt-1 inline-block rounded-full bg-xp/10 px-3 py-1 text-xs font-semibold text-xp">
@@ -72,6 +82,13 @@ export default function ProfilePage() {
             </span>
           )}
         </div>
+        <button
+          onClick={() => setIsEditing(true)}
+          className="shrink-0 rounded-radius-md border border-muted bg-surface px-3 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted/10 touch-target"
+          aria-label="Edit profile"
+        >
+          Edit
+        </button>
       </header>
 
       <section className="mb-6 grid grid-cols-3 gap-3">
@@ -139,6 +156,18 @@ export default function ProfilePage() {
       >
         Log out
       </button>
+
+      {isEditing && user && (
+        <EditProfileModal
+          userId={user.id}
+          currentDisplayName={displayName}
+          onClose={() => setIsEditing(false)}
+          onSaved={(newDisplayName) => {
+            setDisplayName(newDisplayName);
+            setIsEditing(false);
+          }}
+        />
+      )}
     </div>
   );
 }
