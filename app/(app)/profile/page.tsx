@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/auth/use-auth";
 import { signOut } from "@/lib/auth/client";
 import { getUserStats, type UserStats } from "@/lib/gamification/client";
 import { getPortfolioSnapshot, type PortfolioSnapshot } from "@/lib/portfolio/client";
+import { EmptyState } from "@/components/EmptyState";
 import EditProfileModal from "./EditProfileModal";
 
 export default function ProfilePage() {
@@ -144,9 +145,12 @@ export default function ProfilePage() {
             ))}
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground">
-            Complete lessons, hit streaks, and make your first trade to earn badges.
-          </p>
+          <EmptyState
+            icon="🏅"
+            title="No badges yet"
+            description="Complete lessons, hit streaks, and make your first trade to earn badges."
+            action={{ label: "Start learning", href: "/learn" }}
+          />
         )}
       </section>
 

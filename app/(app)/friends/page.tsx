@@ -5,6 +5,7 @@ import { useAuth } from "@/lib/auth/use-auth";
 import { createFriendInvite, acceptFriendInvite, getFriends, type FriendInvite, type Friend } from "@/lib/friends/client";
 import { getWeeklyLeaderboard, type WeeklyLeaderboard } from "@/lib/home/client";
 import { joinCohortByCode, getCohorts, type Cohort } from "@/lib/cohorts/client";
+import { EmptyState } from "@/components/EmptyState";
 
 export default function FriendsPage() {
   const { user, profile, loading: authLoading } = useAuth(true);
@@ -123,9 +124,11 @@ export default function FriendsPage() {
           <section>
             <h2 className="mb-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">Friends</h2>
             {acceptedFriends.length === 0 ? (
-              <div className="rounded-radius-lg border border-dashed border-muted bg-surface p-4">
-                <p className="text-sm text-muted-foreground">No friends yet. Share your invite code to get started.</p>
-              </div>
+              <EmptyState
+                icon="👥"
+                title="No friends yet"
+                description="Share your invite code or add a friend's code to start learning together."
+              />
             ) : (
               <div className="space-y-2">
                 {acceptedFriends.map((friend) => (

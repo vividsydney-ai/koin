@@ -16,6 +16,7 @@ import {
   type MarketData,
 } from "@/lib/trading/client";
 import { getTradeOnboardingStatus, type TradeOnboardingStatus } from "@/lib/trading/onboarding";
+import { EmptyState } from "@/components/EmptyState";
 
 const TradeOnboarding = dynamic(() => import("./TradeOnboarding"));
 
@@ -431,14 +432,11 @@ function HoldingsCard({
 }) {
   if (holdings.length === 0) {
     return (
-      <div className="rounded-radius-lg border border-dashed border-muted bg-surface p-4">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-          Holdings
-        </p>
-        <p className="mt-2 text-sm text-muted-foreground">
-          You don't own any stocks yet. Place your first buy order above.
-        </p>
-      </div>
+      <EmptyState
+        icon="📊"
+        title="No holdings yet"
+        description="You don't own any stocks. Place your first buy order above to start building your paper portfolio."
+      />
     );
   }
 
@@ -490,14 +488,11 @@ function HoldingsCard({
 function TradesCard({ trades }: { trades: Trade[] }) {
   if (trades.length === 0) {
     return (
-      <div className="rounded-radius-lg border border-dashed border-muted bg-surface p-4">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-          Recent trades
-        </p>
-        <p className="mt-2 text-sm text-muted-foreground">
-          No trades yet. Your history will appear here.
-        </p>
-      </div>
+      <EmptyState
+        icon="📝"
+        title="No trades yet"
+        description="Your buy and sell history will appear here once you make your first paper trade."
+      />
     );
   }
 

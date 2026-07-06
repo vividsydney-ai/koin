@@ -3,7 +3,7 @@
 # v2: MVP reshaped around paper trading. Original v1 loop files archived in /_archived.
 
 ## Last completed task
-Phase 6 — Library tab on `web-mvp`. Replaced the placeholder `app/(app)/library/page.tsx` with a full source browser: search by title/local title/organization; filters by source organization, tier, type, and language; tier/type/status badges; skeleton loaders; empty state with reset. Added `lib/sources/client.ts` to fetch and map public sources. Added `tests/sources/client.test.ts` for mapping coverage. Note: the schema does not have a dedicated `topic` column on sources, so the "Source" filter maps to `organization`.
+Phase 6 — Empty states on `web-mvp`. Created `components/EmptyState.tsx` with icon, title, description, and optional link/button action. Replaced inline empty placeholders with `<EmptyState>` in Home, Friends, Trade, and Profile screens. Added `tests/components/EmptyState.test.tsx` covering rendering and action variants. Gates: `npx tsc --noEmit` clean; `npx vitest run` 118 passed / 1 skipped; diff scan clean.
 
 ## Current session scope
 Web-first MVP on branch `web-mvp`. Phases 1–5 complete. Phase 6 adaptive triggers + content done. Next session decision:
@@ -82,6 +82,7 @@ next streams (fix open bugs KO-37..KO-41 vs. continue Phase 6). Also read
 [x] KO-40 gate: `npx tsc --noEmit` clean; `npx vitest run` 112 passed / 1 skipped; diff scan clean
 [x] KO-41 gate: `npx tsc --noEmit` clean; `npx vitest run` 114 passed / 1 skipped; diff scan clean
 [x] Phase 6 Library tab gate: `npx tsc --noEmit` clean; `npx vitest run` 115 passed / 1 skipped; diff scan clean
+[x] Phase 6 Empty states gate: `npx tsc --noEmit` clean; `npx vitest run` 118 passed / 1 skipped; diff scan clean
 
 ## Gate result
 [x] Gate KO-26 — passed

@@ -116,7 +116,7 @@
 - [ ] Expand from 5 to 15 lessons
 - [x] Library tab: browse sources by topic/tier/type/language
 - [ ] Recommended resources: books, videos per lesson
-- [ ] All empty states designed (no friends, no lessons started, no holdings, streak lost, graduated, all done)
+- [x] All empty states designed (no friends, no lessons started, no holdings, streak lost, graduated, all done)
 - [ ] Analytics events: instrument all 16 events from spec plus trade and graduation events
 - [ ] Notification queue: stub delivery, architecture ready
 - [ ] Final QA: 375px mobile, 1280px desktop, dark mode, keyboard nav, WCAG AA
