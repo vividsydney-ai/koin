@@ -26,7 +26,7 @@
 - Open bugs (KO-37..KO-41) remain intentionally deferred on this branch.
 
 ## Last completed task
-Updated auth pages on `web-koinaku`. Removed Google sign-in/sign-up buttons from `app/login/page.tsx` and `app/signup/page.tsx` per human direction. Converted auth copy to English and improved the email-verification UX with a spam-folder reminder and clearer resend messaging. The email confirmation flow code (KO-37) was already in place; if emails are still not arriving, the fix is in Supabase Auth settings (see blockers note).
+Updated auth pages on `web-koinaku` and fixed static-export routing on Vercel. Removed Google sign-in/sign-up buttons from `app/login/page.tsx` and `app/signup/page.tsx`; converted auth copy to English; improved email-verification UX. Added `cleanUrls: true` to `vercel.json` so `/login`, `/signup`, and other static routes serve correctly. Live at `https://koin-web-koinaku.vercel.app`.
 
 Gate output:
 - `npx tsc --noEmit`: clean
