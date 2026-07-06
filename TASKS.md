@@ -123,7 +123,7 @@
 
 ## Open bugs from bug tracker (next-session decision)
 > See `HANDOFF.md` and `docs/BUG_TRACKER.md` for full context. These are synced from the Google Sheet and live in Linear project "Koin Bugs".
-- [ ] KO-37 P0 — Sign-up confirmation email is not sent after registration
+- [x] KO-37 P0 — Sign-up confirmation email is not sent after registration
 - [ ] KO-38 P1 — Home page hero text overlaps on iPhone SE screen
 - [ ] KO-39 P1 — Bottom navigation does not highlight active page on mobile
 - [ ] KO-40 P2 — Paper trading page takes 4+ seconds to load on 3G connection
