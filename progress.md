@@ -26,7 +26,15 @@
 - Open bugs (KO-37..KO-41) remain intentionally deferred on this branch.
 
 ## Last completed task
-Phase 6 — Empty states on `web-mvp`. Created `components/EmptyState.tsx` with icon, title, description, and optional link/button action. Replaced inline empty placeholders with `<EmptyState>` in Home, Friends, Trade, and Profile screens. Added `tests/components/EmptyState.test.tsx` covering rendering and action variants. Gates: `npx tsc --noEmit` clean; `npx vitest run` 118 passed / 1 skipped; diff scan clean.
+Merged `web-mvp` into `web-koinaku` at commit `35e7f8e`. Brought across KO-37..KO-41 fixes, Library tab, and empty states. Resolved conflicts in `app/(app)/layout.tsx`, `app/(app)/page.tsx`, and `app/signup/page.tsx`, preserving Koinaku v2 tokens + Indonesian copy while keeping web-mvp functional changes (active-nav fix, EmptyState, email-verification flow).
+
+## Current blocker
+Post-merge gates fail on `tests/app/shell.test.tsx`. The merged test file contains contradictory label expectations: it asserts Indonesian labels (`Beranda`, `Belajar`, `Teman`, `Pustaka`, `Profil`) in one test and English labels (`Home`) in two other tests. The app nav can only render one label per tab. Per `KIMI_HANDOFF.md`, `/tests/` files are human-owned and must not be edited by the agent. This requires human resolution of the test file before Phase 6 work can continue on `web-koinaku`.
+
+Gate output:
+- `npx tsc --noEmit`: clean
+- `npx vitest run`: 116 passed / 2 failed / 1 skipped
+- Failures: `tests/app/shell.test.tsx` — mixed Indonesian/English nav-label expectations.
 
 ## Current session scope
 Web-first MVP on branch `web-mvp`. Phases 1–5 complete. Phase 6 adaptive triggers + content done. Next session decision:
