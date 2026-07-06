@@ -114,7 +114,7 @@
   - Portfolio drawdown → volatility / emotional control lesson
 - [x] User lesson recommendations table and UI
 - [ ] Expand from 5 to 15 lessons
-- [ ] Library tab: browse sources by topic/tier/type/language
+- [x] Library tab: browse sources by topic/tier/type/language
 - [ ] Recommended resources: books, videos per lesson
 - [ ] All empty states designed (no friends, no lessons started, no holdings, streak lost, graduated, all done)
 - [ ] Analytics events: instrument all 16 events from spec plus trade and graduation events
