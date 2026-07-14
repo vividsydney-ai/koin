@@ -95,7 +95,7 @@ export function ProgressCardModal({ data, onClose }: ProgressCardProps) {
     // Footer.
     ctx.font = "14px Satoshi, ui-sans-serif, system-ui, sans-serif";
     ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
-    ctx.fillText("koin-web-mvp.vercel.app", 40, height - 24);
+    ctx.fillText("web.koinaku.com", 40, height - 24);
 
     setImageUrl(canvas.toDataURL("image/png"));
   }, [data]);

@@ -50,10 +50,11 @@
 - Open bugs (KO-37..KO-41) remain intentionally deferred on this branch.
 
 ## Last completed task
-Fixed production auth sign-up/login timeout.
-- Root cause: Supabase Auth had email confirmations enabled but no reliable custom SMTP, so the default mailer timed out and `/auth/v1/signup` returned 504.
-- Updated `supabase/config.toml` with the production `site_url` and `additional_redirect_urls`, disabled `enable_confirmations`, and pushed to remote.
-- Sign-up now returns an active session immediately.
+Migrated production web app to custom domain `web.koinaku.com`.
+- Updated Vercel `NEXT_PUBLIC_APP_URL` production env var and redeployed.
+- Updated Supabase Auth `site_url` and redirect allowlist to `https://web.koinaku.com`.
+- Updated ProgressCard footer, HANDOFF.md, KIMI_HANDOFF.md, and progress.md with the new domain.
+- The app is now live at `https://web.koinaku.com`.
 
 ## Blockers / external follow-ups
 - Email confirmations are currently disabled on the remote Supabase project because the default mailer was timing out and blocking all sign-ups. New users now get an active session immediately.
@@ -114,7 +115,7 @@ next streams (fix open bugs KO-37..KO-41 vs. continue Phase 6). Also read
 [x] Pivot: add PWA manifest and icons
 [x] Pivot: archive native-only tests on web-mvp branch
 [x] Pivot: verify build/tests on web-mvp branch
-[x] Deploy web-mvp to Vercel: https://koin-web-mvp.vercel.app
+[x] Deploy web-koinaku to Vercel: https://web.koinaku.com
 [x] Content prototype: /learn/inflation-101 with animated visual + quiz
 [x] Learn tab lesson list with 5 topics
 [x] Added money-basics-101, budgeting-101, risk-return-101

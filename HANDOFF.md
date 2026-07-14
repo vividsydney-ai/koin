@@ -4,8 +4,8 @@
 > Read this at the start of a new session before doing anything else.
 
 ## Current branch and deploy
-- **Integration branch:** `web-mvp`
-- **Production URL:** https://koin-web-mvp.vercel.app/
+- **Integration branch:** `web-koinaku`
+- **Production URL:** https://web.koinaku.com
 - **Last deploy smoke check:** 200 OK
 
 ## Last known state

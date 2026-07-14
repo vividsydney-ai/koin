@@ -9,9 +9,9 @@
 ## 0. Where you are
 
 - **Repo:** `/Users/vividm4/Documents/Projects/Side-Gigs/Koin/Github-repo`
-- **Shipping branch:** `web-mvp` (this is the integration + deploy branch — there is NO `main` PR flow for this MVP)
+- **Shipping branch:** `web-koinaku` (this is the integration + deploy branch — there is NO `main` PR flow for this MVP)
 - **Stack:** Next.js + TypeScript (strict) + Supabase (Postgres, RLS) + Vitest + Tailwind
-- **Prod:** https://koin-web-mvp.vercel.app/
+- **Prod:** https://web.koinaku.com
 - **Current state:** Phases 1–5 done; Phase 6 in progress. `npx vitest run` → 106 passed / 1 skipped; `npm run type-check` clean.
 
 **First actions (in this order, no exceptions):**
