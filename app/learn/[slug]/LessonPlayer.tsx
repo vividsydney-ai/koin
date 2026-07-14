@@ -34,7 +34,7 @@ interface AiAssistContent {
   question?: ProcessedQuestion;
 }
 
-export default function LessonPlayer({ slug }: { slug: string }) {
+export default function LessonPlayer({ slug, totalLessons }: { slug: string; totalLessons?: number }) {
   const router = useRouter();
   const { user } = useAuth(true);
   const [lesson, setLesson] = useState<Lesson | null>(null);
@@ -284,7 +284,7 @@ export default function LessonPlayer({ slug }: { slug: string }) {
       <header className="sticky top-0 z-10 border-b border-muted/60 bg-background/90 px-5 py-3 backdrop-blur-md">
         <div className="flex items-center justify-between">
           <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            Lesson {lesson.lessonNumber} of 5
+            Lesson {lesson.lessonNumber}{totalLessons ? ` of ${totalLessons}` : ""}
           </span>
           <button
             onClick={() => router.push("/learn")}
