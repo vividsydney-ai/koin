@@ -18,6 +18,7 @@
 - Signup placeholder updated to Alfa Satria (KO-48).
 - Onboarding supports up to 3 financial goals via multi-select; profiles.financial_goal migrated to TEXT[] (KO-49).
 - Production browse verified onboarding end-to-end with 3 goals saved correctly.
+- Lesson numbering audit complete (KO-50): fixed LessonPlayer to show live total lesson count; content personalization verified via user-seeded variant selection.
 - Production domain migrated to `https://web.koinaku.com`.
 - Tests: `npx vitest run` → 164 passed / 1 skipped.
 - `npm run type-check` clean.

@@ -150,6 +150,7 @@ Initialize each task with `npm run loop:init <ID> "<title>"`.
 - [x] KO-47 — removed cofounder's duplicate auth user so he can sign up cleanly
 - [x] KO-48 — signup placeholder updated to Alfa Satria
 - [x] KO-49 — onboarding supports up to 3 financial goals (multi-select)
+- [x] KO-50 — lesson numbering audit; fixed LessonPlayer to show live total count; content personalization verified via seeded variants
 - [x] Production signup + onboarding browse-verified end-to-end
 - [x] Domain migration to `web.koinaku.com`
 
