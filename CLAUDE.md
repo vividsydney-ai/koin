@@ -28,10 +28,20 @@ Every lesson must cite a Tier 1 source before publish. Trust is the product.
 After every task, run VERIFIER.md gates. Do not self-certify.
 If verification fails, halt and update progress.md with the failure reason.
 
+### Loop engineering (unattended/agent sessions)
+Canonical, actually-implemented loop is `docs/agents/LOOP_ENGINEERING.md` + `.loop/state.md` + `.loop/prompts/`.
+- Default mode: **Orchestrator → Maker → Checker** (single agent may play all three roles but must separate the work in the session log).
+- Swarm mode for complex/risky slices (>5 files, >1 migration, auth/RLS/payments, native bridge, or a repeated gate failure): **Planner → Maker → Verifier → Fixer → Lander**, Maker on worktree `wt/<task-slug>`, Verifier is read-only.
+- Commands: `npm run loop:prompt|codex|claude|kimi`, `npm run loop:gates`, `npm run loop:budget`, `npm run verify:loop`.
+- Budget: 6 correction iterations max, 2 hours unattended max, escalate to human on repeat gate failure or ambiguity.
+- The Koin-root `LOOP_ENGINEERING.md` (`/Users/vividm4/Documents/Projects/Side-Gigs/Koin/LOOP_ENGINEERING.md`) is the full expanded rationale behind the doc above — read it for background, not as separate instructions.
+- `SWARM_KARPATHY.md` and `SWARM_ORCHESTRATION.md` (same Koin-root folder) describe a heavier 7-role swarm + metrics-driven experiment loop. **Reference/design-notes only — not implemented, not active.** Don't follow them unless a human explicitly says to adopt them; the swarm actually in use is the 5-role one above.
+
 ### Git protocol
-- Active integration branch: `web-mvp`. Commit and deploy directly from it.
+- Active integration branch: `web-koinaku`. Verify with `git branch --show-current` — do not hardcode; branch names have drifted before (see `.loop/state.md`).
 - Commit every logical sub-step with a clear message.
-- No branch-per-task or PR workflow for this MVP phase; `web-mvp` is the shipping branch.
+- Simple tasks: commit and deploy directly on `web-koinaku`. No branch-per-task/PR workflow for those.
+- Complex or risky slices (swarm mode, see below): Maker works on an isolated worktree `wt/<task-slug>` branched from `web-koinaku`; Lander merges back only after all gates pass.
 - Do not merge to `main` unless explicitly instructed.
 
 ### Hard constraints
@@ -57,6 +67,8 @@ If verification fails, halt and update progress.md with the failure reason.
 | RECURRING.md | Periodic checks not tied to a task (source link rot, deps, Lighthouse) |
 | docs/agents/LOOP_ENGINEERING.md | Canonical closed-loop setup for Claude/Codex/Kimi |
 | .loop/state.md | Durable loop memory and stop-token conventions |
+| ../LOOP_ENGINEERING.md (Koin root) | Full expanded rationale behind docs/agents/LOOP_ENGINEERING.md — background only |
+| ../SWARM_KARPATHY.md, ../SWARM_ORCHESTRATION.md (Koin root) | Draft 7-role swarm + metrics loop design. Reference only — not implemented |
 | docs/BUG_TRACKER.md | Google Sheets ↔ Linear bug sync setup |
 | progress.md | Live state. Update after every session |
 

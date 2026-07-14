@@ -2,6 +2,32 @@
 # Loop reads and writes this. Human can also read to understand where we are.
 # v2: MVP reshaped around paper trading. Original v1 loop files archived in /_archived.
 
+## 2026-07-14 — KO-46: Signup confirmation emails + form UX landed
+
+- Created Linear KO-46 and initialized loop state with swarm roles.
+- **Planner** validated approach: Google OAuth buttons already removed from UI; `signInWithGoogle` dead code and test should be removed; SMTP config uses Google Workspace; profile trigger already reads `raw_user_meta_data->>'display_name'`.
+- **Auth Config Maker**:
+  - Updated `supabase/config.toml`:
+    - `[auth.email] enable_confirmations = true`
+    - Configured `[auth.email.smtp]` with `smtp.gmail.com`, port `587`, `hello@koinaku.com`, `env(SUPABASE_AUTH_EMAIL_SMTP_PASS)`, sender name `Koinaku`.
+  - Added `SUPABASE_AUTH_EMAIL_SMTP_PASS=` to `.env.example`.
+  - Removed dead `signInWithGoogle` from `lib/auth/client.ts` and its test.
+- **Signup UI Maker**:
+  - Updated `app/signup/page.tsx`:
+    - Added `fullName` field.
+    - Added `confirmPassword` field.
+    - Added independent show/hide toggles for both password fields.
+    - Added client-side password match validation.
+    - Passed `{ display_name: fullName }` metadata to `signUpWithEmail`.
+  - Added `tests/signup/page.test.tsx` (5 tests).
+- **Verifier** returned **PASS**.
+- Merged `wt/ko-46` into `web-koinaku`.
+- Verification:
+  - `npx tsc --noEmit` ✅
+  - `npx vitest run` ✅ 163 passed, 1 skipped
+  - `npm run loop:gates -- web` ✅ all gates passed
+- **Blocker / follow-up:** Remote Supabase SMTP password is not set. To complete the email fix, set `SUPABASE_AUTH_EMAIL_SMTP_PASS` in `.env.local` (Google Workspace app password for `hello@koinaku.com`) and run `npx supabase config push --yes` from `Github-repo/`.
+
 ## 2026-07-14 — KO-45: Onboarding financial literacy assessment + personalized learning path
 
 - Created Linear KO-45 and initialized loop state with swarm roles.
