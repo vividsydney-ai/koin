@@ -90,7 +90,7 @@ describe("profile client", () => {
       userId: "user-1",
       displayName: "Budi",
       ageRange: "19_22",
-      financialGoal: "start_investing",
+      financialGoals: ["start_investing"],
       notificationsEnabled: true,
     });
 
@@ -102,9 +102,21 @@ describe("profile client", () => {
       userId: "user-1",
       displayName: "Budi",
       ageRange: "19_22",
-      financialGoal: "start_investing",
+      financialGoals: ["start_investing"],
       notificationsEnabled: true,
       financialLiteracyLevel: "intermediate",
+    });
+
+    expect(result.error).toBeUndefined();
+  });
+
+  it("completeOnboarding accepts multiple financial goals", async () => {
+    const result = await completeOnboarding({
+      userId: "user-1",
+      displayName: "Budi",
+      ageRange: "19_22",
+      financialGoals: ["start_investing", "save_emergency", "avoid_scams"],
+      notificationsEnabled: true,
     });
 
     expect(result.error).toBeUndefined();

@@ -97,7 +97,7 @@ export async function completeOnboarding(input: {
   userId: string;
   displayName: string;
   ageRange: string;
-  financialGoal: string;
+  financialGoals: string[];
   notificationsEnabled: boolean;
   financialLiteracyLevel?: FinancialLiteracyLevel;
 }): Promise<{ error?: string }> {
@@ -106,7 +106,7 @@ export async function completeOnboarding(input: {
     .update({
       display_name: input.displayName,
       age_range: input.ageRange,
-      financial_goal: input.financialGoal,
+      financial_goal: input.financialGoals,
       financial_literacy_level: input.financialLiteracyLevel ?? "beginner",
       onboarding_assessment_completed: input.financialLiteracyLevel !== undefined,
       onboarding_completed: true,

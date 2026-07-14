@@ -11,7 +11,10 @@
 ## Last known state
 - Phases 1–5 complete.
 - Phase 6 slices completed and deployed: Library tab, empty states, KO-37..KO-41 bug fixes.
-- Auth sign-up timeout fixed by disabling Supabase email confirmations (custom SMTP can be added later).
+- Auth sign-up confirmations re-enabled with custom Google Workspace SMTP (hello@koinaku.com app password) via Supabase config push (KO-46).
+- Signup form UX modernized: full name, password confirmation, show/hide toggles, inline validation.
+- Production browse test verified signup creates user and sends verification email.
+- Cofounder duplicate auth account removed (KO-47); he can now sign up cleanly with arjuna@koinaku.com or arjuna.dhananjaya08@gmail.com.
 - Production domain migrated to `https://web.koinaku.com`.
 - Tests: `npx vitest run` → 121 passed / 1 skipped.
 - `npm run type-check` clean.

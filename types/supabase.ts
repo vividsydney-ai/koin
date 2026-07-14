@@ -1226,7 +1226,7 @@ export type Database = {
           avatar_url: string | null
           created_at: string | null
           display_name: string
-          financial_goal: string | null
+          financial_goal: string[] | null
           financial_literacy_level: string | null
           id: string
           onboarding_assessment_completed: boolean | null
@@ -1240,7 +1240,7 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string | null
           display_name: string
-          financial_goal?: string | null
+          financial_goal?: string[] | null
           financial_literacy_level?: string | null
           id: string
           onboarding_assessment_completed?: boolean | null
@@ -1254,7 +1254,7 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string | null
           display_name?: string
-          financial_goal?: string | null
+          financial_goal?: string[] | null
           financial_literacy_level?: string | null
           id?: string
           onboarding_assessment_completed?: boolean | null

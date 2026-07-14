@@ -60,7 +60,7 @@ export default function OnboardingPage() {
   const [step, setStep] = useState<OnboardingStep>("welcome");
   const [displayName, setDisplayName] = useState("");
   const [ageRange, setAgeRange] = useState("");
-  const [financialGoal, setFinancialGoal] = useState("");
+  const [financialGoals, setFinancialGoals] = useState<string[]>([]);
   const [literacyLevel, setLiteracyLevel] = useState<Difficulty>(defaultLevel);
   const [assessmentCompleted, setAssessmentCompleted] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
@@ -116,7 +116,7 @@ export default function OnboardingPage() {
       userId,
       displayName: displayName.trim() || "Pembelajar Koinaku",
       ageRange,
-      financialGoal,
+      financialGoals,
       financialLiteracyLevel: literacyLevel,
       notificationsEnabled,
     });
@@ -150,8 +150,8 @@ export default function OnboardingPage() {
             setDisplayName={setDisplayName}
             ageRange={ageRange}
             setAgeRange={setAgeRange}
-            financialGoal={financialGoal}
-            setFinancialGoal={setFinancialGoal}
+            financialGoals={financialGoals}
+            setFinancialGoals={setFinancialGoals}
             literacyLevel={literacyLevel}
             setLiteracyLevel={setLiteracyLevel}
             assessmentCompleted={assessmentCompleted}
@@ -191,8 +191,8 @@ interface StepContentProps {
   setDisplayName: (value: string) => void;
   ageRange: string;
   setAgeRange: (value: string) => void;
-  financialGoal: string;
-  setFinancialGoal: (value: string) => void;
+  financialGoals: string[];
+  setFinancialGoals: (value: string[]) => void;
   literacyLevel: Difficulty;
   setLiteracyLevel: (value: Difficulty) => void;
   assessmentCompleted: boolean;
@@ -213,8 +213,8 @@ function StepContent({
   setDisplayName,
   ageRange,
   setAgeRange,
-  financialGoal,
-  setFinancialGoal,
+  financialGoals,
+  setFinancialGoals,
   literacyLevel,
   setLiteracyLevel,
   assessmentCompleted,
@@ -278,8 +278,8 @@ function StepContent({
 
       {step === "goal" && (
         <GoalStep
-          financialGoal={financialGoal}
-          setFinancialGoal={setFinancialGoal}
+          financialGoals={financialGoals}
+          setFinancialGoals={setFinancialGoals}
           onNext={onNext}
         />
       )}
@@ -295,7 +295,7 @@ function StepContent({
       {step === "ready" && (
         <ReadyStep
           displayName={displayName}
-          financialGoal={GOALS.find((g) => g.value === financialGoal)?.label ?? ""}
+          financialGoals={financialGoals}
           onStart={onStart}
           submitting={submitting}
           error={error}
@@ -404,54 +404,71 @@ function ProfileStep({
 }
 
 function GoalStep({
-  financialGoal,
-  setFinancialGoal,
+  financialGoals,
+  setFinancialGoals,
   onNext,
 }: {
-  financialGoal: string;
-  setFinancialGoal: (value: string) => void;
+  financialGoals: string[];
+  setFinancialGoals: (value: string[]) => void;
   onNext: () => void;
 }) {
+  const toggleGoal = (value: string) => {
+    if (financialGoals.includes(value)) {
+      setFinancialGoals(financialGoals.filter((g) => g !== value));
+    } else if (financialGoals.length < 3) {
+      setFinancialGoals([...financialGoals, value]);
+    }
+  };
+
+  const canProceed = financialGoals.length >= 1 && financialGoals.length <= 3;
+
   return (
     <div>
       <h2 className="font-display text-2xl font-bold tracking-tight text-foreground">
         Tujuan keuanganmu
       </h2>
       <p className="mt-1 text-sm text-muted-foreground">
-        Pilih satu fokus untuk memulai.
+        Pilih 1–3 tujuan.
       </p>
 
       <div className="mt-5 space-y-3">
-        {GOALS.map((goal) => (
-          <button
-            key={goal.value}
-            type="button"
-            onClick={() => setFinancialGoal(goal.value)}
-            aria-pressed={financialGoal === goal.value}
-            className={`flex w-full items-start gap-4 rounded-xl border-[1.5px] p-4 text-left transition-all ${
-              financialGoal === goal.value
-                ? "border-primary bg-primary-50 shadow-sm"
-                : "border-border bg-surface hover:border-primary-300 hover:bg-surface-raised"
-            }`}
-          >
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-surface text-xl shadow-sm">
-              {goal.icon}
-            </span>
-            <div>
-              <p className={`font-semibold ${financialGoal === goal.value ? "text-primary" : "text-foreground"}`}>
-                {goal.label}
-              </p>
-              <p className="mt-0.5 text-sm leading-relaxed text-muted-foreground">
-                {goal.description}
-              </p>
-            </div>
-          </button>
-        ))}
+        {GOALS.map((goal) => {
+          const selected = financialGoals.includes(goal.value);
+          const maxReached = !selected && financialGoals.length >= 3;
+          return (
+            <button
+              key={goal.value}
+              type="button"
+              onClick={() => toggleGoal(goal.value)}
+              aria-pressed={selected}
+              disabled={maxReached}
+              className={`flex w-full items-start gap-4 rounded-xl border-[1.5px] p-4 text-left transition-all ${
+                selected
+                  ? "border-primary bg-primary-50 shadow-sm"
+                  : maxReached
+                    ? "border-border bg-surface opacity-50 cursor-not-allowed"
+                    : "border-border bg-surface hover:border-primary-300 hover:bg-surface-raised"
+              }`}
+            >
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-surface text-xl shadow-sm">
+                {goal.icon}
+              </span>
+              <div>
+                <p className={`font-semibold ${selected ? "text-primary" : "text-foreground"}`}>
+                  {goal.label}
+                </p>
+                <p className="mt-0.5 text-sm leading-relaxed text-muted-foreground">
+                  {goal.description}
+                </p>
+              </div>
+            </button>
+          );
+        })}
       </div>
 
       <button
         onClick={onNext}
-        disabled={financialGoal === ""}
+        disabled={!canProceed}
         className="mt-6 inline-flex h-14 w-full items-center justify-center rounded-full bg-primary px-6 text-base font-semibold text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-primary-400 hover:shadow-md disabled:translate-y-0 disabled:scale-100 disabled:cursor-not-allowed disabled:bg-primary-200 disabled:text-primary-400 disabled:shadow-none"
       >
         Lanjut
@@ -516,17 +533,22 @@ function NotificationsStep({
 
 function ReadyStep({
   displayName,
-  financialGoal,
+  financialGoals,
   onStart,
   submitting,
   error,
 }: {
   displayName: string;
-  financialGoal: string;
+  financialGoals: string[];
   onStart: () => void;
   submitting: boolean;
   error: string | null;
 }) {
+  const goalLabels = financialGoals
+    .map((value) => GOALS.find((g) => g.value === value)?.label)
+    .filter(Boolean)
+    .join(", ");
+
   return (
     <div className="text-center">
       <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-success-100 text-2xl">
@@ -536,7 +558,7 @@ function ReadyStep({
         Kamu siap, {displayName || "Pembelajar"}!
       </h2>
       <p className="mt-2 text-sm text-muted-foreground">
-        Fokus pertamamu: <span className="font-semibold text-foreground">{financialGoal}</span>. Mari mulai perjalanan literasi keuanganmu.
+        Fokusmu: <span className="font-semibold text-foreground">{goalLabels}</span>. Mari mulai perjalanan literasi keuanganmu.
       </p>
 
       {error && (

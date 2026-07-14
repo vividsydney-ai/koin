@@ -27,7 +27,7 @@ CREATE TABLE profiles (
   display_name TEXT NOT NULL,
   avatar_url TEXT,
   age_range TEXT CHECK (age_range IN ('under_16','16_18','19_22','23_25','26_plus')),
-  financial_goal TEXT,
+  financial_goal TEXT[] CHECK (array_length(financial_goal, 1) <= 3),
   preferred_language TEXT DEFAULT 'id' CHECK (preferred_language IN ('id','en')),
   onboarding_completed BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMPTZ DEFAULT NOW(),

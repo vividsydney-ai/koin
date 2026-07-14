@@ -13,7 +13,7 @@
 - **Shipping branch:** `web-koinaku` (this is the integration + deploy branch — there is NO `main` PR flow for this MVP)
 - **Stack:** Next.js + TypeScript (strict) + Supabase (Postgres, RLS) + Vitest + Tailwind
 - **Prod:** https://web.koinaku.com
-- **Current state:** Phases 1–5 done; Phase 6 in progress (Library tab, empty states, KO-37..KO-41 done). `npx vitest run` → 121 passed / 1 skipped; `npm run type-check` clean.
+- **Current state:** Phases 1–5 done; Phase 6 in progress (Library tab, empty states, KO-37..KO-41 done, KO-46 auth/confirmation fix landed, KO-47 cofounder duplicate account resolved). `npx vitest run` → 121 passed / 1 skipped; `npm run type-check` clean.
 
 **First actions (in this order, no exceptions):**
 1. Read `loop-state.md`. If it exists and state is not `DONE`, resume from there.
@@ -146,7 +146,9 @@ Initialize each task with `npm run loop:init <ID> "<title>"`.
 - [x] Library tab
 - [x] Empty states
 - [x] KO-37..KO-41 bug fixes
-- [x] Production auth timeout fix
+- [x] KO-46 — re-enabled signup confirmation emails (Google Workspace SMTP) + modernized signup form UX
+- [x] KO-47 — removed cofounder's duplicate auth user so he can sign up cleanly
+- [x] Production signup browse-verified end-to-end
 - [x] Domain migration to `web.koinaku.com`
 
 **Suggested first move:** C1 — Recommended resources per lesson on `web-koinaku`.
