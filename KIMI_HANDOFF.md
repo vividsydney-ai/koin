@@ -148,7 +148,9 @@ Initialize each task with `npm run loop:init <ID> "<title>"`.
 - [x] KO-37..KO-41 bug fixes
 - [x] KO-46 — re-enabled signup confirmation emails (Google Workspace SMTP) + modernized signup form UX
 - [x] KO-47 — removed cofounder's duplicate auth user so he can sign up cleanly
-- [x] Production signup browse-verified end-to-end
+- [x] KO-48 — signup placeholder updated to Alfa Satria
+- [x] KO-49 — onboarding supports up to 3 financial goals (multi-select)
+- [x] Production signup + onboarding browse-verified end-to-end
 - [x] Domain migration to `web.koinaku.com`
 
 **Suggested first move:** C1 — Recommended resources per lesson on `web-koinaku`.

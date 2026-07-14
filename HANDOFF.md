@@ -15,8 +15,11 @@
 - Signup form UX modernized: full name, password confirmation, show/hide toggles, inline validation.
 - Production browse test verified signup creates user and sends verification email.
 - Cofounder duplicate auth account removed (KO-47); he can now sign up cleanly with arjuna@koinaku.com or arjuna.dhananjaya08@gmail.com.
+- Signup placeholder updated to Alfa Satria (KO-48).
+- Onboarding supports up to 3 financial goals via multi-select; profiles.financial_goal migrated to TEXT[] (KO-49).
+- Production browse verified onboarding end-to-end with 3 goals saved correctly.
 - Production domain migrated to `https://web.koinaku.com`.
-- Tests: `npx vitest run` → 121 passed / 1 skipped.
+- Tests: `npx vitest run` → 164 passed / 1 skipped.
 - `npm run type-check` clean.
 
 ## Next: finish Phase 6
