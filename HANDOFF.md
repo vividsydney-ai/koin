@@ -31,11 +31,15 @@ Use the loop engineering from `docs/agents/LOOP_ENGINEERING.md`:
 3. Verifier is read-only; Maker works on an isolated worktree; Lander merges only when gates pass.
 4. Run `npm run loop:init <ID> "<title>"` to start a task, `npm run loop:gates` to verify.
 
+## Agent entry points
+- **Kimi Code:** read `KIMI_HANDOFF.md` first, then `HANDOFF.md` and `loop-state.md`.
+- **Claude / Codex:** read `CLAUDE.md` and `HANDOFF.md` first, then `loop-state.md`.
+
 ## Essential docs to read
 1. `loop-state.md` — current task state (read first)
 2. `docs/agents/LOOP_ENGINEERING.md` — loop engineering v2 + swarm roles
 3. `AGENTS.md` — agent roles, gotcha mitigations, hard stops
-4. `CLAUDE.md` — workflow and file routing
+4. `CLAUDE.md` / `KIMI_HANDOFF.md` — agent-specific routing
 5. `TASKS.md` — task list
 6. `progress.md` — live state
 7. `CONTEXT.md`, `ADL.md`, `SCHEMA.md` — domain and schema context

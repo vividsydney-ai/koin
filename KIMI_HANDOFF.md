@@ -59,9 +59,9 @@ Worktrees isolate the **files on disk**. They do **NOT** isolate:
 
 ### Landing model (respects the "no PR" protocol)
 `web-koinaku` is the shipping branch. Worktree branches are **scratch space that lands back onto `web-koinaku`**:
-work in the worktree → pass all gates → rebase onto latest `web-mvp` → fast-forward/squash-merge → delete the worktree. You are not introducing a permanent branch-per-feature model; the branches are disposable.
+work in the worktree → pass all gates → rebase onto latest `web-koinaku` → fast-forward/squash-merge → delete the worktree. The branches are disposable.
 
-> If the human prefers to stay strictly single-branch (current recorded protocol), skip worktrees entirely and just run the loop in section 3 sequentially on `web-mvp`, one task at a time. Ask if unsure.
+> If the human prefers to stay strictly single-branch, skip worktrees entirely and just run the loop in section 3 sequentially on `web-koinaku`, one task at a time. Ask if unsure.
 
 ---
 
@@ -82,13 +82,13 @@ Run **all** of these. If any fails, halt and fix before proceeding:
 npx tsc --noEmit                      # must be zero errors
 
 # Gate 1 — Supabase types (only if you touched schema)
-npx supabase gen types typescript --local > src/types/supabase.ts   # must exit 0
+npx supabase gen types typescript --linked > types/supabase.ts   # must exit 0
 
 # Gate — Tests
-npx vitest run                        # must be ≥106 passed / 1 skipped, no regressions
+npx vitest run                        # must be ≥121 passed / 1 skipped, no regressions
 
-# Gate 2 — RULES.md scan (grep your own diff)
-git diff | grep -nE "localStorage|sessionStorage" && echo "VIOLATION" || echo "clean"
+# Gate 2 — RULES.md scan (grep source diff only)
+git diff -- "*.ts" "*.tsx" "*.js" "*.jsx" | grep -nE "localStorage|sessionStorage" && echo "VIOLATION" || echo "clean"
 # also: no is_published=true without lesson_reviews; no migration without RLS in same file
 ```
 
@@ -122,7 +122,7 @@ git worktree remove ../wt-empty-states
 git branch -D wt/empty-states
 ```
 
-Commit every logical sub-step with a clear message (project convention). Deploy is automatic from `web-mvp` via Vercel.
+Commit every logical sub-step with a clear message (project convention). Deploy is automatic from `web-koinaku` via Vercel to https://web.koinaku.com.
 
 ---
 
@@ -157,7 +157,7 @@ Initialize each task with `npm run loop:init <ID> "<title>"`.
 
 A task is done ONLY when:
 1. All applicable gates in section 3 pass (no self-certification).
-2. The change is landed on `web-mvp` and gates still pass post-merge.
+2. The change is landed on `web-koinaku` and gates still pass post-merge.
 3. `TASKS.md` item flipped `[ ]` → `[x]`.
 4. `progress.md` updated with: what you did, gate results (paste the counts), and any follow-ups.
 5. A session log entry appended to `_sessions/session_YYYYMMDD.md`.

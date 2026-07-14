@@ -56,6 +56,7 @@ Implemented Loop Engineering v2 scaffolding and swarm protocol.
 - Added scripts: `loop-init.sh`, `gate-runner.sh`, `budget-check.sh`, `reflexion-search.sh`, `security-loop.sh`, `design-drift-check.sh`, `capacitor-sync-check.sh`.
 - Updated `AGENTS.md`, `HANDOFF.md`, `KIMI_HANDOFF.md` to read `loop-state.md` first and use swarm roles.
 - Added npm scripts: `loop:init`, `loop:gates`, `loop:budget`, `loop:security`, `loop:design-drift`, `loop:cap-sync`, `loop:reflexion`.
+- Fixed stale `web-mvp` references in `KIMI_HANDOFF.md`; documented Kimi-specific entry point in `HANDOFF.md`.
 - Gate-runner passes: TypeScript, tests (121/1), diff scan, design-token drift, secret scan.
 
 ## Blockers / external follow-ups
