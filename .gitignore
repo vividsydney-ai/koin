@@ -60,6 +60,8 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 .gstack/
+.loop/runs/
+.claude/worktrees/
 
 # Local QA screenshots
 tmp-screenshots/

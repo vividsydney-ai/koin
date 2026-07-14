@@ -21,7 +21,8 @@ Every lesson must cite a Tier 1 source before publish. Trust is the product.
 6. Read VISION.md — if ambiguity, consult context
 7. Read SCHEMA.md — schema is canonical
 8. Read AGENTS.md — check current role, scope, and pre-flight checklist
-9. Plan → Write tests → Implement → Verify → Document
+9. Read docs/agents/LOOP_ENGINEERING.md and .loop/state.md for unattended loop rules
+10. Plan → Write tests → Implement → Verify → Document
 
 ### Verification is mandatory
 After every task, run VERIFIER.md gates. Do not self-certify.
@@ -54,6 +55,8 @@ If verification fails, halt and update progress.md with the failure reason.
 | AGENTS.md | Role definitions, maker/checker split |
 | VERIFIER.md | Automated gates. Run after every task |
 | RECURRING.md | Periodic checks not tied to a task (source link rot, deps, Lighthouse) |
+| docs/agents/LOOP_ENGINEERING.md | Canonical closed-loop setup for Claude/Codex/Kimi |
+| .loop/state.md | Durable loop memory and stop-token conventions |
 | docs/BUG_TRACKER.md | Google Sheets ↔ Linear bug sync setup |
 | progress.md | Live state. Update after every session |
 
