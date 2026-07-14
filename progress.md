@@ -2,6 +2,30 @@
 # Loop reads and writes this. Human can also read to understand where we are.
 # v2: MVP reshaped around paper trading. Original v1 loop files archived in /_archived.
 
+## 2026-07-08 — Loop engineering scaffold added
+
+- Added canonical loop engineering runbook: `docs/agents/LOOP_ENGINEERING.md`.
+- Added durable loop memory and prompts under `.loop/`:
+  - `.loop/state.md`
+  - `.loop/prompts/orchestrator.md`
+  - `.loop/prompts/maker.md`
+  - `.loop/prompts/checker.md`
+- Added executable loop scripts:
+  - `scripts/agent-loop.sh`
+  - `scripts/verify-loop.sh`
+- Added package scripts:
+  - `npm run loop:prompt`
+  - `npm run loop:codex`
+  - `npm run loop:claude`
+  - `npm run loop:kimi`
+  - `npm run verify:loop`
+- Added optional Claude Stop hook gated by `.loop/require-stop-gate`, so normal Claude sessions are not forced to run heavy checks.
+- Added `.worktreeinclude` for env-file copying into Claude worktrees and ignored `.loop/runs/` / `.claude/worktrees/`.
+- Verification:
+  - `bash -n scripts/agent-loop.sh && bash -n scripts/verify-loop.sh && bash -n .claude/hooks/loop-stop-gate.sh` ✅
+  - `npm run loop:prompt` ✅ generated the bounded next-task prompt
+  - `npm run verify:loop` ✅ passed
+
 ## 2026-07-06 — Koinaku rebrand branch created
 
 - Created `web-koinaku` branch from `web-mvp`.
@@ -26,16 +50,14 @@
 - Open bugs (KO-37..KO-41) remain intentionally deferred on this branch.
 
 ## Last completed task
-Linear sync for shipped fixes and the paper-trading RLS bug.
-- Marked KO-37, KO-38, KO-39, KO-40, KO-41 as Done.
-- Created KO-42 for the `user_settings` INSERT RLS bug and marked it Done.
-- All six issues now reflect the state of `web-koinaku` and the production deploy.
+Fixed production auth sign-up/login timeout.
+- Root cause: Supabase Auth had email confirmations enabled but no reliable custom SMTP, so the default mailer timed out and `/auth/v1/signup` returned 504.
+- Updated `supabase/config.toml` with the production `site_url` and `additional_redirect_urls`, disabled `enable_confirmations`, and pushed to remote.
+- Sign-up now returns an active session immediately.
 
 ## Blockers / external follow-ups
-- Confirmation email deliverability is controlled by Supabase Auth, not app code. Ensure:
-  1. Supabase Auth → URL Configuration → Redirect URLs includes `https://koin-web-koinaku.vercel.app/auth/callback`.
-  2. Supabase Auth → Email Templates → "Confirm signup" is enabled and the template uses `{{ .ConfirmationURL }}`.
-  3. For reliable delivery, configure a custom SMTP provider (SendGrid/Resend/etc.) in Supabase Auth → Providers → SMTP instead of using Supabase's default mailer.
+- Email confirmations are currently disabled on the remote Supabase project because the default mailer was timing out and blocking all sign-ups. New users now get an active session immediately.
+- To re-enable confirmations later, configure a custom SMTP provider in Supabase Auth (Google Workspace: `smtp.gmail.com`, port `587`, user `hello@koinaku.com`, app password) and set `auth.email.enable_confirmations = true` in `supabase/config.toml`.
 
 ## Current session scope
 Web-first MVP on branch `web-mvp`. Phases 1–5 complete. Phase 6 adaptive triggers + content done. Next session decision:
