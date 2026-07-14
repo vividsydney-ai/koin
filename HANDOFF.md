@@ -1,6 +1,6 @@
 # Agent Handoff — Koin Web MVP
 
-> Last updated: 2026-07-03
+> Last updated: 2026-07-14
 > Read this at the start of a new session before doing anything else.
 
 ## Current branch and deploy
@@ -10,45 +10,35 @@
 
 ## Last known state
 - Phases 1–5 complete.
-- Phase 6 adaptive lesson triggers + 4 behavioral lessons + variant expansion are done and deployed.
-- Tests: `npx vitest run` → 106 passed, 1 skipped.
+- Phase 6 slices completed and deployed: Library tab, empty states, KO-37..KO-41 bug fixes.
+- Auth sign-up timeout fixed by disabling Supabase email confirmations (custom SMTP can be added later).
+- Production domain migrated to `https://web.koinaku.com`.
+- Tests: `npx vitest run` → 121 passed / 1 skipped.
 - `npm run type-check` clean.
 
-## Two possible next streams
-
-### Stream 1: Fix open bugs (likely higher priority)
-All bugs live in Linear project **Koin Bugs** with the `Bug` label:
-
-| Issue | Priority | Title |
-|---|---|---|
-| KO-37 | P0 | Sign-up confirmation email is not sent after registration |
-| KO-38 | P1 | Home page hero text overlaps on iPhone SE screen |
-| KO-39 | P1 | Bottom navigation does not highlight active page on mobile |
-| KO-40 | P2 | Paper trading page takes 4+ seconds to load on 3G connection |
-| KO-41 | P2 | Profile page is missing 'Edit Profile' button |
-
-Start with KO-37 (P0).
-
-### Stream 2: Continue Phase 6 build
+## Next: finish Phase 6
 Remaining items from `TASKS.md`:
-- Expand lessons from 9 → 15
-- Library tab (browse sources by topic/tier/type/language)
-- Recommended resources per lesson
-- All empty states
-- Analytics events instrumentation
-- Notification queue stub
-- Final QA: 375px mobile, 1280px desktop, dark mode, keyboard nav, WCAG AA
+- C1: Recommended resources per lesson
+- C2: Analytics events wrapper + 16 spec events
+- C3: Notification queue stub delivery
+- C4: Lesson expansion 9 → 15
+- C5: Final QA: 375px mobile, 1280px desktop, keyboard nav, WCAG AA
 
-## How to decide
-- If the human wants stability / user trust first, fix bugs.
-- If the human wants feature completeness first, continue Phase 6 (Library tab is a clean next slice).
+## Loop v2 + swarm protocol
+Use the loop engineering from `docs/agents/LOOP_ENGINEERING.md`:
+1. Start every session by reading `loop-state.md`. Resume if state != DONE.
+2. For complex/risky slices, use swarm roles: Planner → Maker → Verifier → Fixer → Lander.
+3. Verifier is read-only; Maker works on an isolated worktree; Lander merges only when gates pass.
+4. Run `npm run loop:init <ID> "<title>"` to start a task, `npm run loop:gates` to verify.
 
 ## Essential docs to read
-1. `CLAUDE.md` — workflow and file routing
-2. `TASKS.md` — task list
-3. `progress.md` — live state
-4. `docs/BUG_TRACKER.md` — Google Sheet ↔ Linear sync details
-5. `CONTEXT.md`, `ADL.md`, `SCHEMA.md` — domain and schema context
+1. `loop-state.md` — current task state (read first)
+2. `docs/agents/LOOP_ENGINEERING.md` — loop engineering v2 + swarm roles
+3. `AGENTS.md` — agent roles, gotcha mitigations, hard stops
+4. `CLAUDE.md` — workflow and file routing
+5. `TASKS.md` — task list
+6. `progress.md` — live state
+7. `CONTEXT.md`, `ADL.md`, `SCHEMA.md` — domain and schema context
 
 ## Environment notes
 - `UpdateGoal` tool is not exposed. Do not wait for it. Track completion in `progress.md`, `TASKS.md`, and Linear.

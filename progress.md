@@ -50,11 +50,13 @@
 - Open bugs (KO-37..KO-41) remain intentionally deferred on this branch.
 
 ## Last completed task
-Migrated production web app to custom domain `web.koinaku.com`.
-- Updated Vercel `NEXT_PUBLIC_APP_URL` production env var and redeployed.
-- Updated Supabase Auth `site_url` and redirect allowlist to `https://web.koinaku.com`.
-- Updated ProgressCard footer, HANDOFF.md, KIMI_HANDOFF.md, and progress.md with the new domain.
-- The app is now live at `https://web.koinaku.com`.
+Implemented Loop Engineering v2 scaffolding and swarm protocol.
+- Added Swarm Roles section to root `LOOP_ENGINEERING.md` and `docs/agents/LOOP_ENGINEERING.md` (dated 2026-07-14).
+- Created `.loop/reflexion/` taxonomy, `loop-state.md`, `loop-budget.md`, `loop-verdict.md` templates.
+- Added scripts: `loop-init.sh`, `gate-runner.sh`, `budget-check.sh`, `reflexion-search.sh`, `security-loop.sh`, `design-drift-check.sh`, `capacitor-sync-check.sh`.
+- Updated `AGENTS.md`, `HANDOFF.md`, `KIMI_HANDOFF.md` to read `loop-state.md` first and use swarm roles.
+- Added npm scripts: `loop:init`, `loop:gates`, `loop:budget`, `loop:security`, `loop:design-drift`, `loop:cap-sync`, `loop:reflexion`.
+- Gate-runner passes: TypeScript, tests (121/1), diff scan, design-token drift, secret scan.
 
 ## Blockers / external follow-ups
 - Email confirmations are currently disabled on the remote Supabase project because the default mailer was timing out and blocking all sign-ups. New users now get an active session immediately.
