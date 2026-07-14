@@ -78,15 +78,6 @@ export async function resendSignupEmail(email: string) {
   });
 }
 
-export async function signInWithGoogle() {
-  return supabase.auth.signInWithOAuth({
-    provider: "google",
-    options: {
-      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
-    },
-  });
-}
-
 export async function signOut() {
   return supabase.auth.signOut();
 }
