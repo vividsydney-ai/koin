@@ -16,7 +16,6 @@ vi.mock("@supabase/supabase-js", () => ({
       signInWithPassword: vi.fn().mockResolvedValue({ data: { user: null, session: null }, error: null }),
       signUp: vi.fn().mockResolvedValue({ data: { user: null, session: null }, error: null }),
       resend: vi.fn().mockResolvedValue({ data: { user: null, session: null }, error: null }),
-      signInWithOAuth: vi.fn().mockResolvedValue({ data: { url: "https://example.com" }, error: null }),
       signOut: vi.fn().mockResolvedValue({ error: null }),
       onAuthStateChange: vi.fn().mockReturnValue({ subscription: { unsubscribe: vi.fn() } }),
     },
@@ -28,7 +27,6 @@ import {
   signInWithEmail,
   signUpWithEmail,
   resendSignupEmail,
-  signInWithGoogle,
   signOut,
 } from "@/lib/auth/client";
 
@@ -46,13 +44,13 @@ describe("auth client", () => {
     });
   });
 
-  it("signUpWithEmail calls signUp with email redirect", async () => {
-    await signUpWithEmail("a@b.com", "password123", { name: "Budi" });
+  it("signUpWithEmail calls signUp with email redirect and metadata", async () => {
+    await signUpWithEmail("a@b.com", "password123", { display_name: "Budi" });
     expect(supabase.auth.signUp).toHaveBeenCalledWith({
       email: "a@b.com",
       password: "password123",
       options: {
-        data: { name: "Budi" },
+        data: { display_name: "Budi" },
         emailRedirectTo: expect.stringContaining("/auth/callback"),
       },
     });
@@ -63,16 +61,6 @@ describe("auth client", () => {
     expect(supabase.auth.resend).toHaveBeenCalledWith({
       type: "signup",
       email: "a@b.com",
-    });
-  });
-
-  it("signInWithGoogle uses google provider", async () => {
-    await signInWithGoogle();
-    expect(supabase.auth.signInWithOAuth).toHaveBeenCalledWith({
-      provider: "google",
-      options: {
-        redirectTo: expect.stringContaining("/auth/callback"),
-      },
     });
   });
 
