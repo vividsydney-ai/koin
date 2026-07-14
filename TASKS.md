@@ -114,6 +114,8 @@
   - Portfolio drawdown → volatility / emotional control lesson
 - [x] User lesson recommendations table and UI
 - [x] Expand from 5 to 15 lessons (see `content-lessons/` and Linear KO-43)
+- [x] Content audit and cleanup: remove low-quality, repeated, and duplicate variants (Linear KO-44)
+- [ ] Onboarding financial literacy assessment + personalized learning path (Linear KO-45)
 - [x] Library tab: browse sources by topic/tier/type/language
 - [ ] Recommended resources: books, videos per lesson
 - [x] All empty states designed (no friends, no lessons started, no holdings, streak lost, graduated, all done)

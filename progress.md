@@ -2,6 +2,21 @@
 # Loop reads and writes this. Human can also read to understand where we are.
 # v2: MVP reshaped around paper trading. Original v1 loop files archived in /_archived.
 
+## 2026-07-14 — KO-44: Content audit and cleanup landed
+
+- Created Linear KO-44 and initialized loop state with swarm roles (Planner / Maker / Verifier / Fixer / Lander).
+- Planner audited remote `content_variants`: 1,089 active variants across 9 lessons; ~284 flagged for deactivation.
+- Maker built `supabase/migrations/20260714000022_deactivate_low_quality_variants.sql` on isolated worktree `wt/ko-44`:
+  - Scoped to 5 beginner launch lessons.
+  - Deactivated templated examples/explanations, garbage answers, lottery-ticket distractors, generic true/false explanations, and exact duplicate question text.
+  - Behavioral lessons left untouched.
+- Added `tests/migrations/022_deactivate_low_quality_variants.test.ts` (13 structural assertions).
+- Verifier returned **PASS**; all gates passed on worktree and main branch.
+- Migration pushed to remote Supabase; verified active/inactive split: **805 active / 284 inactive**.
+- Merged `wt/ko-44` into `web-koinaku`, ran gates again (142 passed, 1 skipped), updated `TASKS.md`.
+- Archived `loop-state.md` / `loop-budget.md` to `.loop/reflexion/context/`.
+- KO-45 (onboarding financial literacy assessment) is now unblocked.
+
 ## 2026-07-14 — KO-43: Advanced lessons v2 imported
 
 - Generated `scripts/generate-migration-021.py` to build migration 021 from `content-lessons/` CSVs.
