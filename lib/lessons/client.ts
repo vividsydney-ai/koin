@@ -194,6 +194,56 @@ export async function getLessonProgress(
   return map;
 }
 
+export async function ensureLessonProgressAvailable(
+  userId: string,
+  lessonIds: string[]
+): Promise<void> {
+  if (lessonIds.length === 0) return;
+
+  const { data: existing } = await supabase
+    .from("lesson_progress")
+    .select("lesson_id, status")
+    .eq("user_id", userId)
+    .in("lesson_id", lessonIds);
+
+  const existingById = new Map(
+    (existing ?? []).map((row) => [row.lesson_id, row.status])
+  );
+  const lockedIds = lessonIds.filter(
+    (id) => existingById.get(id) === "locked"
+  );
+  const missingIds = lessonIds.filter((id) => !existingById.has(id));
+
+  if (lockedIds.length > 0) {
+    const { error: updateError } = await supabase
+      .from("lesson_progress")
+      .update({ status: "available" })
+      .eq("user_id", userId)
+      .in("lesson_id", lockedIds);
+
+    if (updateError) {
+      console.error("ensureLessonProgressAvailable update error:", updateError.message);
+    }
+  }
+
+  if (missingIds.length === 0) return;
+
+  const rows = missingIds.map((lessonId) => ({
+    user_id: userId,
+    lesson_id: lessonId,
+    status: "available" as const,
+  }));
+
+  const { error } = await supabase.from("lesson_progress").upsert(rows, {
+    onConflict: "user_id,lesson_id",
+    ignoreDuplicates: true,
+  });
+
+  if (error) {
+    console.error("ensureLessonProgressAvailable insert error:", error.message);
+  }
+}
+
 export async function getRecentAttemptVariantIds(
   userId: string,
   lessonId: string,

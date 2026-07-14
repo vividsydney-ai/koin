@@ -4,6 +4,12 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/auth/client";
 import { getProfile, completeOnboarding } from "@/lib/profile/client";
+import AssessmentStep from "./AssessmentStep";
+import {
+  defaultLevel,
+  diagnosticQuestions,
+  type Difficulty,
+} from "@/lib/onboarding/diagnosticQuestions";
 
 const AGE_RANGES = [
   { value: "under_16", label: "Di bawah 16", shortLabel: "<16" },
@@ -46,7 +52,7 @@ const GOALS = [
   },
 ];
 
-type OnboardingStep = "welcome" | "profile" | "goal" | "notifications" | "ready";
+type OnboardingStep = "welcome" | "profile" | "assessment" | "goal" | "notifications" | "ready";
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -55,6 +61,8 @@ export default function OnboardingPage() {
   const [displayName, setDisplayName] = useState("");
   const [ageRange, setAgeRange] = useState("");
   const [financialGoal, setFinancialGoal] = useState("");
+  const [literacyLevel, setLiteracyLevel] = useState<Difficulty>(defaultLevel);
+  const [assessmentCompleted, setAssessmentCompleted] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -109,6 +117,7 @@ export default function OnboardingPage() {
       displayName: displayName.trim() || "Pembelajar Koinaku",
       ageRange,
       financialGoal,
+      financialLiteracyLevel: literacyLevel,
       notificationsEnabled,
     });
 
@@ -143,17 +152,23 @@ export default function OnboardingPage() {
             setAgeRange={setAgeRange}
             financialGoal={financialGoal}
             setFinancialGoal={setFinancialGoal}
+            literacyLevel={literacyLevel}
+            setLiteracyLevel={setLiteracyLevel}
+            assessmentCompleted={assessmentCompleted}
+            setAssessmentCompleted={setAssessmentCompleted}
             notificationsEnabled={notificationsEnabled}
             setNotificationsEnabled={setNotificationsEnabled}
             onNext={() => {
               if (step === "welcome") navigate("profile");
-              else if (step === "profile") navigate("goal");
+              else if (step === "profile") navigate("assessment");
+              else if (step === "assessment") navigate("goal");
               else if (step === "goal") navigate("notifications");
               else if (step === "notifications") navigate("ready");
             }}
             onBack={() => {
               if (step === "profile") navigate("welcome", "back");
-              else if (step === "goal") navigate("profile", "back");
+              else if (step === "assessment") navigate("profile", "back");
+              else if (step === "goal") navigate("assessment", "back");
               else if (step === "notifications") navigate("goal", "back");
               else if (step === "ready") navigate("notifications", "back");
             }}
@@ -178,6 +193,10 @@ interface StepContentProps {
   setAgeRange: (value: string) => void;
   financialGoal: string;
   setFinancialGoal: (value: string) => void;
+  literacyLevel: Difficulty;
+  setLiteracyLevel: (value: Difficulty) => void;
+  assessmentCompleted: boolean;
+  setAssessmentCompleted: (value: boolean) => void;
   notificationsEnabled: boolean;
   setNotificationsEnabled: (value: boolean) => void;
   onNext: () => void;
@@ -196,6 +215,10 @@ function StepContent({
   setAgeRange,
   financialGoal,
   setFinancialGoal,
+  literacyLevel,
+  setLiteracyLevel,
+  assessmentCompleted,
+  setAssessmentCompleted,
   notificationsEnabled,
   setNotificationsEnabled,
   onNext,
@@ -234,6 +257,22 @@ function StepContent({
           ageRange={ageRange}
           setAgeRange={setAgeRange}
           onNext={onNext}
+        />
+      )}
+
+      {step === "assessment" && (
+        <AssessmentStep
+          questions={diagnosticQuestions}
+          onComplete={(level) => {
+            setLiteracyLevel(level);
+            setAssessmentCompleted(true);
+            onNext();
+          }}
+          onSkip={() => {
+            setLiteracyLevel(defaultLevel);
+            setAssessmentCompleted(false);
+            onNext();
+          }}
         />
       )}
 
@@ -518,7 +557,7 @@ function ReadyStep({
 }
 
 function ProgressDots({ step }: { step: OnboardingStep }) {
-  const steps: OnboardingStep[] = ["welcome", "profile", "goal", "notifications", "ready"];
+  const steps: OnboardingStep[] = ["welcome", "profile", "assessment", "goal", "notifications", "ready"];
   const currentIndex = steps.indexOf(step);
 
   return (

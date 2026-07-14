@@ -1227,7 +1227,9 @@ export type Database = {
           created_at: string | null
           display_name: string
           financial_goal: string | null
+          financial_literacy_level: string | null
           id: string
+          onboarding_assessment_completed: boolean | null
           onboarding_completed: boolean | null
           preferred_language: string | null
           updated_at: string | null
@@ -1239,7 +1241,9 @@ export type Database = {
           created_at?: string | null
           display_name: string
           financial_goal?: string | null
+          financial_literacy_level?: string | null
           id: string
+          onboarding_assessment_completed?: boolean | null
           onboarding_completed?: boolean | null
           preferred_language?: string | null
           updated_at?: string | null
@@ -1251,7 +1255,9 @@ export type Database = {
           created_at?: string | null
           display_name?: string
           financial_goal?: string | null
+          financial_literacy_level?: string | null
           id?: string
+          onboarding_assessment_completed?: boolean | null
           onboarding_completed?: boolean | null
           preferred_language?: string | null
           updated_at?: string | null
@@ -1846,6 +1852,7 @@ export type Database = {
         }
         Returns: Json
       }
+      check_adaptive_triggers: { Args: never; Returns: undefined }
       check_graduation: { Args: { p_user_id: string }; Returns: Json }
       check_in_streak: { Args: { p_user_id: string }; Returns: Json }
       complete_lesson: {
@@ -1861,6 +1868,10 @@ export type Database = {
         Returns: Json
       }
       create_friend_invite: { Args: { p_user_id: string }; Returns: Json }
+      evaluate_adaptive_triggers: {
+        Args: { p_user_id: string }
+        Returns: undefined
+      }
       execute_trade: {
         Args: {
           p_lot_count: number

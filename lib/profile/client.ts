@@ -34,6 +34,27 @@ export async function getUserSettings(userId: string): Promise<UserSettings | nu
   return data;
 }
 
+export async function getFinancialLiteracyLevel(
+  userId: string
+): Promise<FinancialLiteracyLevel | null> {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("financial_literacy_level")
+    .eq("id", userId)
+    .single();
+
+  if (error) {
+    console.error("getFinancialLiteracyLevel error:", error.message);
+    return null;
+  }
+
+  const value = data?.financial_literacy_level;
+  if (value === "beginner" || value === "intermediate" || value === "advanced") {
+    return value;
+  }
+  return null;
+}
+
 export async function updateProfile(input: {
   userId: string;
   displayName: string;
@@ -70,12 +91,15 @@ export async function updateProfile(input: {
   return {};
 }
 
+export type FinancialLiteracyLevel = "beginner" | "intermediate" | "advanced";
+
 export async function completeOnboarding(input: {
   userId: string;
   displayName: string;
   ageRange: string;
   financialGoal: string;
   notificationsEnabled: boolean;
+  financialLiteracyLevel?: FinancialLiteracyLevel;
 }): Promise<{ error?: string }> {
   const { error: profileError } = await supabase
     .from("profiles")
@@ -83,6 +107,8 @@ export async function completeOnboarding(input: {
       display_name: input.displayName,
       age_range: input.ageRange,
       financial_goal: input.financialGoal,
+      financial_literacy_level: input.financialLiteracyLevel ?? "beginner",
+      onboarding_assessment_completed: input.financialLiteracyLevel !== undefined,
       onboarding_completed: true,
       updated_at: new Date().toISOString(),
     })
