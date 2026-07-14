@@ -1,13 +1,13 @@
 # loop-budget.md
 
-## 2026-07-14 — <TASK_ID>: <Title>
-- Iterations used: 0 / 6
-- Time: 0 min / 45 min
-- Files touched: 0 / 15
-- Migrations: 0 / 1
+## 2026-07-14T05:30:01Z — KO-43: Import advanced lessons v2 content (expand 9 → 15)
+- Iterations used: 1 / 6
+- Time: ~10 min / 45 min
+- Files touched: 7 / 15
+- Migrations: 1 / 1
 - Subagent calls: 0
-- Status: QUEUED
-- Estimated tokens: ~0
+- Status: DONE
+- Estimated tokens: ~12k
 
 ## Subagent call log
 | # | Role | Started | Duration | Outcome |

@@ -113,7 +113,7 @@
   - No trade for N days → confidence / risk tolerance lesson
   - Portfolio drawdown → volatility / emotional control lesson
 - [x] User lesson recommendations table and UI
-- [ ] Expand from 5 to 15 lessons
+- [x] Expand from 5 to 15 lessons (see `content-lessons/` and Linear KO-43)
 - [x] Library tab: browse sources by topic/tier/type/language
 - [ ] Recommended resources: books, videos per lesson
 - [x] All empty states designed (no friends, no lessons started, no holdings, streak lost, graduated, all done)

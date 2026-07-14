@@ -2,6 +2,23 @@
 # Loop reads and writes this. Human can also read to understand where we are.
 # v2: MVP reshaped around paper trading. Original v1 loop files archived in /_archived.
 
+## 2026-07-14 — KO-43: Advanced lessons v2 imported
+
+- Generated `scripts/generate-migration-021.py` to build migration 021 from `content-lessons/` CSVs.
+- Created `supabase/migrations/20260714000021_import_advanced_lessons_v2.sql`:
+  - 6 advanced lessons (10–15) inserted as draft/unpublished.
+  - ~825 content variants added to the 5 beginner launch lessons.
+  - 12 recommended resources and 6 lesson media placeholders kept inactive.
+- Added `tests/migrations/021_import_advanced_lessons_v2.test.ts` with structural assertions.
+- Updated `TASKS.md`: Phase 6 "Expand from 5 to 15 lessons" is now complete.
+- Verification:
+  - `npx tsc --noEmit` ✅
+  - `npx vitest run` ✅ 129 passed, 1 skipped
+  - `npm run loop:gates -- web` ✅ all gates passed
+  - `npx supabase db push --include-all` ✅ migration applied to remote `koin` project
+  - Remote DB row counts confirmed: 6 advanced lessons, 1,089 content_variants, 12 recommended_resources, 18 lesson_media.
+- Risks flagged: some generated variant answers are low-quality; resources/media use placeholder URLs. Both are kept inactive/draft pending content review.
+
 ## 2026-07-08 — Loop engineering scaffold added
 
 - Added canonical loop engineering runbook: `docs/agents/LOOP_ENGINEERING.md`.
