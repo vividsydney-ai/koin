@@ -15,6 +15,7 @@
 - Migration pushed to remote Supabase; verified active/inactive split: **805 active / 284 inactive**.
 - Merged `wt/ko-44` into `web-koinaku`, ran gates again (142 passed, 1 skipped), updated `TASKS.md`.
 - Archived `loop-state.md` / `loop-budget.md` to `.loop/reflexion/context/`.
+- Deployed updated `web-koinaku` to Vercel: `https://koin-web-koinaku-hxunhqr3d-vividsydney.vercel.app` (aliased `https://web.koinaku.com`).
 - KO-45 (onboarding financial literacy assessment) is now unblocked.
 
 ## 2026-07-14 — KO-43: Advanced lessons v2 imported
