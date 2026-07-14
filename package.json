@@ -59,7 +59,7 @@
     "eslint-config-next": "16.2.9",
     "jsdom": "^29.1.1",
     "react-hook-form": "^7.80.0",
-    "supabase": "^2.108.0",
+    "supabase": "^2.109.0",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^4.1.9",

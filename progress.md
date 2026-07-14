@@ -26,7 +26,7 @@
   - `npx tsc --noEmit` ✅
   - `npx vitest run` ✅ 163 passed, 1 skipped
   - `npm run loop:gates -- web` ✅ all gates passed
-- **Blocker / follow-up:** Remote Supabase SMTP password is not set. To complete the email fix, set `SUPABASE_AUTH_EMAIL_SMTP_PASS` in `.env.local` (Google Workspace app password for `hello@koinaku.com`) and run `npx supabase config push --yes` from `Github-repo/`.
+- **Follow-up completed:** User added `SUPABASE_AUTH_EMAIL_SMTP_PASS` to `.env.local`. Initial `npx supabase config push` failed due to CLI v2.108.0 storage-config schema mismatch. Bumped local `supabase` devDependency to `^2.109.1`, ran `supabase config push --yes` (global binary), and auth config was pushed successfully. Signup confirmation emails are now enabled via Google Workspace SMTP.
 
 ## 2026-07-14 — KO-45: Onboarding financial literacy assessment + personalized learning path
 
