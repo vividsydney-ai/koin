@@ -17,6 +17,10 @@
   - `npm run loop:gates -- web` ✅ all gates passed
   - `npx supabase db push --include-all` ✅ migration applied to remote `koin` project
   - Remote DB row counts confirmed: 6 advanced lessons, 1,089 content_variants, 12 recommended_resources, 18 lesson_media.
+- Deployed `web-koinaku` to Vercel production:
+  - `https://koin-web-koinaku-jdtmw02dm-vividsydney.vercel.app`
+  - Aliased `https://web.koinaku.com` ✅ 200
+  - Aliased `https://koin-web-koinaku.vercel.app` ✅ 200
 - Risks flagged: some generated variant answers are low-quality; resources/media use placeholder URLs. Both are kept inactive/draft pending content review.
 
 ## 2026-07-08 — Loop engineering scaffold added
