@@ -2,6 +2,25 @@
 # Loop reads and writes this. Human can also read to understand where we are.
 # v2: MVP reshaped around paper trading. Original v1 loop files archived in /_archived.
 
+## 2026-07-14 — KO-45: Onboarding financial literacy assessment + personalized learning path
+
+- Created Linear KO-45 and initialized loop state with swarm roles.
+- Migration 023 pushed to remote Supabase:
+  - Added `profiles.financial_literacy_level` (CHECK: beginner/intermediate/advanced).
+  - Added `profiles.onboarding_assessment_completed` BOOLEAN.
+  - Regenerated `types/supabase.ts`.
+- **Swarm execution:**
+  - **Onboarding UI Maker**: created `lib/onboarding/diagnosticQuestions.ts` (5 diagnostic questions + scoring), `app/onboarding/AssessmentStep.tsx`, integrated into `app/onboarding/page.tsx`.
+  - **Profile + Learn Maker**: updated `lib/profile/client.ts` to save/load literacy level; added `ensureLessonProgressAvailable` in `lib/lessons/client.ts`; personalized `app/(app)/learn/page.tsx` to unlock first 2 lessons for intermediate and first 3 for advanced users.
+- **Verifier** returned **PASS**.
+- Merged `wt/ko-45` into `web-koinaku`.
+- Verification:
+  - `npx tsc --noEmit` ✅
+  - `npx vitest run` ✅ 159 passed, 1 skipped
+  - `npm run loop:gates -- web` ✅ all gates passed
+- Updated `TASKS.md` to mark KO-45 complete.
+- `loop-state.md` / `loop-budget.md` / `loop-verdict.md` archived to `.loop/reflexion/context/`.
+
 ## 2026-07-14 — KO-44: Content audit and cleanup landed
 
 - Created Linear KO-44 and initialized loop state with swarm roles (Planner / Maker / Verifier / Fixer / Lander).

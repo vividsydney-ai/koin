@@ -1,0 +1,6 @@
+## Verdict
+- status: PASS
+- gate: ALL
+- evidence: npm run type-check passed; npm run test passed (25 files, 159 passed, 1 skipped); npm run loop:gates -- web passed all gates (Gate 0 TypeScript, Gate 1 Tests, Gate 2 Diff scan, Gate 5 Design-token drift, Gate 6 Secret scan). Migration 023 adds financial_literacy_level and onboarding_assessment_completed to profiles with CHECK ('beginner','intermediate','advanced'); completeOnboarding accepts financialLiteracyLevel; AssessmentStep renders 5 questions one at a time and scores via scoreAssessment; Learn page unlocks first 2 lessons for intermediate and first 3 for advanced; diff scan found no localStorage/sessionStorage.
+- files_changed: app/(app)/learn/page.tsx, app/onboarding/page.tsx, app/onboarding/AssessmentStep.tsx, lib/lessons/client.ts, lib/onboarding/diagnosticQuestions.ts, lib/profile/client.ts, tests/onboarding/diagnosticQuestions.test.ts, tests/profile/client.test.ts, tests/migrations/023_add_financial_literacy_assessment.test.ts, supabase/migrations/20260714000023_add_financial_literacy_assessment.sql, types/supabase.ts
+- recommendation: Ready to land. Lander can merge the worktree branch web-koinaku, push migration to remote Supabase, and deploy.
