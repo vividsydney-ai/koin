@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { getAllLessons, getLessonProgress } from "@/lib/lessons/client";
+import { getAllLessons, getLessonProgress, ensureLessonProgressAvailable } from "@/lib/lessons/client";
 import { useAuth } from "@/lib/auth/use-auth";
 import type { Lesson } from "@/lib/lessons/client";
+import { getFinancialLiteracyLevel, type FinancialLiteracyLevel } from "@/lib/profile/client";
 import {
   getLessonRecommendations,
   dismissRecommendation,
@@ -18,22 +19,43 @@ export default function LearnPage() {
   >([]);
   const [progress, setProgress] = useState<Record<string, "locked" | "available" | "in_progress" | "completed"> | null>(null);
   const [recommendations, setRecommendations] = useState<LessonRecommendation[]>([]);
+  const [literacyLevel, setLiteracyLevel] = useState<FinancialLiteracyLevel | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let mounted = true;
     const load = async () => {
       setLoading(true);
-      const [all, userProgress, recs] = await Promise.all([
+      const [all, userProgress, recs, level] = await Promise.all([
         getAllLessons(),
         user ? getLessonProgress(user.id) : Promise.resolve(null),
         user ? getLessonRecommendations(user.id) : Promise.resolve([]),
+        user ? getFinancialLiteracyLevel(user.id) : Promise.resolve(null),
       ]);
+
       if (!mounted) return;
-      setLessons(all);
-      setProgress(userProgress);
-      setRecommendations(recs);
-      setLoading(false);
+
+      let availableCount = 1;
+      if (level === "intermediate") availableCount = 2;
+      if (level === "advanced") availableCount = 3;
+
+      const unlockedLessons = all.slice(0, availableCount);
+      if (user && unlockedLessons.length > 0) {
+        await ensureLessonProgressAvailable(user.id, unlockedLessons.map((l) => l.id));
+        const refreshedProgress = await getLessonProgress(user.id);
+        if (mounted) {
+          setProgress(refreshedProgress);
+        }
+      } else {
+        setProgress(userProgress);
+      }
+
+      if (mounted) {
+        setLessons(all);
+        setRecommendations(recs);
+        setLiteracyLevel(level);
+        setLoading(false);
+      }
     };
 
     load();
@@ -41,6 +63,13 @@ export default function LearnPage() {
       mounted = false;
     };
   }, [user]);
+
+  const firstUnlockedIncomplete = loading
+    ? null
+    : lessons.find((lesson) => {
+        const status = progress?.[lesson.id];
+        return status !== "locked" && status !== "completed";
+      });
 
   return (
     <div className="p-5 pb-28">
@@ -81,6 +110,22 @@ export default function LearnPage() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {(literacyLevel === "intermediate" || literacyLevel === "advanced") && firstUnlockedIncomplete && !loading && (
+        <div className="mb-4 rounded-radius-lg border border-success/30 bg-success/5 p-4 shadow-sm">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-success">Kamu sudah paham dasar</p>
+          <p className="mt-1 font-semibold text-foreground">Mulai dari {firstUnlockedIncomplete.title}</p>
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            Berdasarkan hasil asesmen, kamu bisa langsung mulai dari pelajaran yang paling sesuai.
+          </p>
+          <Link
+            href={`/learn/${firstUnlockedIncomplete.slug}`}
+            className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-success"
+          >
+            Mulai pelajaran <span aria-hidden>→</span>
+          </Link>
         </div>
       )}
 
