@@ -151,6 +151,10 @@ Initialize each task with `npm run loop:init <ID> "<title>"`.
 - [x] KO-48 — signup placeholder updated to Alfa Satria
 - [x] KO-49 — onboarding supports up to 3 financial goals (multi-select)
 - [x] KO-50 — lesson numbering audit; fixed LessonPlayer to show live total count; content personalization verified via seeded variants
+- [x] KO-51 — lesson variants now filtered by user's financial_literacy_level; goal-based recommendations on /learn
+- [x] KO-52 — removed "Lesson not found" flash during lesson loading/navigation
+- [x] KO-53 — replaced floating AI assist button with inline "Penjelasan lebih sederhana / Lihat contoh lain / Coba soal lain" links
+- [x] KO-54 — published lesson 10 (emergency-fund-101); 10 lessons visible at launch
 - [x] Production signup + onboarding browse-verified end-to-end
 - [x] Domain migration to `web.koinaku.com`
 

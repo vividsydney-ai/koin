@@ -19,8 +19,12 @@
 - Onboarding supports up to 3 financial goals via multi-select; profiles.financial_goal migrated to TEXT[] (KO-49).
 - Production browse verified onboarding end-to-end with 3 goals saved correctly.
 - Lesson numbering audit complete (KO-50): fixed LessonPlayer to show live total lesson count; content personalization verified via user-seeded variant selection.
+- New users now see personalized lesson variants filtered by financial literacy level and goal-based recommendations on /learn (KO-51).
+- Removed "Lesson not found" flash when loading/finishing lessons (KO-52).
+- Replaced floating AI assist button with inline variant links inside each lesson step (KO-53).
+- Published lesson 10 (emergency-fund-101); 10 lessons visible at launch (KO-54).
 - Production domain migrated to `https://web.koinaku.com`.
-- Tests: `npx vitest run` → 164 passed / 1 skipped.
+- Tests: `npx vitest run` → 194 passed / 1 skipped.
 - `npm run type-check` clean.
 
 ## Next: finish Phase 6
