@@ -75,7 +75,8 @@ export async function getLessonBySlug(slug: string): Promise<Lesson | null> {
 
 export async function getLessonVariants(
   lessonId: string,
-  variantType?: ContentVariant["variantType"]
+  variantType?: ContentVariant["variantType"],
+  preferredDifficulty?: string | null
 ): Promise<ContentVariant[]> {
   let query = supabase
     .from("content_variants")
@@ -94,15 +95,25 @@ export async function getLessonVariants(
     return [];
   }
 
-  return (
+  const variants =
     data?.map((v) => ({
       id: v.id,
       variantType: v.variant_type as ContentVariant["variantType"],
       body: (v.body as Record<string, unknown>) ?? {},
       difficulty: v.difficulty,
       topicTag: v.topic_tag,
-    })) ?? []
-  );
+    })) ?? [];
+
+  if (preferredDifficulty) {
+    const filtered = variants.filter(
+      (v) => v.difficulty === preferredDifficulty || v.difficulty == null
+    );
+    if (filtered.length > 0) {
+      return filtered;
+    }
+  }
+
+  return variants;
 }
 
 export async function getLessonSources(lessonId: string): Promise<LessonSource[]> {
