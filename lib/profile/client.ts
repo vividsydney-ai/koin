@@ -55,6 +55,25 @@ export async function getFinancialLiteracyLevel(
   return null;
 }
 
+export async function getFinancialGoals(userId: string): Promise<string[] | null> {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("financial_goal")
+    .eq("id", userId)
+    .single();
+
+  if (error) {
+    console.error("getFinancialGoals error:", error.message);
+    return null;
+  }
+
+  const value = data?.financial_goal;
+  if (Array.isArray(value)) {
+    return value.filter((g): g is string => typeof g === "string");
+  }
+  return null;
+}
+
 export async function updateProfile(input: {
   userId: string;
   displayName: string;

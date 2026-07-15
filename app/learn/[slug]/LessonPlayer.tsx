@@ -16,6 +16,7 @@ import { useAuth } from "@/lib/auth/use-auth";
 import { QuizEngine } from "@/components/lesson/QuizEngine";
 import { validateQuestion, applyParameters, type ProcessedQuestion } from "@/lib/lessons/question";
 import { completeLesson, type CompletionResult } from "@/lib/lessons/completion";
+import { getFinancialLiteracyLevel } from "@/lib/profile/client";
 
 const STEPS = [
   { id: "intro", label: "Intro" },
@@ -24,15 +25,6 @@ const STEPS = [
   { id: "quiz", label: "Quiz" },
   { id: "source", label: "Source" },
 ];
-
-type AiAssistType = "explain" | "example" | "quiz";
-
-interface AiAssistContent {
-  type: AiAssistType;
-  title: string;
-  body: string;
-  question?: ProcessedQuestion;
-}
 
 export default function LessonPlayer({ slug, totalLessons }: { slug: string; totalLessons?: number }) {
   const router = useRouter();
@@ -52,8 +44,7 @@ export default function LessonPlayer({ slug, totalLessons }: { slug: string; tot
   const [completing, setCompleting] = useState(false);
   const [completionError, setCompletionError] = useState<string | null>(null);
   const [showSummary, setShowSummary] = useState(false);
-  const [aiAssistOpen, setAiAssistOpen] = useState(false);
-  const [aiAssistContent, setAiAssistContent] = useState<AiAssistContent | null>(null);
+  const [literacyLevel, setLiteracyLevel] = useState<string | null>(null);
   const [shownVariantIds, setShownVariantIds] = useState<Set<string>>(new Set());
   const startTimeRef = useRef<number>(Date.now());
 
@@ -68,15 +59,19 @@ export default function LessonPlayer({ slug, totalLessons }: { slug: string; tot
       setCompletionError(null);
       setShowSummary(false);
       const data = await getLessonBySlug(slug);
-      if (!mounted || !data) {
+      if (!mounted) return;
+      if (!data) {
         setLoading(false);
         return;
       }
 
+      const level = user ? await getFinancialLiteracyLevel(user.id) : null;
+      if (!mounted) return;
+
       const [fetchedExampleVariants, explanationData, fetchedQuestionVariants, sourceData, recentIds] = await Promise.all([
-        getLessonVariants(data.id, "example"),
-        getLessonVariants(data.id, "explanation"),
-        getLessonVariants(data.id, "question"),
+        getLessonVariants(data.id, "example", level),
+        getLessonVariants(data.id, "explanation", level),
+        getLessonVariants(data.id, "question", level),
         getLessonSources(data.id),
         user ? getRecentAttemptVariantIds(user.id, data.id) : Promise.resolve(new Set<string>()),
       ]);
@@ -115,6 +110,7 @@ export default function LessonPlayer({ slug, totalLessons }: { slug: string; tot
       setQuestionVariants(fetchedQuestionVariants);
       setActiveQuestion(processedQuestion);
       setSources(sourceData);
+      setLiteracyLevel(level);
       setShownVariantIds(new Set(example ? [example.id] : []));
       setLoading(false);
     };
@@ -164,54 +160,32 @@ export default function LessonPlayer({ slug, totalLessons }: { slug: string; tot
 
   const seedBase = user && lesson ? `${user.id}:${lesson.id}:${todayKey()}` : `${lesson?.id ?? slug}:${todayKey()}`;
 
-  const handleExplainSimpler = () => {
-    if (!lesson) return;
+  const handleExplainSimpler = (): ContentVariant | null => {
+    if (!lesson) return null;
     const available = explanationVariants.filter((v) => !shownVariantIds.has(v.id));
     const pool = available.length > 0 ? available : explanationVariants;
     const variant = pool[seededIndex(`${seedBase}:explain:${shownVariantIds.size}`, pool.length)];
 
     if (variant) {
       setShownVariantIds((prev) => new Set([...prev, variant.id]));
-      setAiAssistContent({
-        type: "explain",
-        title: "Simpler explanation",
-        body: String(variant.body?.text ?? variant.body ?? "Here's a simpler take on this concept."),
-      });
-    } else {
-      setAiAssistContent({
-        type: "explain",
-        title: "Simpler explanation",
-        body: lesson.conceptBody || "A simpler explanation is not available yet.",
-      });
     }
-    setAiAssistOpen(true);
+    return variant;
   };
 
-  const handleIndonesianExample = () => {
-    if (!lesson) return;
+  const handleAnotherExample = (): ContentVariant | null => {
+    if (!lesson) return null;
     const available = exampleVariants.filter((v) => !shownVariantIds.has(v.id) && v.id !== exampleVariant?.id);
     const pool = available.length > 0 ? available : exampleVariants;
     const variant = pool[seededIndex(`${seedBase}:example:${shownVariantIds.size}`, pool.length)];
 
     if (variant) {
       setShownVariantIds((prev) => new Set([...prev, variant.id]));
-      setAiAssistContent({
-        type: "example",
-        title: "Indonesian example",
-        body: String(variant.body?.text ?? variant.body ?? "Here's how this plays out in Indonesia."),
-      });
-    } else {
-      setAiAssistContent({
-        type: "example",
-        title: "Indonesian example",
-        body: lesson.indonesianExample || "An Indonesian example is not available yet.",
-      });
     }
-    setAiAssistOpen(true);
+    return variant;
   };
 
-  const handleQuizAgain = () => {
-    if (!lesson) return;
+  const handleAnotherQuestion = (): ProcessedQuestion | null => {
+    if (!lesson) return null;
 
     const available = questionVariants.filter((v) => {
       const valid = validateQuestion(v.body);
@@ -228,14 +202,7 @@ export default function LessonPlayer({ slug, totalLessons }: { slug: string; tot
         setQuizDone(false);
         setQuizCorrect(null);
         setActiveQuestion(processed);
-        setAiAssistContent({
-          type: "quiz",
-          title: "Try another question",
-          body: "Here's another way to check your understanding.",
-          question: processed,
-        });
-        setAiAssistOpen(true);
-        return;
+        return processed;
       }
     }
 
@@ -246,14 +213,10 @@ export default function LessonPlayer({ slug, totalLessons }: { slug: string; tot
       setQuizDone(false);
       setQuizCorrect(null);
       setActiveQuestion(processed);
-      setAiAssistContent({
-        type: "quiz",
-        title: "Try another question",
-        body: "Here's another way to check your understanding.",
-        question: processed,
-      });
-      setAiAssistOpen(true);
+      return processed;
     }
+
+    return null;
   };
 
   if (loading) {
@@ -312,8 +275,19 @@ export default function LessonPlayer({ slug, totalLessons }: { slug: string; tot
           ) : (
             <>
               {step === 0 && <IntroStep lesson={lesson} />}
-              {step === 1 && <ConceptStep lesson={lesson} />}
-              {step === 2 && <ExampleStep lesson={lesson} exampleVariant={exampleVariant} />}
+              {step === 1 && (
+                <ConceptStep
+                  lesson={lesson}
+                  onExplainSimpler={explanationVariants.length > 0 ? handleExplainSimpler : undefined}
+                />
+              )}
+              {step === 2 && (
+                <ExampleStep
+                  lesson={lesson}
+                  exampleVariant={exampleVariant}
+                  onAnotherExample={exampleVariants.length > 0 ? handleAnotherExample : undefined}
+                />
+              )}
               {step === 3 && (
                 <QuizStep
                   question={activeQuestion}
@@ -322,22 +296,13 @@ export default function LessonPlayer({ slug, totalLessons }: { slug: string; tot
                     setQuizDone(true);
                     setQuizCorrect(correct);
                   }}
+                  onAnotherQuestion={handleAnotherQuestion}
                 />
               )}
               {step === 4 && <SourceStep sources={sources} quizPassed={quizDone} xpReward={lesson.xpReward} />}
             </>
           )}
         </div>
-
-        {!showSummary && step >= 1 && step <= 3 && (
-          <button
-            onClick={() => setAiAssistOpen(true)}
-            className="absolute bottom-4 right-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-transform hover:scale-105 active:scale-95"
-            aria-label="AI assist"
-          >
-            <SparklesIcon />
-          </button>
-        )}
       </main>
 
       <footer className="border-t border-muted/60 bg-surface px-5 py-4">
@@ -358,22 +323,6 @@ export default function LessonPlayer({ slug, totalLessons }: { slug: string; tot
         )}
       </footer>
 
-      <AiAssistPanel
-        open={aiAssistOpen}
-        onClose={() => {
-          setAiAssistOpen(false);
-          setAiAssistContent(null);
-        }}
-        content={aiAssistContent}
-        onExplain={handleExplainSimpler}
-        onExample={handleIndonesianExample}
-        onQuizAgain={step === 3 ? handleQuizAgain : undefined}
-        onComplete={(correct) => {
-          setQuizDone(true);
-          setQuizCorrect(correct);
-          setAiAssistOpen(false);
-        }}
-      />
     </div>
   );
 }
@@ -401,7 +350,24 @@ function IntroStep({ lesson }: { lesson: Lesson }) {
   );
 }
 
-function ConceptStep({ lesson }: { lesson: Lesson }) {
+function ConceptStep({
+  lesson,
+  onExplainSimpler,
+}: {
+  lesson: Lesson;
+  onExplainSimpler?: () => ContentVariant | null;
+}) {
+  const [simplerVariant, setSimplerVariant] = useState<ContentVariant | null>(null);
+  const [showSimpler, setShowSimpler] = useState(false);
+
+  const handleShowSimpler = () => {
+    const variant = onExplainSimpler?.();
+    if (variant) {
+      setSimplerVariant(variant);
+      setShowSimpler(true);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -410,7 +376,35 @@ function ConceptStep({ lesson }: { lesson: Lesson }) {
           {lesson.title}
         </h2>
       </div>
-      <p className="text-[15px] leading-relaxed text-muted-foreground">{lesson.conceptBody}</p>
+      {!showSimpler ? (
+        <p className="text-[15px] leading-relaxed text-muted-foreground">{lesson.conceptBody}</p>
+      ) : (
+        simplerVariant && (
+          <div className="rounded-radius-md border border-primary/20 bg-primary/5 p-4">
+            <p className="text-[15px] leading-relaxed text-foreground">
+              {String(simplerVariant.body?.text ?? simplerVariant.body)}
+            </p>
+          </div>
+        )
+      )}
+      {onExplainSimpler && !showSimpler && (
+        <button
+          onClick={handleShowSimpler}
+          className="inline-flex min-h-[44px] items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+          aria-label="Penjelasan lebih sederhana"
+        >
+          Penjelasan lebih sederhana
+        </button>
+      )}
+      {showSimpler && (
+        <button
+          onClick={() => setShowSimpler(false)}
+          className="inline-flex min-h-[44px] items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+          aria-label="Kembali ke penjelasan utama"
+        >
+          Kembali ke penjelasan utama
+        </button>
+      )}
       {lesson.whyThisMatters && (
         <div className="rounded-radius-md border border-primary/20 bg-primary/5 p-4 text-[15px] leading-relaxed text-foreground">
           {lesson.whyThisMatters}
@@ -420,8 +414,30 @@ function ConceptStep({ lesson }: { lesson: Lesson }) {
   );
 }
 
-function ExampleStep({ lesson, exampleVariant }: { lesson: Lesson; exampleVariant: ContentVariant | null }) {
-  const text = (exampleVariant?.body?.text as string | undefined) ?? lesson.indonesianExample;
+function ExampleStep({
+  lesson,
+  exampleVariant,
+  onAnotherExample,
+}: {
+  lesson: Lesson;
+  exampleVariant: ContentVariant | null;
+  onAnotherExample?: () => ContentVariant | null;
+}) {
+  const [alternateVariant, setAlternateVariant] = useState<ContentVariant | null>(null);
+  const [showAlternate, setShowAlternate] = useState(false);
+
+  const mainText = (exampleVariant?.body?.text as string | undefined) ?? lesson.indonesianExample;
+  const displayText = showAlternate && alternateVariant
+    ? (alternateVariant.body?.text as string | undefined) ?? alternateVariant.body
+    : mainText;
+
+  const handleShowAlternate = () => {
+    const variant = onAnotherExample?.();
+    if (variant) {
+      setAlternateVariant(variant);
+      setShowAlternate(true);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -432,8 +448,26 @@ function ExampleStep({ lesson, exampleVariant }: { lesson: Lesson; exampleVarian
         </h2>
       </div>
       <div className="rounded-radius-lg border border-muted/60 bg-surface p-5 shadow-sm">
-        <p className="text-[15px] leading-relaxed text-muted-foreground">{text}</p>
+        <p className="text-[15px] leading-relaxed text-muted-foreground">{String(displayText ?? "")}</p>
       </div>
+      {onAnotherExample && !showAlternate && (
+        <button
+          onClick={handleShowAlternate}
+          className="inline-flex min-h-[44px] items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+          aria-label="Lihat contoh lain"
+        >
+          Lihat contoh lain
+        </button>
+      )}
+      {showAlternate && (
+        <button
+          onClick={() => setShowAlternate(false)}
+          className="inline-flex min-h-[44px] items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+          aria-label="Kembali ke contoh utama"
+        >
+          Kembali ke contoh utama
+        </button>
+      )}
       {lesson.commonMistake && (
         <p className="text-[15px] leading-relaxed text-muted-foreground">
           <strong className="text-foreground">Common mistake:</strong> {lesson.commonMistake}
@@ -447,10 +481,12 @@ function QuizStep({
   question,
   onNext,
   onComplete,
+  onAnotherQuestion,
 }: {
   question: ProcessedQuestion | null;
   onNext: () => void;
   onComplete: (correct: boolean) => void;
+  onAnotherQuestion?: () => ProcessedQuestion | null;
 }) {
   if (!question) {
     return (
@@ -479,10 +515,21 @@ function QuizStep({
       </div>
 
       <QuizEngine
+        key={question.variantId ?? "legacy"}
         question={question}
         seed={seed}
         onComplete={(correct) => onComplete(correct)}
       />
+
+      {onAnotherQuestion && (
+        <button
+          onClick={() => onAnotherQuestion()}
+          className="inline-flex min-h-[44px] items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+          aria-label="Coba soal lain"
+        >
+          Coba soal lain
+        </button>
+      )}
     </div>
   );
 }
@@ -696,92 +743,6 @@ function CompletionStep({
   );
 }
 
-function AiAssistPanel({
-  open,
-  onClose,
-  content,
-  onExplain,
-  onExample,
-  onQuizAgain,
-  onComplete,
-}: {
-  open: boolean;
-  onClose: () => void;
-  content: AiAssistContent | null;
-  onExplain: () => void;
-  onExample: () => void;
-  onQuizAgain?: () => void;
-  onComplete: (correct: boolean) => void;
-}) {
-  if (!open) return null;
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-background/80 p-4 backdrop-blur-sm sm:items-center">
-      <div className="w-full max-w-md rounded-radius-lg bg-surface p-5 shadow-xl">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <SparklesIcon />
-            <span className="text-sm font-semibold text-foreground">AI assist</span>
-          </div>
-          <button
-            onClick={onClose}
-            className="rounded-radius-sm p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            aria-label="Close"
-          >
-            <CloseIcon />
-          </button>
-        </div>
-
-        {!content && (
-          <div className="mt-5 grid gap-3">
-            <button
-              onClick={onExplain}
-              className="flex items-center justify-between rounded-radius-md border border-muted bg-background px-4 py-3 text-left text-sm font-medium text-foreground transition-colors hover:border-primary/40 hover:bg-primary/5"
-            >
-              <span>Explain simpler</span>
-              <ArrowRightIcon />
-            </button>
-            <button
-              onClick={onExample}
-              className="flex items-center justify-between rounded-radius-md border border-muted bg-background px-4 py-3 text-left text-sm font-medium text-foreground transition-colors hover:border-primary/40 hover:bg-primary/5"
-            >
-              <span>Indonesian example</span>
-              <ArrowRightIcon />
-            </button>
-            {onQuizAgain && (
-              <button
-                onClick={onQuizAgain}
-                className="flex items-center justify-between rounded-radius-md border border-muted bg-background px-4 py-3 text-left text-sm font-medium text-foreground transition-colors hover:border-primary/40 hover:bg-primary/5"
-              >
-                <span>Quiz me again</span>
-                <ArrowRightIcon />
-              </button>
-            )}
-          </div>
-        )}
-
-        {content && (
-          <div className="mt-5 space-y-4">
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">{content.title}</p>
-              <p className="mt-2 text-sm leading-relaxed text-foreground">{content.body}</p>
-            </div>
-            {content.type === "quiz" && content.question && (
-              <QuizEngine question={content.question} seed="ai-assist" onComplete={onComplete} />
-            )}
-            <button
-              onClick={() => onClose()}
-              className="w-full rounded-radius-md border border-muted bg-background py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted/10"
-            >
-              Close
-            </button>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
 function todayKey(): string {
   const d = new Date();
   return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
@@ -835,23 +796,3 @@ function LessonIcon() {
   );
 }
 
-function SparklesIcon() {
-  return (
-    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .962 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .962L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.962 0z" />
-      <path d="M20 3v4" />
-      <path d="M22 5h-4" />
-      <path d="M4 17v2" />
-      <path d="M5 18H3" />
-    </svg>
-  );
-}
-
-function CloseIcon() {
-  return (
-    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M18 6 6 18" />
-      <path d="m6 6 12 12" />
-    </svg>
-  );
-}

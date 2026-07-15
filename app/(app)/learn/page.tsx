@@ -5,12 +5,17 @@ import Link from "next/link";
 import { getAllLessons, getLessonProgress, ensureLessonProgressAvailable } from "@/lib/lessons/client";
 import { useAuth } from "@/lib/auth/use-auth";
 import type { Lesson } from "@/lib/lessons/client";
-import { getFinancialLiteracyLevel, type FinancialLiteracyLevel } from "@/lib/profile/client";
+import {
+  getFinancialLiteracyLevel,
+  getFinancialGoals,
+  type FinancialLiteracyLevel,
+} from "@/lib/profile/client";
 import {
   getLessonRecommendations,
   dismissRecommendation,
   type LessonRecommendation,
 } from "@/lib/adaptive/client";
+import { getGoalBasedRecommendation } from "@/lib/adaptive/goals";
 
 export default function LearnPage() {
   const { user } = useAuth(true);
@@ -20,17 +25,19 @@ export default function LearnPage() {
   const [progress, setProgress] = useState<Record<string, "locked" | "available" | "in_progress" | "completed"> | null>(null);
   const [recommendations, setRecommendations] = useState<LessonRecommendation[]>([]);
   const [literacyLevel, setLiteracyLevel] = useState<FinancialLiteracyLevel | null>(null);
+  const [financialGoals, setFinancialGoals] = useState<string[] | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let mounted = true;
     const load = async () => {
       setLoading(true);
-      const [all, userProgress, recs, level] = await Promise.all([
+      const [all, userProgress, recs, level, goals] = await Promise.all([
         getAllLessons(),
         user ? getLessonProgress(user.id) : Promise.resolve(null),
         user ? getLessonRecommendations(user.id) : Promise.resolve([]),
         user ? getFinancialLiteracyLevel(user.id) : Promise.resolve(null),
+        user ? getFinancialGoals(user.id) : Promise.resolve(null),
       ]);
 
       if (!mounted) return;
@@ -54,6 +61,7 @@ export default function LearnPage() {
         setLessons(all);
         setRecommendations(recs);
         setLiteracyLevel(level);
+        setFinancialGoals(goals);
         setLoading(false);
       }
     };
@@ -70,6 +78,21 @@ export default function LearnPage() {
         const status = progress?.[lesson.id];
         return status !== "locked" && status !== "completed";
       });
+
+  const completedSlugs = new Set<string>(
+    lessons.filter((lesson) => progress?.[lesson.id] === "completed").map((lesson) => lesson.slug)
+  );
+  const availableSlugs = new Set<string>(
+    lessons.filter((lesson) => progress?.[lesson.id] !== "locked").map((lesson) => lesson.slug)
+  );
+  const goalRecommendedSlug =
+    !loading && financialGoals && financialGoals.length > 0
+      ? getGoalBasedRecommendation(financialGoals, completedSlugs, availableSlugs)
+      : null;
+  const goalLesson = goalRecommendedSlug
+    ? lessons.find((lesson) => lesson.slug === goalRecommendedSlug) ?? null
+    : null;
+  const showGoalCard = goalLesson && goalLesson.slug !== firstUnlockedIncomplete?.slug;
 
   return (
     <div className="p-5 pb-28">
@@ -126,6 +149,29 @@ export default function LearnPage() {
           >
             Mulai pelajaran <span aria-hidden>→</span>
           </Link>
+        </div>
+      )}
+
+      {showGoalCard && goalLesson && !loading && (
+        <div className="mb-4 rounded-radius-lg border border-primary/30 bg-primary/5 p-4 shadow-sm">
+          <div className="flex items-start gap-3">
+            <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <GoalIcon />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">Sesuai tujuanmu</p>
+              <p className="mt-1 font-semibold text-foreground">{goalLesson.title}</p>
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                Pelajaran ini mendukung salah satu tujuan finansial yang kamu pilih saat onboarding.
+              </p>
+              <Link
+                href={`/learn/${goalLesson.slug}`}
+                className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-primary"
+              >
+                Mulai pelajaran <span aria-hidden>→</span>
+              </Link>
+            </div>
+          </div>
         </div>
       )}
 
@@ -218,5 +264,24 @@ function LessonCard({
     <Link href={`/learn/${lesson.slug}`} className="block">
       {content}
     </Link>
+  );
+}
+
+function GoalIcon() {
+  return (
+    <svg
+      className="h-5 w-5"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="10" />
+      <circle cx="12" cy="12" r="6" />
+      <circle cx="12" cy="12" r="2" />
+    </svg>
   );
 }

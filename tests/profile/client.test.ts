@@ -38,7 +38,13 @@ vi.mock("@/lib/auth/client", () => ({
   },
 }));
 
-import { getProfile, getUserSettings, updateProfile, completeOnboarding } from "@/lib/profile/client";
+import {
+  getProfile,
+  getUserSettings,
+  getFinancialGoals,
+  updateProfile,
+  completeOnboarding,
+} from "@/lib/profile/client";
 
 describe("profile client", () => {
   beforeEach(() => {
@@ -73,6 +79,36 @@ describe("profile client", () => {
 
     const settings = await getUserSettings("user-1");
     expect(settings).toEqual({ user_id: "user-1", notifications_enabled: true });
+  });
+
+  it("getFinancialGoals returns filtered string goals", async () => {
+    mocks.single.mockResolvedValueOnce({
+      data: { financial_goal: ["start_investing", "save_emergency"] },
+      error: null,
+    });
+
+    const goals = await getFinancialGoals("user-1");
+    expect(goals).toEqual(["start_investing", "save_emergency"]);
+  });
+
+  it("getFinancialGoals returns null on error", async () => {
+    mocks.single.mockResolvedValueOnce({
+      data: null,
+      error: { message: "not found" },
+    });
+
+    const goals = await getFinancialGoals("user-1");
+    expect(goals).toBeNull();
+  });
+
+  it("getFinancialGoals filters out non-string values", async () => {
+    mocks.single.mockResolvedValueOnce({
+      data: { financial_goal: ["start_investing", 123, null, "budget_better"] },
+      error: null,
+    });
+
+    const goals = await getFinancialGoals("user-1");
+    expect(goals).toEqual(["start_investing", "budget_better"]);
   });
 
   it("updateProfile updates profile and settings", async () => {
