@@ -78,7 +78,7 @@ describe.runIf(!skipReason)("source URL verification", () => {
 
       expect(failures, `Dead or unreachable source URLs:\n${failures.join("\n")}`).toEqual([]);
     },
-    120000
+    300000
   );
 });
 
