@@ -2,7 +2,7 @@
 
 **Version:** 1.2 (MVP Release Spec)  
 **Date:** 2026-07-16  
-**Status:** Web MVP live at `https://web.koinaku.com`, curriculum v2 overhaul landing, public soft-launch scoped  
+**Status:** Web MVP shipped on `web-koinaku` branch; deployed to `https://web.koinaku.com`. All MVP requirements built.  
 **Product:** Koinaku — Financial Literacy App for Indonesian Gen Z  
 **Tagline:** *Learn · Simulate · Grow — from zero to confident investor*
 
@@ -113,8 +113,8 @@ Sign Up → Financial Literacy Assessment → Foundation 0 OR Main Track
 | # | Requirement | Status | Notes |
 |---|-------------|--------|-------|
 | R1 | **User Authentication:** Email + password signup with Supabase Auth. Profile creation with username, display name, age range, financial goals. | ✅ Built | Google OAuth removed; email-only for now. |
-| R2 | **Onboarding Assessment:** 5-step onboarding + financial literacy assessment that genuinely gates the learning path. Low score → Foundation 0; high score → main track; wrong answers unlock remedial micro-lessons. | 🔄 In Progress | Assessment exists; gating logic needs wiring. |
-| R3 | **Foundation 0 — Money Dictionary:** 10–15 micro-lessons that teach pure terms (inflation, interest, risk, asset, liability) before the main curriculum. | 🔄 Not Built | New MVP requirement. |
+| R2 | **Onboarding Assessment:** 5-step onboarding + financial literacy assessment that genuinely gates the learning path. Low score → Foundation 0; high score → main track; wrong answers unlock remedial micro-lessons. | ✅ Built | Assessment scores persist; gating rules applied via `user_settings`. |
+| R3 | **Foundation 0 — Money Dictionary:** 12 micro-lessons that teach pure terms (inflation, interest, risk, asset, liability) before the main curriculum. | ✅ Built | 12 lessons with variants; gated by assessment score. |
 | R4 | **Lesson Player:** Title → concept card → Indonesian example → quiz → source trust section → completion. One concept per screen, no scroll walls. | ✅ Built | Content variant engine: random examples/questions per session. |
 | R5 | **Quiz Engine:** Multiple choice, true/false, fill blank, word bank, ordering, matching, case_study. Shuffled answers, parameterized numeric questions, 7-day variant cooldown. | ✅ Built | Slider and swipe_yes_no declared but UI pending post-MVP. |
 | R6 | **Paper Trading Sandbox:** Portfolio with Rp 10.000.000 virtual capital. Buy/sell lot-based orders (100 shares) on curated IDX stocks. Holdings + trade history. | ✅ Built | Market data seeded; daily price update architecture in place. |
@@ -126,8 +126,8 @@ Sign Up → Financial Literacy Assessment → Foundation 0 OR Main Track
 | R12 | **Content Pipeline:** Lessons stored in Supabase. Review workflow: not_started → draft → needs_review → approved → live. No lesson publishes without ≥1 Tier 1 source + approved review. | ✅ Built | **32 lessons + Foundation 0 target**. |
 | R13 | **Home Dashboard:** Streak card, today's lesson CTA, portfolio snapshot, Koin Points, leaderboard snippet, recent badge. | ✅ Built | |
 | R14 | **App Shell:** Bottom nav (Home / Learn / Trade / Friends / Library / Profile). Protected routes. Mobile-first (375px baseline, 44px touch targets). | ✅ Built | |
-| R15 | **Analytics Events:** `analytics_events` table instrumented across all key user actions. SQL views for DAU, activation, D7/D30 retention, lesson completion, first trade. | 🔄 In Progress | Supabase-only; no paid third-party tools. |
-| R16 | **Notifications:** Email-based streak reminders via `hello@koinaku.com` SMTP + in-app notification center. Web push deferred until native mobile restarts. | 🔄 In Progress | Architecture stubbed; delivery wiring in progress. |
+| R15 | **Analytics Events:** `analytics_events` table instrumented across all key user actions. SQL views for DAU, activation, D7/D30 retention, lesson completion, first trade. | ✅ Built | Supabase-only; playbook documented. |
+| R16 | **Notifications:** Email-based streak reminders via `hello@koinaku.com` SMTP + in-app notification center. Web push deferred until native mobile restarts. | ✅ Built | Cron endpoint + nodemailer; in-app center live. |
 | R17 | **Graduation System:** Portfolio growth to 3x–5x starting value triggers certificate + brokerage recommendations (Bibit, Ajaib, Stockbit, IPOT, Bareksa). | ✅ Built | |
 
 ### 4.2 Should Have (Post-MVP — Phase 2)
@@ -352,14 +352,16 @@ Sign Up → Financial Literacy Assessment → Foundation 0 OR Main Track
 4. **Can we produce content at scale?** Foundation 0 + 32 lessons is the MVP floor. Can the content pipeline sustain 2 lessons/week post-launch? (Requires content team capacity test.)
 
 ### Immediate Next Steps (This Week)
-- [ ] Land KO-CURR-001: commit, push, and apply migrations 031 + 032 to production.
-- [ ] Build Foundation 0 "Money Dictionary" mini-track (10–15 micro-lessons).
-- [ ] Wire onboarding assessment gating logic.
-- [ ] Instrument analytics events and create SQL views for North Star + retention.
-- [ ] Wire email notification delivery + in-app notification center.
-- [ ] Run final QA: 375px mobile, 1280px desktop, dark mode, keyboard nav, WCAG AA.
+- [x] Land KO-CURR-001: commit, push, and apply migrations 031 + 032 to production.
+- [x] Build Foundation 0 "Money Dictionary" mini-track (12 micro-lessons).
+- [x] Wire onboarding assessment gating logic.
+- [x] Instrument analytics events and create SQL views for North Star + retention.
+- [x] Wire email notification delivery + in-app notification center.
+- [x] Run final QA: 375px mobile, 1280px desktop, dark mode, keyboard nav, WCAG AA.
 - [ ] Draft Terms of Service and Privacy Policy.
 - [ ] Soft launch to 50 real users (not dev accounts) and observe Day-1 behaviour.
+- [ ] Verify production streak-reminder email end-to-end.
+- [ ] Re-run Lighthouse on production after deploy.
 
 ---
 

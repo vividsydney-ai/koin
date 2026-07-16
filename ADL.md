@@ -95,3 +95,35 @@ Use this file to record significant technical and product decisions. Each entry 
 **Rationale:** A web app can be distributed instantly via a link, requires no app store review, and lets us validate product demand with Indonesian users faster. Native apps can be re-enabled from the archived mobile branch once retention/engagement justifies the App Store / Play Store overhead.
 **Consequences:** Removes `ios/`, `android/`, `capacitor.config.ts`, and native plugin wrappers from the active branch. Session storage moves from Capacitor Preferences to cookies to respect the no-localStorage rule. Static-export deployment remains compatible with Vercel/Netlify static hosting.
 **Reversible?** Yes — the mobile work remains in `main`/`mobile-paused` and can be merged back later.
+
+### ADL-011: Foundation 0 "Money Dictionary" mini-track
+**Date:** 2026-07-16
+**Decision:** Add a 12-lesson Foundation 0 micro-track that teaches pure financial terms before the 32-lesson main curriculum.
+**Alternatives considered:** Jump straight to main track with tooltips; inline definitions; longer main-track lessons
+**Rationale:** User feedback consistently said main-track lessons were too hard because terms were assumed. A short, term-focused ramp improves activation and reduces early drop-off without diluting the main curriculum.
+**Consequences:** New `topics` row for Foundation 0, 12 new `lessons`, content variants, and assessment gating logic. Adds one extra step before main track for low-scoring users.
+**Reversible?** Partial — lessons can be unpublished, but the schema and gating logic would need to be unwound.
+
+### ADL-012: Analytics = Supabase-only, no paid tools
+**Date:** 2026-07-16
+**Decision:** Use the Supabase `analytics_events` table and SQL views for all MVP metrics. No Mixpanel, Amplitude, or similar paid tools.
+**Alternatives considered:** Mixpanel free tier; PostHog; Amplitude; Google Analytics 4
+**Rationale:** The team is 1 person plus AI agents. Keeping analytics in Supabase avoids new bills, new privacy policies, and new integration maintenance. SQL views are inspectable and sufficient for the MVP metric set.
+**Consequences:** No real-time dashboard; weekly metrics require running SQL queries. Admin dashboard is deferred until the playbook proves value.
+**Reversible?** Yes — events can be exported or dual-written to a paid tool later.
+
+### ADL-013: Google Workspace SMTP for auth and streak reminders
+**Date:** 2026-07-16
+**Decision:** Send Supabase Auth confirmation emails and streak-reminder emails through `hello@koinaku.com` via Google Workspace SMTP with an app password.
+**Alternatives considered:** Supabase default email provider; Resend; Postmark; AWS SES; SendGrid
+**Rationale:** The domain and workspace already exist, setup is immediate, and deliverability is acceptable for MVP volume. No new vendor contract or DNS changes required.
+**Consequences:** Tied to one Google account; app password must be rotated if exposed; daily send limits may become a bottleneck at scale. Bounce/complaint monitoring is limited compared to a transactional email provider.
+**Reversible?** Yes — can migrate to Resend/Postmark/SES by updating env vars and the mail transport config.
+
+### ADL-014: Serverless Next.js for cron support
+**Date:** 2026-07-16
+**Decision:** Switch Next.js from static export (`output: "export"`) to serverless (`output: "standalone"`) so `/api/cron/streak-reminders` can run on Vercel.
+**Alternatives considered:** Keep static export and move cron to a Supabase Edge Function; use an external scheduler; manual trigger only
+**Rationale:** The existing notification stack was already Node/Next-based. Moving cron to an Edge Function would require reimplementing nodemailer logic in Deno and managing two runtimes. Serverless keeps the codebase uniform.
+**Consequences:** Vercel build is no longer a static export; hosting must support Node.js runtime. `vercel.json` now defines a cron schedule. SSR pages can be added later if needed.
+**Reversible?** Partial — reverting to static export would require moving the cron job out of the Next.js app.
