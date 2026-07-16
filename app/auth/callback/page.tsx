@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/auth/client";
+import { trackEvent } from "@/lib/analytics/client";
 
 export default function AuthCallbackPage() {
   const router = useRouter();
@@ -15,6 +16,13 @@ export default function AuthCallbackPage() {
       router.replace("/onboarding");
     };
 
+    const trackLogin = async () => {
+      const { data } = await supabase.auth.getUser();
+      if (data.user) {
+        trackEvent({ userId: data.user.id, name: "login", properties: { method: "email_callback" } });
+      }
+    };
+
     const handleCallback = async () => {
       const search = window.location.search;
       const hash = window.location.hash;
@@ -22,11 +30,14 @@ export default function AuthCallbackPage() {
       // OAuth PKCE flow returns a ?code=... query parameter.
       if (search.includes("code=")) {
         console.log("OAuth callback triggered", search);
-        const { error } = await supabase.auth.exchangeCodeForSession(search);
+        const { data, error } = await supabase.auth.exchangeCodeForSession(search);
         if (error) {
           console.error("OAuth callback error:", error.message);
           router.replace(`/login?error=oauth&message=${encodeURIComponent(error.message)}`);
           return;
+        }
+        if (data.session?.user) {
+          trackEvent({ userId: data.session.user.id, name: "login", properties: { method: "oauth" } });
         }
         finishSignIn();
         return;
@@ -39,12 +50,14 @@ export default function AuthCallbackPage() {
         data: { session },
       } = await supabase.auth.getSession();
       if (session) {
+        await trackLogin();
         finishSignIn();
         return;
       }
 
       const { data } = supabase.auth.onAuthStateChange((event) => {
         if (event === "SIGNED_IN") {
+          trackLogin().catch(() => {});
           finishSignIn();
         }
       });

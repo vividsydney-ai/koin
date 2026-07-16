@@ -16,6 +16,7 @@ import {
   type MarketData,
 } from "@/lib/trading/client";
 import { getTradeOnboardingStatus, type TradeOnboardingStatus } from "@/lib/trading/onboarding";
+import { trackEvent } from "@/lib/analytics/client";
 import { EmptyState } from "@/components/EmptyState";
 
 const TradeOnboarding = dynamic(() => import("./TradeOnboarding"));
@@ -97,7 +98,29 @@ export default function TradePage() {
     setSuccess(null);
     try {
       await ensurePortfolio(user.id);
+      const isFirstTrade = trades.length === 0;
       await executeTrade(user.id, symbol, tradeType, lotCount);
+      trackEvent({
+        userId: user.id,
+        name: "trade_executed",
+        properties: {
+          symbol,
+          trade_type: tradeType,
+          lot_count: lotCount,
+          estimated_total: estimatedTotal,
+        },
+      });
+      if (isFirstTrade) {
+        trackEvent({
+          userId: user.id,
+          name: "first_trade",
+          properties: {
+            symbol,
+            trade_type: tradeType,
+            lot_count: lotCount,
+          },
+        });
+      }
       setSuccess(
         `${tradeType === "buy" ? "Bought" : "Sold"} ${lotCount} lot${lotCount === 1 ? "" : "s"} of ${symbol}`
       );

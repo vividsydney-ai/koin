@@ -17,6 +17,7 @@ import { QuizEngine } from "@/components/lesson/QuizEngine";
 import { validateQuestion, applyParameters, type ProcessedQuestion } from "@/lib/lessons/question";
 import { completeLesson, type CompletionResult } from "@/lib/lessons/completion";
 import { getFinancialLiteracyLevel } from "@/lib/profile/client";
+import { trackEvent } from "@/lib/analytics/client";
 
 const STEPS = [
   { id: "intro", label: "Intro" },
@@ -114,6 +115,18 @@ export default function LessonPlayer({ slug, totalLessons }: { slug: string; tot
       setLiteracyLevel(level);
       setShownVariantIds(new Set(example ? [example.id] : []));
       setLoading(false);
+
+      if (user) {
+        trackEvent({
+          userId: user.id,
+          name: "lesson_started",
+          properties: {
+            lesson_id: data.id,
+            lesson_slug: data.slug,
+            lesson_number: data.lessonNumber,
+          },
+        });
+      }
     };
 
     load();
@@ -153,6 +166,18 @@ export default function LessonPlayer({ slug, totalLessons }: { slug: string; tot
       setCompletionError("We couldn't save your progress. Please check your connection and try again.");
       return;
     }
+
+    trackEvent({
+      userId: user.id,
+      name: "lesson_completed",
+      properties: {
+        lesson_id: lesson.id,
+        lesson_slug: lesson.slug,
+        lesson_number: lesson.lessonNumber,
+        quiz_correct: quizCorrect,
+        xp_earned: result.xpEarned,
+      },
+    });
 
     setCompletionError(null);
     setCompletionResult(result);
@@ -296,6 +321,17 @@ export default function LessonPlayer({ slug, totalLessons }: { slug: string; tot
                   onComplete={(correct) => {
                     setQuizDone(true);
                     setQuizCorrect(correct);
+                    if (user && lesson) {
+                      trackEvent({
+                        userId: user.id,
+                        name: "quiz_completed",
+                        properties: {
+                          lesson_id: lesson.id,
+                          lesson_slug: lesson.slug,
+                          correct,
+                        },
+                      });
+                    }
                   }}
                   onAnotherQuestion={handleAnotherQuestion}
                 />

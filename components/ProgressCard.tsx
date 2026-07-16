@@ -1,6 +1,8 @@
 "use client";
 
 import { useRef, useState, useEffect } from "react";
+import { useAuth } from "@/lib/auth/use-auth";
+import { trackEvent } from "@/lib/analytics/client";
 
 export interface ProgressCardData {
   displayName: string;
@@ -19,6 +21,7 @@ interface ProgressCardProps {
 export function ProgressCardModal({ data, onClose }: ProgressCardProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const { user } = useAuth();
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -102,6 +105,9 @@ export function ProgressCardModal({ data, onClose }: ProgressCardProps) {
 
   const handleShare = async () => {
     if (!imageUrl) return;
+    if (user) {
+      trackEvent({ userId: user.id, name: "share_progress", properties: { action: "share" } });
+    }
     const response = await fetch(imageUrl);
     const blob = await response.blob();
     const file = new File([blob], "koin-progress.png", { type: "image/png" });
@@ -121,6 +127,9 @@ export function ProgressCardModal({ data, onClose }: ProgressCardProps) {
 
   const handleDownload = () => {
     if (!imageUrl) return;
+    if (user) {
+      trackEvent({ userId: user.id, name: "share_progress", properties: { action: "download" } });
+    }
     const link = document.createElement("a");
     link.href = imageUrl;
     link.download = "koin-progress.png";

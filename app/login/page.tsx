@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { signInWithEmail, resendSignupEmail } from "@/lib/auth/client";
+import { trackEvent } from "@/lib/analytics/client";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -32,6 +33,7 @@ export default function LoginPage() {
       return;
     }
 
+    trackEvent({ userId: result.data.user.id, name: "login", properties: { method: "email" } });
     router.push("/");
   };
 

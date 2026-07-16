@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/auth/client";
 import { getProfile, completeOnboarding } from "@/lib/profile/client";
+import { trackEvent } from "@/lib/analytics/client";
 import AssessmentStep from "./AssessmentStep";
 import {
   defaultLevel,
@@ -97,6 +98,7 @@ export default function OnboardingPage() {
 
       setUserId(data.user.id);
       setLoading(false);
+      trackEvent({ userId: data.user.id, name: "onboarding_started" });
     };
 
     checkUser();
@@ -135,6 +137,16 @@ export default function OnboardingPage() {
       return;
     }
 
+    trackEvent({
+      userId,
+      name: "onboarding_completed",
+      properties: {
+        financial_goals: financialGoals,
+        literacy_level: literacyLevel,
+        assessment_completed: assessmentCompleted,
+      },
+    });
+
     router.push("/");
   };
 
@@ -151,6 +163,7 @@ export default function OnboardingPage() {
       <div className="flex flex-1 items-center justify-center">
         <div className="w-full max-w-sm">
           <StepContent
+            userId={userId}
             step={step}
             direction={direction}
             displayName={displayName}
@@ -192,6 +205,7 @@ export default function OnboardingPage() {
 }
 
 interface StepContentProps {
+  userId: string | null;
   step: OnboardingStep;
   direction: "forward" | "back";
   displayName: string;
@@ -214,6 +228,7 @@ interface StepContentProps {
 }
 
 function StepContent({
+  userId,
   step,
   direction,
   displayName,
@@ -274,6 +289,15 @@ function StepContent({
             setLiteracyLevel(result.level);
             onboardingAssessmentResult = result;
             setAssessmentCompleted(true);
+            trackEvent({
+              userId: userId!,
+              name: "onboarding_assessment_completed",
+              properties: {
+                score: result.score,
+                max_score: result.maxScore,
+                level: result.level,
+              },
+            });
             onNext();
           }}
           onSkip={() => {

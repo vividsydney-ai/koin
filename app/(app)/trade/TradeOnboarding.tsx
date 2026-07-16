@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { completeTradeOnboarding, saveRiskProfile, type RiskProfile } from "@/lib/trading/onboarding";
+import { trackEvent } from "@/lib/analytics/client";
 
 const TOTAL_STEPS = 8;
 
@@ -57,6 +58,14 @@ export default function TradeOnboarding({ userId, onComplete, onClose }: TradeOn
         riskLabel: getRiskLabel(riskScore),
       });
       await completeTradeOnboarding(userId);
+      trackEvent({
+        userId,
+        name: "trade_onboarding_completed",
+        properties: {
+          risk_score: normalizeRiskScore(riskScore),
+          risk_label: getRiskLabel(riskScore),
+        },
+      });
       onComplete();
     } catch (e) {
       const message = e instanceof Error ? e.message : "Could not save onboarding. Please try again.";
