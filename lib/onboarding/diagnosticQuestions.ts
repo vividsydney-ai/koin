@@ -4,6 +4,8 @@ export type DiagnosticQuestion = {
   id: string;
   difficulty: Difficulty;
   topic: string;
+  /** Foundation 0 lesson slug used for remedial recommendations when answered incorrectly. */
+  remediationSlug: string;
   type: "multiple_choice" | "true_false";
   question: string;
   options: { value: string; label: string }[];
@@ -11,11 +13,21 @@ export type DiagnosticQuestion = {
   explanation: string;
 };
 
+export type AssessmentResult = {
+  level: Difficulty;
+  score: number;
+  maxScore: number;
+  correctByDifficulty: Record<Difficulty, number>;
+  answers: Record<string, boolean>;
+  wrongRemediationSlugs: string[];
+};
+
 export const diagnosticQuestions: DiagnosticQuestion[] = [
   {
     id: "q1",
     difficulty: "beginner",
     topic: "tabungan",
+    remediationSlug: "fz-saving-vs-investing",
     type: "multiple_choice",
     question: "Menabung secara rutin paling membantu untuk apa?",
     options: [
@@ -31,6 +43,7 @@ export const diagnosticQuestions: DiagnosticQuestion[] = [
     id: "q2",
     difficulty: "beginner",
     topic: "inflasi",
+    remediationSlug: "fz-inflation",
     type: "true_false",
     question: "Inflasi membuat uang yang disimpan di bawah bantal kehilangan daya beli seiring waktu.",
     options: [
@@ -45,6 +58,7 @@ export const diagnosticQuestions: DiagnosticQuestion[] = [
     id: "q3",
     difficulty: "intermediate",
     topic: "bunga_majemuk",
+    remediationSlug: "fz-interest",
     type: "multiple_choice",
     question: "Apa keunggulan utama bunga majemuk (compound interest)?",
     options: [
@@ -60,6 +74,7 @@ export const diagnosticQuestions: DiagnosticQuestion[] = [
     id: "q4",
     difficulty: "intermediate",
     topic: "diversifikasi",
+    remediationSlug: "fz-risk",
     type: "true_false",
     question: "Diversifikasi berarti menempatkan semua uang di satu instrumen agar keuntungan maksimal.",
     options: [
@@ -74,6 +89,7 @@ export const diagnosticQuestions: DiagnosticQuestion[] = [
     id: "q5",
     difficulty: "advanced",
     topic: "risiko_investasi",
+    remediationSlug: "fz-return",
     type: "multiple_choice",
     question: "Hubungan antara risiko dan imbal hasil (return) yang umumnya benar adalah...",
     options: [
@@ -91,21 +107,26 @@ export const defaultLevel: Difficulty = "beginner";
 
 export function scoreAssessment(
   answers: Record<string, boolean>
-): {
-  level: Difficulty;
-  correctByDifficulty: Record<Difficulty, number>;
-} {
+): AssessmentResult {
   const correctByDifficulty: Record<Difficulty, number> = {
     beginner: 0,
     intermediate: 0,
     advanced: 0,
   };
 
+  const wrongRemediationSlugs: string[] = [];
+
   for (const question of diagnosticQuestions) {
-    if (answers[question.id] === true) {
+    const isCorrect = answers[question.id] === true;
+    if (isCorrect) {
       correctByDifficulty[question.difficulty] += 1;
+    } else {
+      wrongRemediationSlugs.push(question.remediationSlug);
     }
   }
+
+  const score = Object.values(correctByDifficulty).reduce((a, b) => a + b, 0);
+  const maxScore = diagnosticQuestions.length;
 
   const upperLevelCorrect =
     correctByDifficulty.intermediate + correctByDifficulty.advanced;
@@ -122,5 +143,44 @@ export function scoreAssessment(
     level = "beginner";
   }
 
-  return { level, correctByDifficulty };
+  return {
+    level,
+    score,
+    maxScore,
+    correctByDifficulty,
+    answers,
+    wrongRemediationSlugs,
+  };
+}
+
+/**
+ * Determine the learning-path gate from an assessment result.
+ * - 0-1 correct: full Foundation 0 track.
+ * - 2-3 correct: Foundation 0, skip the first 4 micro-lessons.
+ * - 4-5 correct: skip Foundation 0, start main track.
+ */
+export function computeLearningPath(result: AssessmentResult): {
+  foundationZeroRequired: boolean;
+  startingLessonSlug: string;
+} {
+  const { score } = result;
+
+  if (score >= 4) {
+    return {
+      foundationZeroRequired: false,
+      startingLessonSlug: "money-basics-101",
+    };
+  }
+
+  if (score >= 2) {
+    return {
+      foundationZeroRequired: true,
+      startingLessonSlug: "fz-income-vs-wealth",
+    };
+  }
+
+  return {
+    foundationZeroRequired: true,
+    startingLessonSlug: "fz-what-is-money",
+  };
 }

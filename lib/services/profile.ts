@@ -3,6 +3,7 @@ import { ok, err, type Result } from "@/lib/types/result";
 import { serviceError, type ServiceError } from "@/lib/types/service-error";
 import { updateProfileSchema, completeOnboardingSchema } from "@/lib/schemas/profile";
 import type { UpdateProfileInput, CompleteOnboardingInput } from "@/lib/schemas/profile";
+import { computeLearningPath } from "@/lib/onboarding/diagnosticQuestions";
 
 export type { UpdateProfileInput, CompleteOnboardingInput } from "@/lib/schemas/profile";
 
@@ -59,6 +60,7 @@ export async function completeOnboarding(
     financialGoals,
     notificationsEnabled,
     financialLiteracyLevel,
+    assessmentResult,
   } = parsed.data;
 
   const { error: profileError } = await supabase
@@ -68,7 +70,7 @@ export async function completeOnboarding(
       age_range: ageRange,
       financial_goal: financialGoals,
       financial_literacy_level: financialLiteracyLevel ?? "beginner",
-      onboarding_assessment_completed: financialLiteracyLevel !== undefined,
+      onboarding_assessment_completed: assessmentResult !== undefined,
       onboarding_completed: true,
       updated_at: new Date().toISOString(),
     })
@@ -78,16 +80,70 @@ export async function completeOnboarding(
     return err(serviceError("rpc_error", profileError.message));
   }
 
+  // Compute learning-path gate from assessment result.
+  const path = assessmentResult
+    ? computeLearningPath(assessmentResult)
+    : {
+        foundationZeroRequired: true,
+        startingLessonSlug: "fz-what-is-money",
+      };
+
+  const { data: startingLesson, error: startingLessonError } = await supabase
+    .from("lessons")
+    .select("id")
+    .eq("slug", path.startingLessonSlug)
+    .single();
+
+  if (startingLessonError) {
+    return err(serviceError("rpc_error", startingLessonError.message));
+  }
+
   const { error: settingsError } = await supabase
     .from("user_settings")
     .update({
       notifications_enabled: notificationsEnabled,
+      foundation_zero_required: path.foundationZeroRequired,
+      starting_lesson_id: startingLesson.id,
+      assessment_score: assessmentResult?.score ?? 0,
+      assessment_answers: assessmentResult?.answers ?? {},
       updated_at: new Date().toISOString(),
     })
     .eq("user_id", userId);
 
   if (settingsError) {
     return err(serviceError("rpc_error", settingsError.message));
+  }
+
+  // Create remedial recommendations for wrong answers.
+  const remediationSlugs = assessmentResult?.wrongRemediationSlugs ?? [];
+  if (remediationSlugs.length > 0) {
+    const { data: remediationLessons, error: remediationError } = await supabase
+      .from("lessons")
+      .select("id, slug")
+      .in("slug", remediationSlugs);
+
+    if (remediationError) {
+      return err(serviceError("rpc_error", remediationError.message));
+    }
+
+    const recommendationRows = (remediationLessons ?? []).map((lesson) => ({
+      user_id: userId,
+      lesson_id: lesson.id,
+      reason: "Pelajaran pengayaan berdasarkan hasil asesmen awal.",
+    }));
+
+    if (recommendationRows.length > 0) {
+      const { error: recommendationError } = await supabase
+        .from("user_lesson_recommendations")
+        .upsert(recommendationRows, {
+          onConflict: "user_id,lesson_id",
+          ignoreDuplicates: false,
+        });
+
+      if (recommendationError) {
+        return err(serviceError("rpc_error", recommendationError.message));
+      }
+    }
   }
 
   return ok(null);

@@ -3,13 +3,13 @@
 import { useState, useCallback } from "react";
 import {
   scoreAssessment,
+  type AssessmentResult,
   type DiagnosticQuestion,
-  type Difficulty,
 } from "@/lib/onboarding/diagnosticQuestions";
 
 interface AssessmentStepProps {
   questions: DiagnosticQuestion[];
-  onComplete: (level: Difficulty) => void;
+  onComplete: (result: AssessmentResult) => void;
   onSkip?: () => void;
 }
 
@@ -44,8 +44,8 @@ export default function AssessmentStep({
       return;
     }
 
-    const { level } = scoreAssessment(answers);
-    onComplete(level);
+    const result = scoreAssessment(answers);
+    onComplete(result);
   }, [answers, isLast, onComplete]);
 
   const isCorrect = selected === current.answer;

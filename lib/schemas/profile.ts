@@ -28,6 +28,18 @@ export const updateProfileSchema = z.object({
   notificationsEnabled: z.boolean(),
 });
 
+const assessmentResultSchema = z.object({
+  level: z.enum(financialLiteracyLevels),
+  score: z.number().int().min(0),
+  maxScore: z.number().int().min(1),
+  correctByDifficulty: z.record(
+    z.enum(financialLiteracyLevels),
+    z.number().int().min(0)
+  ),
+  answers: z.record(z.string(), z.boolean()),
+  wrongRemediationSlugs: z.array(z.string()),
+});
+
 export const completeOnboardingSchema = z.object({
   userId: z.string().uuid("Invalid user ID"),
   displayName: z.string().min(1, "Full name is required").max(100, "Full name is too long"),
@@ -52,6 +64,7 @@ export const completeOnboardingSchema = z.object({
       { message: "Invalid financial literacy level" }
     )
     .optional(),
+  assessmentResult: assessmentResultSchema.optional(),
 });
 
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;

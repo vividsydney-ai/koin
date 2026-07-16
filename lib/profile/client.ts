@@ -91,6 +91,15 @@ export async function updateProfile(input: {
 
 export type FinancialLiteracyLevel = "beginner" | "intermediate" | "advanced";
 
+export type OnboardingAssessmentResult = {
+  level: FinancialLiteracyLevel;
+  score: number;
+  maxScore: number;
+  correctByDifficulty: Record<FinancialLiteracyLevel, number>;
+  answers: Record<string, boolean>;
+  wrongRemediationSlugs: string[];
+};
+
 export async function completeOnboarding(input: {
   userId: string;
   displayName: string;
@@ -98,6 +107,7 @@ export async function completeOnboarding(input: {
   financialGoals: string[];
   notificationsEnabled: boolean;
   financialLiteracyLevel?: FinancialLiteracyLevel;
+  assessmentResult?: OnboardingAssessmentResult;
 }): Promise<{ error?: string }> {
   const result = await profileService.completeOnboarding(input);
   if (!result.ok) {

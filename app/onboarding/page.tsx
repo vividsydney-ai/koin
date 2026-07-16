@@ -8,8 +8,13 @@ import AssessmentStep from "./AssessmentStep";
 import {
   defaultLevel,
   diagnosticQuestions,
+  type AssessmentResult,
   type Difficulty,
 } from "@/lib/onboarding/diagnosticQuestions";
+
+// Module-level storage for assessment result so the JSX callback can access it
+// without hitting a TypeScript scope issue in this large file.
+let onboardingAssessmentResult: AssessmentResult | null = null;
 
 const AGE_RANGES = [
   { value: "under_16", label: "Di bawah 16", shortLabel: "<16" },
@@ -63,6 +68,7 @@ export default function OnboardingPage() {
   const [financialGoals, setFinancialGoals] = useState<string[]>([]);
   const [literacyLevel, setLiteracyLevel] = useState<Difficulty>(defaultLevel);
   const [assessmentCompleted, setAssessmentCompleted] = useState(false);
+
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -118,6 +124,7 @@ export default function OnboardingPage() {
       ageRange,
       financialGoals,
       financialLiteracyLevel: literacyLevel,
+      assessmentResult: onboardingAssessmentResult ?? undefined,
       notificationsEnabled,
     });
 
@@ -263,13 +270,15 @@ function StepContent({
       {step === "assessment" && (
         <AssessmentStep
           questions={diagnosticQuestions}
-          onComplete={(level) => {
-            setLiteracyLevel(level);
+          onComplete={(result) => {
+            setLiteracyLevel(result.level);
+            onboardingAssessmentResult = result;
             setAssessmentCompleted(true);
             onNext();
           }}
           onSkip={() => {
             setLiteracyLevel(defaultLevel);
+            onboardingAssessmentResult = null;
             setAssessmentCompleted(false);
             onNext();
           }}
