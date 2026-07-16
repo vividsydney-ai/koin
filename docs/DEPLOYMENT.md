@@ -153,11 +153,16 @@ Production domain: `https://web.koinaku.com`
 
 ### Troubleshooting 404
 
-If `https://web.koinaku.com` returns 404 but `https://<project>.vercel.app` works:
+If `https://web.koinaku.com` returns 404 but the Vercel deployment URL works:
 
 - Check that the domain is attached to the **correct Vercel project** (`web-koinaku`).
-- Verify DNS records match what Vercel requested.
+- Verify DNS records match what Vercel requested. With external nameservers, Vercel requires an apex record to verify domain ownership even if you only use a subdomain.
+- Recommended external-DNS setup:
+  - `A koinaku.com 76.76.21.21`
+  - `A web.koinaku.com 76.76.21.21`
+- If you prefer a CNAME for the subdomain, use the target shown in the Vercel dashboard (often `cname.vercel-dns.com` or a project-specific target). Do not mix an apex CNAME with other records.
 - Confirm the deploy succeeded for the production branch.
+- Note: Vercel may front-domain-protect the raw `.vercel.app` deployment URL when a custom domain is configured, causing SSO redirects. Test via the custom domain once DNS is correct.
 
 ---
 
