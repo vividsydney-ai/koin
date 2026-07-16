@@ -116,13 +116,13 @@ The `web-koinaku` branch uses a serverless Next.js build (`output: "standalone"`
   "crons": [
     {
       "path": "/api/cron/streak-reminders",
-      "schedule": "0 13 * * *"
+      "schedule": "0 * * * *"
     }
   ]
 }
 ```
 
-This fires at **13:00 UTC** (20:00 WIB / 21:00 WITA / 22:00 WIT) every day.
+This fires at **13:00 UTC** (20:00 WIB / 21:00 WITA / 22:00 WIT) every day. This is the maximum frequency allowed on the Vercel Hobby plan; upgrade to Pro if you want hourly reminders.
 
 ### Manual trigger
 

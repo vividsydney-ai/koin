@@ -1,15 +1,23 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { sendEmail } from "@/lib/email/server";
 import { trackServerEvent } from "@/lib/analytics/server";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+let adminClient: SupabaseClient | null = null;
 
-if (!supabaseUrl || !serviceRoleKey) {
-  throw new Error("Missing Supabase service role credentials for notifications");
+function getAdminClient(): SupabaseClient {
+  if (!adminClient) {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!supabaseUrl || !serviceRoleKey) {
+      throw new Error("Missing Supabase service role credentials for notifications");
+    }
+
+    adminClient = createClient(supabaseUrl, serviceRoleKey);
+  }
+
+  return adminClient;
 }
-
-const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
 
 export interface StreakReminderCandidate {
   userId: string;
@@ -41,7 +49,7 @@ export async function getStreakReminderCandidates(): Promise<StreakReminderCandi
   const now = new Date();
   const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}:00`;
 
-  const { data, error } = await supabaseAdmin.rpc("get_streak_reminder_candidates", {
+  const { data, error } = await getAdminClient().rpc("get_streak_reminder_candidates", {
     p_current_time: currentTime,
   });
 
@@ -80,7 +88,7 @@ export async function sendStreakReminders(): Promise<SendReminderResult> {
         html,
       });
 
-      await supabaseAdmin.from("notifications_queue").insert({
+      await getAdminClient().from("notifications_queue").insert({
         user_id: candidate.userId,
         notification_type: "streak_reminder",
         title: subject,
