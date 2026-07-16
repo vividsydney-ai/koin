@@ -145,6 +145,25 @@ WHERE slug IN (
   'behavioral_finance-advanced'
 );
 
+-- 4b. Renumber existing lessons to free 1–32 for v2.0 curriculum.
+-- Existing user progress references lesson_id, so changing lesson_number is safe.
+UPDATE lessons
+SET lesson_number = lesson_number + 1000
+WHERE lesson_number BETWEEN 1 AND 32
+  AND slug NOT IN (
+    'money-basics-101',
+    'inflation-101',
+    'budgeting-101',
+    'emergency-fund-101',
+    'risk-return-101',
+    'idx-basics-101'
+  );
+
+-- 4c. Pre-align reused slugs that move to new lesson numbers so the upsert does not hit unique conflicts.
+UPDATE lessons SET lesson_number = 9 WHERE slug = 'budgeting-101';
+UPDATE lessons SET lesson_number = 22 WHERE slug = 'risk-return-101';
+UPDATE lessons SET lesson_number = 26 WHERE slug = 'idx-basics-101';
+
 -- 5 & 6. Upsert all 32 v2.0 lessons
 INSERT INTO lessons (id, slug, title, title_id, topic_id, lesson_number, difficulty, xp_reward, estimated_minutes, summary, concept_body, indonesian_example, why_this_matters, common_mistake, ai_assist_context, review_status, reviewed_by, reviewed_at, is_published) VALUES
   (gen_random_uuid(), 'money-basics-101', 'What Is Money?', 'Apa Itu Uang?', (SELECT id FROM topics WHERE slug = 'money_basics'), 1, 'beginner', 50, 5, 'Money is a tool that makes trade, saving, and planning possible.', 'Money is anything people commonly accept as payment for goods and services. In daily life, money plays three roles. First, it is a medium of exchange: instead of swapping your mie ayam for a phone charger directly, you use rupiah. Second, it is a store of value: money lets you save today and spend tomorrow. Third, it is a unit of account: it gives everything a price tag so you can compare values quickly.
