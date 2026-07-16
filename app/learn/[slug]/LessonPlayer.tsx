@@ -46,11 +46,12 @@ export default function LessonPlayer({ slug, totalLessons }: { slug: string; tot
   const [showSummary, setShowSummary] = useState(false);
   const [literacyLevel, setLiteracyLevel] = useState<string | null>(null);
   const [shownVariantIds, setShownVariantIds] = useState<Set<string>>(new Set());
-  const startTimeRef = useRef<number>(Date.now());
+  const startTimeRef = useRef<number>(0);
 
   useEffect(() => {
     let mounted = true;
     const load = async () => {
+      startTimeRef.current = Date.now();
       setLoading(true);
       setStep(0);
       setQuizDone(false);

@@ -1,7 +1,10 @@
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient, type User, type Session } from "@supabase/supabase-js";
 import { Capacitor } from "@capacitor/core";
 import { Preferences } from "@capacitor/preferences";
 import { cookieStorage } from "./storage";
+import { normalizeAuthError, type AuthError } from "./errors";
+import { signInSchema, signUpSchema, resendEmailSchema } from "./schemas";
+import { ok, err, type Result } from "@/lib/types/result";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -44,40 +47,76 @@ export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseAnonKe
   },
 });
 
-export async function getCurrentUser() {
+export async function getCurrentUser(): Promise<Result<User, AuthError>> {
   const { data, error } = await supabase.auth.getUser();
-  if (error) return null;
-  return data.user;
+  if (error) return err(normalizeAuthError(error));
+  if (!data.user) return err({ code: "unknown", message: "No authenticated user." });
+  return ok(data.user);
 }
 
-export async function getSession() {
+export async function getSession(): Promise<Result<Session, AuthError>> {
   const { data, error } = await supabase.auth.getSession();
-  if (error) return null;
-  return data.session;
+  if (error) return err(normalizeAuthError(error));
+  if (!data.session) return err({ code: "unknown", message: "No active session." });
+  return ok(data.session);
 }
 
-export async function signInWithEmail(email: string, password: string) {
-  return supabase.auth.signInWithPassword({ email, password });
+export async function signInWithEmail(
+  email: string,
+  password: string
+): Promise<Result<Session, AuthError>> {
+  const parsed = signInSchema.safeParse({ email, password });
+  if (!parsed.success) {
+    return err({ code: "invalid_email", message: parsed.error.issues[0].message });
+  }
+
+  const { data, error } = await supabase.auth.signInWithPassword(parsed.data);
+  if (error) return err(normalizeAuthError(error));
+  if (!data.session) return err({ code: "unknown", message: "Sign in succeeded but no session was returned." });
+  return ok(data.session);
 }
 
-export async function signUpWithEmail(email: string, password: string, metadata?: object) {
-  return supabase.auth.signUp({
-    email,
-    password,
+export async function signUpWithEmail(
+  email: string,
+  password: string,
+  confirmPassword: string,
+  displayName: string
+): Promise<Result<{ user: User | null; session: Session | null }, AuthError>> {
+  const parsed = signUpSchema.safeParse({ email, password, confirmPassword, displayName });
+  if (!parsed.success) {
+    return err({ code: "invalid_email", message: parsed.error.issues[0].message });
+  }
+
+  const { data, error } = await supabase.auth.signUp({
+    email: parsed.data.email,
+    password: parsed.data.password,
     options: {
-      data: metadata,
+      data: { display_name: parsed.data.displayName },
       emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
     },
   });
+
+  if (error) return err(normalizeAuthError(error));
+  return ok({ user: data.user ?? null, session: data.session ?? null });
 }
 
-export async function resendSignupEmail(email: string) {
-  return supabase.auth.resend({
+export async function resendSignupEmail(email: string): Promise<Result<null, AuthError>> {
+  const parsed = resendEmailSchema.safeParse({ email });
+  if (!parsed.success) {
+    return err({ code: "invalid_email", message: parsed.error.issues[0].message });
+  }
+
+  const { error } = await supabase.auth.resend({
     type: "signup",
-    email,
+    email: parsed.data.email,
   });
+
+  if (error) return err(normalizeAuthError(error));
+  return ok(null);
 }
 
-export async function signOut() {
-  return supabase.auth.signOut();
+export async function signOut(): Promise<Result<null, AuthError>> {
+  const { error } = await supabase.auth.signOut();
+  if (error) return err(normalizeAuthError(error));
+  return ok(null);
 }

@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/auth/client";
+import * as tradingService from "@/lib/services/trading";
 
 export interface Portfolio {
   id: string;
@@ -239,27 +240,10 @@ export async function executeTrade(
   tradeType: "buy" | "sell",
   lotCount: number
 ): Promise<TradeResult> {
-  const { data, error } = await supabase.rpc("execute_trade", {
-    p_user_id: userId,
-    p_symbol: symbol,
-    p_trade_type: tradeType,
-    p_lot_count: lotCount,
-  });
-
-  if (error || !data) {
-    console.error("executeTrade error:", error?.message);
-    throw new Error(error?.message ?? "Trade failed");
+  const result = await tradingService.executeTrade({ userId, symbol, tradeType, lotCount });
+  if (!result.ok) {
+    console.error("executeTrade error:", result.error.message);
+    throw new Error(result.error.message);
   }
-
-  const raw = data as Record<string, unknown>;
-  return {
-    tradeId: String(raw.trade_id),
-    symbol: String(raw.symbol),
-    tradeType: raw.trade_type as "buy" | "sell",
-    shares: Number(raw.shares),
-    lotCount: Number(raw.lot_count),
-    price: Number(raw.price),
-    totalAmount: Number(raw.total_amount),
-    cashBalance: Number(raw.cash_balance),
-  };
+  return result.data;
 }

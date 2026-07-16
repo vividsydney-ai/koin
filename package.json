@@ -9,6 +9,7 @@
     "lint": "eslint",
     "type-check": "tsc --noEmit",
     "test": "vitest run",
+    "prepare": "husky",
     "test:watch": "vitest",
     "loop:prompt": "bash scripts/agent-loop.sh --print",
     "loop:codex": "bash scripts/agent-loop.sh --agent codex",
@@ -57,12 +58,20 @@
     "dotenv": "^17.4.2",
     "eslint": "^9",
     "eslint-config-next": "16.2.9",
+    "husky": "^9.1.7",
     "jsdom": "^29.1.1",
+    "lint-staged": "^17.0.8",
     "react-hook-form": "^7.80.0",
     "supabase": "^2.109.0",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^4.1.9",
     "zod": "^4.4.3"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "bash -c 'pnpm run type-check'"
+    ]
   }
 }

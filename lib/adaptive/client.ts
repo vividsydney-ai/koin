@@ -26,16 +26,16 @@ export async function getLessonRecommendations(userId: string): Promise<LessonRe
   }
 
   return (
-    (data as any[])?.map((row) => {
-      const lesson = row.lessons ?? {};
+    (data as Record<string, unknown>[])?.map((row) => {
+      const lesson = (row.lessons as Record<string, unknown>) ?? {};
       return {
-        id: row.id,
-        lessonId: row.lesson_id,
-        slug: lesson.slug ?? "",
-        title: lesson.title ?? "Recommended lesson",
-        reason: row.reason ?? "",
-        dismissed: row.dismissed ?? false,
-        createdAt: row.created_at ?? new Date().toISOString(),
+        id: String(row.id ?? ""),
+        lessonId: String(row.lesson_id ?? ""),
+        slug: String(lesson.slug ?? ""),
+        title: String(lesson.title ?? "Recommended lesson"),
+        reason: String(row.reason ?? ""),
+        dismissed: Boolean(row.dismissed ?? false),
+        createdAt: String(row.created_at ?? new Date().toISOString()),
       };
     }) ?? []
   );

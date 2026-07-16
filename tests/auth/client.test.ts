@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 
 vi.mock("@capacitor/preferences", () => ({
   Preferences: {
@@ -8,15 +8,22 @@ vi.mock("@capacitor/preferences", () => ({
   },
 }));
 
+const mockSignInWithPassword = vi.fn();
+const mockSignUp = vi.fn();
+const mockResend = vi.fn();
+const mockSignOut = vi.fn();
+const mockGetUser = vi.fn();
+const mockGetSession = vi.fn();
+
 vi.mock("@supabase/supabase-js", () => ({
   createClient: vi.fn().mockReturnValue({
     auth: {
-      getUser: vi.fn().mockResolvedValue({ data: { user: { id: "user-1", email: "a@b.com" } }, error: null }),
-      getSession: vi.fn().mockResolvedValue({ data: { session: null }, error: null }),
-      signInWithPassword: vi.fn().mockResolvedValue({ data: { user: null, session: null }, error: null }),
-      signUp: vi.fn().mockResolvedValue({ data: { user: null, session: null }, error: null }),
-      resend: vi.fn().mockResolvedValue({ data: { user: null, session: null }, error: null }),
-      signOut: vi.fn().mockResolvedValue({ error: null }),
+      getUser: () => mockGetUser(),
+      getSession: () => mockGetSession(),
+      signInWithPassword: (args: unknown) => mockSignInWithPassword(args),
+      signUp: (args: unknown) => mockSignUp(args),
+      resend: (args: unknown) => mockResend(args),
+      signOut: () => mockSignOut(),
       onAuthStateChange: vi.fn().mockReturnValue({ subscription: { unsubscribe: vi.fn() } }),
     },
   }),
@@ -28,44 +35,139 @@ import {
   signUpWithEmail,
   resendSignupEmail,
   signOut,
+  getCurrentUser,
+  getSession,
 } from "@/lib/auth/client";
 
 describe("auth client", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it("exports a supabase client", () => {
     expect(supabase).toBeDefined();
     expect(supabase.auth).toBeDefined();
   });
 
-  it("signInWithEmail calls signInWithPassword", async () => {
-    await signInWithEmail("a@b.com", "password123");
-    expect(supabase.auth.signInWithPassword).toHaveBeenCalledWith({
-      email: "a@b.com",
-      password: "password123",
+  describe("getCurrentUser", () => {
+    it("returns user on success", async () => {
+      mockGetUser.mockResolvedValue({
+        data: { user: { id: "user-1", email: "a@b.com" } },
+        error: null,
+      });
+      const result = await getCurrentUser();
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.data.id).toBe("user-1");
+      }
+    });
+
+    it("returns error on failure", async () => {
+      mockGetUser.mockResolvedValue({ data: { user: null }, error: { message: "network" } });
+      const result = await getCurrentUser();
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe("network_error");
+      }
     });
   });
 
-  it("signUpWithEmail calls signUp with email redirect and metadata", async () => {
-    await signUpWithEmail("a@b.com", "password123", { display_name: "Budi" });
-    expect(supabase.auth.signUp).toHaveBeenCalledWith({
-      email: "a@b.com",
-      password: "password123",
-      options: {
-        data: { display_name: "Budi" },
-        emailRedirectTo: expect.stringContaining("/auth/callback"),
-      },
+  describe("getSession", () => {
+    it("returns session on success", async () => {
+      mockGetSession.mockResolvedValue({
+        data: { session: { access_token: "token" } },
+        error: null,
+      });
+      const result = await getSession();
+      expect(result.ok).toBe(true);
+    });
+
+    it("returns error when no session", async () => {
+      mockGetSession.mockResolvedValue({ data: { session: null }, error: null });
+      const result = await getSession();
+      expect(result.ok).toBe(false);
     });
   });
 
-  it("resendSignupEmail calls auth.resend for signup", async () => {
-    await resendSignupEmail("a@b.com");
-    expect(supabase.auth.resend).toHaveBeenCalledWith({
-      type: "signup",
-      email: "a@b.com",
+  describe("signInWithEmail", () => {
+    it("validates input before calling Supabase", async () => {
+      const result = await signInWithEmail("not-an-email", "short");
+      expect(result.ok).toBe(false);
+      expect(mockSignInWithPassword).not.toHaveBeenCalled();
+    });
+
+    it("returns session on success", async () => {
+      mockSignInWithPassword.mockResolvedValue({
+        data: { session: { access_token: "token" } },
+        error: null,
+      });
+      const result = await signInWithEmail("a@b.com", "password123");
+      expect(result.ok).toBe(true);
+      expect(mockSignInWithPassword).toHaveBeenCalledWith({
+        email: "a@b.com",
+        password: "password123",
+      });
+    });
+
+    it("normalizes invalid credentials error", async () => {
+      mockSignInWithPassword.mockResolvedValue({
+        data: { session: null },
+        error: { message: "Invalid login credentials" },
+      });
+      const result = await signInWithEmail("a@b.com", "password123");
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe("invalid_credentials");
+      }
     });
   });
 
-  it("signOut calls auth signOut", async () => {
-    await signOut();
-    expect(supabase.auth.signOut).toHaveBeenCalled();
+  describe("signUpWithEmail", () => {
+    it("validates matching passwords", async () => {
+      const result = await signUpWithEmail("a@b.com", "password123", "different", "Budi");
+      expect(result.ok).toBe(false);
+      expect(mockSignUp).not.toHaveBeenCalled();
+    });
+
+    it("calls signUp with email redirect and metadata", async () => {
+      mockSignUp.mockResolvedValue({ data: { user: null, session: null }, error: null });
+      const result = await signUpWithEmail("a@b.com", "password123", "password123", "Budi");
+      expect(result.ok).toBe(true);
+      expect(mockSignUp).toHaveBeenCalledWith({
+        email: "a@b.com",
+        password: "password123",
+        options: {
+          data: { display_name: "Budi" },
+          emailRedirectTo: expect.stringContaining("/auth/callback"),
+        },
+      });
+    });
+  });
+
+  describe("resendSignupEmail", () => {
+    it("validates email before calling resend", async () => {
+      const result = await resendSignupEmail("not-an-email");
+      expect(result.ok).toBe(false);
+      expect(mockResend).not.toHaveBeenCalled();
+    });
+
+    it("calls auth.resend for signup", async () => {
+      mockResend.mockResolvedValue({ error: null });
+      const result = await resendSignupEmail("a@b.com");
+      expect(result.ok).toBe(true);
+      expect(mockResend).toHaveBeenCalledWith({
+        type: "signup",
+        email: "a@b.com",
+      });
+    });
+  });
+
+  describe("signOut", () => {
+    it("calls auth signOut", async () => {
+      mockSignOut.mockResolvedValue({ error: null });
+      const result = await signOut();
+      expect(result.ok).toBe(true);
+      expect(mockSignOut).toHaveBeenCalled();
+    });
   });
 });

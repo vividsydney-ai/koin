@@ -37,7 +37,7 @@ export async function getTradeOnboardingStatus(userId: string): Promise<TradeOnb
   }
 
   const completedSlugs = new Set(
-    (progress ?? []).map((row: any) => row.lessons?.slug).filter(Boolean)
+    (progress ?? []).map((row: Record<string, unknown>) => (row.lessons as Record<string, unknown>)?.slug).filter(Boolean)
   );
 
   const completedLessonSlugs: string[] = [];

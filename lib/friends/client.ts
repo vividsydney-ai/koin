@@ -68,14 +68,14 @@ export async function getFriends(userId: string): Promise<Friend[]> {
     return [];
   }
 
-  return (data ?? []).map((row: any) => {
+  return (data ?? []).map((row: Record<string, unknown>) => {
     const isRequester = row.requester_id === userId;
-    const other = isRequester ? row.addressee : row.requester;
+    const other = (isRequester ? row.addressee : row.requester) as Record<string, unknown> | undefined;
     return {
-      userId: other?.id ?? "",
-      displayName: other?.display_name ?? "Unknown",
-      avatarUrl: other?.avatar_url ?? null,
-      status: row.status,
+      userId: String(other?.id ?? ""),
+      displayName: String(other?.display_name ?? "Unknown"),
+      avatarUrl: other?.avatar_url === null || other?.avatar_url === undefined ? null : String(other.avatar_url),
+      status: row.status as Friend["status"],
       isRequester,
     };
   });

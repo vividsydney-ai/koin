@@ -55,11 +55,14 @@ export async function getUserStats(userId: string): Promise<UserStats> {
     level: level ?? null,
     koinPoints: koinBalance?.current_balance ?? 0,
     badges:
-      badges?.map((b: any) => ({
-        slug: b.badge.slug,
-        name: b.badge.name,
-        description: b.badge.description,
-        icon: b.badge.icon,
-      })) ?? [],
+      badges?.map((b: Record<string, unknown>) => {
+        const badge = (b.badge as Record<string, unknown>) ?? {};
+        return {
+          slug: String(badge.slug ?? ""),
+          name: String(badge.name ?? ""),
+          description: badge.description === null || badge.description === undefined ? null : String(badge.description),
+          icon: String(badge.icon ?? ""),
+        };
+      }) ?? [],
   };
 }

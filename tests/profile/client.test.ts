@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
+const TEST_USER_ID = "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11";
+
 const mocks = {
   single: vi.fn(),
   eq: vi.fn().mockResolvedValue({ error: null }),
@@ -53,12 +55,12 @@ describe("profile client", () => {
 
   it("getProfile returns profile data", async () => {
     mocks.single.mockResolvedValueOnce({
-      data: { id: "user-1", onboarding_completed: false },
+      data: { id: TEST_USER_ID, onboarding_completed: false },
       error: null,
     });
 
-    const profile = await getProfile("user-1");
-    expect(profile).toEqual({ id: "user-1", onboarding_completed: false });
+    const profile = await getProfile(TEST_USER_ID);
+    expect(profile).toEqual({ id: TEST_USER_ID, onboarding_completed: false });
   });
 
   it("getProfile returns null on error", async () => {
@@ -67,18 +69,18 @@ describe("profile client", () => {
       error: { message: "not found" },
     });
 
-    const profile = await getProfile("user-1");
+    const profile = await getProfile(TEST_USER_ID);
     expect(profile).toBeNull();
   });
 
   it("getUserSettings returns settings data", async () => {
     mocks.single.mockResolvedValueOnce({
-      data: { user_id: "user-1", notifications_enabled: true },
+      data: { user_id: TEST_USER_ID, notifications_enabled: true },
       error: null,
     });
 
-    const settings = await getUserSettings("user-1");
-    expect(settings).toEqual({ user_id: "user-1", notifications_enabled: true });
+    const settings = await getUserSettings(TEST_USER_ID);
+    expect(settings).toEqual({ user_id: TEST_USER_ID, notifications_enabled: true });
   });
 
   it("getFinancialGoals returns filtered string goals", async () => {
@@ -87,7 +89,7 @@ describe("profile client", () => {
       error: null,
     });
 
-    const goals = await getFinancialGoals("user-1");
+    const goals = await getFinancialGoals(TEST_USER_ID);
     expect(goals).toEqual(["start_investing", "save_emergency"]);
   });
 
@@ -97,7 +99,7 @@ describe("profile client", () => {
       error: { message: "not found" },
     });
 
-    const goals = await getFinancialGoals("user-1");
+    const goals = await getFinancialGoals(TEST_USER_ID);
     expect(goals).toBeNull();
   });
 
@@ -107,13 +109,13 @@ describe("profile client", () => {
       error: null,
     });
 
-    const goals = await getFinancialGoals("user-1");
+    const goals = await getFinancialGoals(TEST_USER_ID);
     expect(goals).toEqual(["start_investing", "budget_better"]);
   });
 
   it("updateProfile updates profile and settings", async () => {
     const result = await updateProfile({
-      userId: "user-1",
+      userId: TEST_USER_ID,
       displayName: "Budi Updated",
       notificationsEnabled: false,
     });
@@ -123,7 +125,7 @@ describe("profile client", () => {
 
   it("completeOnboarding updates profile and settings", async () => {
     const result = await completeOnboarding({
-      userId: "user-1",
+      userId: TEST_USER_ID,
       displayName: "Budi",
       ageRange: "19_22",
       financialGoals: ["start_investing"],
@@ -135,7 +137,7 @@ describe("profile client", () => {
 
   it("completeOnboarding accepts financialLiteracyLevel", async () => {
     const result = await completeOnboarding({
-      userId: "user-1",
+      userId: TEST_USER_ID,
       displayName: "Budi",
       ageRange: "19_22",
       financialGoals: ["start_investing"],
@@ -148,7 +150,7 @@ describe("profile client", () => {
 
   it("completeOnboarding accepts multiple financial goals", async () => {
     const result = await completeOnboarding({
-      userId: "user-1",
+      userId: TEST_USER_ID,
       displayName: "Budi",
       ageRange: "19_22",
       financialGoals: ["start_investing", "save_emergency", "avoid_scams"],

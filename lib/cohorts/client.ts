@@ -45,9 +45,12 @@ export async function getCohorts(userId: string): Promise<Cohort[]> {
     return [];
   }
 
-  return (data ?? []).map((row: any) => ({
-    id: row.cohort?.id ?? "",
-    name: row.cohort?.name ?? "Unknown",
-    joinedAt: row.joined_at,
-  }));
+  return (data ?? []).map((row: Record<string, unknown>) => {
+    const cohort = (row.cohort as Record<string, unknown>) ?? {};
+    return {
+      id: String(cohort.id ?? ""),
+      name: String(cohort.name ?? "Unknown"),
+      joinedAt: String(row.joined_at ?? new Date().toISOString()),
+    };
+  });
 }

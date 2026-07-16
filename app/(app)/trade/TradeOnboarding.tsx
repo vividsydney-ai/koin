@@ -166,8 +166,8 @@ function WelcomeStep() {
       </div>
       <h2 className="text-xl font-bold text-foreground">Welcome to Paper Trading</h2>
       <p className="text-sm leading-relaxed text-muted-foreground">
-        Before you buy and sell stocks with Koin, let's cover the basics: what stocks are, how the
-        Indonesian stock market works, and how to manage risk so you don't gamble money you can't
+        Before you buy and sell stocks with Koin, let&apos;s cover the basics: what stocks are, how the
+        Indonesian stock market works, and how to manage risk so you don&apos;t gamble money you can&apos;t
         afford to lose.
       </p>
       <p className="text-sm leading-relaxed text-muted-foreground">
@@ -244,8 +244,8 @@ function OrderStep() {
         <ul className="mt-2 list-disc space-y-1 pl-4 text-muted-foreground">
           <li>Check how much cash you have before buying.</li>
           <li>You can only sell stocks you already own.</li>
-          <li>Prices change daily — yesterday's price may not be today's price.</li>
-          <li>Don't put all your money in one stock.</li>
+          <li>Prices change daily — yesterday&apos;s price may not be today&apos;s price.</li>
+          <li>Don&apos;t put all your money in one stock.</li>
         </ul>
       </div>
     </div>
@@ -390,7 +390,7 @@ function FinishStep({ riskScore, riskLabel }: { riskScore: number; riskLabel: st
       <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-success/10 text-2xl">
         🎓
       </div>
-      <h2 className="text-xl font-bold text-foreground">You're ready to practice</h2>
+      <h2 className="text-xl font-bold text-foreground">You&apos;re ready to practice</h2>
       <p className="text-sm leading-relaxed text-muted-foreground">
         Your paper portfolio starts with Rp 10,000,000. Use it to experiment, learn from mistakes,
         and build good habits before investing real money.

@@ -7,8 +7,10 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: pushMock }),
 }));
 
-const signUpWithEmailMock = vi.fn().mockResolvedValue({ data: { user: null, session: null }, error: null });
-const resendSignupEmailMock = vi.fn().mockResolvedValue({ data: { user: null, session: null }, error: null });
+const signUpWithEmailMock = vi
+  .fn()
+  .mockResolvedValue({ ok: true, data: { user: null, session: null } });
+const resendSignupEmailMock = vi.fn().mockResolvedValue({ ok: true, data: null });
 
 vi.mock("@/lib/auth/client", () => ({
   signUpWithEmail: (...args: unknown[]) => signUpWithEmailMock(...args),
@@ -49,7 +51,7 @@ describe("Signup page", () => {
     expect(signUpWithEmailMock).not.toHaveBeenCalled();
   });
 
-  it("submits with email, password, and display_name metadata when passwords match", async () => {
+  it("submits with email, password, confirm password, and display name when passwords match", async () => {
     render(<SignupPage />);
 
     fireEvent.change(screen.getByLabelText(/full name/i), { target: { value: "Budi Santoso" } });
@@ -59,9 +61,12 @@ describe("Signup page", () => {
     fireEvent.click(screen.getByRole("button", { name: /create account/i }));
 
     await waitFor(() => {
-      expect(signUpWithEmailMock).toHaveBeenCalledWith("budi@example.com", "password123", {
-        display_name: "Budi Santoso",
-      });
+      expect(signUpWithEmailMock).toHaveBeenCalledWith(
+        "budi@example.com",
+        "password123",
+        "password123",
+        "Budi Santoso"
+      );
     });
   });
 

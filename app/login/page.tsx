@@ -21,13 +21,12 @@ export default function LoginPage() {
     setInfo(null);
     setShowResend(false);
 
-    const { error } = await signInWithEmail(email, password);
+    const result = await signInWithEmail(email, password);
     setLoading(false);
 
-    if (error) {
-      const message = error.message || "";
-      setError(message);
-      if (message.toLowerCase().includes("email not confirmed")) {
+    if (!result.ok) {
+      setError(result.error.message);
+      if (result.error.code === "email_not_confirmed") {
         setShowResend(true);
       }
       return;
@@ -41,11 +40,11 @@ export default function LoginPage() {
     setError(null);
     setInfo(null);
 
-    const { error } = await resendSignupEmail(email);
+    const result = await resendSignupEmail(email);
     setLoading(false);
 
-    if (error) {
-      setError(error.message);
+    if (!result.ok) {
+      setError(result.error.message);
       return;
     }
 

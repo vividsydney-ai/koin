@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/auth/client";
+import * as lessonService from "@/lib/services/lessons";
 
 export interface CompletionInput {
   userId: string;
@@ -27,31 +28,12 @@ export interface CompletionResult {
 }
 
 export async function completeLesson(input: CompletionInput): Promise<CompletionResult | null> {
-  const { data, error } = await supabase.rpc("complete_lesson", {
-    p_user_id: input.userId,
-    p_lesson_id: input.lessonId,
-    p_score: input.score,
-    p_max_score: input.maxScore,
-    p_answers_json: input.answersJson as Record<string, unknown>,
-    p_time_spent_seconds: input.timeSpentSeconds,
-    p_quiz_correct: input.quizCorrect,
-  });
-
-  if (error || !data) {
-    console.error("completeLesson error:", error?.message);
+  const result = await lessonService.completeLesson(input);
+  if (!result.ok) {
+    console.error("completeLesson error:", result.error.message);
     return null;
   }
-
-  const raw = data as Record<string, unknown>;
-  return {
-    xpEarned: Number(raw.xp_earned ?? 0),
-    lessonXp: Number(raw.lesson_xp ?? 0),
-    quizBonus: Number(raw.quiz_bonus ?? 0),
-    streakDays: Number(raw.streak_days ?? 0),
-    streakStatus: (raw.streak_status as CompletionResult["streakStatus"]) ?? "active",
-    badgesEarned: Array.isArray(raw.badges_earned) ? (raw.badges_earned as EarnedBadge[]) : [],
-    nextLessonSlug: typeof raw.next_lesson_slug === "string" ? raw.next_lesson_slug : null,
-  };
+  return result.data;
 }
 
 export async function getNextLessonSlug(currentLessonNumber: number): Promise<string | null> {

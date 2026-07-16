@@ -174,11 +174,12 @@ export async function getRecentBadge(userId: string): Promise<RecentBadge | null
     return null;
   }
 
-  const badge = (data.badges as any) ?? {};
+  const badges = (data.badges as Record<string, unknown>[]) ?? [];
+  const badge = badges[0] ?? {};
   return {
-    slug: badge.slug ?? "",
-    name: badge.name ?? "",
-    icon: badge.icon ?? "🏅",
+    slug: String(badge.slug ?? ""),
+    name: String(badge.name ?? ""),
+    icon: String(badge.icon ?? "🏅"),
     earnedAt: data.earned_at ?? new Date().toISOString(),
   };
 }

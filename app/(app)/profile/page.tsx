@@ -16,7 +16,8 @@ export default function ProfilePage() {
   const [portfolio, setPortfolio] = useState<PortfolioSnapshot | null>(null);
   const [dataLoading, setDataLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-  const [displayName, setDisplayName] = useState(profile?.display_name ?? user?.email ?? "Koin Learner");
+  const [displayNameOverride, setDisplayNameOverride] = useState<string | null>(null);
+  const displayName = displayNameOverride ?? profile?.display_name ?? user?.email ?? "Koin Learner";
 
   useEffect(() => {
     if (!user) return;
@@ -39,12 +40,6 @@ export default function ProfilePage() {
       mounted = false;
     };
   }, [user]);
-
-  useEffect(() => {
-    if (profile?.display_name) {
-      setDisplayName(profile.display_name);
-    }
-  }, [profile?.display_name]);
 
   const handleLogout = async () => {
     await signOut();
@@ -167,7 +162,7 @@ export default function ProfilePage() {
           currentDisplayName={displayName}
           onClose={() => setIsEditing(false)}
           onSaved={(newDisplayName) => {
-            setDisplayName(newDisplayName);
+            setDisplayNameOverride(newDisplayName);
             setIsEditing(false);
           }}
         />

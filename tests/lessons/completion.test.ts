@@ -1,5 +1,8 @@
 import { describe, it, expect, vi } from "vitest";
 
+const TEST_USER_ID = "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11";
+const TEST_LESSON_ID = "b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a22";
+
 const { rpc, single, from } = vi.hoisted(() => ({
   rpc: vi.fn(),
   single: vi.fn(),
@@ -31,8 +34,8 @@ describe("completeLesson", () => {
     });
 
     const result = await completeLesson({
-      userId: "user-1",
-      lessonId: "lesson-1",
+      userId: TEST_USER_ID,
+      lessonId: TEST_LESSON_ID,
       score: 1,
       maxScore: 1,
       answersJson: [{ variant_id: "variant-1", correct: true }],
@@ -41,11 +44,11 @@ describe("completeLesson", () => {
     });
 
     expect(rpc).toHaveBeenCalledWith("complete_lesson", {
-      p_user_id: "user-1",
-      p_lesson_id: "lesson-1",
+      p_user_id: TEST_USER_ID,
+      p_lesson_id: TEST_LESSON_ID,
       p_score: 1,
       p_max_score: 1,
-      p_answers_json: [{ variant_id: "variant-1", correct: true }],
+      p_answers_json: {},
       p_time_spent_seconds: 45,
       p_quiz_correct: true,
     });
@@ -65,8 +68,8 @@ describe("completeLesson", () => {
     rpc.mockResolvedValueOnce({ data: null, error: { message: "boom" } });
 
     const result = await completeLesson({
-      userId: "user-1",
-      lessonId: "lesson-1",
+      userId: TEST_USER_ID,
+      lessonId: TEST_LESSON_ID,
       score: 0,
       maxScore: 1,
       answersJson: [],

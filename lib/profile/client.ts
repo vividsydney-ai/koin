@@ -1,4 +1,6 @@
 import { supabase } from "@/lib/auth/client";
+import * as profileService from "@/lib/services/profile";
+
 import type { Database } from "@/types/supabase";
 
 export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
@@ -79,34 +81,11 @@ export async function updateProfile(input: {
   displayName: string;
   notificationsEnabled: boolean;
 }): Promise<{ error?: string }> {
-  const now = new Date().toISOString();
-
-  const { error: profileError } = await supabase
-    .from("profiles")
-    .update({
-      display_name: input.displayName,
-      updated_at: now,
-    })
-    .eq("id", input.userId);
-
-  if (profileError) {
-    console.error("updateProfile profile error:", profileError.message);
-    return { error: profileError.message };
+  const result = await profileService.updateProfile(input);
+  if (!result.ok) {
+    console.error("updateProfile error:", result.error.message);
+    return { error: result.error.message };
   }
-
-  const { error: settingsError } = await supabase
-    .from("user_settings")
-    .update({
-      notifications_enabled: input.notificationsEnabled,
-      updated_at: now,
-    })
-    .eq("user_id", input.userId);
-
-  if (settingsError) {
-    console.error("updateProfile settings error:", settingsError.message);
-    return { error: settingsError.message };
-  }
-
   return {};
 }
 
@@ -120,36 +99,10 @@ export async function completeOnboarding(input: {
   notificationsEnabled: boolean;
   financialLiteracyLevel?: FinancialLiteracyLevel;
 }): Promise<{ error?: string }> {
-  const { error: profileError } = await supabase
-    .from("profiles")
-    .update({
-      display_name: input.displayName,
-      age_range: input.ageRange,
-      financial_goal: input.financialGoals,
-      financial_literacy_level: input.financialLiteracyLevel ?? "beginner",
-      onboarding_assessment_completed: input.financialLiteracyLevel !== undefined,
-      onboarding_completed: true,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", input.userId);
-
-  if (profileError) {
-    console.error("completeOnboarding profile error:", profileError.message);
-    return { error: profileError.message };
+  const result = await profileService.completeOnboarding(input);
+  if (!result.ok) {
+    console.error("completeOnboarding error:", result.error.message);
+    return { error: result.error.message };
   }
-
-  const { error: settingsError } = await supabase
-    .from("user_settings")
-    .update({
-      notifications_enabled: input.notificationsEnabled,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("user_id", input.userId);
-
-  if (settingsError) {
-    console.error("completeOnboarding settings error:", settingsError.message);
-    return { error: settingsError.message };
-  }
-
   return {};
 }

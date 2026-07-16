@@ -132,20 +132,20 @@ export async function getLessonSources(lessonId: string): Promise<LessonSource[]
 
   return (
     data
-      ?.map((row: any) => {
-        const source = row.sources;
+      ?.map((row: Record<string, unknown>) => {
+        const source = row.sources as Record<string, unknown> | undefined;
         if (!source) return null;
         return {
-          id: row.source_id,
-          sourceCode: source.source_code,
-          title: source.title,
-          organization: source.organization,
-          url: source.url,
-          sourceTier: source.source_tier,
-          citationLabel: row.citation_label,
-          isPrimary: row.is_primary,
-          relevanceType: row.relevance_type ?? "supporting",
-          status: source.status ?? "needs_review",
+          id: String(row.source_id ?? ""),
+          sourceCode: String(source.source_code ?? ""),
+          title: String(source.title ?? ""),
+          organization: String(source.organization ?? ""),
+          url: String(source.url ?? ""),
+          sourceTier: Number(source.source_tier ?? 0),
+          citationLabel: row.citation_label === null || row.citation_label === undefined ? null : String(row.citation_label),
+          isPrimary: Boolean(row.is_primary ?? false),
+          relevanceType: (row.relevance_type ?? "supporting") as LessonSource["relevanceType"],
+          status: (source.status ?? "needs_review") as LessonSource["status"],
         };
       })
       .filter(Boolean) as LessonSource[]

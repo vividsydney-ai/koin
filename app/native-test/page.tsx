@@ -1,17 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { shareContent } from "@/lib/native/share";
 import { initPushNotifications } from "@/lib/native/push-notifications";
 import { Capacitor } from "@capacitor/core";
 
 export default function NativeTestPage() {
-  const [platform, setPlatform] = useState<string>("web");
+  const platform = Capacitor.getPlatform();
   const [status, setStatus] = useState<string>("Ready");
-
-  useEffect(() => {
-    setPlatform(Capacitor.getPlatform());
-  }, []);
 
   const handleShare = async () => {
     try {

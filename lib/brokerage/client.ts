@@ -23,14 +23,14 @@ export async function getBrokerageRecommendations(): Promise<BrokerageRecommenda
     return [];
   }
 
-  return (data ?? []).map((row: any) => ({
-    slug: row.slug,
-    name: row.name,
-    description: row.description,
-    url: row.url,
-    logoUrl: row.logo_url,
-    riskLevel: row.risk_level,
-    ojkRegistered: row.ojk_registered,
-    productTypes: row.product_types ?? [],
+  return (data ?? []).map((row: Record<string, unknown>) => ({
+    slug: String(row.slug ?? ""),
+    name: String(row.name ?? ""),
+    description: String(row.description ?? ""),
+    url: String(row.url ?? ""),
+    logoUrl: row.logo_url === null ? null : String(row.logo_url ?? ""),
+    riskLevel: row.risk_level as BrokerageRecommendation["riskLevel"],
+    ojkRegistered: Boolean(row.ojk_registered ?? false),
+    productTypes: (row.product_types ?? []) as string[],
   }));
 }

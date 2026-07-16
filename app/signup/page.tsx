@@ -70,18 +70,16 @@ export default function SignupPage() {
       return;
     }
 
-    const { data, error } = await signUpWithEmail(email, password, {
-      display_name: fullName,
-    });
+    const result = await signUpWithEmail(email, password, confirmPassword, fullName);
     setLoading(false);
 
-    if (error) {
-      setError(error.message);
+    if (!result.ok) {
+      setError(result.error.message);
       return;
     }
 
     // If a session is returned, email confirmation is disabled and the user is already signed in.
-    if (data?.session) {
+    if (result.data.session) {
       router.push("/onboarding");
       return;
     }
@@ -95,11 +93,11 @@ export default function SignupPage() {
     setError(null);
     setInfo(null);
 
-    const { error } = await resendSignupEmail(email);
+    const result = await resendSignupEmail(email);
     setLoading(false);
 
-    if (error) {
-      setError(error.message);
+    if (!result.ok) {
+      setError(result.error.message);
       return;
     }
 

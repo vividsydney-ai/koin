@@ -227,7 +227,7 @@ function InviteSection({
 
       <form onSubmit={onAccept} className="mt-4 space-y-2">
         <label htmlFor="invite-code" className="text-xs font-medium text-muted-foreground">
-          Have a friend's code?
+          Have a friend&apos;s code?
         </label>
         <div className="flex gap-2">
           <input
