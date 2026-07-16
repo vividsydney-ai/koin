@@ -52,7 +52,7 @@ Koinaku is a mobile-first financial literacy app that makes learning about money
 
 | Pillar                       | What It Does                                                                                                                                                       | Why It Matters                                                                                     |
 | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
-| **Bite-Sized Lessons**       | 5-minute structured lessons from "Apa itu uang?" to IDX investing. Each lesson cites a Tier 1 Indonesian source (OJK, BI, IDX) before the quiz.                    | Trust is the product. Every claim is verifiable.                                                   |
+| **Bite-Sized Lessons**       | 5-minute structured lessons from "Apa itu uang?" to IDX investing. 32 foundation-first free lessons; each cites a Tier 1 Indonesian source (OJK, BI, IDX) before the quiz.                    | Trust is the product. Every claim is verifiable.                                                   |
 | **Paper Trading Playground** | Simulated IDX stock trading with Rp 10.000.000 virtual capital. Live-moving prices, lot-based orders (100 shares), full portfolio tracker.                         | Creates stakes without real risk. The forcing function that brings users back on day 4.            |
 | **XP & Streak System**       | Gamified daily habit: lessons earn XP, streaks unlock badges, weekly friend leaderboards create social accountability.                                             | Duolingo-proven mechanics. Breaking a streak hurts — and that's the point.                         |
 | **Graduate to Real**         | When a user grows their portfolio 3x–5x, they receive a certificate and curated hand-off to OJK-registered investing apps (Bibit, Ajaib, Stockbit, IPOT, Bareksa). | Koinaku is the pre-onboarding funnel. We don't compete with brokers — we feed them educated users. |
@@ -122,7 +122,7 @@ Sign Up → Onboarding Assessment → Learn (5-min lesson) → Quiz → Earn XP
 | R8 | **Badge System:** 10+ MVP badges (first trade, streak milestones, graduation). Trigger-based award engine. | ✅ Built | |
 | R9 | **Koin Points:** Awarded on streak milestones and lesson completion. Balance visible on Home and Profile. In-app currency only — no real-world redemption. | ✅ Built | |
 | R10 | **Source Trust:** Every lesson shows source card with tier badge, URL, review status before quiz. Tier 1 = OJK/BI/IDX required for publish. | ✅ Built | 32 source records seeded. |
-| R11 | **Content Pipeline:** Lessons stored in Supabase. Review workflow: not_started → draft → needs_review → approved → live. No lesson publishes without ≥1 Tier 1 source + approved review. | ✅ Built | **12 lessons (6 beginner live, 6 advanced draft). ~805 active content variants.** 1,783 variants generated; 284 deactivated for quality. |
+| R11 | **Content Pipeline:** Lessons stored in Supabase. Review workflow: not_started → draft → needs_review → approved → live. No lesson publishes without ≥1 Tier 1 source + approved review. | ✅ Built | **32 lessons (foundation-first free track; 6 reused/rewritten, 26 new, 6 advanced drafts deactivated). ~1,060 active content variants.** |
 | R12 | **Home Dashboard:** Streak card, today's lesson CTA, portfolio snapshot, Koin Points, leaderboard snippet, recent badge. | ✅ Built | |
 | R13 | **App Shell:** Bottom nav (Home / Learn / Trade / Friends / Library / Profile). Protected routes. Mobile-first (375px baseline, 44px touch targets). | ✅ Built | |
 | R14 | **Adaptive Learning:** Lessons adapt to trading behavior (panic-selling → loss aversion content, concentration → diversification, inactivity → confidence content). | ✅ Partial | Trigger engine exists with rule stubs; thresholds not validated against real user behaviour. |
@@ -137,7 +137,7 @@ Sign Up → Onboarding Assessment → Learn (5-min lesson) → Quiz → Earn XP
 | R18 | **Money Dictionary:** Plain-language glossary of 50+ financial terms with Indonesian examples. | 🔄 Not Built | Content planned, UI not implemented. |
 | R19 | **Push Notifications:** Streak reminders, lesson nudges, price alerts. | 🔄 Not Built | Architecture stubbed; not wired to delivery. |
 | R20 | **Analytics & Dashboard:** Admin view of DAU, activation, retention, lesson completion rates, trading activity. | 🔄 Not Built | Raw data exists in DB; no admin UI. |
-| R21 | **Content Expansion:** 50+ lessons across beginner → intermediate → advanced. | 🔄 In Progress | **12 lessons seeded** (6 beginner live, 6 advanced draft). Target 50 by end of Phase 2. |
+| R21 | **Content Expansion:** 50+ lessons across beginner → intermediate → advanced. | 🔄 In Progress | **32 free lessons shipped** (Foundation → Behavior → Scam Defense → Wealth Building → Investing → Pro Teaser). Target 50+ free lessons and 50 Pro lessons by end of Phase 2. |
 | R22 | **A/B Testing Framework:** Variant testing for onboarding, lesson order, pricing page. | 🔄 Not Built | |
 
 ### 4.3 Could Have (Phase 3 — Future)
@@ -323,7 +323,7 @@ The retroactive PRD over-stated shipped scope and under-stated operational gaps.
 4. **Koin Points have no spend path.** Points are earned but cannot be spent. MVP launch is acceptable, but a utility must be designed before Phase 2.
 
 ### Technical / Implementation
-5. **Lesson count was overstated.** PRD claimed 15 lessons; actual shippable count is **12 lessons** (6 beginner live, 6 advanced draft) and **~805 active content variants**.
+5. **Lesson count was overstated.** PRD claimed 15 lessons; actual shippable count is now **32 lessons** (foundation-first free track) and **~1,060 active content variants** after the v2.0 overhaul.
 6. **Adaptive triggers are structural, not validated.** Trigger rules exist but thresholds are not tied to observed behaviour.
 7. **Analytics and notifications are blockers, not nice-to-haves.** Without them, Phase 1 success metrics and retention loops are unproven.
 8. **Native mobile is paused.** The PRD calls Koin "mobile-first" but only the web PWA is live. Push notifications and home-screen retention are degraded.

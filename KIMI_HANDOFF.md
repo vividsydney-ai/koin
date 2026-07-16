@@ -13,7 +13,7 @@
 - **Shipping branch:** `web-koinaku` (this is the integration + deploy branch — there is NO `main` PR flow for this MVP)
 - **Stack:** Next.js + TypeScript (strict) + Supabase (Postgres, RLS) + Vitest + Tailwind
 - **Prod:** https://web.koinaku.com
-- **Current state:** Phases 1–5 done; Phase 6 in progress. Security & engineering credibility pass (SEC-001) landed on `web-koinaku`: CI workflow, typed auth errors, Zod input validation, typed service layer (`lib/services/*`), RLS smoke tests, service tests, security docs (`SECURITY.md`, `docs/security.md`, `docs/adr/001-tenancy-and-rls.md`), and lint-staged pre-commit hooks. `npx vitest run` → 215 passed / 1 skipped; `npm run type-check` clean; `npm run lint` 0 errors.
+- **Current state:** Phases 1–5 done; Phase 6 curriculum overhaul done. Security & engineering credibility pass (SEC-001) landed on `web-koinaku`: CI workflow, typed auth errors, Zod input validation, typed service layer (`lib/services/*`), RLS smoke tests, service tests, security docs (`SECURITY.md`, `docs/security.md`, `docs/adr/001-tenancy-and-rls.md`), and lint-staged pre-commit hooks. `npx vitest run` → 225 passed / 1 skipped; `npm run type-check` clean; `npm run lint` 0 errors.
 
 **First actions (in this order, no exceptions):**
 1. Read `loop-state.md`. If it exists and state is not `DONE`, resume from there.
@@ -139,7 +139,7 @@ Initialize each task with `npm run loop:init <ID> "<title>"`.
 - [ ] **Final QA** — 375px mobile, 1280px desktop, keyboard nav, WCAG AA (run last). `TASKS.md` QA slice.
 
 ### Group B — content, touches lessons/sources (SERIALIZE — overlapping files)
-- [ ] **Expand 9 → 15 lessons** (each needs a Tier-1 source + review row before publish).
+- [x] **Curriculum overhaul** — 32-lesson foundation-first free track (KO-CURR-001). Done.
 - [ ] **Recommended resources** — books/videos per lesson.
 
 ### Group C — needs schema/architecture (SERIALIZE — one migration each, on web-koinaku directly)
@@ -161,6 +161,7 @@ Initialize each task with `npm run loop:init <ID> "<title>"`.
 - [x] Production signup + onboarding browse-verified end-to-end
 - [x] Domain migration to `web.koinaku.com`
 - [x] SEC-001 — Security & engineering credibility pass: CI, typed auth errors, Zod validation, service layer, RLS smoke tests, security docs, lint-staged
+- [x] KO-CURR-001 — Curriculum v2.0 overhaul: 32 foundation-first lessons, verified sources, matching + case_study quiz UI, full test + lint + type-check green
 
 **Suggested first move:** C1 — Recommended resources per lesson on `web-koinaku`.
 
@@ -186,7 +187,7 @@ If a gate fails and you can't fix it within budget: STOP, log the exact failure 
 | `npm run dev` | Start Next.js dev server (localhost:3000) |
 | `npx tsc --noEmit` | TypeScript gate |
 | `npm run lint` | ESLint gate (0 errors) |
-| `npx vitest run` | Test gate (baseline: 215 pass / 1 skip) |
+| `npx vitest run` | Test gate (baseline: 225 pass / 1 skip) |
 | `npm run loop:init <ID> "<title>"` | Initialize loop-state.md for a task |
 | `npm run loop:gates` | Run all applicable gates |
 | `npm run loop:budget` | Check iteration/file/migration budgets |

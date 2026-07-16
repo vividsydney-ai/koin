@@ -106,6 +106,10 @@ export type TrueFalseQuestion = z.infer<typeof trueFalseSchema>;
 export type FillBlankQuestion = z.infer<typeof fillBlankSchema>;
 export type WordBankQuestion = z.infer<typeof wordBankSchema>;
 export type OrderingQuestion = z.infer<typeof orderingSchema>;
+export type MatchingQuestion = z.infer<typeof matchingSchema>;
+export type SliderQuestion = z.infer<typeof sliderSchema>;
+export type SwipeYesNoQuestion = z.infer<typeof swipeYesNoSchema>;
+export type CaseStudyQuestion = z.infer<typeof caseStudySchema>;
 
 export type ProcessedQuestion = QuizQuestion & { variantId?: string };
 

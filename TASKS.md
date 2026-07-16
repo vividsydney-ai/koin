@@ -69,10 +69,10 @@
   - fill_blank
   - word_bank
   - ordering
-  - matching (declared, UI pending)
+  - matching ✅
+  - case_study ✅
   - slider (declared, UI pending)
   - swipe_yes_no (declared, UI pending)
-  - case_study (declared, UI pending)
 - [x] 10+ variants per implemented question type across launch lessons
 - [x] 3+ example variants per launch lesson
 - [x] Shuffled answer order and parameterized numeric questions
@@ -113,7 +113,7 @@
   - No trade for N days → confidence / risk tolerance lesson
   - Portfolio drawdown → volatility / emotional control lesson
 - [x] User lesson recommendations table and UI
-- [x] Expand from 5 to 15 lessons (see `content-lessons/` and Linear KO-43)
+- [x] Curriculum overhaul: foundation-first 32-lesson free track (KO-CURR-001)
 - [x] Content audit and cleanup: remove low-quality, repeated, and duplicate variants (Linear KO-44)
 - [x] Onboarding financial literacy assessment + personalized learning path (Linear KO-45)
 - [x] Library tab: browse sources by topic/tier/type/language

@@ -11,6 +11,8 @@ import {
   type FillBlankQuestion,
   type WordBankQuestion,
   type OrderingQuestion,
+  type MatchingQuestion,
+  type CaseStudyQuestion,
 } from "@/lib/lessons/question";
 
 interface QuizEngineProps {
@@ -31,6 +33,10 @@ export function QuizEngine({ question, seed, onComplete }: QuizEngineProps) {
       return <WordBank question={question} seed={seed} onComplete={onComplete} />;
     case "ordering":
       return <Ordering question={question} seed={seed} onComplete={onComplete} />;
+    case "matching":
+      return <Matching question={question} seed={seed} onComplete={onComplete} />;
+    case "case_study":
+      return <CaseStudy question={question} seed={seed} onComplete={onComplete} />;
     default:
       return (
         <div className="rounded-radius-md border border-warning/30 bg-warning/5 px-4 py-3 text-sm text-warning">
@@ -303,6 +309,122 @@ function Ordering({
         Check answer
       </button>
       {showResult && <Explanation isCorrect={isCorrect} text={question.explanation} />}
+    </div>
+  );
+}
+
+function Matching({
+  question,
+  seed,
+  onComplete,
+}: {
+  question: MatchingQuestion;
+  seed: string;
+  onComplete?: (correct: boolean) => void;
+}) {
+  const leftItems = useMemo(() => question.pairs.map(([left]) => left), [question.pairs]);
+  const rightItems = useMemo(() => seededShuffle(`${seed}:match`, question.pairs.map(([, right]) => right)), [question.pairs, seed]);
+  const [matches, setMatches] = useState<Record<string, string | null>>(() =>
+    Object.fromEntries(leftItems.map((left) => [left, null]))
+  );
+  const [showResult, setShowResult] = useState(false);
+
+  const filled = leftItems.every((left) => matches[left] != null);
+  const isCorrect = leftItems.every((left) => matches[left] === question.answer[left]);
+
+  const assign = (left: string, right: string) => {
+    if (showResult) return;
+    setMatches((prev) => ({ ...prev, [left]: right }));
+  };
+
+  const unassign = (left: string) => {
+    if (showResult) return;
+    setMatches((prev) => ({ ...prev, [left]: null }));
+  };
+
+  const check = () => {
+    if (!filled || showResult) return;
+    setShowResult(true);
+    onComplete?.(isCorrect);
+  };
+
+  const usedRights = new Set(Object.values(matches).filter(Boolean));
+
+  return (
+    <div className="space-y-5">
+      <h3 className="text-lg font-semibold leading-snug text-foreground">{question.question}</h3>
+      <p className="text-xs text-muted-foreground">Tap a definition to match it with each term.</p>
+      <div className="space-y-3">
+        {leftItems.map((left) => (
+          <div key={left} className="rounded-radius-md border border-muted bg-surface p-4">
+            <div className="mb-2 text-sm font-semibold text-foreground">{left}</div>
+            {matches[left] ? (
+              <button
+                onClick={() => unassign(left)}
+                disabled={showResult}
+                className={`rounded-radius-md px-3 py-2 text-sm font-medium transition-colors ${
+                  showResult
+                    ? matches[left] === question.answer[left]
+                      ? "bg-success/10 text-success"
+                      : "bg-danger/10 text-danger"
+                    : "bg-primary/10 text-primary hover:bg-primary/20"
+                }`}
+              >
+                {matches[left]}
+              </button>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {rightItems
+                  .filter((right) => !usedRights.has(right))
+                  .map((right) => (
+                    <button
+                      key={`${left}-${right}`}
+                      onClick={() => assign(left, right)}
+                      className="rounded-radius-md border border-muted bg-surface px-3 py-2 text-sm font-medium text-foreground transition-colors hover:border-primary hover:bg-primary/5"
+                    >
+                      {right}
+                    </button>
+                  ))}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+      <button
+        onClick={check}
+        disabled={!filled || showResult}
+        className="w-full rounded-radius-md bg-primary py-3.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-[0.98] disabled:opacity-50"
+      >
+        Check answer
+      </button>
+      {showResult && <Explanation isCorrect={isCorrect} text={question.explanation} />}
+    </div>
+  );
+}
+
+function CaseStudy({
+  question,
+  seed,
+  onComplete,
+}: {
+  question: CaseStudyQuestion;
+  seed: string;
+  onComplete?: (correct: boolean) => void;
+}) {
+  return (
+    <div className="space-y-5">
+      <div className="rounded-radius-lg border border-primary/20 bg-primary/5 p-5">
+        <h3 className="text-lg font-semibold leading-snug text-foreground">{question.question}</h3>
+        <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">{question.caseText}</p>
+      </div>
+      <div>
+        <p className="mb-3 text-sm font-semibold text-foreground">{question.followUp.question}</p>
+        <MultipleChoice
+          question={{ ...question.followUp, type: "multiple_choice" }}
+          seed={`${seed}:cs`}
+          onComplete={onComplete}
+        />
+      </div>
     </div>
   );
 }

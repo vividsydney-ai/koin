@@ -2,6 +2,25 @@
 # Loop reads and writes this. Human can also read to understand where we are.
 # v2: MVP reshaped around paper trading. Original v1 loop files archived in /_archived.
 
+## 2026-07-16 — KO-CURR-001: Curriculum v2.0 overhaul landed
+
+- Conductor initialized loop state for 32-lesson foundation-first curriculum overhaul (approved plan).
+- **Curriculum Architect** produced `.loop/curriculum-v2.md`: 6 stages (Foundation 8 → Behavior 6 → Scam Defense 4 → Wealth Building 6 → Investing Fundamentals 4 → Pro Teaser 4), 25 new topic slugs.
+- **Source Researcher** produced `.loop/sources-v2.csv`: 19 verified Tier 1 sources (16 OJK + 2 BI + 1 IDX) + 8 verified Tier 2 books with real ISBNs; 4 IDX sources marked `needs_review` due to Cloudflare.
+- **Content Writer** produced `.loop/lesson-bodies-v2.json`: 32 lesson bodies passing the 18-year-old test.
+- **Variant Writer** produced `.loop/lesson-variants-v2.json`: 256 variants (128 questions), all validated against `lib/lessons/question.ts` Zod schemas.
+- **Indonesian Contextualizer** reviewed and localized all examples to Indonesian teen context.
+- **Verifier** returned `PASS_WITH_NOTES`; **Fixer** resolved 5 should-fix items and created `.loop/lesson-sources-v2.csv` (32 primary Tier 1 + 32 supporting book links).
+- **Integration Engineer** generated `supabase/migrations/20260716000030_curriculum_v2_overhaul.sql`: topics, sources, lesson upserts, lesson_sources, content_variants, approved reviews, advanced draft deactivation.
+- Added `matching` and `case_study` UI to `components/lesson/QuizEngine.tsx`; exported missing types from `lib/lessons/question.ts`.
+- Added `tests/migrations/030_curriculum_v2_overhaul.test.ts` (10 tests).
+- Verification:
+  - `npx tsc --noEmit` ✅
+  - `npm run lint` ✅ 0 errors, 20 warnings
+  - `npx vitest run` ✅ 225 passed, 1 skipped
+  - `pglast` SQL parse ✅
+- Updated `PRD.md`, `TASKS.md`, `KIMI_HANDOFF.md`.
+
 ## 2026-07-16 — PRD v1.1 reality check and blind spots
 
 - Audited actual shipped content: **12 lessons** (6 beginner live, 6 advanced draft) and **~805 active content variants** from 1,783 generated / 284 deactivated.
