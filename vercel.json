@@ -1,7 +1,12 @@
 {
   "framework": null,
   "buildCommand": "next build",
-  "outputDirectory": "out",
   "installCommand": "pnpm install",
-  "cleanUrls": true
+  "cleanUrls": true,
+  "crons": [
+    {
+      "path": "/api/cron/streak-reminders",
+      "schedule": "0 * * * *"
+    }
+  ]
 }

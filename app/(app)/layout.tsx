@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth/use-auth";
 import { signOut } from "@/lib/auth/client";
 import { useRouter } from "next/navigation";
+import { NotificationBell } from "@/components/NotificationsSheet";
 
 const NAV_ITEMS = [
   { href: "/", label: "Home", icon: "🏠" },
@@ -18,7 +19,7 @@ const NAV_ITEMS = [
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { loading } = useAuth(true);
+  const { user, loading } = useAuth(true);
 
   const handleSignOut = async () => {
     await signOut();
@@ -35,6 +36,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
+      <header className="sticky top-0 z-30 border-b border-border bg-background/95 px-4 py-3 backdrop-blur-md">
+        <div className="mx-auto flex max-w-md items-center justify-between">
+          <span className="text-xl font-bold tracking-tight text-foreground">Koin</span>
+          {user && <NotificationBell userId={user.id} />}
+        </div>
+      </header>
+
       <main className="flex-1 pb-24">{children}</main>
 
       <nav className="fixed bottom-0 left-0 right-0 border-t border-border bg-surface">
