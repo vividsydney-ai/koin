@@ -17,11 +17,26 @@ import { updateProfile, completeOnboarding } from "@/lib/services/profile";
 describe("profile service", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.from.mockImplementation(() => ({
-      update: vi.fn().mockReturnValue({
-        eq: vi.fn().mockReturnValue({ error: null }),
-      }),
-    }));
+    mocks.from.mockImplementation((table: string) => {
+      const emptyEq = vi.fn().mockReturnValue({ error: null });
+      const base = {
+        update: vi.fn().mockReturnValue({ eq: emptyEq }),
+        upsert: vi.fn().mockReturnValue({ eq: emptyEq }),
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        single: vi.fn().mockReturnValue({ data: null, error: null }),
+      };
+
+      if (table === "lessons") {
+        base.select = vi.fn().mockImplementation(() => ({
+          eq: vi.fn().mockImplementation(() => ({
+            single: vi.fn().mockReturnValue({ data: { id: "lesson-id-1" }, error: null }),
+          })),
+        }));
+      }
+
+      return base;
+    });
   });
 
   it("returns a validation error for an invalid user id", async () => {

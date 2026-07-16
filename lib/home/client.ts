@@ -185,9 +185,10 @@ export async function getRecentBadge(userId: string): Promise<RecentBadge | null
 }
 
 export async function getContinueLesson(userId: string): Promise<ContinueLesson | null> {
-  const [{ data: lessons, error: lessonsError }, { data: progress, error: progressError }] = await Promise.all([
+  const [{ data: lessons, error: lessonsError }, { data: progress, error: progressError }, { data: settings, error: settingsError }] = await Promise.all([
     supabase.from("lessons").select("id, slug, title, lesson_number").eq("is_published", true).order("lesson_number", { ascending: true }),
     supabase.from("lesson_progress").select("lesson_id, status").eq("user_id", userId),
+    supabase.from("user_settings").select("starting_lesson_id").eq("user_id", userId).single(),
   ]);
 
   if (lessonsError) {
@@ -197,17 +198,28 @@ export async function getContinueLesson(userId: string): Promise<ContinueLesson 
   if (progressError) {
     console.error("getContinueLesson progress error:", progressError.message);
   }
+  if (settingsError) {
+    console.error("getContinueLesson settings error:", settingsError.message);
+  }
 
   const progressMap: Record<string, string> = {};
   for (const row of progress ?? []) {
     progressMap[row.lesson_id] = row.status;
   }
 
-  // Find the first lesson that is in_progress or available (previous completed).
-  for (let i = 0; i < (lessons ?? []).length; i++) {
+  const startingLessonId = settings?.starting_lesson_id;
+  const startIndex = startingLessonId
+    ? Math.max(
+        0,
+        (lessons ?? []).findIndex((l) => l.id === startingLessonId)
+      )
+    : 0;
+
+  // Find the first lesson at or after the user's starting point that is in_progress or available.
+  for (let i = startIndex; i < (lessons ?? []).length; i++) {
     const lesson = lessons![i];
     const status = progressMap[lesson.id];
-    const previousCompleted = i === 0 || progressMap[lessons![i - 1].id] === "completed";
+    const previousCompleted = i === startIndex || progressMap[lessons![i - 1].id] === "completed";
 
     if (status === "in_progress") {
       return {
@@ -219,13 +231,13 @@ export async function getContinueLesson(userId: string): Promise<ContinueLesson 
       };
     }
 
-    if (!status && previousCompleted) {
+    if (previousCompleted && status !== "completed") {
       return {
         id: lesson.id,
         slug: lesson.slug,
         title: lesson.title,
         lessonNumber: lesson.lesson_number,
-        status: "available",
+        status: (status as ContinueLesson["status"]) || "available",
       };
     }
   }

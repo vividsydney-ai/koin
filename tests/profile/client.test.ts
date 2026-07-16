@@ -35,6 +35,15 @@ vi.mock("@/lib/auth/client", () => ({
           })),
         };
       }
+      if (table === "lessons") {
+        return {
+          select: vi.fn().mockImplementation(() => ({
+            eq: vi.fn().mockImplementation(() => ({
+              single: vi.fn().mockReturnValue({ data: { id: "lesson-id-1" }, error: null }),
+            })),
+          })),
+        };
+      }
       return {};
     }),
   },

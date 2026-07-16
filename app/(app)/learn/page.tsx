@@ -5,11 +5,8 @@ import Link from "next/link";
 import { getAllLessons, getLessonProgress, ensureLessonProgressAvailable } from "@/lib/lessons/client";
 import { useAuth } from "@/lib/auth/use-auth";
 import type { Lesson } from "@/lib/lessons/client";
-import {
-  getFinancialLiteracyLevel,
-  getFinancialGoals,
-  type FinancialLiteracyLevel,
-} from "@/lib/profile/client";
+import { deriveLessonStatuses, type LessonStatus } from "@/lib/lessons/gating";
+import { getUserLearningPath, getFinancialGoals, type UserLearningPath } from "@/lib/profile/client";
 import {
   getLessonRecommendations,
   dismissRecommendation,
@@ -22,9 +19,13 @@ export default function LearnPage() {
   const [lessons, setLessons] = useState<
     Pick<Lesson, "id" | "slug" | "title" | "lessonNumber" | "difficulty" | "xpReward" | "estimatedMinutes" | "summary">[]
   >([]);
-  const [progress, setProgress] = useState<Record<string, "locked" | "available" | "in_progress" | "completed"> | null>(null);
+  const [derivedProgress, setDerivedProgress] = useState<Record<string, LessonStatus> | null>(null);
   const [recommendations, setRecommendations] = useState<LessonRecommendation[]>([]);
-  const [literacyLevel, setLiteracyLevel] = useState<FinancialLiteracyLevel | null>(null);
+  const [learningPath, setLearningPath] = useState<UserLearningPath>({
+    foundationZeroRequired: true,
+    startingLessonId: null,
+    assessmentScore: null,
+  });
   const [financialGoals, setFinancialGoals] = useState<string[] | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -32,35 +33,35 @@ export default function LearnPage() {
     let mounted = true;
     const load = async () => {
       setLoading(true);
-      const [all, userProgress, recs, level, goals] = await Promise.all([
+      const [all, userProgress, recs, path, goals] = await Promise.all([
         getAllLessons(),
         user ? getLessonProgress(user.id) : Promise.resolve(null),
         user ? getLessonRecommendations(user.id) : Promise.resolve([]),
-        user ? getFinancialLiteracyLevel(user.id) : Promise.resolve(null),
+        user
+          ? getUserLearningPath(user.id)
+          : Promise.resolve({ foundationZeroRequired: true, startingLessonId: null, assessmentScore: null }),
         user ? getFinancialGoals(user.id) : Promise.resolve(null),
       ]);
 
       if (!mounted) return;
 
-      let availableCount = 1;
-      if (level === "intermediate") availableCount = 2;
-      if (level === "advanced") availableCount = 3;
+      const progressMap = userProgress ?? {};
+      const derived = deriveLessonStatuses(all, progressMap, path.startingLessonId);
 
-      const unlockedLessons = all.slice(0, availableCount);
-      if (user && unlockedLessons.length > 0) {
-        await ensureLessonProgressAvailable(user.id, unlockedLessons.map((l) => l.id));
-        const refreshedProgress = await getLessonProgress(user.id);
-        if (mounted) {
-          setProgress(refreshedProgress);
-        }
-      } else {
-        setProgress(userProgress);
+      const firstUnlockedIncomplete = all.find((lesson) => {
+        const status = derived[lesson.id];
+        return status !== "locked" && status !== "completed";
+      });
+
+      if (user && firstUnlockedIncomplete) {
+        await ensureLessonProgressAvailable(user.id, [firstUnlockedIncomplete.id]);
       }
 
       if (mounted) {
         setLessons(all);
+        setDerivedProgress(derived);
         setRecommendations(recs);
-        setLiteracyLevel(level);
+        setLearningPath(path);
         setFinancialGoals(goals);
         setLoading(false);
       }
@@ -72,18 +73,23 @@ export default function LearnPage() {
     };
   }, [user]);
 
+  const startIndex =
+    !loading && learningPath.startingLessonId
+      ? Math.max(0, lessons.findIndex((l) => l.id === learningPath.startingLessonId))
+      : 0;
+
   const firstUnlockedIncomplete = loading
     ? null
     : lessons.find((lesson) => {
-        const status = progress?.[lesson.id];
+        const status = derivedProgress?.[lesson.id];
         return status !== "locked" && status !== "completed";
       });
 
   const completedSlugs = new Set<string>(
-    lessons.filter((lesson) => progress?.[lesson.id] === "completed").map((lesson) => lesson.slug)
+    lessons.filter((lesson) => derivedProgress?.[lesson.id] === "completed").map((lesson) => lesson.slug)
   );
   const availableSlugs = new Set<string>(
-    lessons.filter((lesson) => progress?.[lesson.id] !== "locked").map((lesson) => lesson.slug)
+    lessons.filter((lesson) => derivedProgress?.[lesson.id] !== "locked").map((lesson) => lesson.slug)
   );
   const goalRecommendedSlug =
     !loading && financialGoals && financialGoals.length > 0
@@ -136,16 +142,32 @@ export default function LearnPage() {
         </div>
       )}
 
-      {(literacyLevel === "intermediate" || literacyLevel === "advanced") && firstUnlockedIncomplete && !loading && (
-        <div className="mb-4 rounded-radius-lg border border-success/30 bg-success/5 p-4 shadow-sm">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-success">Kamu sudah paham dasar</p>
+      {learningPath.assessmentScore !== null && firstUnlockedIncomplete && !loading && (
+        <div
+          className={`mb-4 rounded-radius-lg border p-4 shadow-sm ${
+            learningPath.foundationZeroRequired
+              ? "border-primary/30 bg-primary/5"
+              : "border-success/30 bg-success/5"
+          }`}
+        >
+          <p
+            className={`text-[11px] font-semibold uppercase tracking-[0.14em] ${
+              learningPath.foundationZeroRequired ? "text-primary" : "text-success"
+            }`}
+          >
+            {learningPath.foundationZeroRequired ? "Kamu perlu memperkuat dasar" : "Kamu sudah paham dasar"}
+          </p>
           <p className="mt-1 font-semibold text-foreground">Mulai dari {firstUnlockedIncomplete.title}</p>
           <p className="text-sm leading-relaxed text-muted-foreground">
-            Berdasarkan hasil asesmen, kamu bisa langsung mulai dari pelajaran yang paling sesuai.
+            {learningPath.foundationZeroRequired
+              ? "Berdasarkan hasil asesmen, kita mulai dari konsep keuangan paling dasar dulu."
+              : "Berdasarkan hasil asesmen, kamu bisa langsung mulai dari pelajaran yang paling sesuai."}
           </p>
           <Link
             href={`/learn/${firstUnlockedIncomplete.slug}`}
-            className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-success"
+            className={`mt-2 inline-flex items-center gap-1 text-sm font-medium ${
+              learningPath.foundationZeroRequired ? "text-primary" : "text-success"
+            }`}
           >
             Mulai pelajaran <span aria-hidden>→</span>
           </Link>
@@ -187,8 +209,8 @@ export default function LearnPage() {
             <LessonCard
               key={lesson.id}
               lesson={lesson}
-              status={progress?.[lesson.id] ?? "locked"}
-              previousCompleted={index === 0 || progress?.[lessons[index - 1]?.id] === "completed"}
+              status={derivedProgress?.[lesson.id] ?? "locked"}
+              previousCompleted={index === startIndex || derivedProgress?.[lessons[index - 1]?.id] === "completed"}
             />
           ))}
         </div>

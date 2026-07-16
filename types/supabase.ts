@@ -1692,8 +1692,12 @@ export type Database = {
       }
       user_settings: {
         Row: {
+          assessment_answers: Json | null
+          assessment_score: number | null
+          foundation_zero_required: boolean | null
           notifications_enabled: boolean | null
           show_on_leaderboard: boolean | null
+          starting_lesson_id: string | null
           streak_reminder_time: string | null
           trade_onboarding_completed: boolean | null
           updated_at: string | null
@@ -1701,8 +1705,12 @@ export type Database = {
           weekly_report_enabled: boolean | null
         }
         Insert: {
+          assessment_answers?: Json | null
+          assessment_score?: number | null
+          foundation_zero_required?: boolean | null
           notifications_enabled?: boolean | null
           show_on_leaderboard?: boolean | null
+          starting_lesson_id?: string | null
           streak_reminder_time?: string | null
           trade_onboarding_completed?: boolean | null
           updated_at?: string | null
@@ -1710,8 +1718,12 @@ export type Database = {
           weekly_report_enabled?: boolean | null
         }
         Update: {
+          assessment_answers?: Json | null
+          assessment_score?: number | null
+          foundation_zero_required?: boolean | null
           notifications_enabled?: boolean | null
           show_on_leaderboard?: boolean | null
+          starting_lesson_id?: string | null
           streak_reminder_time?: string | null
           trade_onboarding_completed?: boolean | null
           updated_at?: string | null
@@ -1719,6 +1731,13 @@ export type Database = {
           weekly_report_enabled?: boolean | null
         }
         Relationships: [
+          {
+            foreignKeyName: "user_settings_starting_lesson_id_fkey"
+            columns: ["starting_lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "user_settings_user_id_fkey"
             columns: ["user_id"]

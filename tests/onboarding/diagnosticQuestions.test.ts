@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   diagnosticQuestions,
   scoreAssessment,
+  computeLearningPath,
   defaultLevel,
 } from "@/lib/onboarding/diagnosticQuestions";
 
@@ -100,5 +101,48 @@ describe("diagnosticQuestions", () => {
 
   it("defaultLevel is beginner", () => {
     expect(defaultLevel).toBe("beginner");
+  });
+
+  describe("computeLearningPath", () => {
+    function resultWithScore(score: number) {
+      return {
+        level: "beginner" as const,
+        score,
+        maxScore: 5,
+        correctByDifficulty: { beginner: 0, intermediate: 0, advanced: 0 },
+        answers: {},
+        wrongRemediationSlugs: [],
+      };
+    }
+
+    it("sends 0-1 correct answers to the full Foundation 0 track", () => {
+      const path0 = computeLearningPath(resultWithScore(0));
+      const path1 = computeLearningPath(resultWithScore(1));
+
+      expect(path0.foundationZeroRequired).toBe(true);
+      expect(path0.startingLessonSlug).toBe("fz-what-is-money");
+      expect(path1.foundationZeroRequired).toBe(true);
+      expect(path1.startingLessonSlug).toBe("fz-what-is-money");
+    });
+
+    it("sends 2-3 correct answers to a shortened Foundation 0 track", () => {
+      const path2 = computeLearningPath(resultWithScore(2));
+      const path3 = computeLearningPath(resultWithScore(3));
+
+      expect(path2.foundationZeroRequired).toBe(true);
+      expect(path2.startingLessonSlug).toBe("fz-income-vs-wealth");
+      expect(path3.foundationZeroRequired).toBe(true);
+      expect(path3.startingLessonSlug).toBe("fz-income-vs-wealth");
+    });
+
+    it("sends 4-5 correct answers straight to the main track", () => {
+      const path4 = computeLearningPath(resultWithScore(4));
+      const path5 = computeLearningPath(resultWithScore(5));
+
+      expect(path4.foundationZeroRequired).toBe(false);
+      expect(path4.startingLessonSlug).toBe("money-basics-101");
+      expect(path5.foundationZeroRequired).toBe(false);
+      expect(path5.startingLessonSlug).toBe("money-basics-101");
+    });
   });
 });

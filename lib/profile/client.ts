@@ -36,6 +36,35 @@ export async function getUserSettings(userId: string): Promise<UserSettings | nu
   return data;
 }
 
+export type UserLearningPath = {
+  foundationZeroRequired: boolean;
+  startingLessonId: string | null;
+  assessmentScore: number | null;
+};
+
+export async function getUserLearningPath(userId: string): Promise<UserLearningPath> {
+  const { data, error } = await supabase
+    .from("user_settings")
+    .select("foundation_zero_required, starting_lesson_id, assessment_score")
+    .eq("user_id", userId)
+    .single();
+
+  if (error || !data) {
+    console.error("getUserLearningPath error:", error?.message);
+    return {
+      foundationZeroRequired: true,
+      startingLessonId: null,
+      assessmentScore: null,
+    };
+  }
+
+  return {
+    foundationZeroRequired: data.foundation_zero_required ?? true,
+    startingLessonId: data.starting_lesson_id ?? null,
+    assessmentScore: data.assessment_score ?? null,
+  };
+}
+
 export async function getFinancialLiteracyLevel(
   userId: string
 ): Promise<FinancialLiteracyLevel | null> {

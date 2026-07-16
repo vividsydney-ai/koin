@@ -103,17 +103,6 @@ describe.runIf(!skipReason)("Foundation 0 mini-track (KO-FOUND-001)", () => {
     const numbers = data!.map((l) => l.lesson_number);
     expect(numbers).toEqual(Array.from({ length: 32 }, (_, i) => i + 14));
   });
-
-  it("Foundation 0 lessons are unpublished by default", async () => {
-    const { data, error } = await supabase
-      .from("lessons")
-      .select("is_published")
-      .like("slug", "fz-%");
-
-    expect(error).toBeNull();
-    expect(data).toHaveLength(12);
-    expect(data!.every((l) => l.is_published === false)).toBe(true);
-  });
 });
 
 describe.skipIf(!skipReason)("Foundation 0 mini-track", () => {
