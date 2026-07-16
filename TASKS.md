@@ -106,22 +106,73 @@
 - [x] Shareable progress card (canvas-rendered PNG)
 - [x] Cohort support: join by invite code (for school/group use later)
 
-## PHASE 6 — Adaptive Lessons + Library
+## PHASE 6 — MVP Soft-Launch Slices
+
+### Slice 0 — Land KO-CURR-001 Curriculum v2
+- [x] Curriculum overhaul: foundation-first 32-lesson free track (KO-CURR-001)
+- [x] Content audit and cleanup: remove low-quality, repeated, and duplicate variants (Linear KO-44)
+- [~] Commit + push migrations 031 + 032 to `origin/web-koinaku`
+- [~] Apply migrations 031 + 032 to production Supabase
+- [~] Verify 32 published lessons and all source URLs reachable
+
+### Slice 1 — Foundation 0: Money Dictionary Mini-Track
+- [ ] Create Foundation 0 topic and 12 micro-lessons (KO-FOUND-001)
+- [ ] Add Tier 1 sources and approved reviews for each Foundation 0 lesson
+- [ ] Write 3+ example variants and 5+ question variants per Foundation 0 lesson
+- [ ] Use matching + case_study question types for term-heavy lessons
+- [ ] Run source URL verification test before publishing
+
+### Slice 2 — Onboarding Assessment Gating (KO-45 continuation)
+- [ ] Persist per-question assessment answers
+- [ ] Add `foundation_zero_required` and `starting_lesson_id` to `user_settings`
+- [ ] Gate Home/Learn tabs based on assessment result
+- [ ] Generate remedial micro-lesson recommendations for wrong answers
+- [ ] Grandfather existing users: default to Foundation 0 if no gating data
+- [ ] Add tests for assessment gating logic
+
+### Slice 3 — Analytics Events + SQL Views (KO-ANALYTICS-001)
+- [ ] Create `lib/analytics/events.ts` with typed event helpers
+- [ ] Instrument 14 events: signup, onboarding, lesson start/complete, quiz, trade, streak, badge, KP, notification, friend, graduation, broker referral
+- [ ] Create SQL views: DAU, activation funnel, D7/D30 retention, lesson completion, first trade, streak milestones
+- [ ] Write `docs/ANALYTICS_PLAYBOOK.md`
+- [ ] Add tests for event insertion and view correctness
+
+### Slice 4 — Email Notifications + In-App Center (KO-NOTIF-001)
+- [ ] Wire `notifications_queue` creation via scheduled Edge Function/cron
+- [ ] Send email streak reminders via `hello@koinaku.com` SMTP
+- [ ] Build in-app notification center UI (bell icon + list + mark-read)
+- [ ] Add notification types: streak reminder, lesson nudge, streak freeze warning, trade onboarding nudge
+- [ ] Document bounce/complaint monitoring
+- [ ] Add notification delivery tests
+
+### Slice 5 — Final QA (KO-QA-001)
+- [ ] `npx tsc --noEmit` clean
+- [ ] `npm run lint` 0 errors
+- [ ] `npm run test` passes (227+ tests)
+- [ ] Lighthouse mobile ≥85, accessibility ≥95
+- [ ] WCAG AA: contrast, focus, alt text, ARIA labels
+- [ ] Keyboard nav for lesson player, quiz, trade form, profile
+- [ ] 375px iPhone SE + 1280px desktop layouts
+- [ ] Dark mode contrast check
+
+### Slice 6 — Handoff Docs (KO-DOCS-001)
+- [ ] Update `README.md` with setup, env, test commands
+- [ ] Ensure `.env.example` lists all required variables
+- [ ] Create `docs/ARCHITECTURE.md` / ADL with key decisions
+- [ ] Create `docs/KNOWN_GAPS.md`
+- [ ] Create `docs/DEPLOYMENT.md` for Vercel + Supabase
+- [ ] Create `docs/CONTEXT.md` domain model
+
+### Phase 6 backlog (post-MVP)
 - [x] Lesson triggers based on trading behavior:
   - Panic sell → loss aversion lesson
   - Concentrated holdings → diversification lesson
   - No trade for N days → confidence / risk tolerance lesson
   - Portfolio drawdown → volatility / emotional control lesson
 - [x] User lesson recommendations table and UI
-- [x] Curriculum overhaul: foundation-first 32-lesson free track (KO-CURR-001)
-- [x] Content audit and cleanup: remove low-quality, repeated, and duplicate variants (Linear KO-44)
-- [x] Onboarding financial literacy assessment + personalized learning path (Linear KO-45)
 - [x] Library tab: browse sources by topic/tier/type/language
 - [ ] Recommended resources: books, videos per lesson
 - [x] All empty states designed (no friends, no lessons started, no holdings, streak lost, graduated, all done)
-- [ ] Analytics events: instrument all 16 events from spec plus trade and graduation events
-- [ ] Notification queue: stub delivery, architecture ready
-- [ ] Final QA: 375px mobile, 1280px desktop, dark mode, keyboard nav, WCAG AA
 
 ## Open bugs from bug tracker (next-session decision)
 > See `HANDOFF.md` and `docs/BUG_TRACKER.md` for full context. These are synced from the Google Sheet and live in Linear project "Koin Bugs".

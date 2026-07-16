@@ -1,12 +1,12 @@
 # Koinaku — Product Requirements Document
 
-**Version:** 1.1 (MVP Reality Check)  
+**Version:** 1.2 (MVP Release Spec)  
 **Date:** 2026-07-16  
-**Status:** Web MVP Live at `https://web.koinaku.com`, Pre-Revenue, Seeking Validation  
+**Status:** Web MVP live at `https://web.koinaku.com`, curriculum v2 overhaul landing, public soft-launch scoped  
 **Product:** Koinaku — Financial Literacy App for Indonesian Gen Z  
 **Tagline:** *Learn · Simulate · Grow — from zero to confident investor*
 
-> **Reality note:** This PRD was written retroactively after the prototype was built. This version corrects over-claims, adds missing operational detail, and scopes Phase 1 to what is actually shippable today.
+> **Reality note:** This PRD is updated for the public soft-launch MVP. It keeps the 32-lesson foundation track already built, adds a Foundation 0 onboarding ramp, and scopes analytics/notifications to what a team of 1 with AI agents can actually ship and operate.
 
 ---
 
@@ -52,7 +52,7 @@ Koinaku is a mobile-first financial literacy app that makes learning about money
 
 | Pillar                       | What It Does                                                                                                                                                       | Why It Matters                                                                                     |
 | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
-| **Bite-Sized Lessons**       | 5-minute structured lessons from "Apa itu uang?" to IDX investing. 32 foundation-first free lessons; each cites a Tier 1 Indonesian source (OJK, BI, IDX) before the quiz.                    | Trust is the product. Every claim is verifiable.                                                   |
+| **Bite-Sized Lessons**       | Foundation 0 "Money Dictionary" onboarding ramp (10–15 micro-lessons), then 5-minute structured lessons from "Apa itu uang?" to IDX investing. 32-lesson foundation-first free track; each cites a Tier 1 Indonesian source (OJK, BI, IDX) before the quiz.                    | Trust is the product. Every claim is verifiable.                                                   |
 | **Paper Trading Playground** | Simulated IDX stock trading with Rp 10.000.000 virtual capital. Live-moving prices, lot-based orders (100 shares), full portfolio tracker.                         | Creates stakes without real risk. The forcing function that brings users back on day 4.            |
 | **XP & Streak System**       | Gamified daily habit: lessons earn XP, streaks unlock badges, weekly friend leaderboards create social accountability.                                             | Duolingo-proven mechanics. Breaking a streak hurts — and that's the point.                         |
 | **Graduate to Real**         | When a user grows their portfolio 3x–5x, they receive a certificate and curated hand-off to OJK-registered investing apps (Bibit, Ajaib, Stockbit, IPOT, Bareksa). | Koinaku is the pre-onboarding funnel. We don't compete with brokers — we feed them educated users. |
@@ -60,7 +60,7 @@ Koinaku is a mobile-first financial literacy app that makes learning about money
 ### User Journey
 
 ```
-Sign Up → Onboarding Assessment → Learn (5-min lesson) → Quiz → Earn XP
+Sign Up → Financial Literacy Assessment → Foundation 0 OR Main Track
      ↓                                          ↓
   Streak Begins ←←←←←←←←←←←←←←←←← Paper Trading Sandbox
      ↓                                          ↓
@@ -108,47 +108,48 @@ Sign Up → Onboarding Assessment → Learn (5-min lesson) → Quiz → Earn XP
 
 ## 4. Requirements
 
-### 4.1 Must Have (MVP — Built & Shipped)
+### 4.1 Must Have (MVP — Public Soft-Launch)
 
 | # | Requirement | Status | Notes |
 |---|-------------|--------|-------|
 | R1 | **User Authentication:** Email + password signup with Supabase Auth. Profile creation with username, display name, age range, financial goals. | ✅ Built | Google OAuth removed; email-only for now. |
-| R2 | **Onboarding Flow:** 5-step onboarding (name → age → goals → risk tolerance intro → notification preference) + financial literacy assessment that personalizes lesson unlocks. | ✅ Built | Assessment added July 2026 (KO-45). |
-| R3 | **Lesson Player:** Title → concept card → Indonesian example → quiz → source trust section → completion. One concept per screen, no scroll walls. | ✅ Built | Content variant engine: random examples/questions per session. |
-| R4 | **Quiz Engine:** Multiple choice, true/false, fill blank, word bank, ordering. Shuffled answers, parameterized numeric questions, 7-day variant cooldown. | ✅ Built | Matching, slider, swipe_yes_no, case_study declared but UI pending. |
-| R5 | **Paper Trading Sandbox:** Portfolio with Rp 10.000.000 virtual capital. Buy/sell lot-based orders (100 shares) on curated IDX stocks. Holdings + trade history. | ✅ Built | Market data seeded; daily price update architecture in place. |
-| R6 | **Streak Engine:** Daily check-in, freeze logic, streak lost state. | ✅ Built | |
-| R7 | **XP & Level System:** XP awarded on lesson completion, quiz bonus, streak milestones, first trade. 10 levels with thresholds. | ✅ Built | |
-| R8 | **Badge System:** 10+ MVP badges (first trade, streak milestones, graduation). Trigger-based award engine. | ✅ Built | |
-| R9 | **Koin Points:** Awarded on streak milestones and lesson completion. Balance visible on Home and Profile. In-app currency only — no real-world redemption. | ✅ Built | |
-| R10 | **Source Trust:** Every lesson shows source card with tier badge, URL, review status before quiz. Tier 1 = OJK/BI/IDX required for publish. | ✅ Built | 32 source records seeded. |
-| R11 | **Content Pipeline:** Lessons stored in Supabase. Review workflow: not_started → draft → needs_review → approved → live. No lesson publishes without ≥1 Tier 1 source + approved review. | ✅ Built | **32 lessons (foundation-first free track; 6 reused/rewritten, 26 new, 6 advanced drafts deactivated). ~1,060 active content variants.** |
-| R12 | **Home Dashboard:** Streak card, today's lesson CTA, portfolio snapshot, Koin Points, leaderboard snippet, recent badge. | ✅ Built | |
-| R13 | **App Shell:** Bottom nav (Home / Learn / Trade / Friends / Library / Profile). Protected routes. Mobile-first (375px baseline, 44px touch targets). | ✅ Built | |
-| R14 | **Adaptive Learning:** Lessons adapt to trading behavior (panic-selling → loss aversion content, concentration → diversification, inactivity → confidence content). | ✅ Partial | Trigger engine exists with rule stubs; thresholds not validated against real user behaviour. |
-| R15 | **Graduation System:** Portfolio growth to 3x–5x starting value triggers certificate + brokerage recommendations (Bibit, Ajaib, Stockbit, IPOT, Bareksa). | ✅ Built | |
+| R2 | **Onboarding Assessment:** 5-step onboarding + financial literacy assessment that genuinely gates the learning path. Low score → Foundation 0; high score → main track; wrong answers unlock remedial micro-lessons. | 🔄 In Progress | Assessment exists; gating logic needs wiring. |
+| R3 | **Foundation 0 — Money Dictionary:** 10–15 micro-lessons that teach pure terms (inflation, interest, risk, asset, liability) before the main curriculum. | 🔄 Not Built | New MVP requirement. |
+| R4 | **Lesson Player:** Title → concept card → Indonesian example → quiz → source trust section → completion. One concept per screen, no scroll walls. | ✅ Built | Content variant engine: random examples/questions per session. |
+| R5 | **Quiz Engine:** Multiple choice, true/false, fill blank, word bank, ordering, matching, case_study. Shuffled answers, parameterized numeric questions, 7-day variant cooldown. | ✅ Built | Slider and swipe_yes_no declared but UI pending post-MVP. |
+| R6 | **Paper Trading Sandbox:** Portfolio with Rp 10.000.000 virtual capital. Buy/sell lot-based orders (100 shares) on curated IDX stocks. Holdings + trade history. | ✅ Built | Market data seeded; daily price update architecture in place. |
+| R7 | **Streak Engine:** Daily check-in, freeze logic, streak lost state. | ✅ Built | |
+| R8 | **XP & Level System:** XP awarded on lesson completion, quiz bonus, streak milestones, first trade. 10 levels with thresholds. | ✅ Built | |
+| R9 | **Badge System:** 10+ MVP badges (first trade, streak milestones, graduation). Trigger-based award engine. | ✅ Built | |
+| R10 | **Koin Points:** Awarded on streak milestones and lesson completion. Balance visible on Home and Profile. In-app currency only — no real-world redemption. | ✅ Built | Spend path deferred post-MVP. |
+| R11 | **Source Trust:** Every lesson shows source card with tier badge, URL, review status before quiz. Tier 1 = OJK/BI/IDX required for publish. | ✅ Built | 32 source records seeded. |
+| R12 | **Content Pipeline:** Lessons stored in Supabase. Review workflow: not_started → draft → needs_review → approved → live. No lesson publishes without ≥1 Tier 1 source + approved review. | ✅ Built | **32 lessons + Foundation 0 target**. |
+| R13 | **Home Dashboard:** Streak card, today's lesson CTA, portfolio snapshot, Koin Points, leaderboard snippet, recent badge. | ✅ Built | |
+| R14 | **App Shell:** Bottom nav (Home / Learn / Trade / Friends / Library / Profile). Protected routes. Mobile-first (375px baseline, 44px touch targets). | ✅ Built | |
+| R15 | **Analytics Events:** `analytics_events` table instrumented across all key user actions. SQL views for DAU, activation, D7/D30 retention, lesson completion, first trade. | 🔄 In Progress | Supabase-only; no paid third-party tools. |
+| R16 | **Notifications:** Email-based streak reminders via `hello@koinaku.com` SMTP + in-app notification center. Web push deferred until native mobile restarts. | 🔄 In Progress | Architecture stubbed; delivery wiring in progress. |
+| R17 | **Graduation System:** Portfolio growth to 3x–5x starting value triggers certificate + brokerage recommendations (Bibit, Ajaib, Stockbit, IPOT, Bareksa). | ✅ Built | |
 
-### 4.2 Should Have (Phase 2 — In Planning)
+### 4.2 Should Have (Post-MVP — Phase 2)
 
 | # | Requirement | Status | Notes |
 |---|-------------|--------|-------|
-| R16 | **Koin Pro Subscription:** Rp 49.000/month. Advanced lessons (tax, macroeconomics, portfolio theory), AI-powered financial coaching, certified completion certificates, exclusive cohort access. | 🔄 Not Built | Paywall architecture ready. Stripe/Xendit integration needed. |
-| R17 | **Social Features:** Friend system, invite flow, weekly leaderboards, cohorts. | ✅ Partial | Friendships + leaderboards built. Full social feed NOT built. |
-| R18 | **Money Dictionary:** Plain-language glossary of 50+ financial terms with Indonesian examples. | 🔄 Not Built | Content planned, UI not implemented. |
-| R19 | **Push Notifications:** Streak reminders, lesson nudges, price alerts. | 🔄 Not Built | Architecture stubbed; not wired to delivery. |
-| R20 | **Analytics & Dashboard:** Admin view of DAU, activation, retention, lesson completion rates, trading activity. | 🔄 Not Built | Raw data exists in DB; no admin UI. |
-| R21 | **Content Expansion:** 50+ lessons across beginner → intermediate → advanced. | 🔄 In Progress | **32 free lessons shipped** (Foundation → Behavior → Scam Defense → Wealth Building → Investing → Pro Teaser). Target 50+ free lessons and 50 Pro lessons by end of Phase 2. |
+| R18 | **Koin Pro Subscription:** Rp 49.000/month. Advanced lessons (tax, macroeconomics, portfolio theory), AI-powered financial coaching, certified completion certificates, exclusive cohort access. | 🔄 Not Built | Paywall architecture ready. Stripe/Xendit integration needed. |
+| R19 | **Social Features:** Friend system, invite flow, weekly leaderboards, cohorts. | ✅ Partial | Friendships + leaderboards built. Full social feed NOT built. |
+| R20 | **Lesson Type Expansion:** Slider and swipe_yes_no quiz types. | 🔄 Not Built | UI pending. |
+| R21 | **Content Expansion:** 50+ free lessons and 50 Pro lessons. | 🔄 Planned | **32 free lessons + Foundation 0 for MVP**. |
 | R22 | **A/B Testing Framework:** Variant testing for onboarding, lesson order, pricing page. | 🔄 Not Built | |
+| R23 | **Admin Analytics Dashboard:** Visual charts on top of SQL views. | 🔄 Not Built | Built after playbook proves value. |
 
 ### 4.3 Could Have (Phase 3 — Future)
 
 | # | Requirement | Status |
 |---|-------------|--------|
-| R23 | **B2B Licensing:** OJK-aligned curriculum sold to schools, banks, corporates. | 🔄 Not Built |
-| R24 | **AI Financial Coach:** Personalized coaching based on trading behaviour and lesson performance. | 🔄 Not Built |
-| R25 | **Community Features:** Discussion forums, mentor matching, user-generated content. | ❌ Explicitly Out of Scope (VISION.md) |
-| R26 | **Real Broker API Integrations:** Direct connect to Bibit/Ajaib for graduated users. | ❌ Explicitly Out of Scope |
-| R27 | **Crypto / Forex Education:** | ❌ Explicitly Out of Scope |
+| R24 | **B2B Licensing:** OJK-aligned curriculum sold to schools, banks, corporates. | 🔄 Not Built |
+| R25 | **AI Financial Coach:** Personalized coaching based on trading behaviour and lesson performance. | 🔄 Not Built |
+| R26 | **Community Features:** Discussion forums, mentor matching, user-generated content. | ❌ Explicitly Out of Scope (VISION.md) |
+| R27 | **Real Broker API Integrations:** Direct connect to Bibit/Ajaib for graduated users. | ❌ Explicitly Out of Scope |
+| R28 | **Crypto / Forex Education:** | ❌ Explicitly Out of Scope |
 
 ### 4.4 Will Not Have (Explicitly Out of Scope)
 
@@ -171,17 +172,17 @@ Sign Up → Onboarding Assessment → Learn (5-min lesson) → Quiz → Earn XP
 
 ### Input Metrics (Weekly)
 
-> **Prerequisite:** These metrics require analytics instrumentation (R20). Until built, all targets are aspirational and cannot be validated.
+| Metric | Current Baseline | MVP Target | Phase 2 Target |
+|--------|-----------------|------------|----------------|
+| Sign-up → Lesson Start (Activation) | Not instrumented | > 50% | > 70% |
+| Day-7 Retention | Not instrumented | > 20% | > 35% |
+| Day-30 Retention | Not instrumented | > 10% | > 25% |
+| Lesson Completion Rate | Not instrumented | > 35% | > 50% |
+| First Trade within 7 Days | Not instrumented | > 15% | > 30% |
+| Streak ≥ 7 Days | Not instrumented | > 12% | > 25% |
+| Average Session Length | Not instrumented | 3–5 min | 4–6 min |
 
-| Metric | Current Baseline | Phase 1 Target | Phase 2 Target |
-|--------|-----------------|----------------|----------------|
-| Sign-up → Lesson Start (Activation) | Not instrumented | > 60% | > 70% |
-| Day-7 Retention | Not instrumented | > 25% | > 35% |
-| Day-30 Retention | Not instrumented | > 15% | > 25% |
-| Lesson Completion Rate | Not instrumented | > 40% | > 50% |
-| First Trade within 7 Days | Not instrumented | > 20% | > 30% |
-| Streak ≥ 7 Days | Not instrumented | > 15% | > 25% |
-| Average Session Length | Not instrumented | 4–6 min | 4–6 min |
+> **Note:** Baselines will be established in the first 2 weeks after analytics events and SQL views are live. Targets are directional, not contractual.
 
 ### Revenue Metrics (Phase 2+)
 
@@ -196,13 +197,14 @@ Sign Up → Onboarding Assessment → Learn (5-min lesson) → Quiz → Earn XP
 - Source trust score: % of published lessons with ≥1 Tier 1 source = 100%
 - Content review backlog: avg days from draft to approved < 7
 - Support ticket volume: < 5% of MAU
+- Email bounce/complaint rate: < 1%
 
 ---
 
 ## 6. Business Model
 
-### Phase 1: Free to Habit (Now — MVP)
-- Core lessons and paper trading: **free forever**
+### Phase 1: Free to Habit (MVP — Now)
+- Core lessons, Foundation 0, and paper trading: **free forever**
 - Goal: Build MAU through organic discovery, school partnerships, social virality
 - Product earns trust before it earns money
 
@@ -248,25 +250,26 @@ Sign Up → Onboarding Assessment → Learn (5-min lesson) → Quiz → Earn XP
 
 | Risk | Likelihood | Impact | Mitigation |
 |------|-----------|--------|------------|
-| **Users don't form the habit** — low D7/D30 retention | Medium | High | Paper trading is the forcing function. If users don't trade, adaptive triggers re-engage. A/B test notification timing. |
-| **Content creation bottleneck** — can't produce 50+ lessons fast enough | High | High | Structured content pipeline with templates. Community contributor model. AI-assisted drafting with human review. |
+| **Users don't form the habit** — low D7/D30 retention | Medium | High | Paper trading is the forcing function. Email streak reminders + in-app center re-engage. Measure cohorts weekly. |
+| **Content creation bottleneck** — can't produce Foundation 0 fast enough | Medium | High | Templated micro-lessons, AI-assisted drafting with human review, existing source pool. |
 | **B2B sales cycle is long** — schools/banks move slowly | Medium | Medium | Start with consumer traction as proof. Pilot with 2–3 schools for case studies. Partner with CSR-focused banks. |
 | **Competitor clones the idea** — well-funded team copies mechanics | Medium | Medium | Moat is behavioural data + OJK relationships + localisation depth. 6-month head start + data flywheel. |
 | **OJK regulation changes** — financial education requirements shift | Low | High | Stay aligned with OJK SNLIK updates. Position as partner, not competitor, to regulatory goals. |
 | **Payment friction** — Indonesian users reluctant to subscribe | Medium | Medium | Start with school/institutional licenses (B2B pays). Offer annual discount. Consider carrier billing or e-wallet (OVO, GoPay, DANA). |
-| **Analytics & notifications not built** — cannot measure retention or remind users | High | High | Block Phase 1 launch until `analytics_events` table and push delivery are wired. |
+| **Source links break or are fabricated** — trust is eroded | Medium | High | CI-gated URL verification (`tests/sources/url-verification.test.ts`). Every source must be re-verified before publish. |
+| **Email deliverability drops** — streak reminders don't reach users | Medium | High | Use Google Workspace SMTP with app password. Monitor bounce/complaint rates. Keep < 1% complaint rate. |
 | **Regulatory blur on brokerage referrals** — "Graduate to Real" may be seen as advice/promotion | Medium | High | Legal review before soft launch. Use neutral language: "OJK-registered brokers" not recommendations. |
 
 ---
 
 ## 9. Rollout Plan
 
-### Phase 1: Validate the Habit (Now — Month 1–3)
+### Phase 1: Validate the Habit (MVP — Now to Month 3)
 - **Goal:** 100 daily active learning sessions (lesson + trade)
-- **Shippable today:** Web MVP with 6 beginner lessons + paper trading + streaks + XP.
-- **Blockers before launch:** Analytics instrumentation (R20) and notification delivery (R19) must be wired so retention is measurable and streak reminders actually fire.
+- **Shippable today:** Web MVP with 32 lessons + Foundation 0 + paper trading + streaks + XP + email notifications + Supabase analytics.
+- **Blockers before launch:** Land KO-CURR-001 migrations, build Foundation 0, wire assessment gating, instrument analytics events, wire email delivery, final QA.
 - **Tactics:** Soft launch to personal networks, university groups, TikTok organic content
-- **Kill Criteria:** D7 retention < 15% after 200 signups, or < 10% of users complete first trade
+- **Kill Criteria:** D7 retention < 10% after 200 signups, or < 10% of users complete first trade
 - **Success Signals:** > 20% of users start a streak, > 30% complete first lesson
 
 ### Phase 2: Find the Wedge (Month 4–6)
@@ -303,38 +306,40 @@ Sign Up → Onboarding Assessment → Learn (5-min lesson) → Quiz → Earn XP
 - **Mobile:** Capacitor wrapper for iOS/Android (web-first, native track paused)
 - **Deployment:** Vercel (web), Xcode + Android Studio (mobile builds)
 - **Validation:** Zod + React Hook Form
+- **Quality Gates:** `npx tsc --noEmit`, `npm run lint`, `npx vitest run` (227+ tests), Lighthouse mobile ≥85, accessibility ≥95, WCAG AA
 
 ### Accessibility
 - WCAG 2.1 AA target
 - Reduced-motion fallback for all animations
 - Minimum 44px touch targets
 - Clear contrast on all text
+- Keyboard-navigable lesson player and trade flow
 
 ---
 
-## 11. Blind Spots Addressed in v1.1
+## 11. Blind Spots Addressed in v1.2
 
-The retroactive PRD over-stated shipped scope and under-stated operational gaps. This section records the reality check.
+### MVP Scope Decisions
+1. **32 lessons is the launch set; 100 lessons is post-MVP.** We ship the foundation track first, measure, then expand.
+2. **Foundation 0 fixes the "too hard" feedback.** A short Money Dictionary mini-track teaches terms before the main curriculum.
+3. **Analytics = Supabase-only with SQL views + playbook.** No paid tools. Admin dashboard comes after the playbook proves value.
+4. **Notifications = email + in-app center.** Web push deferred until native mobile restarts.
+5. **Assessment gates the path.** Low-score users start with Foundation 0; high-score users skip ahead; wrong answers unlock remedial micro-lessons.
 
-### Product / Traction
-1. **No evidence paper trading is the habit driver.** The PRD claimed trading is the "forcing function on day 4." We now treat this as a hypothesis to test, not fact.
-2. **North Star cannot be measured yet.** "Daily Active Learning Sessions" requires analytics instrumentation (R20), which is not built.
-3. **Graduation target may be unrealistic.** 3x–5x portfolio growth in a low-volatility simulated market could take months. We will model feasibility before declaring it the core loop.
-4. **Koin Points have no spend path.** Points are earned but cannot be spent. MVP launch is acceptable, but a utility must be designed before Phase 2.
-
-### Technical / Implementation
-5. **Lesson count was overstated.** PRD claimed 15 lessons; actual shippable count is now **32 lessons** (foundation-first free track) and **~1,060 active content variants** after the v2.0 overhaul.
-6. **Adaptive triggers are structural, not validated.** Trigger rules exist but thresholds are not tied to observed behaviour.
-7. **Analytics and notifications are blockers, not nice-to-haves.** Without them, Phase 1 success metrics and retention loops are unproven.
-8. **Native mobile is paused.** The PRD calls Koin "mobile-first" but only the web PWA is live. Push notifications and home-screen retention are degraded.
-9. **No data retention / deletion policy.** Account closure and data export are not specified.
+### Technical / Operational
+6. **Source verification is now a CI gate.** `tests/sources/url-verification.test.ts` must pass before any lesson is published.
+7. **Engineering quality is an explicit requirement.** Type checking, linting, tests, Lighthouse, and accessibility are MVP gates.
+8. **Data isolation is documented in `docs/CONTEXT.md`.** Every user's learning data, portfolio, and settings are scoped by `user_id` via Supabase RLS.
+9. **Koin Points utility is acknowledged but deferred.** Points are earned but cannot be spent in MVP; a utility is designed in Phase 2.
+10. **Native mobile is paused.** The app is web-first/PWA; push notifications and home-screen retention are degraded accordingly.
 
 ### Legal / Compliance
-10. **Brokerage referral may cross regulatory lines.** Listing specific brokers after "graduation" could be read as investment advice or promotion under OJK rules. Legal review required before soft launch.
+11. **Brokerage referral language is neutral.** "OJK-registered brokers," not recommendations. Legal review required before soft launch.
+12. **Terms of Service and Privacy Policy required before public soft launch.** Collecting data from 16–30-year-olds requires clear policies.
 
 ### Business Model
-11. **LTV/CAC assumptions are speculative.** Organic + school-partnership CAC of Rp 50k–100k assumes scalable organic acquisition, which is unproven.
-12. **Pricing is untested.** Rp 49k/month Koin Pro price is a placeholder until a smoke test validates willingness to pay.
+13. **LTV/CAC assumptions remain speculative.** Organic CAC assumes scalable organic acquisition, unproven until Phase 1 data.
+14. **Pricing is untested.** Rp 49k/month Koin Pro price is a placeholder until a smoke test validates willingness to pay.
 
 ---
 
@@ -344,17 +349,17 @@ The retroactive PRD over-stated shipped scope and under-stated operational gaps.
 1. **What is the actual aha moment?** Is it first lesson completion, first trade, or first streak milestone? (Requires cohort analysis on real user data.)
 2. **Which channel works?** Organic TikTok, school partnerships, or paid social? (Requires Phase 1 launch data.)
 3. **Will users pay Rp 49k/month?** What features justify the price? (Requires pricing smoke test or Koin Pro beta.)
-4. **Can we produce content at scale?** 50 lessons is the minimum for retention. Can the content pipeline sustain 2 lessons/week? (Requires content team capacity test.)
+4. **Can we produce content at scale?** Foundation 0 + 32 lessons is the MVP floor. Can the content pipeline sustain 2 lessons/week post-launch? (Requires content team capacity test.)
 
 ### Immediate Next Steps (This Week)
-- [x] Audit actual shipped lesson/variant counts and align PRD claims with reality.
-- [ ] **Build analytics event pipeline in Supabase** (team of 1 — use `analytics_events` table, not paid third-party tool).
-- [ ] **Wire push notification delivery** so streak reminders reach users.
+- [ ] Land KO-CURR-001: commit, push, and apply migrations 031 + 032 to production.
+- [ ] Build Foundation 0 "Money Dictionary" mini-track (10–15 micro-lessons).
+- [ ] Wire onboarding assessment gating logic.
+- [ ] Instrument analytics events and create SQL views for North Star + retention.
+- [ ] Wire email notification delivery + in-app notification center.
+- [ ] Run final QA: 375px mobile, 1280px desktop, dark mode, keyboard nav, WCAG AA.
+- [ ] Draft Terms of Service and Privacy Policy.
 - [ ] Soft launch to 50 real users (not dev accounts) and observe Day-1 behaviour.
-- [ ] Define "active learning session" event and start measuring North Star.
-- [ ] Model graduation feasibility: simulate time-to-3x portfolio under current market data volatility.
-- [ ] Legal review: clarify whether "Graduate to Real" broker list is investment advice/promotion under OJK rules.
-- [ ] Create a Koin Pro pricing smoke test landing page to validate willingness to pay.
 
 ---
 
@@ -363,6 +368,7 @@ The retroactive PRD over-stated shipped scope and under-stated operational gaps.
 **Rule 1:** No lesson reaches `is_published = true` without:
 1. At least one `lesson_sources` record linking a Tier 1 source (OJK, BI, IDX)
 2. A `lesson_reviews` record with `approved_to_publish = true`
+3. A passing URL verification test for every cited source URL
 
 **Rule 2:** No certificate is issued without verified portfolio graduation (3x–5x starting value).
 
@@ -385,3 +391,5 @@ The retroactive PRD over-stated shipped scope and under-stated operational gaps.
 | **SBN** | Surat Berharga Negara — government bonds |
 | **Paper Trading** | Simulated trading with virtual money, no real financial risk |
 | **Koin Points** | In-app currency earned through streaks and lessons; no real-world value |
+| **Foundation 0** | Onboarding micro-lesson track that teaches financial terms before the main curriculum |
+| **Daily Active Learning Session** | One lesson completion OR one paper trade per user per day |
