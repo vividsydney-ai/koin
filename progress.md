@@ -2,6 +2,12 @@
 # Loop reads and writes this. Human can also read to understand where we are.
 # v2: MVP reshaped around paper trading. Original v1 loop files archived in /_archived.
 
+## 2026-07-16 — PRD v1.1 reality check and blind spots
+
+- Audited actual shipped content: **12 lessons** (6 beginner live, 6 advanced draft) and **~805 active content variants** from 1,783 generated / 284 deactivated.
+- Rewrote `PRD.md` to v1.1: corrected over-claims, marked adaptive learning as partial, added analytics/notification blockers, added "Blind Spots Addressed" section, realistic next steps, and legal/regulatory flags.
+- Committed and pushed `0e60c03` to `origin/web-koinaku`.
+
 ## 2026-07-16 — SEC-001: Security & engineering credibility pass landed
 
 - Conductor initialized loop state for Option B (Structured Boundary Hardening) from approved plan.
