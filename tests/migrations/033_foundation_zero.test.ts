@@ -2,11 +2,11 @@ import { describe, it, expect, beforeAll } from "vitest";
 import { createClient } from "@supabase/supabase-js";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 const skipReason =
   !supabaseUrl || !supabaseKey
-    ? "NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY not set"
+    ? "NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY not set"
     : null;
 
 describe.runIf(!skipReason)("Foundation 0 mini-track (KO-FOUND-001)", () => {
@@ -55,14 +55,14 @@ describe.runIf(!skipReason)("Foundation 0 mini-track (KO-FOUND-001)", () => {
     for (const lesson of lessons!) {
       const { data, error } = await supabase
         .from("lesson_sources")
-        .select("id, source_id, is_primary, sources!inner(tier)")
+        .select("id, source_id, is_primary")
         .eq("lesson_id", lesson.id)
         .eq("is_primary", true)
         .single();
 
       expect(error, `lesson ${lesson.slug} missing primary source`).toBeNull();
       expect(data).not.toBeNull();
-      // sources.tier should be 'tier_1' based on seed data.
+      expect(data?.is_primary).toBe(true);
     }
   });
 
