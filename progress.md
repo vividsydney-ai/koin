@@ -2,6 +2,28 @@
 # Loop reads and writes this. Human can also read to understand where we are.
 # v2: MVP reshaped around paper trading. Original v1 loop files archived in /_archived.
 
+## 2026-07-16 — SEC-001: Security & engineering credibility pass landed
+
+- Conductor initialized loop state for Option B (Structured Boundary Hardening) from approved plan.
+- **Maker** (subagent) added:
+  - `.github/workflows/ci.yml` — CI for type-check, lint, test, `pnpm audit`, Supabase migration tests, RLS smoke tests.
+  - `SECURITY.md`, `docs/security.md`, `docs/adr/001-tenancy-and-rls.md`.
+  - Husky + lint-staged pre-commit hooks.
+  - `lib/types/result.ts`, `lib/types/service-error.ts`.
+  - `lib/auth/errors.ts`, `lib/auth/schemas.ts` — normalized auth errors + Zod input validation.
+  - `lib/schemas/profile.ts`, `lib/schemas/trading.ts`, `lib/schemas/lessons.ts`.
+  - `lib/services/profile.ts`, `lib/services/trading.ts`, `lib/services/lessons.ts`.
+  - `tests/security/rls-smoke.test.ts`, `tests/services/*.test.ts`.
+- **Fixer** (subagent) resolved 19 existing ESLint errors across `app/` and `lib/`.
+- **Verifier** (subagent) returned **PASS** after lint fixes.
+- Lander committed and pushed `a825e27` to `origin/web-koinaku`.
+- Vercel deploy triggered for `https://web.koinaku.com`.
+- Verification:
+  - `npx tsc --noEmit` ✅
+  - `npm run lint` ✅ 0 errors
+  - `npx vitest run` ✅ 215 passed, 1 skipped
+- Updated `KIMI_HANDOFF.md` with new baseline and SEC-001 completion.
+
 ## 2026-07-14 — KO-46: Signup confirmation emails + form UX landed
 
 - Created Linear KO-46 and initialized loop state with swarm roles.
