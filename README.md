@@ -1,7 +1,8 @@
 # Koinaku — Financial Literacy for Indonesian Gen Z
 
 **Branch:** `web-koinaku`  
-**Production:** `https://web.koinaku.com`  
+**Production:** `https://koin-web-koinaku-vividsydney.vercel.app`  
+**Target custom domain:** `https://web.koinaku.com` (blocked by Vercel apex-domain verification; see `docs/DEPLOYMENT.md`)  
 **Stack:** Next.js 16 + TypeScript + Tailwind CSS v4 + Supabase
 
 Koinaku is a mobile-first financial literacy app that turns learning about money into a daily habit. It combines Duolingo-style micro-lessons with a paper-trading sandbox so users can practice with virtual Rupiah before risking real money.

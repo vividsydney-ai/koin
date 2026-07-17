@@ -1,7 +1,8 @@
 # Koinaku Deployment Guide
 
 **Branch:** `web-koinaku`  
-**Production URL:** `https://web.koinaku.com`  
+**Production URL:** `https://koin-web-koinaku-vividsydney.vercel.app`  
+**Target custom domain:** `https://web.koinaku.com` (blocked by Vercel apex-domain verification; see Section 5)  
 **Vercel Project:** `web-koinaku`  
 **Supabase Project:** linked via `supabase/config.toml`
 
@@ -27,7 +28,7 @@ How to deploy the Koinaku web MVP to Vercel production, apply Supabase schema ch
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL | `https://xxxx.supabase.co` |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public anon key | `eyJ...` |
 | `SUPABASE_SERVICE_ROLE_KEY` | Server-side admin key | `eyJ...` |
-| `NEXT_PUBLIC_APP_URL` | Canonical production URL | `https://web.koinaku.com` |
+| `NEXT_PUBLIC_APP_URL` | Canonical production URL | `https://koin-web-koinaku-vividsydney.vercel.app` |
 | `SMTP_HOST` | Outgoing email host | `smtp.gmail.com` |
 | `SMTP_PORT` | Outgoing email port | `587` |
 | `SMTP_USER` | SMTP login | `hello@koinaku.com` |
@@ -130,7 +131,7 @@ To test the cron endpoint locally or in production:
 
 ```bash
 curl -H "Authorization: Bearer $CRON_SECRET" \
-  https://web.koinaku.com/api/cron/streak-reminders
+  https://koin-web-koinaku-vividsydney.vercel.app/api/cron/streak-reminders
 ```
 
 The endpoint returns:
@@ -182,7 +183,7 @@ If a production deploy breaks something critical (login broken, data error, majo
 
 After every production deploy, run this checklist before announcing the release:
 
-- [ ] `https://web.koinaku.com/login` loads on mobile (375px) and desktop (1280px).
+- [ ] `https://koin-web-koinaku-vividsydney.vercel.app/login` loads on mobile (375px) and desktop (1280px).
 - [ ] New test email can sign up and receives the Supabase confirmation email.
 - [ ] Confirming email redirects to onboarding.
 - [ ] Onboarding assessment submits and gates the path (Foundation 0 or main track).

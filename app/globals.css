@@ -32,12 +32,18 @@
   --rup-gold-400: #cbab59; --rup-gold-500: #b8992e; --rup-gold-600: #997e26; --rup-gold-700: #7a641e;
   --rup-gold-800: #5a4a16; --rup-gold-900: #3e3517; --rup-gold-950: #231e0d;
 
+  --rup-orbit-50: #f5f1ff; --rup-orbit-100: #ebe3ff; --rup-orbit-200: #d9caff; --rup-orbit-300: #bda5ff;
+  --rup-orbit-400: #9b78fb; --rup-orbit-500: #6f4af0; --rup-orbit-600: #5b38ce; --rup-orbit-700: #45308f;
+  --rup-orbit-800: #31245e; --rup-orbit-900: #1f1937; --rup-orbit-950: #100b24;
+
   /* Semantic tokens */
-  --color-primary: var(--rup-red-500);
-  --color-primary-50: var(--rup-red-50); --color-primary-100: var(--rup-red-100); --color-primary-200: var(--rup-red-200);
-  --color-primary-300: var(--rup-red-300); --color-primary-400: var(--rup-red-400); --color-primary-500: var(--rup-red-500);
-  --color-primary-600: var(--rup-red-600); --color-primary-700: var(--rup-red-700); --color-primary-800: var(--rup-red-800);
-  --color-primary-900: var(--rup-red-900); --color-primary-950: var(--rup-red-950);
+  /* Primary is Orbit Purple (design system v4). Red is reserved for danger/destructive
+     only — never reused as the primary action color. See koinaku-design-system-v4. */
+  --color-primary: var(--rup-orbit-500);
+  --color-primary-50: var(--rup-orbit-50); --color-primary-100: var(--rup-orbit-100); --color-primary-200: var(--rup-orbit-200);
+  --color-primary-300: var(--rup-orbit-300); --color-primary-400: var(--rup-orbit-400); --color-primary-500: var(--rup-orbit-500);
+  --color-primary-600: var(--rup-orbit-600); --color-primary-700: var(--rup-orbit-700); --color-primary-800: var(--rup-orbit-800);
+  --color-primary-900: var(--rup-orbit-900); --color-primary-950: var(--rup-orbit-950);
 
   --color-secondary: var(--rup-blue-500);
   --color-secondary-50: var(--rup-blue-50); --color-secondary-100: var(--rup-blue-100); --color-secondary-200: var(--rup-blue-200);
@@ -71,6 +77,7 @@
   --radius-md: 0.5rem;
   --radius-lg: 0.75rem;
   --radius-xl: 1rem;
+  --radius-card: 1.125rem; /* 18px — dedicated card radius, sits between xl and 2xl */
   --radius-2xl: 1.5rem;
   --radius-3xl: 2rem;
   --radius-full: 9999px;
@@ -84,7 +91,20 @@
   --shadow-sm: 0 1px 3px rgba(23, 24, 24, 0.08), 0 1px 2px rgba(23, 24, 24, 0.04);
   --shadow-md: 0 4px 12px rgba(23, 24, 24, 0.10), 0 2px 4px rgba(23, 24, 24, 0.06);
   --shadow-lg: 0 12px 32px rgba(23, 24, 24, 0.14), 0 4px 8px rgba(23, 24, 24, 0.08);
-  --shadow-focus-ring: 0 0 0 3px rgba(196, 31, 38, 0.25);
+  --shadow-lift: 0 24px 56px rgba(69, 48, 143, 0.22); /* modals, sheets, dialogs — tinted to primary */
+  --shadow-focus-ring: 0 0 0 3px rgba(111, 74, 240, 0.28);
+
+  /* Brand gradient — wordmark sweep, icon/illustration use only. Never gradient text. */
+  --gradient-brand: linear-gradient(135deg, #6b4cfa 0%, #893da7 35%, #a62e55 68%, #c41f02 100%);
+
+  /* Z-index scale — every stacked layer pulls from here, never an arbitrary number */
+  --z-dropdown: 10;
+  --z-sticky: 20;
+  --z-drawer: 30;
+  --z-modal-backdrop: 35;
+  --z-modal: 40;
+  --z-toast: 50;
+  --z-tooltip: 60;
 }
 
 @theme inline {
@@ -114,7 +134,9 @@
   --radius-md: var(--radius-md);
   --radius-lg: var(--radius-lg);
   --radius-xl: var(--radius-xl);
+  --radius-card: var(--radius-card);
   --radius-full: var(--radius-full);
+  --background-image-brand: var(--gradient-brand);
   --font-sans: var(--font-satoshi), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-cabinet), ui-sans-serif, system-ui, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;

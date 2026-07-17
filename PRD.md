@@ -2,7 +2,7 @@
 
 **Version:** 1.2 (MVP Release Spec)  
 **Date:** 2026-07-16  
-**Status:** Web MVP shipped on `web-koinaku` branch; deployed to `https://web.koinaku.com`. All MVP requirements built.  
+**Status:** Web MVP shipped on `web-koinaku` branch; deployed to `https://koin-web-koinaku-vividsydney.vercel.app`. Target custom domain `https://web.koinaku.com` is blocked by Vercel apex-domain verification while the apex remains on Netlify. All MVP requirements built.  
 **Product:** Koinaku — Financial Literacy App for Indonesian Gen Z  
 **Tagline:** *Learn · Simulate · Grow — from zero to confident investor*
 

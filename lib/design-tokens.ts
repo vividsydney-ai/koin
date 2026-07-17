@@ -1,10 +1,13 @@
-// Koinaku v2.0 design tokens
+// Koinaku design tokens
 // Source of truth for colors, spacing, typography, and radius.
 // Use these values in Tailwind config and components. No hardcoded colors in components.
+// Canonical source for new tokens: koinaku-design-system-v4 (theme.css :root).
+// Kept in sync with app/globals.css — run scripts/design-drift-check.sh after editing either file.
 
 export const colors = {
-  // Brand — Rupiah-inspired
-  primary: "#c41f26", // 100K red
+  // Brand — Orbit Purple is primary. Red is reserved for danger/destructive
+  // only — never reused as the primary action color.
+  primary: "#6f4af0", // Orbit Purple 500
   primaryForeground: "#ffffff",
 
   secondary: "#0a6f90", // 50K blue
@@ -72,6 +75,11 @@ export const colorRamps = {
     400: "#cbab59", 500: "#b8992e", 600: "#997e26", 700: "#7a641e",
     800: "#5a4a16", 900: "#3e3517", 950: "#231e0d",
   },
+  orbit: {
+    50: "#f5f1ff", 100: "#ebe3ff", 200: "#d9caff", 300: "#bda5ff",
+    400: "#9b78fb", 500: "#6f4af0", 600: "#5b38ce", 700: "#45308f",
+    800: "#31245e", 900: "#1f1937", 950: "#100b24",
+  },
 } as const;
 
 export const spacing = {
@@ -99,6 +107,7 @@ export const radius = {
   DEFAULT: "0.5rem",
   lg: "0.75rem",
   xl: "1rem",
+  card: "1.125rem", // 18px — dedicated card radius, sits between xl and 2xl
   "2xl": "1.5rem",
   "3xl": "2rem",
   full: "9999px",
@@ -135,7 +144,24 @@ export const shadows = {
   sm: "0 1px 3px rgba(23, 24, 24, 0.08), 0 1px 2px rgba(23, 24, 24, 0.04)",
   md: "0 4px 12px rgba(23, 24, 24, 0.10), 0 2px 4px rgba(23, 24, 24, 0.06)",
   lg: "0 12px 32px rgba(23, 24, 24, 0.14), 0 4px 8px rgba(23, 24, 24, 0.08)",
-  focusRing: "0 0 0 3px rgba(196, 31, 38, 0.25)",
+  lift: "0 24px 56px rgba(69, 48, 143, 0.22)", // modals, sheets, dialogs — tinted to primary
+  focusRing: "0 0 0 3px rgba(111, 74, 240, 0.28)",
+} as const;
+
+// Brand gradient — wordmark sweep, icon/illustration use only. Never gradient text.
+export const gradients = {
+  brand: "linear-gradient(135deg, #6b4cfa 0%, #893da7 35%, #a62e55 68%, #c41f02 100%)",
+} as const;
+
+// Z-index scale — every stacked layer pulls from here, never an arbitrary number
+export const zIndex = {
+  dropdown: 10,
+  sticky: 20,
+  drawer: 30,
+  modalBackdrop: 35,
+  modal: 40,
+  toast: 50,
+  tooltip: 60,
 } as const;
 
 // Tailwind v4 CSS variable injection helper
@@ -166,7 +192,17 @@ export function cssVariables(): string {
       --radius-md: ${radius.md};
       --radius-lg: ${radius.lg};
       --radius-xl: ${radius.xl};
+      --radius-card: ${radius.card};
       --radius-full: ${radius.full};
+      --shadow-lift: ${shadows.lift};
+      --gradient-brand: ${gradients.brand};
+      --z-dropdown: ${zIndex.dropdown};
+      --z-sticky: ${zIndex.sticky};
+      --z-drawer: ${zIndex.drawer};
+      --z-modal-backdrop: ${zIndex.modalBackdrop};
+      --z-modal: ${zIndex.modal};
+      --z-toast: ${zIndex.toast};
+      --z-tooltip: ${zIndex.tooltip};
     }
   `;
 }
