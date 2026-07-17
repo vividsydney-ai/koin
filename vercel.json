@@ -1,5 +1,4 @@
 {
-  "framework": null,
   "buildCommand": "next build",
   "installCommand": "pnpm install",
   "cleanUrls": true,
