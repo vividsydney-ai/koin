@@ -1,8 +1,8 @@
 # Koinaku — Financial Literacy for Indonesian Gen Z
 
 **Branch:** `web-koinaku`  
-**Production:** `https://koin-web-koinaku-vividsydney.vercel.app`  
-**Target custom domain:** `https://web.koinaku.com` (blocked by Vercel apex-domain verification; see `docs/DEPLOYMENT.md`)  
+**Production:** `https://web.koinaku.com`  
+**Netlify site:** `koinaku-web-mvp` (`3e15f6a6-179d-4034-8fea-3e77dc176d24`)  
 **Stack:** Next.js 16 + TypeScript + Tailwind CSS v4 + Supabase
 
 Koinaku is a mobile-first financial literacy app that turns learning about money into a daily habit. It combines Duolingo-style micro-lessons with a paper-trading sandbox so users can practice with virtual Rupiah before risking real money.
@@ -67,9 +67,9 @@ See `.env.example` for the full list. The app will not build or send email witho
 ## Branch & deploy notes
 
 - Active development happens on `web-koinaku`.
-- Production is deployed to Vercel and pointed at `https://web.koinaku.com`.
-- Supabase migrations are applied with `npx supabase db push` before Vercel builds when the schema changed.
-- The cron endpoint `/api/cron/streak-reminders` is protected by `CRON_SECRET` and scheduled hourly in `vercel.json`.
+- Production is deployed to Netlify and served at `https://web.koinaku.com`.
+- Supabase migrations are applied with `npx supabase db push` before Netlify builds when the schema changed.
+- The streak-reminder job is a Netlify scheduled function (`netlify/functions/streak-reminders.ts`) that runs daily at 13:00 UTC.
 
 ---
 
@@ -77,7 +77,7 @@ See `.env.example` for the full list. The app will not build or send email witho
 
 - [`docs/CONTEXT.md`](docs/CONTEXT.md) — domain model and ubiquitous language
 - [`ADL.md`](ADL.md) — architecture decision log
-- [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) — Vercel + Supabase deploy flow
+- [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) — Netlify + Supabase deploy flow
 - [`docs/KNOWN_GAPS.md`](docs/KNOWN_GAPS.md) — what is intentionally out of scope
 - [`docs/QA_REPORT.md`](docs/QA_REPORT.md) — QA gate results
 - [`docs/ANALYTICS_PLAYBOOK.md`](docs/ANALYTICS_PLAYBOOK.md) — how to run MVP metrics
