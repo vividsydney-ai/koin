@@ -31,7 +31,8 @@
     "supabase:start": "supabase start",
     "supabase:stop": "supabase stop",
     "supabase:reset": "supabase db reset",
-    "supabase:gen-types": "supabase gen types typescript --linked > types/supabase.ts"
+    "supabase:gen-types": "supabase gen types typescript --linked > types/supabase.ts",
+    "deploy:netlify": "npm run build && netlify deploy --prod --dir=out --site=3e15f6a6-179d-4034-8fea-3e77dc176d24"
   },
   "dependencies": {
     "@capacitor/android": "^8.4.1",

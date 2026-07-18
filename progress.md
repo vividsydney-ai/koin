@@ -2,6 +2,19 @@
 # Loop reads and writes this. Human can also read to understand where we are.
 # v2: MVP reshaped around paper trading. Original v1 loop files archived in /_archived.
 
+## 2026-07-18 — UI-LIFT Step 1 audit complete (awaiting plan approval)
+
+- Planner (subagent) audited all 11 live pages against the v4 design bundle. Design-drift check ✅. **DESIGN.md did not exist** — created a distilled canonical version at repo root.
+- Proposed slices written to `TASKS.md` (PHASE 6b, UI-LIFT-1..6): bottom nav SVG+gradient icons (S), home/profile stat cards (M), friends leaderboard pattern (M), trade price chart (L/S), library chips + profile badge grid (S), post-purple-flip screenshot QA (S).
+- **Judgment calls flagged for human (per ui-lift.md, not silently decided):**
+  1. `colors.streak`: still red from the red-brand era; v4 treats streak as gold (red = danger only). Planner leans **gold** — needs human sign-off.
+  2. Trade candle chart: data layer has daily closePrice only, no OHLC/history. Planner leans **synthesize candles from daily closes** (open = prior close), descope real OHLC unless human approves a data task.
+  3. Dark mode: repo has no dark theme; out of scope for ui-lift unless human says otherwise.
+  4. Learn-page chapter journey-flow restyle: skip (modest gain); human can override.
+  5. Leaderboard rank-change arrows: hide when no delta data; no migration.
+- Brief corrections found by audit: app DOES have a bottom tab bar (gap is icon quality, not the bar); bundle's Guidelines.md is a blank template.
+- Also this session: Netlify repo metadata re-linked via API (cmd/dir set), but GitHub App re-authorization is human-only (org policy blocks deploy keys); `npm run deploy:netlify` added as interim manual deploy path; OpenWiki blocked on OPENAI_API_KEY; Turnstile (KO-61) needs human Cloudflare widget first.
+
 ## 2026-07-18 — KO-REPLAY-002: Replay UX + deploy pipeline repair
 
 - **Deploy root cause:** Netlify stopped auto-deploying ~9h before the report — the site lost GitHub repo access ("Host key verification failed", repo `vividsydney-ai/koin`). Production was serving a stale bundle predating the dedup + i18n commits, which explained "Lihat contoh lain" not working, mixed lingo, and no settings UI. Unblocked by building locally and deploying `out/` via Netlify CLI token (deploy `6a5b673d91a983229ea4dafc`, live 11:45 UTC). **Human follow-up: re-link the repo in Netlify (Site settings → Build & deploy → Repository) to restore auto-deploy.**

@@ -184,6 +184,15 @@
 - [x] KO-ABUSE-001 — RPC abuse hardening: idempotent XP/KP in complete_lesson, 30s min-time, award_koin_points + check_in_streak made internal-only, friend-add daily cap (migration 048, prod smoke-verified)
 - [x] KO-CAPTCHA-001 — Turnstile captcha on signup with graceful degradation (client shipped; activation pending Cloudflare site key + Supabase captcha toggle)
 
+## PHASE 6b — UI-LIFT (design system v4 migration, from ui-lift.md audit 2026-07-18)
+> Awaiting human approval of the plan + two decisions (streak color, candle approach). See progress.md.
+- [ ] UI-LIFT-1 — Bottom tab bar: SVG icons + gradient active state (app/(app)/layout.tsx, new GradientIcon; keep 6 tabs) [S]
+- [ ] UI-LIFT-2 — Home/profile stat cards + streak/XP/portfolio number treatment; shared <StatCard> reused by profile + LessonPlayer completion tiles [M]
+- [ ] UI-LIFT-3 — Leaderboard pattern on Friends page (avatar chips, is-you row; hide rank-change arrow when no delta data — no migration) [M]
+- [ ] UI-LIFT-4 — Price chart card on Trade page (v4 candle card shell; candles synthesized from daily closes unless human approves OHLC data task) — SERIALIZE if migration needed [L/S]
+- [ ] UI-LIFT-5 — Library filter chips (replace selects) + profile badge grid [S]
+- [ ] UI-LIFT-6 — Screenshot QA pass on onboarding/login/signup/trade post-purple-flip + gradient "K" tile swap [S]
+
 ## PHASE 7 — Handoff
 - [ ] README with local setup steps
 - [ ] .env.example with all required variables
