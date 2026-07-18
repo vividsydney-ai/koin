@@ -2,6 +2,25 @@
 # Loop reads and writes this. Human can also read to understand where we are.
 # v2: MVP reshaped around paper trading. Original v1 loop files archived in /_archived.
 
+## 2026-07-19 — KO-VERCEL-001: Migrated web app from Netlify to Vercel
+
+- **Goal:** Serve Koinaku web app from Vercel at `https://web.koinaku.com`, with working cron jobs.
+- **Swarm execution:** Conductor (kimi-code) → Maker (kimi-code subagent) → Verifier (explore subagent) → Lander.
+- **Changes landed:**
+  - `vercel.json`: Next.js framework preset, `pnpm build`/`pnpm install`, `cleanUrls`, cron schedules for `/api/cron/streak-reminders` (09:00 UTC daily) and `/api/cron/market-data-update` (10:00 UTC weekdays).
+  - `netlify.toml`: removed static-export directives (`publish = "out"`, `NETLIFY_NEXT_PLUGIN_SKIP = "true"`) and cron redirects/functions.
+  - `app/api/cron/market-data-update/route.ts`: added CRON_SECRET-guarded route (streak-reminders route already existed).
+  - Deleted duplicated `netlify/functions/streak-reminders.ts` and `netlify/functions/market-data-update.ts`.
+- **Vercel project:** `koin-web-koinaku` linked; env vars synced including `NEXT_PUBLIC_TURNSTILE_SITE_KEY` and `SUPABASE_AUTH_EMAIL_SMTP_PASS`.
+- **DNS:** Netlify DNS CNAME for `web.koinaku.com` updated to `cname.vercel-dns.com`; apex `koinaku.com` and Google Workspace MX/SPF/DKIM records untouched.
+- **Deploy:** Production deploy succeeded and aliased to `https://web.koinaku.com`.
+- **Verification:**
+  - `dig web.koinaku.com CNAME +short` → `cname.vercel-dns.com.`
+  - `curl -I https://web.koinaku.com/login` → HTTP/2 200
+  - Cron endpoints return `{"error":"Unauthorized"}` without `CRON_SECRET` (expected).
+- **Gates:** tsc ✅, vitest ✅ 370 passed / 5 skipped, build ✅, secret scan ✅.
+- **Commit:** `3d34255` on `web-koinaku`.
+
 ## 2026-07-18 — Deploy incident: Netlify credits exhausted, rolled back
 
 - Git builds after the ui-lift push published `.next` (netlify.toml default) → all routes 404. Fixed `publish = "out"`; then `@netlify/plugin-nextjs` failed on the static export → added `NETLIFY_NEXT_PLUGIN_SKIP = "true"` (verified via local `netlify build`).
