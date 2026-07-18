@@ -1,8 +1,12 @@
 # AGENTS.md — Koin Agent Configuration v2
 
-> **Last updated:** 2026-07-14
+> **Last updated:** 2026-07-18
 
 Every agent starts by reading `loop-state.md`. If it exists and state is not `DONE`, resume from that state. Otherwise read `HANDOFF.md`, `KIMI_HANDOFF.md`, `TASKS.md`, then `docs/agents/LOOP_ENGINEERING.md`.
+
+## Default operating mode (auto-loop)
+
+Every task request in this repo runs Loop Engineering v2 with the session agent as **Conductor** — no special invocation needed. If the user gives no task, pick the first `[ ]` in `TASKS.md` and start the loop. The `/loop` skill (`.agents/skills/loop/SKILL.md`, also installed at `~/.agents/skills/loop/`) is a shortcut to the same protocol; invoke it whenever the user says "loop", "use loop eng", or "act as conductor".
 
 ## Single-agent sessions (simple fixes)
 For one-file UI fixes or trivial tweaks: one agent runs the full loop alone.
