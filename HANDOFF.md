@@ -38,9 +38,10 @@ Remaining items from `TASKS.md`:
 ## Loop v2 + swarm protocol
 Use the loop engineering from `docs/agents/LOOP_ENGINEERING.md`:
 1. Start every session by reading `loop-state.md`. Resume if state != DONE.
-2. For complex/risky slices, use swarm roles: Planner → Maker → Verifier → Fixer → Lander.
-3. Verifier is read-only; Maker works on an isolated worktree; Lander merges only when gates pass.
-4. Run `npm run loop:init <ID> "<title>"` to start a task, `npm run loop:gates` to verify.
+2. Run OpenWiki pre-flight: read `openwiki/quickstart.md` and task-relevant pages if present; always read `openwiki/INSTRUCTIONS.md` if present; initialize/refresh with `openwiki code --update --print` when available and needed.
+3. For complex/risky slices, use swarm roles: Planner → Maker → Verifier → Fixer → Lander.
+4. Verifier is read-only; Maker works on an isolated worktree; Lander merges only when gates pass.
+5. Run `npm run loop:init <ID> "<title>"` to start a task, `npm run loop:gates` to verify.
 
 ## Agent entry points
 - **Kimi Code:** read `KIMI_HANDOFF.md` first, then `HANDOFF.md` and `loop-state.md`.
@@ -48,12 +49,13 @@ Use the loop engineering from `docs/agents/LOOP_ENGINEERING.md`:
 
 ## Essential docs to read
 1. `loop-state.md` — current task state (read first)
-2. `docs/agents/LOOP_ENGINEERING.md` — loop engineering v2 + swarm roles
-3. `AGENTS.md` — agent roles, gotcha mitigations, hard stops
-4. `CLAUDE.md` / `KIMI_HANDOFF.md` — agent-specific routing
-5. `TASKS.md` — task list
-6. `progress.md` — live state
-7. `CONTEXT.md`, `ADL.md`, `SCHEMA.md` — domain and schema context
+2. `openwiki/INSTRUCTIONS.md` and `openwiki/quickstart.md` — OpenWiki brief and generated repo memory, if present
+3. `docs/agents/LOOP_ENGINEERING.md` — loop engineering v2 + swarm roles
+4. `AGENTS.md` — agent roles, gotcha mitigations, hard stops
+5. `CLAUDE.md` / `KIMI_HANDOFF.md` — agent-specific routing
+6. `TASKS.md` — task list
+7. `progress.md` — live state
+8. `CONTEXT.md`, `ADL.md`, `SCHEMA.md` — domain and schema context
 
 ## Environment notes
 - `UpdateGoal` tool is not exposed. Do not wait for it. Track completion in `progress.md`, `TASKS.md`, and Linear.

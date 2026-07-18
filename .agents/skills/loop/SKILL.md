@@ -1,6 +1,6 @@
 ---
 name: loop
-description: Run Koinaku Loop Engineering v2 as Conductor. Resumes loop-state.md if active, otherwise takes the goal given as args (or the first open TASKS.md item), plans, implements, verifies with gates, lands on web-koinaku, and logs. Use when asked to "loop", "use loop eng", "act as conductor", or to pick up the next task.
+description: Run Koinaku Loop Engineering v2 as Conductor with OpenWiki pre-flight. Resumes loop-state.md if active, otherwise takes the goal given as args (or the first open TASKS.md item), reads OpenWiki repo memory, plans, implements, verifies with gates, lands on web-koinaku, and logs. Use when asked to "loop", "use loop eng", "act as conductor", or to pick up the next task.
 ---
 
 # /loop — Koinaku Loop Engineering v2 (Conductor mode)
@@ -17,17 +17,19 @@ Repo: `/Users/vividm4/Documents/Projects/Side-Gigs/Koin/Github-repo` — branch 
 Full detail in `docs/agents/LOOP_ENGINEERING.md` — read it if anything here is unclear.
 
 1. **Resume first.** Read `loop-state.md`. If it exists and state != DONE, resume from that phase — never start a new task on top of an active loop.
-2. **Context.** Read `HANDOFF.md`, `KIMI_HANDOFF.md`, `TASKS.md`, `RULES.md` (skim `CONTEXT.md`/`SCHEMA.md` if the task touches domain or DB).
-3. **You are the Conductor.** For tasks touching >5 files, >1 migration, or auth/RLS/payments: dispatch swarm roles (Planner → Maker → Verifier → Fixer → Lander) as subagents. Rules: one editor at a time, Verifier is read-only, no self-verification. Small tasks (≤3 files, no migration): run the loop solo.
-4. **Initialize.** Archive any stale `loop-state.md`/`loop-budget.md` to `.loop/reflexion/context/`, then `npm run loop:init <ID> "<title>"`.
-5. **Build.** TDD where behavior changes. One migration max per task; serialize migration tasks.
-6. **Verify (all gates, no self-certification):**
+2. **OpenWiki pre-flight.** If `openwiki/quickstart.md` exists, read it first and follow links to task-relevant OpenWiki pages. Always read `openwiki/INSTRUCTIONS.md` if present. If `openwiki/quickstart.md` is missing and the `openwiki` CLI is available, run `openwiki code --update --print` before planning. If credentials or network access are missing, continue and log that OpenWiki could not be refreshed.
+3. **Context.** Read `HANDOFF.md`, `KIMI_HANDOFF.md`, `TASKS.md`, `RULES.md` (skim `CONTEXT.md`/`SCHEMA.md` if the task touches domain or DB). OpenWiki is memory/discovery only; authority order is: current human instruction → `RULES.md` → `AGENTS.md`/`CLAUDE.md`/`KIMI_HANDOFF.md` → `docs/agents/LOOP_ENGINEERING.md` → `TASKS.md` → generated OpenWiki pages.
+4. **You are the Conductor.** For tasks touching >5 files, >1 migration, or auth/RLS/payments: dispatch swarm roles (Planner → Maker → Verifier → Fixer → Lander) as subagents. Rules: one editor at a time, Verifier is read-only, no self-verification. Small tasks (≤3 files, no migration): run the loop solo.
+5. **Initialize.** Archive any stale `loop-state.md`/`loop-budget.md` to `.loop/reflexion/context/`, then `npm run loop:init <ID> "<title>"`.
+6. **Build.** TDD where behavior changes. One migration max per task; serialize migration tasks.
+7. **Verify (all gates, no self-certification):**
    - `npx tsc --noEmit` — 0 errors
    - `npm run lint` — 0 errors
    - `npx vitest run` — no regressions (baseline ≥314 passed / 5 skipped)
    - diff scan: no `localStorage`/`sessionStorage`; no `is_published=true` without `lesson_reviews` approval; RLS in same migration as any new table
-7. **Land.** Commit on `web-koinaku`, push, `npx supabase db push --include-all` if a migration was added, smoke-check `https://web.koinaku.com` (200), update `TASKS.md`, `progress.md`, `_sessions/session_YYYYMMDD.md`, archive `loop-state.md` + `loop-budget.md` to `.loop/reflexion/context/`.
-8. **Budget.** Max 6 correction iterations. If still red: STOP, write exact failure + gate output to `progress.md` Blockers, hand back. A documented block beats a fake green.
+8. **Land.** Commit on `web-koinaku`, push, `npx supabase db push --include-all` if a migration was added, smoke-check `https://web.koinaku.com` (200), update `TASKS.md`, `progress.md`, `_sessions/session_YYYYMMDD.md`, archive `loop-state.md` + `loop-budget.md` to `.loop/reflexion/context/`.
+9. **Refresh OpenWiki when relevant.** If the task changed architecture, workflows, schema contracts, security posture, or agent runbooks, run `openwiki code --update --print` after landing or log a follow-up if it cannot run. Do not hand-edit generated OpenWiki pages unless the human explicitly asks.
+10. **Budget.** Max 6 correction iterations. If still red: STOP, write exact failure + gate output to `progress.md` Blockers, hand back. A documented block beats a fake green.
 
 ## Hard stops (from RULES.md)
 

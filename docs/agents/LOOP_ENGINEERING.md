@@ -1,8 +1,8 @@
 # Koin Loop Engineering v2
 
-> **Last updated:** 2026-07-14
+> **Last updated:** 2026-07-18
 > An end-to-end autonomous development loop for Koin: web MVP → PWA → native iOS/Android Beta.
-> Designed for Claude Code, Codex, and Kimi Code. All three agents run the same closed loop, read the same memory files, and pass the same mechanical gates.
+> Designed for Claude Code, Codex, Kimi Code, and any other AI agent. All agents run the same closed loop, read the same memory files, use OpenWiki pre-flight, and pass the same mechanical gates.
 
 This repo follows the loop in this file. For the full expanded version see `/Users/vividm4/Documents/Projects/Side-Gigs/Koin/LOOP_ENGINEERING.md`.
 
@@ -33,6 +33,7 @@ Koin uses a closed delivery loop:
 
 ```text
 SELECT TASK
+  -> READ OPENWIKI REPO MEMORY
   -> PLAN VERTICAL SLICE
   -> WRITE OR UPDATE TESTS
   -> IMPLEMENT
@@ -54,16 +55,22 @@ Default budget:
 
 Read in this order:
 
-1. `HANDOFF.md`
-2. `TASKS.md`
-3. `RULES.md`
-4. `CONTEXT.md`
-5. `ADL.md`
-6. `VISION.md`
-7. `SCHEMA.md`
-8. `AGENTS.md`
-9. `VERIFIER.md`
-10. `.loop/state.md`
+1. `loop-state.md` / `.loop/state.md` if present — resume active state before selecting new work.
+2. `openwiki/INSTRUCTIONS.md` if present — human-authored OpenWiki brief.
+3. `openwiki/quickstart.md` if present — generated OpenWiki entry point; follow task-relevant links.
+4. `HANDOFF.md`
+5. `TASKS.md`
+6. `RULES.md`
+7. `CONTEXT.md`
+8. `ADL.md`
+9. `VISION.md`
+10. `SCHEMA.md`
+11. `AGENTS.md`
+12. `VERIFIER.md`
+
+If `openwiki/quickstart.md` is missing and the `openwiki` CLI is available, run `openwiki code --update --print` before planning. If credentials or network access are missing, continue without OpenWiki refresh and log the gap in `progress.md` or the session log.
+
+OpenWiki authority rule: generated OpenWiki pages are memory/discovery only. If sources conflict, obey current human instruction first, then `RULES.md`, then `AGENTS.md`/`CLAUDE.md`/`KIMI_HANDOFF.md`, then this loop doc, then `TASKS.md`, then generated OpenWiki pages.
 
 Write after every loop:
 
@@ -71,6 +78,7 @@ Write after every loop:
 - `_sessions/session_YYYYMMDD.md`
 - `TASKS.md` only when the task is truly complete
 - `.loop/state.md` when a reusable lesson or risk emerges
+- Run `openwiki code --update --print` after landing changes to architecture, workflows, schema contracts, security posture, or agent runbooks. If OpenWiki cannot run, log a follow-up instead of blocking an otherwise green task.
 
 ## Workstream Sequence
 
@@ -229,4 +237,3 @@ Stop and ask the human when:
 - A migration is needed while another migration branch/worktree is active.
 - A gate fails twice with the same root cause.
 - The task requires changing `RULES.md`, `.env*`, production deploy settings, or financial claims.
-

@@ -2,11 +2,23 @@
 
 > **Last updated:** 2026-07-18
 
-Every agent starts by reading `loop-state.md`. If it exists and state is not `DONE`, resume from that state. Otherwise read `HANDOFF.md`, `KIMI_HANDOFF.md`, `TASKS.md`, then `docs/agents/LOOP_ENGINEERING.md`.
+Every agent starts by reading `loop-state.md`. If it exists and state is not `DONE`, resume from that state. Otherwise run the OpenWiki pre-flight below, then read `HANDOFF.md`, `KIMI_HANDOFF.md`, `TASKS.md`, and `docs/agents/LOOP_ENGINEERING.md`.
 
 ## Default operating mode (auto-loop)
 
 Every task request in this repo runs Loop Engineering v2 with the session agent as **Conductor** — no special invocation needed. If the user gives no task, pick the first `[ ]` in `TASKS.md` and start the loop. The `/loop` skill (`.agents/skills/loop/SKILL.md`, also installed at `~/.agents/skills/loop/`) is a shortcut to the same protocol; invoke it whenever the user says "loop", "use loop eng", or "act as conductor".
+
+## OpenWiki pre-flight (mandatory for Loop Engineering v2)
+
+OpenWiki is part of the Koin loop for Kimi Code, Codex, Claude Code, and any other AI agent. Treat it as repo memory and codebase discovery, not as an authority above human-owned rules.
+
+1. If `openwiki/quickstart.md` exists, read it before planning, then follow links to task-relevant OpenWiki pages.
+2. Always read `openwiki/INSTRUCTIONS.md` if present; it is the human-authored OpenWiki brief.
+3. If `openwiki/quickstart.md` is missing and the `openwiki` CLI is available, initialize repository docs with `openwiki code --update --print` before planning. If credentials or network access are missing, continue the loop and log that OpenWiki could not be refreshed.
+4. If the task changes architecture, workflows, schema contracts, security posture, or agent runbooks, refresh OpenWiki with `openwiki code --update --print` after the change is landed or log a follow-up if the CLI cannot run.
+5. Do not hand-edit generated OpenWiki pages unless the human explicitly asks. Prefer changing source docs/code, then regenerating OpenWiki.
+
+Authority order when sources conflict: current human instruction → `RULES.md` → `AGENTS.md`/`CLAUDE.md`/`KIMI_HANDOFF.md` → `docs/agents/LOOP_ENGINEERING.md` → `TASKS.md` → generated OpenWiki pages.
 
 ## Single-agent sessions (simple fixes)
 For one-file UI fixes or trivial tweaks: one agent runs the full loop alone.
@@ -34,11 +46,12 @@ Use separate agents for Plan / Make / Verify / Fix / Land so the verifier never 
 
 ## Pre-flight checklist
 1. Read `loop-state.md` first. Resume if state != DONE.
-2. Read `HANDOFF.md`, `KIMI_HANDOFF.md`, `TASKS.md`, `RULES.md`, `CONTEXT.md`, `ADL.md`, `SCHEMA.md`.
-3. Identify the vertical slice: smallest end-to-end piece that can be built and verified independently.
-4. Initialize `loop-state.md` with `npm run loop:init <ID> "<title>"` if starting fresh.
-5. Search reflexion: `npm run loop:reflexion <tag>` before planning.
-6. Write or update tests before implementation code (TDD).
+2. Run the OpenWiki pre-flight above.
+3. Read `HANDOFF.md`, `KIMI_HANDOFF.md`, `TASKS.md`, `RULES.md`, `CONTEXT.md`, `ADL.md`, `SCHEMA.md`.
+4. Identify the vertical slice: smallest end-to-end piece that can be built and verified independently.
+5. Initialize `loop-state.md` with `npm run loop:init <ID> "<title>"` if starting fresh.
+6. Search reflexion: `npm run loop:reflexion <tag>` before planning.
+7. Write or update tests before implementation code (TDD).
 
 ## Stop tokens / escalation
 - `ESCALATED` — budget exhausted or human said STOP/HOLD. Halt immediately.

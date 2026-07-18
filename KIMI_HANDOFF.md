@@ -17,9 +17,14 @@
 
 **First actions (in this order, no exceptions):**
 1. Read `loop-state.md`. If it exists and state is not `DONE`, resume from there.
-2. Read `HANDOFF.md`, `TASKS.md`, `RULES.md`, `CONTEXT.md`, `ADL.md`, `SCHEMA.md`, `AGENTS.md`, `VERIFIER.md`, `docs/agents/LOOP_ENGINEERING.md`.
-3. Confirm you understand the domain language in `CONTEXT.md` (Koin Points, lessons, paper trading, graduation, streaks).
-4. Then follow the loop in section 3.
+2. Run OpenWiki pre-flight for Loop Engineering v2:
+   - If `openwiki/quickstart.md` exists, read it and follow links to pages relevant to the selected task.
+   - Always read `openwiki/INSTRUCTIONS.md` if present.
+   - If `openwiki/quickstart.md` is missing and the `openwiki` CLI is available, run `openwiki code --update --print` before planning.
+   - If credentials or network access are missing, continue and log that OpenWiki could not be refreshed.
+3. Read `HANDOFF.md`, `TASKS.md`, `RULES.md`, `CONTEXT.md`, `ADL.md`, `SCHEMA.md`, `AGENTS.md`, `VERIFIER.md`, `docs/agents/LOOP_ENGINEERING.md`.
+4. Confirm you understand the domain language in `CONTEXT.md` (Koin Points, lessons, paper trading, graduation, streaks).
+5. Then follow the loop in section 3.
 
 ---
 
@@ -45,6 +50,7 @@ Three ideas, composed:
 - **Worktree** = an isolated working directory on its own branch, backed by the same repo. Lets you work on one task without half-finished edits from another task polluting it. Cheap, no re-clone.
 - **Loop** = you do not aim for one-shot correctness. You run `build → verify → correct` until the verifier gates pass or you hit the budget, then stop.
 - **Agent** = you. You own the loop, run the gates, and only land work that passed.
+- **OpenWiki** = repo memory and architecture discovery. Read it during loop pre-flight. It helps you find context, but it never overrides current human instructions, `RULES.md`, `AGENTS.md`, `CLAUDE.md`, this handoff, or `docs/agents/LOOP_ENGINEERING.md`.
 
 ### ⚠️ Concurrency warning — read this before creating worktrees
 Worktrees isolate the **files on disk**. They do **NOT** isolate:
@@ -177,6 +183,7 @@ A task is done ONLY when:
 3. `TASKS.md` item flipped `[ ]` → `[x]`.
 4. `progress.md` updated with: what you did, gate results (paste the counts), and any follow-ups.
 5. A session log entry appended to `_sessions/session_YYYYMMDD.md`.
+6. If you changed architecture, workflows, schema contracts, security posture, or agent runbooks, run `openwiki code --update --print` after landing or log a follow-up if OpenWiki cannot run.
 
 If a gate fails and you can't fix it within budget: STOP, log the exact failure + command output to `progress.md`, hand back. A blocked-but-documented task beats a green-but-fake one.
 
