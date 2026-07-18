@@ -38,11 +38,12 @@ Use separate agents for Plan / Make / Verify / Fix / Land so the verifier never 
 ### Conductor rules (gotcha mitigation)
 1. **One editor at a time.** Set `loop-state.md > locked_by = <role>` before dispatching an editing agent.
 2. **Verifier is read-only.** It must not edit code or `loop-state.md`.
-3. **Shared context.** Every agent receives identical base context: task ID, plan, relevant `RULES.md`/`SCHEMA.md` excerpts, target branch, budget remaining.
+3. **Shared context.** Every agent receives identical base context: task ID, plan, relevant `RULES.md`/`SCHEMA.md` excerpts, target branch, budget remaining. Role briefs live in `.agents/prompts/{planner,maker,verifier,fixer}.md` — paste them instead of improvising.
 4. **Verdict format.** Verifier returns `status: PASS | FAIL | NEEDS_INFO`, gate, evidence, files_changed, recommendation.
 5. **Budget accounting.** Each subagent call increments `loop-budget.md > subagent_calls`.
 6. **Worktree isolation.** Maker works on `wt/<task-slug>` branched from `web-koinaku`. Verifier checks out the same worktree read-only. Lander merges only after all gates pass.
 7. **No self-verification.** Maker may run tests for feedback, but official gate run is by a distinct Verifier.
+8. **Conflict resolution.** On any Maker-vs-Verifier disagreement, the Verifier's gate evidence always wins. The Conductor may not override a FAIL without logging written justification in `loop-state.md`. Program docs (`.loop/programs/<TASK-ID>.md`) outrank both — their Metric is the acceptance criteria.
 
 ## Pre-flight checklist
 1. Read `loop-state.md` first. Resume if state != DONE.
