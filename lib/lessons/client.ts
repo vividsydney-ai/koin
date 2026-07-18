@@ -111,6 +111,27 @@ export async function getLessonVariants(
     if (filtered.length > 0) {
       return filtered;
     }
+
+    // Fallback: prefer the next lower difficulty, then step up. This keeps
+    // content accessible without jumping the user ahead of their level.
+    const difficultyOrder = ["beginner", "intermediate", "advanced"] as const;
+    const preferredIndex = difficultyOrder.indexOf(
+      preferredDifficulty as (typeof difficultyOrder)[number]
+    );
+
+    if (preferredIndex !== -1) {
+      const lowerFirst = [
+        ...difficultyOrder.slice(0, preferredIndex).reverse(),
+        ...difficultyOrder.slice(preferredIndex + 1),
+      ];
+
+      for (const difficulty of lowerFirst) {
+        const fallback = variants.filter((v) => v.difficulty === difficulty);
+        if (fallback.length > 0) {
+          return fallback;
+        }
+      }
+    }
   }
 
   return variants;

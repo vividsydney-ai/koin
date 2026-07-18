@@ -53,14 +53,14 @@ describe("lessons client", () => {
     expect(variants.map((v) => v.id)).toEqual(["v1", "v3"]);
   });
 
-  it("falls back to all variants when the filtered pool is empty", async () => {
+  it("falls back to the next lower difficulty when the preferred pool is empty", async () => {
     mockVariantsResponse([
       { id: "v1", variantType: "explanation", body: {}, difficulty: "advanced", topicTag: null },
       { id: "v2", variantType: "explanation", body: {}, difficulty: "intermediate", topicTag: null },
     ]);
 
     const variants = await getLessonVariants("lesson-1", "explanation", "beginner");
-    expect(variants).toHaveLength(2);
+    expect(variants.map((v) => v.id)).toEqual(["v2"]);
   });
 
   it("does not filter when preferred difficulty is null", async () => {
@@ -71,5 +71,46 @@ describe("lessons client", () => {
 
     const variants = await getLessonVariants("lesson-1", "explanation", null);
     expect(variants).toHaveLength(2);
+  });
+
+  it("prefers the exact difficulty when available before falling back", async () => {
+    mockVariantsResponse([
+      { id: "v1", variantType: "explanation", body: {}, difficulty: "beginner", topicTag: null },
+      { id: "v2", variantType: "explanation", body: {}, difficulty: "intermediate", topicTag: null },
+      { id: "v3", variantType: "explanation", body: {}, difficulty: "advanced", topicTag: null },
+    ]);
+
+    const variants = await getLessonVariants("lesson-1", "explanation", "advanced");
+    expect(variants.map((v) => v.id)).toEqual(["v3"]);
+  });
+
+  it("falls back to the next lower difficulty before a higher one", async () => {
+    mockVariantsResponse([
+      { id: "v1", variantType: "explanation", body: {}, difficulty: "beginner", topicTag: null },
+      { id: "v2", variantType: "explanation", body: {}, difficulty: "intermediate", topicTag: null },
+    ]);
+
+    const variants = await getLessonVariants("lesson-1", "explanation", "advanced");
+    expect(variants.map((v) => v.id)).toEqual(["v2"]);
+  });
+
+  it("falls back through multiple lower difficulties when needed", async () => {
+    mockVariantsResponse([
+      { id: "v1", variantType: "explanation", body: {}, difficulty: "beginner", topicTag: null },
+      { id: "v3", variantType: "explanation", body: {}, difficulty: "advanced", topicTag: null },
+    ]);
+
+    const variants = await getLessonVariants("lesson-1", "explanation", "intermediate");
+    expect(variants.map((v) => v.id)).toEqual(["v1"]);
+  });
+
+  it("steps up to a higher difficulty only when no lower variant exists", async () => {
+    mockVariantsResponse([
+      { id: "v2", variantType: "explanation", body: {}, difficulty: "intermediate", topicTag: null },
+      { id: "v3", variantType: "explanation", body: {}, difficulty: "advanced", topicTag: null },
+    ]);
+
+    const variants = await getLessonVariants("lesson-1", "explanation", "beginner");
+    expect(variants.map((v) => v.id)).toEqual(["v2"]);
   });
 });

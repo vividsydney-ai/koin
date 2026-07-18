@@ -93,4 +93,42 @@ describe("profile service", () => {
     expect(mocks.from).toHaveBeenCalledWith("profiles");
     expect(mocks.from).toHaveBeenCalledWith("user_settings");
   });
+
+  it("always sets foundation_zero_required and starting_lesson_id in user_settings", async () => {
+    const userSettingsUpdate = vi.fn().mockReturnValue({ eq: vi.fn().mockReturnValue({ error: null }) });
+    mocks.from.mockImplementation((table: string) => {
+      if (table === "user_settings") {
+        return { update: userSettingsUpdate };
+      }
+      if (table === "lessons") {
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              single: vi.fn().mockReturnValue({ data: { id: "lesson-id-1" }, error: null }),
+            }),
+          }),
+        };
+      }
+      return {
+        update: vi.fn().mockReturnValue({ eq: vi.fn().mockReturnValue({ error: null }) }),
+        upsert: vi.fn().mockReturnValue({ eq: vi.fn().mockReturnValue({ error: null }) }),
+      };
+    });
+
+    const result = await completeOnboarding({
+      userId: TEST_USER_ID,
+      displayName: "Budi",
+      ageRange: "19_22",
+      financialGoals: ["start_investing"],
+      notificationsEnabled: true,
+    });
+
+    expect(result.ok).toBe(true);
+    expect(userSettingsUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        foundation_zero_required: true,
+        starting_lesson_id: "lesson-id-1",
+      })
+    );
+  });
 });

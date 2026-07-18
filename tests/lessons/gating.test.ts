@@ -66,11 +66,11 @@ describe("deriveLessonStatuses", () => {
     expect(result["lesson-4"]).toBe("locked");
   });
 
-  it("handles an unknown starting lesson id by starting at the beginning", () => {
+  it("locks all lessons when the configured starting lesson is unknown", () => {
     const lessons = buildLessons(3);
     const result = deriveLessonStatuses(lessons, {}, "missing-lesson");
 
-    expect(result["lesson-1"]).toBe("available");
+    expect(result["lesson-1"]).toBe("locked");
     expect(result["lesson-2"]).toBe("locked");
     expect(result["lesson-3"]).toBe("locked");
   });

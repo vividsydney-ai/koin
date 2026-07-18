@@ -19,7 +19,14 @@ export function deriveLessonStatuses<T extends GatingLesson>(
   progressMap: Record<string, LessonStatus>,
   startingLessonId: string | null
 ): Record<string, LessonStatus> {
-  const startIndex = startingLessonId ? Math.max(0, lessons.findIndex((l) => l.id === startingLessonId)) : 0;
+  const startIndex = startingLessonId ? lessons.findIndex((l) => l.id === startingLessonId) : 0;
+
+  // If a starting lesson was explicitly configured but cannot be found in the
+  // provided list, do not silently fall back to the first lesson. Lock
+  // everything so the user never sees an unintended entry point.
+  if (startingLessonId && startIndex === -1) {
+    return Object.fromEntries(lessons.map((lesson) => [lesson.id, "locked"]));
+  }
 
   const derived: Record<string, LessonStatus> = {};
   for (let i = 0; i < lessons.length; i++) {

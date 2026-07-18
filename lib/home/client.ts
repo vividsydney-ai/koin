@@ -209,11 +209,15 @@ export async function getContinueLesson(userId: string): Promise<ContinueLesson 
 
   const startingLessonId = settings?.starting_lesson_id;
   const startIndex = startingLessonId
-    ? Math.max(
-        0,
-        (lessons ?? []).findIndex((l) => l.id === startingLessonId)
-      )
+    ? (lessons ?? []).findIndex((l) => l.id === startingLessonId)
     : 0;
+
+  // If the user's configured starting lesson is missing from the published
+  // list, do not silently restart from lesson 1. Surface "all completed" so
+  // the UI shows an empty state instead of the wrong lesson.
+  if (startingLessonId && startIndex === -1) {
+    return null;
+  }
 
   // Find the first lesson at or after the user's starting point that is in_progress or available.
   for (let i = startIndex; i < (lessons ?? []).length; i++) {
