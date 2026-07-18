@@ -2,6 +2,17 @@
 # Loop reads and writes this. Human can also read to understand where we are.
 # v2: MVP reshaped around paper trading. Original v1 loop files archived in /_archived.
 
+## 2026-07-18 — KO-REPLAY-002: Replay UX + deploy pipeline repair
+
+- **Deploy root cause:** Netlify stopped auto-deploying ~9h before the report — the site lost GitHub repo access ("Host key verification failed", repo `vividsydney-ai/koin`). Production was serving a stale bundle predating the dedup + i18n commits, which explained "Lihat contoh lain" not working, mixed lingo, and no settings UI. Unblocked by building locally and deploying `out/` via Netlify CLI token (deploy `6a5b673d91a983229ea4dafc`, live 11:45 UTC). **Human follow-up: re-link the repo in Netlify (Site settings → Build & deploy → Repository) to restore auto-deploy.**
+- **answersJson inversion (root cause of KO-REPLAY-001's bad rows):** `lib/services/lessons.ts` replaced arrays with `{}` on every completion. Fixed to pass arrays through; two existing tests asserted the buggy behavior and were updated (human-directed bug fix, documented).
+- **Min-time gate softened (migration 051):** 30s check now applies to first completions only; replays succeed fast with 0 XP. Applied to production.
+- **Replay UX:** `LessonPlayer` fetches lesson status; completed lessons show an info banner ("replaying won't earn XP again", EN+ID); `CompletionStep` shows "Practice complete / No new XP" on replays instead of "+0 XP"; `already_completed` mapped through the service layer.
+- **Quiz wrong-answer reveal:** `Explanation` shows "Correct answer: …" on wrong attempts for fill_blank/word_bank/ordering/matching/true_false (MC already highlights the correct option). EN+ID dictionary keys.
+- Tests: `tests/lessons/quiz-reveal.test.tsx` (3), updated completion/service payload tests. Gates: tsc ✅, lint ✅ 0 errors, vitest ✅ 344 passed / 5 skipped, build ✅.
+- Production smoke `scripts/smoke/replay-ux.mjs`: **9/9 PASS** — first completion 35 XP, fast replay 0 XP + already_completed, first-completion speedrun still rejected, answers_json arrays.
+- Commits `fc0a3a6` + docs. Note: `ui-lift.md` (user's design-system task brief) was swept into the commit via `git add -A` — kept in repo intentionally.
+
 ## 2026-07-18 — KO-I18N-001: Global EN/ID language picker landed
 
 - New `lib/i18n/`: `Locale = "en" | "id"`, 65-key typed dictionary per locale, `LocaleProvider` (loads/upserts `user_settings.locale`, default `"en"`, no localStorage).
