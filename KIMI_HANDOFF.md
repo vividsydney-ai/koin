@@ -3,7 +3,7 @@
 > You are Kimi, acting as the coding agent. This document is self-contained.
 > Read it top to bottom before touching anything. Do not skip the "Rules you
 > must not break" section.
-> **Last updated:** 2026-07-14
+> **Last updated:** 2026-07-18
 
 ---
 
@@ -13,7 +13,7 @@
 - **Shipping branch:** `web-koinaku` (this is the integration + deploy branch — there is NO `main` PR flow for this MVP)
 - **Stack:** Next.js + TypeScript (strict) + Supabase (Postgres, RLS) + Vitest + Tailwind
 - **Prod:** https://web.koinaku.com
-- **Current state:** Phases 1–5 done; Phase 6 curriculum overhaul done. Security & engineering credibility pass (SEC-001) landed on `web-koinaku`: CI workflow, typed auth errors, Zod input validation, typed service layer (`lib/services/*`), RLS smoke tests, service tests, security docs (`SECURITY.md`, `docs/security.md`, `docs/adr/001-tenancy-and-rls.md`), and lint-staged pre-commit hooks. `npx vitest run` → 225 passed / 1 skipped; `npm run type-check` clean; `npm run lint` 0 errors.
+- **Current state:** Phases 1–5 done; Phase 6 6-slice MVP polish shipped to `https://web.koinaku.com`. KO-DEDUP-001 landed: duplicate example/question variants in Foundation 0 lessons deactivated via migration 047, production smoke verified, Friends QR flow smoke-tested end-to-end. Security & engineering credibility pass (SEC-001) landed on `web-koinaku`: CI workflow, typed auth errors, Zod input validation, typed service layer (`lib/services/*`), RLS smoke tests, service tests, security docs (`SECURITY.md`, `docs/security.md`, `docs/adr/001-tenancy-and-rls.md`), and lint-staged pre-commit hooks. `npx vitest run` → 314 passed / 5 skipped; `npm run type-check` clean; `npm run lint` 0 errors.
 
 **First actions (in this order, no exceptions):**
 1. Read `loop-state.md`. If it exists and state is not `DONE`, resume from there.
@@ -162,6 +162,8 @@ Initialize each task with `npm run loop:init <ID> "<title>"`.
 - [x] Domain migration to `web.koinaku.com`
 - [x] SEC-001 — Security & engineering credibility pass: CI, typed auth errors, Zod validation, service layer, RLS smoke tests, security docs, lint-staged
 - [x] KO-CURR-001 — Curriculum v2.0 overhaul: 32 foundation-first lessons, verified sources, matching + case_study quiz UI, full test + lint + type-check green
+- [x] 6-slice MVP polish — content deduplication, lesson player fixes, personalisation verification, chapter UI, paper trading IDX/simulated data, Friends QR-code overhaul deployed to `https://web.koinaku.com`
+- [x] KO-DEDUP-001 — Deactivated 24 duplicate content variants (9 examples + 15 questions) across first 3 Foundation 0 lessons; "Lihat contoh lain" now cycles unique examples and hides when exhausted
 
 **Suggested first move:** C1 — Recommended resources per lesson on `web-koinaku`.
 

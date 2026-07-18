@@ -2,6 +2,22 @@
 # Loop reads and writes this. Human can also read to understand where we are.
 # v2: MVP reshaped around paper trading. Original v1 loop files archived in /_archived.
 
+## 2026-07-18 — KO-DEDUP-001: Duplicate Foundation 0 variants deactivated
+
+- Conductor resumed from 6-slice MVP polish plan. Production audit found 9 duplicate example variants and 15 duplicate question variants across the first 3 Foundation 0 lessons (What Is Money?, What Is Inflation?, What Is Interest?).
+- Created migration `supabase/migrations/20260718000047_deactivate_duplicate_variants.sql`: keeps the oldest variant per unique body text and deactivates the rest.
+- Added `tests/migrations/047_deactivate_duplicate_variants.test.ts` (7 structural assertions).
+- Local gates:
+  - `npx tsc --noEmit` ✅
+  - `npm run lint` ✅ 0 errors, 19 warnings
+  - `npx vitest run` ✅ 314 passed, 5 skipped
+- Pushed migration to production Supabase via `npx supabase db push --include-all`.
+- Production smoke query: 0 duplicate example/question variants remaining in affected lessons.
+- Friends QR flow smoke-tested end-to-end: created two test users, called `add_friend_by_qr` from user B scanning user A's ID, friendship created with status `accepted`, cleaned up.
+- Lighthouse mobile check attempted but blocked: no Chrome/Chromium installation in this environment. Run locally with `npx lighthouse https://web.koinaku.com/login --form-factor=mobile --screenEmulation.mobile=true`.
+- Committed `6ddb3ae` and pushed to `origin/web-koinaku`; Netlify auto-deploy triggered for `https://web.koinaku.com`.
+- Updated `KIMI_HANDOFF.md`, `HANDOFF.md`, and added `_sessions/session_20260718.md`.
+
 ## 2026-07-16 — KO-CURR-001: Curriculum v2.0 overhaul landed
 
 - Conductor initialized loop state for 32-lesson foundation-first curriculum overhaul (approved plan).

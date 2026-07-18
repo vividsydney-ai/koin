@@ -1,6 +1,6 @@
 # Agent Handoff — Koin Web MVP
 
-> Last updated: 2026-07-14
+> Last updated: 2026-07-18
 > Read this at the start of a new session before doing anything else.
 
 ## Current branch and deploy
@@ -10,30 +10,30 @@
 
 ## Last known state
 - Phases 1–5 complete.
-- Phase 6 slices completed and deployed: Library tab, empty states, KO-37..KO-41 bug fixes.
+- Phase 6 6-slice MVP polish shipped to `https://web.koinaku.com` (Netlify).
 - Auth sign-up confirmations re-enabled with custom Google Workspace SMTP (hello@koinaku.com app password) via Supabase config push (KO-46).
 - Signup form UX modernized: full name, password confirmation, show/hide toggles, inline validation.
-- Production browse test verified signup creates user and sends verification email.
 - Cofounder duplicate auth account removed (KO-47); he can now sign up cleanly with arjuna@koinaku.com or arjuna.dhananjaya08@gmail.com.
-- Signup placeholder updated to Alfa Satria (KO-48).
-- Onboarding supports up to 3 financial goals via multi-select; profiles.financial_goal migrated to TEXT[] (KO-49).
-- Production browse verified onboarding end-to-end with 3 goals saved correctly.
-- Lesson numbering audit complete (KO-50): fixed LessonPlayer to show live total lesson count; content personalization verified via user-seeded variant selection.
-- New users now see personalized lesson variants filtered by financial literacy level and goal-based recommendations on /learn (KO-51).
+- Onboarding supports up to 3 financial goals via multi-select (KO-49).
+- Lesson numbering audit complete (KO-50): LessonPlayer shows live total lesson count per chapter.
+- Content personalization verified: variants filtered by financial literacy level; goal-based recommendations on /learn (KO-51).
 - Removed "Lesson not found" flash when loading/finishing lessons (KO-52).
 - Replaced floating AI assist button with inline variant links inside each lesson step (KO-53).
-- Published lesson 10 (emergency-fund-101); 10 lessons visible at launch (KO-54).
-- Production domain migrated to `https://web.koinaku.com`.
-- Tests: `npx vitest run` → 194 passed / 1 skipped.
+- Chapter/track grouping UI live: lessons grouped into Money Basics, Protect Yourself, Grow Your Money, Investing in Indonesia, Money Life Skills.
+- Paper trading purpose clarified: nightly IDX market-data updater with simulated fallback and trade-page disclaimer.
+- Friends tab overhauled with QR-code share/scan + manual user-ID fallback.
+- KO-DEDUP-001 (2026-07-18): deactivated 24 duplicate content variants in first 3 Foundation 0 lessons; production smoke verified no remaining duplicates; Friends QR flow smoke-tested end-to-end.
+- Tests: `npx vitest run` → 314 passed / 5 skipped.
 - `npm run type-check` clean.
+- `npm run lint` → 0 errors, 19 warnings.
 
 ## Next: finish Phase 6
 Remaining items from `TASKS.md`:
 - C1: Recommended resources per lesson
 - C2: Analytics events wrapper + 16 spec events
 - C3: Notification queue stub delivery
-- C4: Lesson expansion 9 → 15
-- C5: Final QA: 375px mobile, 1280px desktop, keyboard nav, WCAG AA
+- C5: Final QA: 375px mobile, 1280px desktop, keyboard nav, WCAG AA, Lighthouse mobile ≥85 / accessibility ≥95
+- Note: Lesson expansion 9 → 15 is complete (39 published lessons as of 2026-07-18).
 
 ## Loop v2 + swarm protocol
 Use the loop engineering from `docs/agents/LOOP_ENGINEERING.md`:
