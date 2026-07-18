@@ -48,11 +48,16 @@ const baseLesson: Lesson = {
   xpReward: 10,
   estimatedMinutes: 3,
   summary: "Belajar menabung",
+  summaryId: null,
   conceptBody: "Menabung menyisihkan uang untuk masa depan",
+  conceptBodyId: null,
   indonesianExample: "Contoh utama",
   whyThisMatters: "Penting",
+  whyThisMattersId: null,
   commonMistake: "Lupa nabung",
+  commonMistakeId: null,
   quizData: [],
+  quizDataId: null,
 };
 
 const exampleVariants: ContentVariant[] = [

@@ -73,9 +73,7 @@ export async function signInWithEmail(
 
   const { data, error } = await supabase.auth.signInWithPassword({
     ...parsed.data,
-    options: {
-      ...(captchaToken ? { captchaToken } : {}),
-    },
+    ...(captchaToken ? { options: { captchaToken } } : {}),
   });
   if (error) return err(normalizeAuthError(error));
   if (!data.session) return err({ code: "unknown", message: "Sign in succeeded but no session was returned." });

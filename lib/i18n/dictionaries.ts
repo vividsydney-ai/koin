@@ -60,9 +60,13 @@ export interface Dictionary {
   "lesson.replayNotice": string;
   "lesson.replayCompleteTitle": string;
   "lesson.noNewXp": string;
+  "lesson.alreadyEarned": string;
+  "lesson.alreadyEarnedValue": string;
 
   // Quiz engine
   "quiz.correctAnswer": string;
+  "quiz.fallbackStatement": string;
+  "quiz.fallbackExplanation": string;
 
   // Profile page
   "profile.loading": string;
@@ -163,8 +167,12 @@ export const dictionaries: Record<Locale, Dictionary> = {
       "You've already completed this lesson. Replaying is great practice, but you won't earn XP again.",
     "lesson.replayCompleteTitle": "Practice complete",
     "lesson.noNewXp": "No new XP — you already earned the XP for this lesson.",
+    "lesson.alreadyEarned": "Already earned",
+    "lesson.alreadyEarnedValue": "0",
 
     "quiz.correctAnswer": "Correct answer:",
+    "quiz.fallbackStatement": "{concept} is important for managing money well.",
+    "quiz.fallbackExplanation": "Understanding this is basic for everyday money management.",
 
     "profile.loading": "Loading profile…",
     "profile.edit": "Edit",
@@ -252,8 +260,12 @@ export const dictionaries: Record<Locale, Dictionary> = {
       "Kamu sudah menyelesaikan pelajaran ini. Mengulang bagus untuk latihan, tapi XP tidak bertambah lagi.",
     "lesson.replayCompleteTitle": "Latihan selesai",
     "lesson.noNewXp": "Tidak ada XP baru — kamu sudah mendapat XP untuk pelajaran ini.",
+    "lesson.alreadyEarned": "Sudah didapat",
+    "lesson.alreadyEarnedValue": "0",
 
     "quiz.correctAnswer": "Jawaban benar:",
+    "quiz.fallbackStatement": "{concept} penting untuk mengelola uang dengan baik.",
+    "quiz.fallbackExplanation": "Pemahaman ini dasar untuk mengelola keuangan sehari-hari.",
 
     "profile.loading": "Memuat profil…",
     "profile.edit": "Ubah",

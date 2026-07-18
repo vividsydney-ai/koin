@@ -23,17 +23,30 @@ export async function completeLesson(
   // which produced the object-shaped rows behind KO-REPLAY-001.)
   const sanitizedAnswers = Array.isArray(answersJson) ? answersJson : [];
 
-  const { data, error } = await supabase.rpc("complete_lesson", {
-    p_user_id: userId,
-    p_lesson_id: lessonId,
-    p_score: score,
-    p_max_score: maxScore,
-    p_answers_json: sanitizedAnswers,
-    p_time_spent_seconds: timeSpentSeconds,
-    p_quiz_correct: quizCorrect,
-  });
+  const callRpc = async () =>
+    supabase.rpc("complete_lesson", {
+      p_user_id: userId,
+      p_lesson_id: lessonId,
+      p_score: score,
+      p_max_score: maxScore,
+      p_answers_json: sanitizedAnswers,
+      p_time_spent_seconds: timeSpentSeconds,
+      p_quiz_correct: quizCorrect,
+    });
+
+  let rpcResult = await callRpc();
+
+  // One retry for transient network/edge failures. The RPC is idempotent for
+  // XP awards, so a retry is safe.
+  if (rpcResult && rpcResult.error && !rpcResult.data) {
+    await new Promise((resolve) => setTimeout(resolve, 800));
+    rpcResult = await callRpc();
+  }
+
+  const { data, error } = rpcResult ?? { data: null, error: { message: "Failed to complete lesson" } };
 
   if (error || !data) {
+    console.error("complete_lesson RPC failed:", error?.message ?? "no data returned", { userId, lessonId });
     return err(serviceError("rpc_error", error?.message ?? "Failed to complete lesson"));
   }
 

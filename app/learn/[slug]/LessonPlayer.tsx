@@ -35,7 +35,7 @@ export default function LessonPlayer({
 }) {
   const router = useRouter();
   const { user } = useAuth(true);
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const steps = STEP_IDS.map((id) => ({ id, label: t(`lesson.step.${id}`) }));
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [exampleVariant, setExampleVariant] = useState<ContentVariant | null>(null);
@@ -104,20 +104,29 @@ export default function LessonPlayer({
         const selectedVariant = pool[seededIndex(`${seed}:q:${Date.now()}`, pool.length)] ?? null;
 
         let processedQuestion: ProcessedQuestion | null = null;
-        if (selectedVariant) {
-          const validated = validateQuestion(selectedVariant.body);
+        // Indonesian locale prefers the translated quiz_data_id so the lesson
+        // stays fully in one language. English keeps the richer variant pool.
+        if (locale === "id" && data.quizDataId && data.quizDataId.length > 0) {
+          const validated = validateQuestion(data.quizDataId[0]);
           if (validated) {
-            processedQuestion = {
-              ...applyParameters(seed, validated),
-              variantId: selectedVariant.id,
-            };
+            processedQuestion = { ...applyParameters(seed, validated), variantId: "id-quiz" };
           }
-        }
-        // Fallback to legacy lesson.quizData if no valid variant exists.
-        if (!processedQuestion && data.quizData.length > 0) {
-          const validated = validateQuestion(data.quizData[0]);
-          if (validated) {
-            processedQuestion = applyParameters(seed, validated);
+        } else if (locale !== "id") {
+          if (selectedVariant) {
+            const validated = validateQuestion(selectedVariant.body);
+            if (validated) {
+              processedQuestion = {
+                ...applyParameters(seed, validated),
+                variantId: selectedVariant.id,
+              };
+            }
+          }
+          // Fallback to legacy lesson.quizData if no valid variant exists.
+          if (!processedQuestion && data.quizData.length > 0) {
+            const validated = validateQuestion(data.quizData[0]);
+            if (validated) {
+              processedQuestion = applyParameters(seed, validated);
+            }
           }
         }
 
@@ -157,7 +166,7 @@ export default function LessonPlayer({
     return () => {
       mounted = false;
     };
-  }, [slug, user, retryCounter]);
+  }, [slug, user, retryCounter, locale]);
 
 
   const nextStep = () => setStep((s) => Math.min(s + 1, steps.length - 1));
@@ -176,6 +185,7 @@ export default function LessonPlayer({
     const result = await completeLesson({
       userId: user.id,
       lessonId: lesson.id,
+      lessonNumber: lesson.lessonNumber,
       score: quizCorrect ? 1 : 0,
       maxScore: 1,
       answersJson: activeQuestion?.variantId
@@ -368,7 +378,9 @@ export default function LessonPlayer({
               {step === 1 && (
                 <ConceptStep
                   lesson={lesson}
-                  onExplainSimpler={explanationVariants.length > 0 ? handleExplainSimpler : undefined}
+                  onExplainSimpler={
+                    locale !== "id" && explanationVariants.length > 0 ? handleExplainSimpler : undefined
+                  }
                 />
               )}
               {step === 2 && (
@@ -377,7 +389,9 @@ export default function LessonPlayer({
                   exampleVariant={exampleVariant}
                   exampleVariants={exampleVariants}
                   shownVariantIds={shownVariantIds}
-                  onAnotherExample={exampleVariants.length > 0 ? handleAnotherExample : undefined}
+                  onAnotherExample={
+                    locale !== "id" && exampleVariants.length > 0 ? handleAnotherExample : undefined
+                  }
                   onShowAlternate={handleShowAlternateVariant}
                 />
               )}
@@ -401,7 +415,7 @@ export default function LessonPlayer({
                       });
                     }
                   }}
-                  onAnotherQuestion={handleAnotherQuestion}
+                  onAnotherQuestion={locale !== "id" ? handleAnotherQuestion : undefined}
                 />
               )}
               {step === 4 && <SourceStep sources={sources} quizPassed={quizDone} xpReward={lesson.xpReward} />}
@@ -435,6 +449,7 @@ export default function LessonPlayer({
 function IntroStep({ lesson }: { lesson: Lesson }) {
   const { t, locale } = useLocale();
   const title = locale === "id" ? lesson.titleId : lesson.title;
+  const summary = locale === "id" ? (lesson.summaryId ?? lesson.summary) : lesson.summary;
   return (
     <div className="flex flex-col items-center text-center">
       <div className="mb-6 flex h-28 w-28 items-center justify-center rounded-full bg-primary/8">
@@ -446,7 +461,7 @@ function IntroStep({ lesson }: { lesson: Lesson }) {
       <h1 className="mt-2 text-[28px] font-bold leading-[1.15] tracking-tight text-foreground">
         {title}
       </h1>
-      <p className="mt-4 text-base leading-relaxed text-muted-foreground">{lesson.summary}</p>
+      <p className="mt-4 text-base leading-relaxed text-muted-foreground">{summary}</p>
       <div className="mt-8 flex items-center gap-3 text-xs font-medium text-muted-foreground">
         <BookIcon />
         <span>~{lesson.estimatedMinutes} {t("lesson.minutes")}</span>
@@ -476,16 +491,21 @@ function ConceptStep({
     }
   };
 
+  const title = locale === "id" ? lesson.titleId : lesson.title;
+  const conceptBody = locale === "id" ? (lesson.conceptBodyId ?? lesson.conceptBody) : lesson.conceptBody;
+  const whyThisMatters = locale === "id" ? (lesson.whyThisMattersId ?? lesson.whyThisMatters) : lesson.whyThisMatters;
+  const commonMistake = locale === "id" ? (lesson.commonMistakeId ?? lesson.commonMistake) : lesson.commonMistake;
+
   return (
     <div className="space-y-6">
       <div>
         <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">{t("lesson.theConcept")}</span>
         <h2 className="mt-1.5 text-[22px] font-bold leading-tight tracking-tight text-foreground">
-          {locale === "id" ? lesson.titleId : lesson.title}
+          {title}
         </h2>
       </div>
       {!showSimpler ? (
-        <p className="text-[15px] leading-relaxed text-muted-foreground">{lesson.conceptBody}</p>
+        <p className="text-[15px] leading-relaxed text-muted-foreground">{conceptBody}</p>
       ) : (
         simplerVariant && (
           <div className="rounded-radius-md border border-primary/20 bg-primary/5 p-4">
@@ -513,9 +533,9 @@ function ConceptStep({
           {t("lesson.backToMainExplanation")}
         </button>
       )}
-      {lesson.whyThisMatters && (
+      {whyThisMatters && (
         <div className="rounded-radius-md border border-primary/20 bg-primary/5 p-4 text-[15px] leading-relaxed text-foreground">
-          {lesson.whyThisMatters}
+          {whyThisMatters}
         </div>
       )}
     </div>
@@ -539,14 +559,17 @@ function ExampleStep({
 }) {
   const [alternateVariant, setAlternateVariant] = useState<ContentVariant | null>(null);
   const [showAlternate, setShowAlternate] = useState(false);
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
 
-  const mainText = (exampleVariant?.body?.text as string | undefined) ?? lesson.indonesianExample;
-  const displayText = showAlternate && alternateVariant
+  const fallbackExample = locale === "id" ? lesson.indonesianExample : lesson.summary;
+  const mainText = locale === "id" ? lesson.indonesianExample : ((exampleVariant?.body?.text as string | undefined) ?? fallbackExample);
+  const commonMistake = locale === "id" ? (lesson.commonMistakeId ?? lesson.commonMistake) : lesson.commonMistake;
+  const displayText = showAlternate && alternateVariant && locale !== "id"
     ? (alternateVariant.body?.text as string | undefined) ?? alternateVariant.body
     : mainText;
 
   const canShowAnother =
+    locale !== "id" &&
     exampleVariants.length > 1 &&
     exampleVariants.some((v) => v.id !== exampleVariant?.id && !shownVariantIds.has(v.id));
 
@@ -588,9 +611,9 @@ function ExampleStep({
           {t("lesson.backToMainExample")}
         </button>
       )}
-      {lesson.commonMistake && (
+      {commonMistake && (
         <p className="text-[15px] leading-relaxed text-muted-foreground">
-          <strong className="text-foreground">{t("lesson.commonMistake")}</strong> {lesson.commonMistake}
+          <strong className="text-foreground">{t("lesson.commonMistake")}</strong> {commonMistake}
         </p>
       )}
     </div>
@@ -610,14 +633,15 @@ function QuizStep({
   onComplete: (correct: boolean) => void;
   onAnotherQuestion?: () => ProcessedQuestion | null;
 }) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   if (!question) {
-    const concept = lesson.conceptBody.trim().replace(/\.$/, "");
+    const conceptBody = locale === "id" ? (lesson.conceptBodyId ?? lesson.conceptBody) : lesson.conceptBody;
+    const concept = conceptBody.trim().replace(/\.$/, "");
     const fallbackQuestion: ProcessedQuestion = {
       type: "true_false",
-      question: `${concept} penting untuk mengelola uang dengan baik.`,
+      question: t("quiz.fallbackStatement").replace("{concept}", concept),
       answer: true,
-      explanation: "Pemahaman ini dasar untuk mengelola keuangan sehari-hari.",
+      explanation: t("quiz.fallbackExplanation"),
       parameters: {},
       variantId: "fallback",
     };
@@ -747,8 +771,9 @@ function SourceStep({
 }
 
 function SourceCard({ source, highlighted = false }: { source: LessonSource; highlighted?: boolean }) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const verified = source.status === "verified";
+  const displayTitle = locale === "id" ? (source.localTitle ?? source.title) : source.title;
 
   return (
     <div
@@ -776,7 +801,7 @@ function SourceCard({ source, highlighted = false }: { source: LessonSource; hig
               )}
             </span>
           </div>
-          <h4 className="mt-2 font-semibold text-foreground">{source.title}</h4>
+          <h4 className="mt-2 font-semibold text-foreground">{displayTitle}</h4>
           <p className="text-sm text-muted-foreground">{source.organization}</p>
           {source.citationLabel && (
             <p className="mt-1 text-xs text-muted-foreground">{source.citationLabel}</p>
@@ -853,7 +878,12 @@ function CompletionStep({
 
       <div className="mt-6 grid w-full grid-cols-2 gap-3">
         <StatCard variant="tile" tone="streak" value={`${streakDays}d`} label={t("lesson.streak")} />
-        <StatCard variant="tile" tone="xp" value={lesson.xpReward} label={t("lesson.baseXp")} />
+        <StatCard
+          variant="tile"
+          tone={isReplay ? "neutral" : "xp"}
+          value={isReplay ? t("lesson.alreadyEarnedValue") : lesson.xpReward}
+          label={isReplay ? t("lesson.alreadyEarned") : t("lesson.baseXp")}
+        />
       </div>
 
       {badges.length > 0 && (

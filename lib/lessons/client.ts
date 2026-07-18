@@ -56,11 +56,16 @@ export interface Lesson {
   xpReward: number;
   estimatedMinutes: number;
   summary: string;
+  summaryId: string | null;
   conceptBody: string;
+  conceptBodyId: string | null;
   indonesianExample: string;
   whyThisMatters: string;
+  whyThisMattersId: string | null;
   commonMistake: string;
+  commonMistakeId: string | null;
   quizData: QuizQuestion[];
+  quizDataId: QuizQuestion[] | null;
 }
 
 export interface ContentVariant {
@@ -77,6 +82,7 @@ export interface LessonSource {
   id: string;
   sourceCode: string;
   title: string;
+  localTitle: string | null;
   organization: string;
   url: string;
   sourceTier: number;
@@ -90,7 +96,7 @@ export async function getLessonBySlug(slug: string): Promise<Lesson | null> {
   const { data, error } = await supabase
     .from("lessons")
     .select(
-      "id, slug, title, title_id, lesson_number, difficulty, xp_reward, estimated_minutes, summary, concept_body, indonesian_example, why_this_matters, common_mistake, quiz_data"
+      "id, slug, title, title_id, lesson_number, difficulty, xp_reward, estimated_minutes, summary, summary_id, concept_body, concept_body_id, indonesian_example, why_this_matters, why_this_matters_id, common_mistake, common_mistake_id, quiz_data, quiz_data_id"
     )
     .eq("slug", slug)
     .single();
@@ -110,11 +116,16 @@ export async function getLessonBySlug(slug: string): Promise<Lesson | null> {
     xpReward: data.xp_reward,
     estimatedMinutes: data.estimated_minutes,
     summary: data.summary,
+    summaryId: data.summary_id,
     conceptBody: data.concept_body,
+    conceptBodyId: data.concept_body_id,
     indonesianExample: data.indonesian_example,
     whyThisMatters: data.why_this_matters,
+    whyThisMattersId: data.why_this_matters_id,
     commonMistake: data.common_mistake,
+    commonMistakeId: data.common_mistake_id,
     quizData: (data.quiz_data as QuizQuestion[]) ?? [],
+    quizDataId: (data.quiz_data_id as QuizQuestion[] | null) ?? null,
   };
 }
 
@@ -186,7 +197,7 @@ export async function getLessonSources(lessonId: string): Promise<LessonSource[]
   const { data, error } = await supabase
     .from("lesson_sources")
     .select(
-      "source_id, citation_label, is_primary, relevance_type, sources(source_code, title, organization, url, source_tier, status)"
+      "source_id, citation_label, is_primary, relevance_type, sources(source_code, title, local_title, organization, url, source_tier, status)"
     )
     .eq("lesson_id", lessonId)
     .order("display_order", { ascending: true });
@@ -205,6 +216,7 @@ export async function getLessonSources(lessonId: string): Promise<LessonSource[]
           id: String(row.source_id ?? ""),
           sourceCode: String(source.source_code ?? ""),
           title: String(source.title ?? ""),
+          localTitle: source.local_title === null || source.local_title === undefined ? null : String(source.local_title),
           organization: String(source.organization ?? ""),
           url: String(source.url ?? ""),
           sourceTier: Number(source.source_tier ?? 0),

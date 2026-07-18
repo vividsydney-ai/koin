@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 
 const TEST_USER_ID = "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11";
 const TEST_LESSON_ID = "b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a22";
@@ -19,6 +19,10 @@ vi.mock("@/lib/auth/client", () => ({
 import { completeLesson, getNextLessonSlug } from "@/lib/lessons/completion";
 
 describe("completeLesson", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it("calls complete_lesson RPC with the right payload", async () => {
     rpc.mockResolvedValueOnce({
       data: {
@@ -66,7 +70,9 @@ describe("completeLesson", () => {
   });
 
   it("returns null when the RPC fails", async () => {
-    rpc.mockResolvedValueOnce({ data: null, error: { message: "boom" } });
+    rpc
+      .mockResolvedValueOnce({ data: null, error: { message: "boom" } })
+      .mockResolvedValueOnce({ data: null, error: { message: "boom" } });
 
     const result = await completeLesson({
       userId: TEST_USER_ID,
@@ -79,6 +85,7 @@ describe("completeLesson", () => {
     });
 
     expect(result).toBeNull();
+    expect(rpc).toHaveBeenCalledTimes(2);
   });
 });
 
