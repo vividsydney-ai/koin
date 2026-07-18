@@ -1,5 +1,50 @@
 import { supabase } from "@/lib/auth/client";
+import type { LessonStatus } from "./gating";
 import type { QuizQuestion } from "./question";
+
+/**
+ * Fallback chapter mapping by topic slug. Once the `topics.chapter` column is
+ * applied, the database value takes precedence; this map keeps the UI working
+ * if the column is missing or a topic has not been assigned yet.
+ */
+const TOPIC_SLUG_TO_CHAPTER: Record<string, string> = {
+  foundation_zero: "Money Basics",
+  money_basics: "Money Basics",
+  value_purchasing_power: "Money Basics",
+  inflation: "Money Basics",
+  income_wealth: "Money Basics",
+  assets_liabilities: "Money Basics",
+  risk_basics: "Money Basics",
+  time_value_money: "Money Basics",
+
+  scam_defense: "Protect Yourself",
+  ojk_license_check: "Protect Yourself",
+  phishing_social_engineering: "Protect Yourself",
+  mlm_pyramid: "Protect Yourself",
+
+  interest: "Grow Your Money",
+  compound_interest: "Grow Your Money",
+  bank_vs_investment: "Grow Your Money",
+  risk_return: "Grow Your Money",
+  diversification: "Grow Your Money",
+  reksa_dana: "Grow Your Money",
+
+  stocks: "Investing in Indonesia",
+  idx_basics: "Investing in Indonesia",
+  stock_analysis: "Investing in Indonesia",
+  portfolio: "Investing in Indonesia",
+  taxes: "Investing in Indonesia",
+  macro_indicators: "Investing in Indonesia",
+
+  emergency_fund: "Money Life Skills",
+  saving_habits: "Money Life Skills",
+  budgeting: "Money Life Skills",
+  spending_behavior: "Money Life Skills",
+  debt_management: "Money Life Skills",
+  goal_setting: "Money Life Skills",
+  behavioral_finance: "Money Life Skills",
+  financial_planning: "Money Life Skills",
+};
 
 export interface Lesson {
   id: string;
@@ -303,4 +348,210 @@ export async function getRecentAttemptVariantIds(
     }
   }
   return ids;
+}
+
+export interface ChapterLesson {
+  id: string;
+  slug: string;
+  title: string;
+  lessonNumber: number;
+  difficulty: string;
+  xpReward: number;
+  estimatedMinutes: number;
+  summary: string;
+}
+
+export interface ChapterTopic {
+  id: string;
+  slug: string;
+  name: string;
+  displayOrder: number | null;
+  lessons: ChapterLesson[];
+}
+
+export interface Chapter {
+  title: string;
+  displayOrder: number;
+  topics: ChapterTopic[];
+  lessonCount: number;
+  completedCount: number;
+}
+
+const CHAPTER_ORDER = [
+  "Money Basics",
+  "Protect Yourself",
+  "Grow Your Money",
+  "Investing in Indonesia",
+  "Money Life Skills",
+];
+
+function chapterDisplayOrder(title: string): number {
+  const index = CHAPTER_ORDER.indexOf(title);
+  return index === -1 ? Number.MAX_SAFE_INTEGER : index;
+}
+
+function lessonDisplayOrder(lesson: { lesson_number: number }): number {
+  return lesson.lesson_number;
+}
+
+/**
+ * Fetch all topics grouped by chapter, including their lessons and optional
+ * completion counts. Topics and lessons are ordered by their existing display
+ * fields so the curriculum flow is preserved.
+ *
+ * If the `topics.chapter` column is not available yet, the function falls back
+ * to the static `TOPIC_SLUG_TO_CHAPTER` map so the UI keeps working.
+ */
+interface TopicWithLessonsRow {
+  id: string;
+  slug: string;
+  name: string;
+  name_id: string;
+  icon: string | null;
+  color: string | null;
+  display_order: number | null;
+  chapter?: string | null;
+  lessons: {
+    id: string;
+    slug: string;
+    title: string;
+    lesson_number: number;
+    difficulty: string;
+    xp_reward: number;
+    estimated_minutes: number;
+    summary: string;
+  }[];
+}
+
+export async function getTopicsWithChapters(
+  progressMap?: Record<string, LessonStatus> | null
+): Promise<Chapter[]> {
+  let data: TopicWithLessonsRow[] | null = null;
+  let error: Error | null = null;
+  let useFallback = false;
+
+  const primary = await supabase
+    .from("topics")
+    .select(
+      "id, slug, name, name_id, icon, color, display_order, chapter, lessons(id, slug, title, lesson_number, difficulty, xp_reward, estimated_minutes, summary)"
+    )
+    .order("display_order", { ascending: true })
+    .order("lesson_number", { referencedTable: "lessons", ascending: true });
+
+  data = primary.data as TopicWithLessonsRow[] | null;
+  error = primary.error;
+
+  if (error && /column.*chapter|chapter.*column|chapter.*does not exist/i.test(error.message)) {
+    useFallback = true;
+    const fallback = await supabase
+      .from("topics")
+      .select(
+        "id, slug, name, name_id, icon, color, display_order, lessons(id, slug, title, lesson_number, difficulty, xp_reward, estimated_minutes, summary)"
+      )
+      .order("display_order", { ascending: true })
+      .order("lesson_number", { referencedTable: "lessons", ascending: true });
+    data = fallback.data as TopicWithLessonsRow[] | null;
+    error = fallback.error;
+  }
+
+  if (error) {
+    console.error("getTopicsWithChapters error:", error.message);
+    return [];
+  }
+
+  const chaptersMap = new Map<string, Chapter>();
+
+  for (const topic of data ?? []) {
+    const lessons = (topic.lessons ?? [])
+      .sort((a, b) => lessonDisplayOrder(a) - lessonDisplayOrder(b))
+      .map((l) => ({
+        id: l.id,
+        slug: l.slug,
+        title: l.title,
+        lessonNumber: l.lesson_number,
+        difficulty: l.difficulty,
+        xpReward: l.xp_reward,
+        estimatedMinutes: l.estimated_minutes,
+        summary: l.summary,
+      }));
+
+    const chapterTitle =
+      topic.chapter?.trim() ||
+      (useFallback ? TOPIC_SLUG_TO_CHAPTER[topic.slug] : undefined) ||
+      "Uncategorized";
+
+    if (!chaptersMap.has(chapterTitle)) {
+      chaptersMap.set(chapterTitle, {
+        title: chapterTitle,
+        displayOrder: chapterDisplayOrder(chapterTitle),
+        topics: [],
+        lessonCount: 0,
+        completedCount: 0,
+      });
+    }
+
+    const chapter = chaptersMap.get(chapterTitle)!;
+    chapter.topics.push({
+      id: topic.id,
+      slug: topic.slug,
+      name: topic.name,
+      displayOrder: topic.display_order,
+      lessons,
+    });
+
+    chapter.lessonCount += lessons.length;
+    for (const lesson of lessons) {
+      if (progressMap?.[lesson.id] === "completed") {
+        chapter.completedCount += 1;
+      }
+    }
+  }
+
+  const chapters = Array.from(chaptersMap.values()).sort((a, b) => {
+    if (a.displayOrder !== b.displayOrder) {
+      return a.displayOrder - b.displayOrder;
+    }
+    return a.title.localeCompare(b.title);
+  });
+
+  for (const chapter of chapters) {
+    chapter.topics.sort((a, b) => (a.displayOrder ?? Infinity) - (b.displayOrder ?? Infinity));
+  }
+
+  return chapters;
+}
+
+/**
+ * Find the chapter that contains a given lesson. Used by the Learn page to
+ * expand the user's current chapter by default.
+ */
+export function findChapterForLesson(chapters: Chapter[], lessonId: string): Chapter | undefined {
+  return chapters.find((chapter) =>
+    chapter.topics.some((topic) => topic.lessons.some((lesson) => lesson.id === lessonId))
+  );
+}
+
+/**
+ * Return the chapter title for a given lesson. Useful for breadcrumbs and
+ * player headers without loading the full curriculum.
+ *
+ * Falls back to the static slug map if `topics.chapter` has not been applied
+ * to the database yet.
+ */
+export async function getLessonChapter(lessonId: string): Promise<string | null> {
+  const { data, error } = await supabase
+    .from("lessons")
+    .select("topics(chapter, slug)")
+    .eq("id", lessonId)
+    .single();
+
+  if (error || !data) {
+    console.error("getLessonChapter error:", error?.message);
+    return null;
+  }
+
+  const topic = (data.topics as { chapter: string | null; slug: string }[] | null)?.[0];
+  return (
+    topic?.chapter?.trim() || TOPIC_SLUG_TO_CHAPTER[topic?.slug ?? ""] || null
+  );
 }

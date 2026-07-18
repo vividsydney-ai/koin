@@ -1441,6 +1441,7 @@ export type Database = {
       }
       topics: {
         Row: {
+          chapter: string | null
           color: string | null
           created_at: string | null
           display_order: number | null
@@ -1451,6 +1452,7 @@ export type Database = {
           slug: string
         }
         Insert: {
+          chapter?: string | null
           color?: string | null
           created_at?: string | null
           display_order?: number | null
@@ -1461,6 +1463,7 @@ export type Database = {
           slug: string
         }
         Update: {
+          chapter?: string | null
           color?: string | null
           created_at?: string | null
           display_order?: number | null
