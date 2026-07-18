@@ -1,25 +1,11 @@
 [build]
   command = "pnpm build"
-  publish = "out"
-  functions = "netlify/functions"
 
 [build.environment]
   NODE_VERSION = "20"
   PNPM_VERSION = "10"
-  # This app is a static export (output: export) — the Next.js runtime plugin
-  # expects a server build and fails on it. Serve out/ as plain static files.
-  NETLIFY_NEXT_PLUGIN_SKIP = "true"
+  # Next.js runtime plugin handles serverless builds; no static export.
 
-[[redirects]]
-  from = "/api/cron/streak-reminders"
-  to = "/.netlify/functions/streak-reminders"
-  status = 200
-
-[[redirects]]
-  from = "/api/cron/market-data-update"
-  to = "/.netlify/functions/market-data-update"
-  status = 200
-
-[functions]
-  directory = "netlify/functions"
-  node_bundler = "esbuild"
+# Cron jobs are now handled by Vercel Cron (see vercel.json).
+# The web.koinaku.com domain is served by Vercel; this site remains available
+# as a fallback via its Netlify default domain.
