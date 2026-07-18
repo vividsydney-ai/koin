@@ -2,6 +2,18 @@
 # Loop reads and writes this. Human can also read to understand where we are.
 # v2: MVP reshaped around paper trading. Original v1 loop files archived in /_archived.
 
+## 2026-07-18 — UI-LIFT-1..5 landed + Turnstile fully activated
+
+- **Swarm execution (4 Makers in parallel, Conductor verify/land):**
+  - LIFT-1: `components/GradientIcon.tsx` + nav swap in `app/(app)/layout.tsx` (SVG icons, gradient active tile, 6 tabs kept).
+  - LIFT-2+5: `components/StatCard.tsx` (card+tile variants, toneTint color-mix), `components/BadgeGrid.tsx`, `components/FilterChips.tsx`; applied to home, profile, library, LessonPlayer completion tiles.
+  - LIFT-3: Friends leaderboard — avatar chips, gold/silver/bronze top-3 via color-mix, is-you highlight + "You" marker; no faked rank-change/streak data.
+  - LIFT-4: `components/PriceChart.tsx` + `getMarketDataHistory` (30-day closes, no migration), synthesized candles (open=prior close), IDR header + simulated-data disclaimer.
+- **i18n sweep:** new copy moved to dictionaries (friends.you, trade.simulatedPrices/Body, library.all*, profile.locked/keepLearning) — EN+ID.
+- **Turnstile fully activated (KO-61):** Netlify env `NEXT_PUBLIC_TURNSTILE_SITE_KEY` set via API; Supabase captcha enabled (Turnstile + secret) via Management API (token from keyring). Enforcement verified: signup without captcha_token is rejected. Local dev needs `NEXT_PUBLIC_TURNSTILE_SITE_KEY` in `.env.local`.
+- **Flagged by Maker B:** `rounded-radius-*` classes generate zero CSS under Tailwind v4.3.1 (@theme maps to `rounded-card`/`rounded-lg`) — repo-wide pre-existing issue, ticketed separately.
+- Gates: tsc ✅, lint ✅ 0 errors, vitest ✅ 370 passed / 5 skipped (26 new), build ✅, drift ✅. Commit `009124f`; Netlify auto-deploy (repo link restored by human).
+
 ## 2026-07-18 — UI-LIFT Step 1 audit complete (awaiting plan approval)
 
 - Planner (subagent) audited all 11 live pages against the v4 design bundle. Design-drift check ✅. **DESIGN.md did not exist** — created a distilled canonical version at repo root.
