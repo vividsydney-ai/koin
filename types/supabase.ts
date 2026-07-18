@@ -1864,6 +1864,10 @@ export type Database = {
         Args: { p_invite_code: string; p_user_id: string }
         Returns: Json
       }
+      add_friend_by_qr: {
+        Args: { p_scanned_user_id: string }
+        Returns: Json
+      }
       award_koin_points: {
         Args: {
           p_amount: number

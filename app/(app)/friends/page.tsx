@@ -1,21 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import QRCode from "qrcode";
+import jsQR from "jsqr";
 import { useAuth } from "@/lib/auth/use-auth";
-import { createFriendInvite, acceptFriendInvite, getFriends, type FriendInvite, type Friend } from "@/lib/friends/client";
+import { addFriendByQr, getFriends, type Friend } from "@/lib/friends/client";
 import { getWeeklyLeaderboard, type WeeklyLeaderboard } from "@/lib/home/client";
 import { joinCohortByCode, getCohorts, type Cohort } from "@/lib/cohorts/client";
 import { EmptyState } from "@/components/EmptyState";
 
 export default function FriendsPage() {
   const { user, profile, loading: authLoading } = useAuth(true);
-  const [invite, setInvite] = useState<FriendInvite | null>(null);
   const [friends, setFriends] = useState<Friend[]>([]);
   const [cohorts, setCohorts] = useState<Cohort[]>([]);
   const [leaderboard, setLeaderboard] = useState<WeeklyLeaderboard | null>(null);
-  const [codeInput, setCodeInput] = useState("");
-  const [cohortCodeInput, setCohortCodeInput] = useState("");
   const [message, setMessage] = useState<string | null>(null);
+  const [cohortCodeInput, setCohortCodeInput] = useState("");
   const [cohortMessage, setCohortMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -41,30 +41,10 @@ export default function FriendsPage() {
     };
   }, [user]);
 
-  const handleCreateInvite = async () => {
+  const handleFriendAdded = async () => {
     if (!user) return;
-    setMessage(null);
-    const result = await createFriendInvite(user.id);
-    if (result) {
-      setInvite(result);
-    } else {
-      setMessage("Could not create invite. Try again.");
-    }
-  };
-
-  const handleAccept = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user || !codeInput.trim()) return;
-    setMessage(null);
-    const result = await acceptFriendInvite(user.id, codeInput.trim());
-    if (result) {
-      setMessage("Invite accepted! You're now friends.");
-      setCodeInput("");
-      const friendsData = await getFriends(user.id);
-      setFriends(friendsData);
-    } else {
-      setMessage("Invalid or expired invite code.");
-    }
+    const friendsData = await getFriends(user.id);
+    setFriends(friendsData);
   };
 
   const handleJoinCohort = async (e: React.FormEvent) => {
@@ -100,14 +80,12 @@ export default function FriendsPage() {
         </div>
       ) : (
         <div className="space-y-5">
-          <InviteSection
-            invite={invite}
+          <QrSection
+            userId={user?.id ?? ""}
             displayName={profile?.display_name ?? "Learner"}
-            onCreate={handleCreateInvite}
-            codeInput={codeInput}
-            onCodeChange={setCodeInput}
-            onAccept={handleAccept}
+            onFriendAdded={handleFriendAdded}
             message={message}
+            setMessage={setMessage}
           />
 
           {pendingFriends.length > 0 && (
@@ -127,7 +105,7 @@ export default function FriendsPage() {
               <EmptyState
                 icon="👥"
                 title="No friends yet"
-                description="Share your invite code or add a friend's code to start learning together."
+                description="Share your QR code or scan a friend's code to start learning together."
               />
             ) : (
               <div className="space-y-2">
@@ -159,31 +137,47 @@ export default function FriendsPage() {
   );
 }
 
-function InviteSection({
-  invite,
+function QrSection({
+  userId,
   displayName,
-  onCreate,
-  codeInput,
-  onCodeChange,
-  onAccept,
+  onFriendAdded,
   message,
+  setMessage,
 }: {
-  invite: FriendInvite | null;
+  userId: string;
   displayName: string;
-  onCreate: () => void;
-  codeInput: string;
-  onCodeChange: (value: string) => void;
-  onAccept: (e: React.FormEvent) => void;
+  onFriendAdded: () => void;
   message: string | null;
+  setMessage: (value: string | null) => void;
 }) {
-  const shareText = invite
-    ? `Join me on Koin and learn to invest together! Use my invite code: ${invite.inviteCode}`
-    : "";
+  const [qrSvg, setQrSvg] = useState<string | null>(null);
+  const [scannerOpen, setScannerOpen] = useState(false);
+
+  useEffect(() => {
+    if (!userId) return;
+    let cancelled = false;
+    QRCode.toString(userId, {
+      type: "svg",
+      width: 200,
+      margin: 2,
+      errorCorrectionLevel: "M",
+      color: {
+        dark: "#171818",
+        light: "#ffffff",
+      },
+    }).then((svg) => {
+      if (!cancelled) setQrSvg(svg);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [userId]);
+
+  const shareText = `Add me on Koin and learn to invest together! My user ID: ${userId}`;
 
   const handleShare = async () => {
-    if (!invite) return;
     const shareData = {
-      title: "Join me on Koin",
+      title: `Add ${displayName} on Koin`,
       text: shareText,
       url: typeof window !== "undefined" ? window.location.origin : "",
     };
@@ -196,62 +190,193 @@ function InviteSection({
     }
   };
 
+  const handleScanResult = async (scannedUserId: string) => {
+    setMessage(null);
+    const result = await addFriendByQr(scannedUserId.trim());
+    if (result) {
+      setMessage(result.status === "accepted" ? "You're now friends!" : "Friend request sent.");
+      await onFriendAdded();
+    } else {
+      setMessage("Could not add friend. Check the QR code and try again.");
+    }
+  };
+
   return (
     <div className="rounded-radius-lg border border-muted/60 bg-surface p-4 shadow-sm">
       <h2 className="text-sm font-semibold text-foreground">Invite friends</h2>
-      <p className="text-xs text-muted-foreground">Share your code and climb the weekly leaderboard together.</p>
+      <p className="text-xs text-muted-foreground">Share your QR code or scan a friend&apos;s code to connect.</p>
 
-      {invite ? (
-        <div className="mt-3 space-y-2">
-          <div className="flex items-center justify-between rounded-radius-md bg-muted px-3 py-2">
-            <span className="font-mono text-lg font-bold tracking-widest text-foreground">{invite.inviteCode}</span>
-            <button
-              onClick={handleShare}
-              className="rounded-radius-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground active:opacity-90"
-            >
-              Share
-            </button>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            Used {invite.usesCount} of {invite.maxUses} times. Expires {new Date(invite.expiresAt).toLocaleDateString("id-ID")}.
-          </p>
+      <div className="mt-4 flex flex-col items-center gap-4">
+        <div className="rounded-radius-md bg-white p-3 shadow-sm">
+          {qrSvg ? (
+            <div
+              className="h-44 w-44"
+              aria-label={`QR code for ${displayName}`}
+              dangerouslySetInnerHTML={{ __html: qrSvg }}
+            />
+          ) : (
+            <div className="flex h-44 w-44 items-center justify-center bg-muted">
+              <span className="text-xs text-muted-foreground">Loading QR…</span>
+            </div>
+          )}
         </div>
-      ) : (
-        <button
-          onClick={onCreate}
-          className="mt-3 w-full rounded-radius-md bg-primary py-2.5 text-sm font-semibold text-primary-foreground active:opacity-90"
-        >
-          Generate invite code
-        </button>
-      )}
 
-      <form onSubmit={onAccept} className="mt-4 space-y-2">
-        <label htmlFor="invite-code" className="text-xs font-medium text-muted-foreground">
-          Have a friend&apos;s code?
-        </label>
-        <div className="flex gap-2">
-          <input
-            id="invite-code"
-            type="text"
-            value={codeInput}
-            onChange={(e) => onCodeChange(e.target.value.toUpperCase())}
-            placeholder="Enter code"
-            className="flex-1 rounded-radius-md border border-muted bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
-          />
+        <div className="flex w-full gap-2">
           <button
-            type="submit"
-            disabled={!codeInput.trim()}
-            className="rounded-radius-md bg-foreground px-4 py-2 text-sm font-semibold text-background disabled:opacity-50 active:opacity-90"
+            onClick={handleShare}
+            className="flex-1 rounded-radius-md bg-primary py-2.5 text-sm font-semibold text-primary-foreground active:opacity-90"
           >
-            Add
+            Share
+          </button>
+          <button
+            onClick={() => setScannerOpen(true)}
+            className="flex-1 rounded-radius-md bg-foreground py-2.5 text-sm font-semibold text-background active:opacity-90"
+          >
+            Scan QR
           </button>
         </div>
-        {message && (
-          <p className={`text-xs ${message.includes("accepted") || message.includes("now friends") ? "text-success" : "text-danger"}`}>
-            {message}
-          </p>
+      </div>
+
+      {message && (
+        <p className={`mt-4 text-center text-xs ${message.includes("friends") || message.includes("sent") ? "text-success" : "text-danger"}`}>
+          {message}
+        </p>
+      )}
+
+      {scannerOpen && (
+        <QrScannerModal
+          onClose={() => setScannerOpen(false)}
+          onScan={async (id) => {
+            setScannerOpen(false);
+            await handleScanResult(id);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+function QrScannerModal({ onClose, onScan }: { onClose: () => void; onScan: (userId: string) => void }) {
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const rafRef = useRef<number | null>(null);
+  const isCameraSupported =
+    typeof navigator !== "undefined" && !!navigator.mediaDevices?.getUserMedia;
+  const [cameraError, setCameraError] = useState<string | null>(
+    isCameraSupported ? null : "Camera not available in this browser. You can enter a user ID manually below."
+  );
+  const [manualInput, setManualInput] = useState("");
+
+  useEffect(() => {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    if (!video || !canvas || !isCameraSupported) return;
+
+    const constraints: MediaStreamConstraints = {
+      video: { facingMode: "environment" },
+    };
+
+    navigator.mediaDevices
+      .getUserMedia(constraints)
+      .then((stream) => {
+        streamRef.current = stream;
+        video.srcObject = stream;
+        void video.play();
+
+        const ctx = canvas.getContext("2d", { willReadFrequently: true });
+        if (!ctx) return;
+
+        const tick = () => {
+          if (video.readyState === video.HAVE_ENOUGH_DATA) {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const code = jsQR(imageData.data, imageData.width, imageData.height, {
+              inversionAttempts: "dontInvert",
+            });
+            if (code?.data) {
+              onScan(code.data);
+              return;
+            }
+          }
+          rafRef.current = requestAnimationFrame(tick);
+        };
+
+        rafRef.current = requestAnimationFrame(tick);
+      })
+      .catch(() => {
+        setCameraError("Could not access camera. You can enter a user ID manually below.");
+      });
+
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      streamRef.current?.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    };
+  }, [onScan, isCameraSupported]);
+
+  const handleManualSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!manualInput.trim()) return;
+    onScan(manualInput.trim());
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-modal flex flex-col bg-background/95 p-4 backdrop-blur-sm"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Scan QR code"
+    >
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-bold text-foreground">Scan friend&apos;s QR</h3>
+        <button
+          onClick={onClose}
+          className="rounded-radius-md px-3 py-1.5 text-sm font-semibold text-muted-foreground active:opacity-70"
+          aria-label="Close scanner"
+        >
+          Close
+        </button>
+      </div>
+
+      <div className="mt-4 flex flex-1 flex-col items-center justify-center gap-4">
+        <div className="relative w-full max-w-sm overflow-hidden rounded-radius-lg bg-black shadow-lg">
+          <video ref={videoRef} className="h-auto w-full" muted playsInline />
+          <canvas ref={canvasRef} className="sr-only" />
+          <div className="pointer-events-none absolute inset-0 rounded-radius-lg border-2 border-primary/40" />
+        </div>
+
+        {cameraError && (
+          <div className="w-full max-w-sm rounded-radius-md bg-surface-inset p-3 text-center">
+            <p className="text-xs text-danger">{cameraError}</p>
+          </div>
         )}
-      </form>
+
+        <form onSubmit={handleManualSubmit} className="w-full max-w-sm space-y-2">
+          <label htmlFor="manual-user-id" className="block text-xs font-medium text-muted-foreground">
+            Or enter user ID manually
+          </label>
+          <div className="flex gap-2">
+            <input
+              id="manual-user-id"
+              type="text"
+              value={manualInput}
+              onChange={(e) => setManualInput(e.target.value)}
+              placeholder="Paste user ID"
+              className="flex-1 rounded-radius-md border border-muted bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
+            />
+            <button
+              type="submit"
+              disabled={!manualInput.trim()}
+              className="rounded-radius-md bg-foreground px-4 py-2 text-sm font-semibold text-background disabled:opacity-50 active:opacity-90"
+            >
+              Add
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

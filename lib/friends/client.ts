@@ -1,41 +1,22 @@
 import { supabase } from "@/lib/auth/client";
 
-export interface FriendInvite {
-  inviteId: string;
-  inviteCode: string;
-  usesCount: number;
-  maxUses: number;
-  expiresAt: string;
+export interface Friend {
+  userId: string;
+  displayName: string;
+  avatarUrl: string | null;
+  status: "pending" | "accepted" | "declined" | "blocked";
+  isRequester: boolean;
 }
 
-export async function createFriendInvite(userId: string): Promise<FriendInvite | null> {
-  const { data, error } = await supabase.rpc("create_friend_invite", {
-    p_user_id: userId,
+export async function addFriendByQr(
+  scannedUserId: string
+): Promise<{ friendshipId: string; status: string } | null> {
+  const { data, error } = await supabase.rpc("add_friend_by_qr", {
+    p_scanned_user_id: scannedUserId,
   });
 
   if (error || !data) {
-    console.error("createFriendInvite error:", error?.message);
-    return null;
-  }
-
-  const raw = data as Record<string, unknown>;
-  return {
-    inviteId: String(raw.invite_id),
-    inviteCode: String(raw.invite_code),
-    usesCount: Number(raw.uses_count),
-    maxUses: Number(raw.max_uses),
-    expiresAt: String(raw.expires_at),
-  };
-}
-
-export async function acceptFriendInvite(userId: string, code: string): Promise<{ friendshipId: string; status: string } | null> {
-  const { data, error } = await supabase.rpc("accept_friend_invite", {
-    p_user_id: userId,
-    p_invite_code: code,
-  });
-
-  if (error || !data) {
-    console.error("acceptFriendInvite error:", error?.message);
+    console.error("addFriendByQr error:", error?.message);
     return null;
   }
 
@@ -44,14 +25,6 @@ export async function acceptFriendInvite(userId: string, code: string): Promise<
     friendshipId: String(raw.friendship_id),
     status: String(raw.status),
   };
-}
-
-export interface Friend {
-  userId: string;
-  displayName: string;
-  avatarUrl: string | null;
-  status: "pending" | "accepted" | "declined" | "blocked";
-  isRequester: boolean;
 }
 
 export async function getFriends(userId: string): Promise<Friend[]> {
