@@ -183,6 +183,7 @@
 - [x] KO-41 P2 — Profile page is missing 'Edit Profile' button
 - [x] KO-ABUSE-001 — RPC abuse hardening: idempotent XP/KP in complete_lesson, 30s min-time, award_koin_points + check_in_streak made internal-only, friend-add daily cap (migration 048, prod smoke-verified)
 - [x] KO-CAPTCHA-001 — Turnstile captcha on signup with graceful degradation (client shipped; activation pending Cloudflare site key + Supabase captcha toggle)
+- [x] KO-LESSON-003 — Replay XP UI, save-progress error, ENG/ID lingo mixing (shipped 2026-07-18, deployed to web.koinaku.com)
 
 ## PHASE 6b — UI-LIFT (design system v4 migration, from ui-lift.md audit 2026-07-18)
 > Plan approved 2026-07-18 (streak→gold, synthesized candles). LIFT-6 remains.

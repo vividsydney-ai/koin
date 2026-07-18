@@ -433,3 +433,33 @@ None active.
 - Pivoting to web-first preserves native code on the same branch while adding PWA metadata and web-safe storage.
 - Reference tables (sources, lesson_sources) need explicit SELECT policies when RLS is enabled; "public read" intent must be enforced in code.
 - Static export on Vercel means public share links for runtime-generated IDs (e.g., certificate share_public_id) cannot be pre-rendered; share via native share API instead.
+
+## 2026-07-18 — KO-LESSON-003: replay XP UI, save-progress resilience, ID locale lingo fixes
+
+**Scope**
+- Fix replay completion showing green XP earned tile (should be neutral "Already earned" / 0 XP).
+- Fix "We couldn't save your progress" error blocking advancement to next lesson.
+- Remove English traces from Indonesian locale lessons (summary, concept, example, quiz fallback, source titles).
+
+**Changes**
+- `app/learn/[slug]/LessonPlayer.tsx`: replay completion uses `tone="neutral"` and `lesson.alreadyEarned`/`lesson.alreadyEarnedValue`; ID locale prefers `summary_id`, `concept_body_id`, `why_this_matters_id`, `common_mistake_id`; example/simpler explanation/"try another question" are hidden in ID until translated variants exist; quiz fallback uses locale-aware dictionary strings.
+- `lib/i18n/dictionaries.ts`: added `quiz.fallbackStatement` and `quiz.fallbackExplanation` for EN and ID.
+- `lib/lessons/client.ts`: `LessonSource` now includes `localTitle`; query selects `sources.local_title`.
+- `lib/services/lessons.ts`: `completeLesson` retries once on RPC failure and guards against undefined results.
+- `lib/lessons/completion.ts`: after RPC failure, checks lesson status and synthesizes a replay result if already completed; wraps status check in try/catch.
+- `lib/auth/client.ts`: `signInWithEmail` only sends `options: { captchaToken }` when a token is provided.
+- Supabase migration `20260719000052_add_indonesian_lesson_content_columns.sql` added and pushed to remote.
+- Indonesian translations for lessons 1-32 applied via `.loop/translations/ko-lesson-003/all-translations.sql`.
+
+**Gate results**
+- `pnpm type-check`: clean
+- `pnpm test`: 370 passed / 5 skipped
+- `pnpm build`: clean
+- Vercel production deploy: https://web.koinaku.com (aliased)
+- Smoke test: `curl -I https://web.koinaku.com/login` and `/learn` return HTTP 200.
+
+**Linear**
+- Created KO-69 "[KO-LESSON-003] Replay XP UI, save-progress error, ENG/ID lingo mixing" and moved to Done.
+
+**Follow-ups**
+- Translate `content_variants` example/question bodies to Indonesian and add locale-aware variant selection so ID users can use "see another example" / "try another question" with rich content.
