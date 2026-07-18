@@ -8,7 +8,7 @@ vi.mock("@/lib/auth/client", () => ({
   },
 }));
 
-import { getStreak } from "@/lib/home/client";
+import { getStreak, getContinueLesson } from "@/lib/home/client";
 
 describe("home client", () => {
   beforeEach(() => {
@@ -52,5 +52,93 @@ describe("home client", () => {
     expect(result).toBeNull();
     expect(consoleSpy).toHaveBeenCalledWith("getStreak error:", "boom");
     consoleSpy.mockRestore();
+  });
+
+  describe("getContinueLesson", () => {
+    function setupGetContinueLesson({
+      lessons,
+      progress = [],
+      startingLessonId = null,
+    }: {
+      lessons: { id: string; slug: string; title: string; lesson_number: number }[];
+      progress?: { lesson_id: string; status: string }[];
+      startingLessonId?: string | null;
+    }) {
+      fromMock.mockImplementation((table: string) => {
+        if (table === "lessons") {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                order: vi.fn().mockResolvedValue({ data: lessons, error: null }),
+              }),
+            }),
+          };
+        }
+        if (table === "lesson_progress") {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockResolvedValue({ data: progress, error: null }),
+            }),
+          };
+        }
+        if (table === "user_settings") {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                single: vi.fn().mockResolvedValue({
+                  data: startingLessonId ? { starting_lesson_id: startingLessonId } : null,
+                  error: null,
+                }),
+              }),
+            }),
+          };
+        }
+        return {};
+      });
+    }
+
+    it("returns the first lesson for a new user", async () => {
+      setupGetContinueLesson({
+        lessons: [
+          { id: "l1", slug: "lesson-1", title: "Lesson 1", lesson_number: 1 },
+          { id: "l2", slug: "lesson-2", title: "Lesson 2", lesson_number: 2 },
+        ],
+      });
+
+      const result = await getContinueLesson("user-1");
+
+      expect(result).toMatchObject({ id: "l1", slug: "lesson-1", status: "available" });
+    });
+
+    it("falls back to lesson 1 when configured starting lesson is unpublished", async () => {
+      setupGetContinueLesson({
+        lessons: [
+          { id: "l1", slug: "lesson-1", title: "Lesson 1", lesson_number: 1 },
+          { id: "l2", slug: "lesson-2", title: "Lesson 2", lesson_number: 2 },
+        ],
+        startingLessonId: "old-unpublished-id",
+      });
+
+      const result = await getContinueLesson("user-1");
+
+      expect(result).toMatchObject({ id: "l1", slug: "lesson-1", status: "available" });
+    });
+
+    it("returns null when all lessons are completed", async () => {
+      setupGetContinueLesson({
+        lessons: [
+          { id: "l1", slug: "lesson-1", title: "Lesson 1", lesson_number: 1 },
+          { id: "l2", slug: "lesson-2", title: "Lesson 2", lesson_number: 2 },
+        ],
+        progress: [
+          { lesson_id: "l1", status: "completed" },
+          { lesson_id: "l2", status: "completed" },
+        ],
+      });
+
+      const result = await getContinueLesson("user-1");
+
+      expect(result).toBeNull();
+    });
   });
 });
