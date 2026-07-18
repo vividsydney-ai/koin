@@ -201,13 +201,17 @@ export default function LessonPlayer({ slug, totalLessons }: { slug: string; tot
   const handleAnotherExample = (): ContentVariant | null => {
     if (!lesson) return null;
     const available = exampleVariants.filter((v) => !shownVariantIds.has(v.id) && v.id !== exampleVariant?.id);
-    const pool = available.length > 0 ? available : exampleVariants;
-    const variant = pool[seededIndex(`${seedBase}:example:${shownVariantIds.size}`, pool.length)];
+    if (available.length === 0) return null;
+    const variant = available[seededIndex(`${seedBase}:example:${shownVariantIds.size}`, available.length)];
 
     if (variant) {
       setShownVariantIds((prev) => new Set([...prev, variant.id]));
     }
     return variant;
+  };
+
+  const handleShowAlternateVariant = (variantId: string) => {
+    setShownVariantIds((prev) => new Set([...prev, variantId]));
   };
 
   const handleAnotherQuestion = (): ProcessedQuestion | null => {
@@ -311,11 +315,15 @@ export default function LessonPlayer({ slug, totalLessons }: { slug: string; tot
                 <ExampleStep
                   lesson={lesson}
                   exampleVariant={exampleVariant}
+                  exampleVariants={exampleVariants}
+                  shownVariantIds={shownVariantIds}
                   onAnotherExample={exampleVariants.length > 0 ? handleAnotherExample : undefined}
+                  onShowAlternate={handleShowAlternateVariant}
                 />
               )}
               {step === 3 && (
                 <QuizStep
+                  lesson={lesson}
                   question={activeQuestion}
                   onNext={nextStep}
                   onComplete={(correct) => {
@@ -454,11 +462,17 @@ function ConceptStep({
 function ExampleStep({
   lesson,
   exampleVariant,
+  exampleVariants,
+  shownVariantIds,
   onAnotherExample,
+  onShowAlternate,
 }: {
   lesson: Lesson;
   exampleVariant: ContentVariant | null;
+  exampleVariants: ContentVariant[];
+  shownVariantIds: Set<string>;
   onAnotherExample?: () => ContentVariant | null;
+  onShowAlternate?: (variantId: string) => void;
 }) {
   const [alternateVariant, setAlternateVariant] = useState<ContentVariant | null>(null);
   const [showAlternate, setShowAlternate] = useState(false);
@@ -468,11 +482,16 @@ function ExampleStep({
     ? (alternateVariant.body?.text as string | undefined) ?? alternateVariant.body
     : mainText;
 
+  const canShowAnother =
+    exampleVariants.length > 1 &&
+    exampleVariants.some((v) => v.id !== exampleVariant?.id && !shownVariantIds.has(v.id));
+
   const handleShowAlternate = () => {
     const variant = onAnotherExample?.();
     if (variant) {
       setAlternateVariant(variant);
       setShowAlternate(true);
+      onShowAlternate?.(variant.id);
     }
   };
 
@@ -487,7 +506,7 @@ function ExampleStep({
       <div className="rounded-radius-lg border border-muted/60 bg-surface p-5 shadow-sm">
         <p className="text-[15px] leading-relaxed text-muted-foreground">{String(displayText ?? "")}</p>
       </div>
-      {onAnotherExample && !showAlternate && (
+      {canShowAnother && !showAlternate && (
         <button
           onClick={handleShowAlternate}
           className="inline-flex min-h-[44px] items-center gap-1.5 text-sm font-medium text-primary hover:underline"
@@ -515,27 +534,46 @@ function ExampleStep({
 }
 
 function QuizStep({
+  lesson,
   question,
   onNext,
   onComplete,
   onAnotherQuestion,
 }: {
+  lesson: Lesson;
   question: ProcessedQuestion | null;
   onNext: () => void;
   onComplete: (correct: boolean) => void;
   onAnotherQuestion?: () => ProcessedQuestion | null;
 }) {
   if (!question) {
+    const concept = lesson.conceptBody.trim().replace(/\.$/, "");
+    const fallbackQuestion: ProcessedQuestion = {
+      type: "true_false",
+      question: `${concept} penting untuk mengelola uang dengan baik.`,
+      answer: true,
+      explanation: "Pemahaman ini dasar untuk mengelola keuangan sehari-hari.",
+      parameters: {},
+      variantId: "fallback",
+    };
+
     return (
       <div className="space-y-5">
-        <h2 className="text-[22px] font-bold leading-tight tracking-tight text-foreground">Quick check</h2>
-        <p className="text-muted-foreground">No question available for this lesson yet.</p>
-        <button
-          onClick={onNext}
-          className="w-full rounded-radius-md bg-primary py-3.5 text-sm font-semibold text-primary-foreground"
-        >
-          Continue
-        </button>
+        <div>
+          <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">Quick check</span>
+          <h2 className="mt-1.5 text-[22px] font-bold leading-tight tracking-tight text-foreground">
+            Test your understanding
+          </h2>
+        </div>
+        <QuizEngine
+          key="fallback"
+          question={fallbackQuestion}
+          seed="fallback"
+          onComplete={(correct) => {
+            onComplete(correct);
+            onNext();
+          }}
+        />
       </div>
     );
   }
