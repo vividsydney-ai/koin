@@ -7,6 +7,8 @@ import { signOut } from "@/lib/auth/client";
 import { getUserStats, type UserStats } from "@/lib/gamification/client";
 import { getPortfolioSnapshot, type PortfolioSnapshot } from "@/lib/portfolio/client";
 import { EmptyState } from "@/components/EmptyState";
+import { StatCard } from "@/components/StatCard";
+import { BadgeGrid } from "@/components/BadgeGrid";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import type { Locale } from "@/lib/i18n/types";
 import EditProfileModal from "./EditProfileModal";
@@ -96,9 +98,9 @@ export default function ProfilePage() {
       </header>
 
       <section className="mb-6 grid grid-cols-3 gap-3">
-        <StatCard label={t("profile.streak")} value={`${stats?.streakDays ?? 0}d`} tone="streak" />
-        <StatCard label="XP" value={stats?.xp ?? 0} tone="xp" />
-        <StatCard label="Koin" value={stats?.koinPoints ?? 0} tone="koin-points" />
+        <StatCard variant="tile" label={t("profile.streak")} value={`${stats?.streakDays ?? 0}d`} tone="streak" />
+        <StatCard variant="tile" label="XP" value={stats?.xp ?? 0} tone="xp" />
+        <StatCard variant="tile" label="Koin" value={stats?.koinPoints ?? 0} tone="koin-points" />
       </section>
 
       <section className="mb-6 rounded-radius-lg border border-muted bg-surface p-5">
@@ -135,18 +137,7 @@ export default function ProfilePage() {
           {t("profile.badges")}
         </h2>
         {stats?.badges && stats.badges.length > 0 ? (
-          <div className="flex flex-wrap gap-2">
-            {stats.badges.map((badge) => (
-              <span
-                key={badge.slug}
-                title={badge.description ?? badge.name}
-                className="inline-flex items-center gap-1 rounded-full bg-muted px-3 py-1.5 text-sm"
-              >
-                <span>{badge.icon}</span>
-                <span>{badge.name}</span>
-              </span>
-            ))}
-          </div>
+          <BadgeGrid badges={stats.badges} />
         ) : (
           <EmptyState
             icon="🏅"
@@ -204,29 +195,6 @@ export default function ProfilePage() {
           }}
         />
       )}
-    </div>
-  );
-}
-
-function StatCard({
-  label,
-  value,
-  tone,
-}: {
-  label: string;
-  value: string | number;
-  tone: "streak" | "xp" | "koin-points";
-}) {
-  const toneClasses = {
-    streak: "bg-streak/10 text-streak",
-    xp: "bg-xp/10 text-xp",
-    "koin-points": "bg-koin-points/10 text-koin-points",
-  };
-
-  return (
-    <div className={`rounded-radius-lg p-4 text-center ${toneClasses[tone]}`}>
-      <div className="text-xl font-bold">{value}</div>
-      <div className="text-xs font-medium opacity-80">{label}</div>
     </div>
   );
 }

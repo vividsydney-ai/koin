@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { getSources, type Source } from "@/lib/sources/client";
+import { FilterChips } from "@/components/FilterChips";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 const TIER_LABELS: Record<number, string> = {
   1: "Tier 1 — Regulator",
@@ -23,6 +25,7 @@ const STATUS_LABELS: Record<Source["status"], string> = {
 };
 
 export default function LibraryPage() {
+  const { t } = useLocale();
   const [sources, setSources] = useState<Source[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -109,17 +112,39 @@ export default function LibraryPage() {
         />
       </div>
 
-      <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <FilterSelect label="Source" value={organization} onChange={setOrganization} options={organizations} />
-        <FilterSelect
-          label="Tier"
-          value={tier}
-          onChange={setTier}
-          options={["1", "2", "3"]}
-          renderOption={(value) => TIER_LABELS[Number(value)]}
+      <div className="mb-4">
+        <FilterChips
+          groups={[
+            {
+              label: "Source",
+              value: organization,
+              onChange: setOrganization,
+              allLabel: t("library.allSources"),
+              options: organizations.map((o) => ({ value: o, label: o })),
+            },
+            {
+              label: "Tier",
+              value: tier,
+              onChange: setTier,
+              allLabel: t("library.allTiers"),
+              options: ["1", "2", "3"].map((v) => ({ value: v, label: TIER_LABELS[Number(v)] })),
+            },
+            {
+              label: "Type",
+              value: sourceType,
+              onChange: setSourceType,
+              allLabel: t("library.allTypes"),
+              options: sourceTypes.map((t) => ({ value: t, label: t })),
+            },
+            {
+              label: "Language",
+              value: language,
+              onChange: setLanguage,
+              allLabel: t("library.allLanguages"),
+              options: languages.map((l) => ({ value: l, label: l })),
+            },
+          ]}
         />
-        <FilterSelect label="Type" value={sourceType} onChange={setSourceType} options={sourceTypes} />
-        <FilterSelect label="Language" value={language} onChange={setLanguage} options={languages} />
       </div>
 
       <div className="mb-6 flex items-center justify-between">
@@ -164,42 +189,6 @@ export default function LibraryPage() {
         </ul>
       )}
     </main>
-  );
-}
-
-function FilterSelect({
-  label,
-  value,
-  onChange,
-  options,
-  renderOption,
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  options: string[];
-  renderOption?: (value: string) => string;
-}) {
-  const id = `filter-${label.toLowerCase()}`;
-  return (
-    <div>
-      <label htmlFor={id} className="mb-1 block text-xs font-medium text-muted-foreground">
-        {label}
-      </label>
-      <select
-        id={id}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-radius-md border border-muted bg-background px-2 py-2 text-sm text-foreground outline-none focus:border-primary"
-      >
-        <option value="">All {label.toLowerCase()}s</option>
-        {options.map((option) => (
-          <option key={option} value={option}>
-            {renderOption ? renderOption(option) : option}
-          </option>
-        ))}
-      </select>
-    </div>
   );
 }
 

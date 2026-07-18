@@ -20,6 +20,7 @@ import { completeLesson, type CompletionResult } from "@/lib/lessons/completion"
 import { getFinancialLiteracyLevel } from "@/lib/profile/client";
 import { trackEvent } from "@/lib/analytics/client";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
+import { StatCard } from "@/components/StatCard";
 
 const STEP_IDS = ["intro", "concept", "example", "quiz", "source"] as const;
 
@@ -851,14 +852,8 @@ function CompletionStep({
       )}
 
       <div className="mt-6 grid w-full grid-cols-2 gap-3">
-        <div className="rounded-radius-lg bg-streak/10 p-4 text-center">
-          <div className="text-xl font-bold text-streak">{streakDays}d</div>
-          <div className="text-xs font-medium text-streak/80">{t("lesson.streak")}</div>
-        </div>
-        <div className="rounded-radius-lg bg-xp/10 p-4 text-center">
-          <div className="text-xl font-bold text-xp">{lesson.xpReward}</div>
-          <div className="text-xs font-medium text-xp/80">{t("lesson.baseXp")}</div>
-        </div>
+        <StatCard variant="tile" tone="streak" value={`${streakDays}d`} label={t("lesson.streak")} />
+        <StatCard variant="tile" tone="xp" value={lesson.xpReward} label={t("lesson.baseXp")} />
       </div>
 
       {badges.length > 0 && (

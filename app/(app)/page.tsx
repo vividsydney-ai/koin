@@ -21,6 +21,7 @@ import {
 } from "@/lib/home/client";
 import { ProgressCardModal, type ProgressCardData } from "@/components/ProgressCard";
 import { EmptyState } from "@/components/EmptyState";
+import { StatCard, type StatCardTone } from "@/components/StatCard";
 import {
   getLessonRecommendations,
   checkAdaptiveTriggers,
@@ -153,19 +154,20 @@ function StreakCard({ streak }: { streak: StreakSummary | null }) {
   else if (frozen) statusText = "Freeze used — you're still in the game.";
   else if (atRisk) statusText = "Complete a lesson today to keep it alive.";
 
+  const tone: StatCardTone = broken ? "danger" : atRisk ? "warning" : frozen ? "info" : "streak";
+
   return (
-    <div className="rounded-radius-lg border border-border/60 bg-surface p-4 shadow-sm">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Streak</p>
-          <p className="mt-1 text-2xl font-bold text-foreground">{days} day{days === 1 ? "" : "s"}</p>
-          <p className={`text-xs ${atRisk || broken ? "text-danger" : frozen ? "text-warning" : "text-muted-foreground"}`}>{statusText}</p>
-        </div>
-        <div className={`flex h-14 w-14 items-center justify-center rounded-full text-2xl ${broken ? "bg-danger/10" : atRisk ? "bg-warning/10" : frozen ? "bg-secondary/10" : "bg-primary/10"}`}>
-          {broken ? "💔" : atRisk ? "⚠️" : frozen ? "🧊" : "🔥"}
-        </div>
-      </div>
-    </div>
+    <StatCard
+      label="Streak"
+      value={`${days} day${days === 1 ? "" : "s"}`}
+      tone={tone}
+      icon={broken ? "💔" : atRisk ? "⚠️" : frozen ? "🧊" : "🔥"}
+      sublabel={
+        <p className={`mt-1 text-xs ${atRisk || broken ? "text-danger" : frozen ? "text-warning" : "text-muted-foreground"}`}>
+          {statusText}
+        </p>
+      }
+    />
   );
 }
 
@@ -205,29 +207,27 @@ function XpLevelCard({ xp }: { xp: XpSummary | null }) {
   const progress = xp && xp.xpToNextLevel ? Math.min(100, Math.round((xp.xpIntoLevel / xp.xpToNextLevel) * 100)) : 0;
 
   return (
-    <div className="rounded-radius-lg border border-border/60 bg-surface p-4 shadow-sm">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Level</p>
-          <p className="mt-1 text-xl font-bold text-foreground">{current ? current.name : "Newbie"}</p>
-          <p className="text-xs text-muted-foreground">{xp?.totalXp ?? 0} total XP</p>
-        </div>
-        {next && (
-          <div className="text-right">
+    <StatCard
+      label="Level"
+      value={current ? current.name : "Newbie"}
+      tone="xp"
+      sublabel={
+        <p className="mt-1 text-xs text-muted-foreground">{xp?.totalXp ?? 0} total XP</p>
+      }
+      aside={
+        next ? (
+          <div className="shrink-0 text-right">
             <p className="text-xs text-muted-foreground">Next: {next.name}</p>
             <p className="text-xs font-medium text-secondary">{xp?.xpIntoLevel ?? 0} / {xp?.xpToNextLevel ?? 0} XP</p>
           </div>
-        )}
-      </div>
+        ) : undefined
+      }
+      progress={next ? { percent: progress } : undefined}
+    >
       {current?.description && (
         <p className="mt-2 text-xs italic text-muted-foreground">{current.description}</p>
       )}
-      {next && (
-        <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-surface-inset">
-          <div className="h-full rounded-full bg-xp transition-all" style={{ width: `${progress}%` }} />
-        </div>
-      )}
-    </div>
+    </StatCard>
   );
 }
 
@@ -235,11 +235,14 @@ function KoinPointsCard({ koinPoints }: { koinPoints: KoinPointsSummary | null }
   const balance = koinPoints?.currentBalance ?? 0;
 
   return (
-    <div className="rounded-radius-lg border border-border/60 bg-surface p-4 shadow-sm">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Koin Points</p>
-      <p className="mt-2 text-2xl font-bold text-foreground">{balance.toLocaleString("id-ID")}</p>
-      <p className="text-xs text-muted-foreground">Earn more by ranking up.</p>
-    </div>
+    <StatCard
+      label="Koin Points"
+      value={balance.toLocaleString("id-ID")}
+      tone="koin-points"
+      sublabel={
+        <p className="mt-1 text-xs text-muted-foreground">Earn more by ranking up.</p>
+      }
+    />
   );
 }
 
@@ -281,21 +284,22 @@ function PortfolioCard({ portfolio }: { portfolio: PortfolioSnapshot | null }) {
   const positive = portfolio.totalReturnPct >= 0;
 
   return (
-    <div className="rounded-radius-lg border border-border/60 bg-surface p-4 shadow-sm">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Portfolio</p>
-          <p className="mt-1 text-xl font-bold text-foreground">Rp {portfolio.totalValue.toLocaleString("id-ID")}</p>
-          <p className={`text-xs font-medium ${positive ? "text-success" : "text-danger"}`}>
-            {positive ? "+" : ""}{portfolio.totalReturnPct.toFixed(1)}%
-          </p>
-        </div>
-        <div className="text-right">
+    <StatCard
+      label="Portfolio"
+      value={`Rp ${portfolio.totalValue.toLocaleString("id-ID")}`}
+      tone={positive ? "success" : "danger"}
+      sublabel={
+        <p className={`mt-1 text-xs font-medium ${positive ? "text-success" : "text-danger"}`}>
+          {positive ? "+" : ""}{portfolio.totalReturnPct.toFixed(1)}%
+        </p>
+      }
+      aside={
+        <div className="shrink-0 text-right">
           <p className="text-xs text-muted-foreground">Top holding</p>
           <p className="text-sm font-semibold text-foreground">{portfolio.topHolding?.symbol ?? "—"}</p>
         </div>
-      </div>
-    </div>
+      }
+    />
   );
 }
 

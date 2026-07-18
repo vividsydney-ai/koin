@@ -7,14 +7,15 @@ import { signOut } from "@/lib/auth/client";
 import { useRouter } from "next/navigation";
 import { NotificationBell } from "@/components/NotificationsSheet";
 import { LocaleProvider, useLocale } from "@/lib/i18n/LocaleProvider";
+import { GradientIcon, type GradientIconName } from "@/components/GradientIcon";
 
-const NAV_ITEMS = [
-  { href: "/", labelKey: "nav.home", icon: "🏠" },
-  { href: "/learn", labelKey: "nav.learn", icon: "📚" },
-  { href: "/trade", labelKey: "nav.trade", icon: "📈" },
-  { href: "/friends", labelKey: "nav.friends", icon: "👥" },
-  { href: "/library", labelKey: "nav.library", icon: "🔖" },
-  { href: "/profile", labelKey: "nav.profile", icon: "👤" },
+const NAV_ITEMS: { href: string; labelKey: string; icon: GradientIconName }[] = [
+  { href: "/", labelKey: "nav.home", icon: "home" },
+  { href: "/learn", labelKey: "nav.learn", icon: "learn" },
+  { href: "/trade", labelKey: "nav.trade", icon: "trade" },
+  { href: "/friends", labelKey: "nav.friends", icon: "friends" },
+  { href: "/library", labelKey: "nav.library", icon: "library" },
+  { href: "/profile", labelKey: "nav.profile", icon: "profile" },
 ];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -73,9 +74,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
                   }`}
                   aria-current={isActive ? "page" : undefined}
                 >
-                  <span className="text-lg leading-none" aria-hidden="true">
-                    {item.icon}
-                  </span>
+                  <GradientIcon icon={item.icon} active={isActive} />
                   <span className="mt-1">{t(item.labelKey)}</span>
                 </Link>
               </li>

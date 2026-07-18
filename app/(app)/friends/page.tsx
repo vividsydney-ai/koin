@@ -8,6 +8,7 @@ import { addFriendByQr, getFriends, type Friend } from "@/lib/friends/client";
 import { getWeeklyLeaderboard, type WeeklyLeaderboard } from "@/lib/home/client";
 import { joinCohortByCode, getCohorts, type Cohort } from "@/lib/cohorts/client";
 import { EmptyState } from "@/components/EmptyState";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 export default function FriendsPage() {
   const { user, profile, loading: authLoading } = useAuth(true);
@@ -436,36 +437,106 @@ function CohortSection({
   );
 }
 
+type LeaderboardRow = {
+  rank: number;
+  displayName: string;
+  xpThisWeek?: number;
+  koinPointsThisWeek?: number;
+  isCurrentUser: boolean;
+};
+
+// Top-3 rank tints — color-mix against surface per DESIGN.md (never raw -50 backgrounds).
+const RANK_TIER_STYLES: Record<number, { badge: string; label: string }> = {
+  1: {
+    badge:
+      "bg-[color-mix(in_srgb,var(--rup-gold-500)_22%,var(--color-surface))] text-[var(--rup-gold-700)]",
+    label: "gold",
+  },
+  2: {
+    badge:
+      "bg-[color-mix(in_srgb,var(--rup-grey-500)_18%,var(--color-surface))] text-[var(--rup-grey-700)]",
+    label: "silver",
+  },
+  3: {
+    badge:
+      "bg-[color-mix(in_srgb,var(--rup-brown-400)_24%,var(--color-surface))] text-[var(--rup-brown-700)]",
+    label: "bronze",
+  },
+};
+
+function leaderboardInitials(name: string): string {
+  const initials = name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+  return initials || "?";
+}
+
 function LeaderboardSection({
   title,
   entries,
   valueKey,
 }: {
   title: string;
-  entries: { rank: number; displayName: string; xpThisWeek?: number; koinPointsThisWeek?: number; isCurrentUser: boolean }[];
+  entries: LeaderboardRow[];
   valueKey: "xpThisWeek" | "koinPointsThisWeek";
 }) {
+  const { t } = useLocale();
   if (entries.length === 0) return null;
+
+  const valueColor = valueKey === "koinPointsThisWeek" ? "text-koin-points" : "text-xp";
 
   return (
     <div className="mt-3 rounded-radius-lg border border-muted/60 bg-surface p-4 shadow-sm">
       <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">{title}</p>
-      <div className="mt-2 space-y-1">
-        {entries.map((entry) => (
-          <div
-            key={entry.rank + entry.displayName}
-            className={`flex items-center justify-between rounded-radius-md px-2 py-1.5 ${entry.isCurrentUser ? "bg-primary/5" : ""}`}
-          >
-            <div className="flex items-center gap-2">
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-muted text-[10px] font-bold text-muted-foreground">
+      <ol className="mt-2 space-y-1">
+        {entries.map((entry) => {
+          const tier = RANK_TIER_STYLES[entry.rank];
+          return (
+            <li
+              key={entry.rank + entry.displayName}
+              data-rank={entry.rank}
+              data-tier={tier?.label}
+              data-current-user={entry.isCurrentUser || undefined}
+              className={`flex min-h-11 items-center gap-3 rounded-radius-md px-2 py-1.5 ${
+                entry.isCurrentUser
+                  ? "bg-[color-mix(in_srgb,var(--color-primary)_8%,var(--color-surface))]"
+                  : ""
+              }`}
+            >
+              <span
+                className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+                  tier ? tier.badge : "bg-muted text-muted-foreground"
+                }`}
+                aria-label={`Rank ${entry.rank}`}
+              >
                 {entry.rank}
               </span>
-              <span className="text-sm text-foreground">{entry.displayName}</span>
-            </div>
-            <span className="text-xs font-semibold text-xp">{(entry[valueKey] ?? 0).toLocaleString("id-ID")}</span>
-          </div>
-        ))}
-      </div>
+              <span
+                aria-hidden="true"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--color-primary)_10%,var(--color-surface))] text-xs font-bold text-primary"
+              >
+                {leaderboardInitials(entry.displayName)}
+              </span>
+              <span
+                className={`flex-1 truncate text-sm ${
+                  entry.isCurrentUser ? "font-semibold text-foreground" : "text-foreground"
+                }`}
+              >
+                {entry.displayName}
+                {entry.isCurrentUser && (
+                  <span className="ml-1.5 text-xs font-medium text-primary">{t("friends.you")}</span>
+                )}
+              </span>
+              <span className={`text-sm font-semibold tabular-nums ${valueColor}`}>
+                {(entry[valueKey] ?? 0).toLocaleString("id-ID")}
+              </span>
+            </li>
+          );
+        })}
+      </ol>
     </div>
   );
 }

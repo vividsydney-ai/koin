@@ -18,6 +18,7 @@ import {
 import { getTradeOnboardingStatus, type TradeOnboardingStatus } from "@/lib/trading/onboarding";
 import { trackEvent } from "@/lib/analytics/client";
 import { EmptyState } from "@/components/EmptyState";
+import PriceChart from "@/components/PriceChart";
 
 const TradeOnboarding = dynamic(() => import("./TradeOnboarding"));
 
@@ -197,6 +198,11 @@ export default function TradePage() {
             portfolio={portfolio}
             portfolioValue={portfolioValue}
             totalReturnPct={totalReturnPct}
+          />
+
+          <PriceChart
+            symbol={symbol}
+            companyName={marketData.find((m) => m.symbol === symbol)?.companyName}
           />
 
           <OrderCard

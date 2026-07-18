@@ -79,6 +79,23 @@ export interface Dictionary {
   // Settings section
   "settings.title": string;
   "settings.language": string;
+
+  // Friends / leaderboard
+  "friends.you": string;
+
+  // Trade / price chart
+  "trade.simulatedPrices": string;
+  "trade.simulatedBody": string;
+
+  // Library filters
+  "library.allSources": string;
+  "library.allTiers": string;
+  "library.allTypes": string;
+  "library.allLanguages": string;
+
+  // Badges
+  "profile.locked": string;
+  "profile.keepLearning": string;
 }
 
 // Note: a few lesson-player strings were originally Indonesian in the old
@@ -162,6 +179,17 @@ export const dictionaries: Record<Locale, Dictionary> = {
 
     "settings.title": "Settings",
     "settings.language": "Language",
+
+    "friends.you": "You",
+    "trade.simulatedPrices": "Simulated prices",
+    "trade.simulatedBody":
+      "some data points are generated when official IDX data is unavailable. For paper-trading practice only.",
+    "library.allSources": "All sources",
+    "library.allTiers": "All tiers",
+    "library.allTypes": "All types",
+    "library.allLanguages": "All languages",
+    "profile.locked": "Locked",
+    "profile.keepLearning": "Keep learning to unlock.",
   },
   id: {
     "nav.home": "Beranda",
@@ -240,5 +268,16 @@ export const dictionaries: Record<Locale, Dictionary> = {
 
     "settings.title": "Pengaturan",
     "settings.language": "Bahasa",
+
+    "friends.you": "Kamu",
+    "trade.simulatedPrices": "Harga simulasi",
+    "trade.simulatedBody":
+      "beberapa titik data dibuat saat data resmi IDX tidak tersedia. Hanya untuk latihan paper trading.",
+    "library.allSources": "Semua sumber",
+    "library.allTiers": "Semua tingkat",
+    "library.allTypes": "Semua tipe",
+    "library.allLanguages": "Semua bahasa",
+    "profile.locked": "Terkunci",
+    "profile.keepLearning": "Terus belajar untuk membuka.",
   },
 };

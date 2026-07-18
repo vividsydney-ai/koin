@@ -227,6 +227,42 @@ export async function getMarketData(): Promise<MarketData[]> {
   return marketDataCache.promise;
 }
 
+export interface MarketDataPoint {
+  date: string;
+  close: number;
+  isSimulated: boolean;
+}
+
+/**
+ * Daily close history for one symbol, oldest-first. The market_data table is
+ * public-read (no RLS — see migration 008), so this uses a plain table select
+ * like the other client queries. Used by the Trade page price chart.
+ */
+export async function getMarketDataHistory(
+  symbol: string,
+  days = 30
+): Promise<MarketDataPoint[]> {
+  const { data, error } = await supabase
+    .from("market_data")
+    .select("trade_date, close_price, is_simulated")
+    .eq("symbol", symbol)
+    .order("trade_date", { ascending: false })
+    .limit(days);
+
+  if (error) {
+    console.error("getMarketDataHistory error:", error.message);
+    return [];
+  }
+
+  return (data ?? [])
+    .map((row) => ({
+      date: String(row.trade_date),
+      close: Number(row.close_price),
+      isSimulated: row.is_simulated === true,
+    }))
+    .reverse();
+}
+
 /** Exported for tests. */
 export function __resetMarketDataCache() {
   marketDataCache.data = null;
