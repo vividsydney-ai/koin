@@ -55,6 +55,8 @@ export default function LessonPlayer({
   const [showSummary, setShowSummary] = useState(false);
   const [literacyLevel, setLiteracyLevel] = useState<string | null>(null);
   const [shownVariantIds, setShownVariantIds] = useState<Set<string>>(new Set());
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [retryCounter, setRetryCounter] = useState(0);
   const startTimeRef = useRef<number>(0);
 
   useEffect(() => {
@@ -62,78 +64,90 @@ export default function LessonPlayer({
     const load = async () => {
       startTimeRef.current = Date.now();
       setLoading(true);
+      setLoadError(null);
       setStep(0);
       setQuizDone(false);
       setQuizCorrect(null);
       setCompletionResult(null);
       setCompletionError(null);
       setShowSummary(false);
-      const data = await getLessonBySlug(slug);
-      if (!mounted) return;
-      if (!data) {
+
+      try {
+        const data = await getLessonBySlug(slug);
+        if (!mounted) return;
+        if (!data) {
+          setLoading(false);
+          return;
+        }
+
+        const level = user ? await getFinancialLiteracyLevel(user.id) : null;
+        if (!mounted) return;
+
+        const [fetchedExampleVariants, explanationData, fetchedQuestionVariants, sourceData, recentIds] = await Promise.all([
+          getLessonVariants(data.id, "example", level),
+          getLessonVariants(data.id, "explanation", level),
+          getLessonVariants(data.id, "question", level),
+          getLessonSources(data.id),
+          user ? getRecentAttemptVariantIds(user.id, data.id) : Promise.resolve(new Set<string>()),
+        ]);
+
+        if (!mounted) return;
+
+        const seed = user ? `${user.id}:${data.id}:${todayKey()}` : `${data.id}:${todayKey()}`;
+        const example = fetchedExampleVariants[seededIndex(seed, fetchedExampleVariants.length)] ?? null;
+
+        const eligibleQuestions = fetchedQuestionVariants.filter((v) => !recentIds.has(v.id));
+        const pool = eligibleQuestions.length > 0 ? eligibleQuestions : fetchedQuestionVariants;
+        // Per-load entropy: replays should surface a different question each
+        // time instead of the same seeded variant all day.
+        const selectedVariant = pool[seededIndex(`${seed}:q:${Date.now()}`, pool.length)] ?? null;
+
+        let processedQuestion: ProcessedQuestion | null = null;
+        if (selectedVariant) {
+          const validated = validateQuestion(selectedVariant.body);
+          if (validated) {
+            processedQuestion = {
+              ...applyParameters(seed, validated),
+              variantId: selectedVariant.id,
+            };
+          }
+        }
+        // Fallback to legacy lesson.quizData if no valid variant exists.
+        if (!processedQuestion && data.quizData.length > 0) {
+          const validated = validateQuestion(data.quizData[0]);
+          if (validated) {
+            processedQuestion = applyParameters(seed, validated);
+          }
+        }
+
+        setLesson(data);
+        setExampleVariant(example);
+        setExampleVariants(fetchedExampleVariants);
+        setExplanationVariants(explanationData);
+        setQuestionVariants(fetchedQuestionVariants);
+        setActiveQuestion(processedQuestion);
+        setSources(sourceData);
+        setLiteracyLevel(level);
+        setShownVariantIds(new Set(example ? [example.id] : []));
         setLoading(false);
-        return;
-      }
 
-      const level = user ? await getFinancialLiteracyLevel(user.id) : null;
-      if (!mounted) return;
-
-      const [fetchedExampleVariants, explanationData, fetchedQuestionVariants, sourceData, recentIds] = await Promise.all([
-        getLessonVariants(data.id, "example", level),
-        getLessonVariants(data.id, "explanation", level),
-        getLessonVariants(data.id, "question", level),
-        getLessonSources(data.id),
-        user ? getRecentAttemptVariantIds(user.id, data.id) : Promise.resolve(new Set<string>()),
-      ]);
-
-      if (!mounted) return;
-
-      const seed = user ? `${user.id}:${data.id}:${todayKey()}` : `${data.id}:${todayKey()}`;
-      const example = fetchedExampleVariants[seededIndex(seed, fetchedExampleVariants.length)] ?? null;
-
-      const eligibleQuestions = fetchedQuestionVariants.filter((v) => !recentIds.has(v.id));
-      const pool = eligibleQuestions.length > 0 ? eligibleQuestions : fetchedQuestionVariants;
-      const selectedVariant = pool[seededIndex(`${seed}:q`, pool.length)] ?? null;
-
-      let processedQuestion: ProcessedQuestion | null = null;
-      if (selectedVariant) {
-        const validated = validateQuestion(selectedVariant.body);
-        if (validated) {
-          processedQuestion = {
-            ...applyParameters(seed, validated),
-            variantId: selectedVariant.id,
-          };
+        if (user) {
+          trackEvent({
+            userId: user.id,
+            name: "lesson_started",
+            properties: {
+              lesson_id: data.id,
+              lesson_slug: data.slug,
+              lesson_number: data.lessonNumber,
+            },
+          });
         }
-      }
-      // Fallback to legacy lesson.quizData if no valid variant exists.
-      if (!processedQuestion && data.quizData.length > 0) {
-        const validated = validateQuestion(data.quizData[0]);
-        if (validated) {
-          processedQuestion = applyParameters(seed, validated);
+      } catch (e) {
+        console.error("LessonPlayer load error:", e);
+        if (mounted) {
+          setLoadError("We couldn't load this lesson. Please try again.");
+          setLoading(false);
         }
-      }
-
-      setLesson(data);
-      setExampleVariant(example);
-      setExampleVariants(fetchedExampleVariants);
-      setExplanationVariants(explanationData);
-      setQuestionVariants(fetchedQuestionVariants);
-      setActiveQuestion(processedQuestion);
-      setSources(sourceData);
-      setLiteracyLevel(level);
-      setShownVariantIds(new Set(example ? [example.id] : []));
-      setLoading(false);
-
-      if (user) {
-        trackEvent({
-          userId: user.id,
-          name: "lesson_started",
-          properties: {
-            lesson_id: data.id,
-            lesson_slug: data.slug,
-            lesson_number: data.lessonNumber,
-          },
-        });
       }
     };
 
@@ -141,7 +155,7 @@ export default function LessonPlayer({
     return () => {
       mounted = false;
     };
-  }, [slug, user]);
+  }, [slug, user, retryCounter]);
 
 
   const nextStep = () => setStep((s) => Math.min(s + 1, STEPS.length - 1));
@@ -261,6 +275,29 @@ export default function LessonPlayer({
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="text-sm text-muted-foreground">Loading lesson…</div>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-background p-6 text-center">
+        <h1 className="text-xl font-bold text-foreground">Something went wrong</h1>
+        <p className="mt-2 text-sm text-muted-foreground">{loadError}</p>
+        <div className="mt-6 flex w-full max-w-xs flex-col gap-3">
+          <button
+            onClick={() => setRetryCounter((c) => c + 1)}
+            className="rounded-radius-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground"
+          >
+            Try again
+          </button>
+          <button
+            onClick={() => router.push("/learn")}
+            className="rounded-radius-md border border-muted bg-surface px-5 py-2.5 text-sm font-semibold text-foreground"
+          >
+            Back to Learn
+          </button>
+        </div>
       </div>
     );
   }

@@ -342,7 +342,10 @@ export async function getRecentAttemptVariantIds(
 
   const ids = new Set<string>();
   for (const row of data) {
-    const answers = (row.answers_json ?? []) as AttemptAnswer[];
+    // Defensive: legacy rows may store answers_json as an object instead of an
+    // array. Iterating a non-array would throw and leave the lesson player
+    // stuck on its loading screen (see KO-REPLAY-001).
+    const answers = Array.isArray(row.answers_json) ? (row.answers_json as AttemptAnswer[]) : [];
     for (const answer of answers) {
       if (answer?.variant_id) ids.add(answer.variant_id);
     }
