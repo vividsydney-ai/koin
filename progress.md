@@ -2,6 +2,21 @@
 # Loop reads and writes this. Human can also read to understand where we are.
 # v2: MVP reshaped around paper trading. Original v1 loop files archived in /_archived.
 
+## 2026-07-18 — KO-CAPTCHA-001: Turnstile captcha on signup (client side)
+
+- Wired Cloudflare Turnstile into the signup page with graceful degradation:
+  - `app/signup/page.tsx` renders the widget only when `NEXT_PUBLIC_TURNSTILE_SITE_KEY` is set; submit stays disabled until the challenge succeeds; widget resets on failed signup (tokens are single-use).
+  - `lib/auth/client.ts` `signUpWithEmail` accepts an optional `captchaToken` and forwards it to Supabase `signUp` options.
+  - When the site key is unset the call shape and behavior are identical to pre-captcha code (existing 4-arg signup test untouched and green).
+- `.env.example` documents `NEXT_PUBLIC_TURNSTILE_SITE_KEY`.
+- Added `tests/signup/turnstile.test.tsx` (5 tests: widget hidden/visible, submit gating, token forwarding, no-key fallback).
+- Gates: `npx tsc --noEmit` ✅, `npm run lint` ✅ 0 errors, `npx vitest run` ✅ 330 passed / 5 skipped, `npm run build` ✅.
+- Committed `3991039`, pushed to `origin/web-koinaku` (Netlify auto-deploy).
+- **Human activation required** (code is inert until then):
+  1. Cloudflare dashboard → Turnstile → Add site (hostname `web.koinaku.com`) → copy site key + secret key.
+  2. Add `NEXT_PUBLIC_TURNSTILE_SITE_KEY=<site key>` to Netlify env vars (and `.env.local` for dev).
+  3. Supabase dashboard → Authentication → Protection → Captcha → enable Turnstile with the secret key.
+
 ## 2026-07-18 — KO-ABUSE-001: RPC abuse hardening landed
 
 - RPC audit found: `complete_lesson` awarded XP/KP/streak-milestone rewards on every replay; `award_koin_points` granted to authenticated+anon with no auth guard (direct mint); `check_in_streak` executable by PUBLIC; no time validation; no friend-add rate limit.

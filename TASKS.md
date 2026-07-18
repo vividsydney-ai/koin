@@ -182,6 +182,7 @@
 - [x] KO-40 P2 — Paper trading page takes 4+ seconds to load on 3G connection
 - [x] KO-41 P2 — Profile page is missing 'Edit Profile' button
 - [x] KO-ABUSE-001 — RPC abuse hardening: idempotent XP/KP in complete_lesson, 30s min-time, award_koin_points + check_in_streak made internal-only, friend-add daily cap (migration 048, prod smoke-verified)
+- [x] KO-CAPTCHA-001 — Turnstile captcha on signup with graceful degradation (client shipped; activation pending Cloudflare site key + Supabase captcha toggle)
 
 ## PHASE 7 — Handoff
 - [ ] README with local setup steps
