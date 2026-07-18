@@ -2,6 +2,17 @@
 # Loop reads and writes this. Human can also read to understand where we are.
 # v2: MVP reshaped around paper trading. Original v1 loop files archived in /_archived.
 
+## 2026-07-18 — KO-I18N-001: Global EN/ID language picker landed
+
+- New `lib/i18n/`: `Locale = "en" | "id"`, 65-key typed dictionary per locale, `LocaleProvider` (loads/upserts `user_settings.locale`, default `"en"`, no localStorage).
+- Wired into `app/(app)/layout.tsx` (bottom nav) and `app/learn/[slug]/page.tsx` (lesson player sits outside the (app) group).
+- All LessonPlayer chrome via `t()`; title shows `titleId` when locale is `id`.
+- Profile page gained a Settings section with English / Bahasa Indonesia segmented control.
+- English consistency per product direction: the 5 legacy Indonesian button strings are now English in `en` (Indonesian in `id`); `tests/lessons/LessonPlayer.test.tsx` assertions updated to match — a human-directed copy change, not a test rewrite to pass.
+- Migration `20260718000050_add_locale_to_user_settings.sql` applied to production.
+- Gates: tsc ✅, lint ✅ 0 errors, vitest ✅ 341 passed / 5 skipped, build ✅. Commit `0599058`.
+- Also: SWARM review adopted — `.loop/programs/TEMPLATE.md`, `.agents/prompts/{planner,maker,verifier,fixer}.md`, metrics JSONL + 5-verdict log, AGENTS.md conflict rule (`26ead78`); root `LOOP_ENGINEERING.md` de-Vercel'd.
+
 ## 2026-07-18 — KO-REPLAY-001: Lesson replay hang + quiz repetition fixed
 
 - **Root cause (replay hang):** 5 production `lesson_attempts` rows had `answers_json = '{}'` (object, not array). `getRecentAttemptVariantIds` iterated rows with `for...of`, throwing a TypeError inside `Promise.all` — the rejection was uncaught, leaving the lesson player on "Loading lesson…" forever. Only users with prior attempts (i.e., replays) hit it.
