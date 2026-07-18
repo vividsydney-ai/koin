@@ -80,7 +80,8 @@ export async function signUpWithEmail(
   email: string,
   password: string,
   confirmPassword: string,
-  displayName: string
+  displayName: string,
+  captchaToken?: string
 ): Promise<Result<{ user: User | null; session: Session | null }, AuthError>> {
   const parsed = signUpSchema.safeParse({ email, password, confirmPassword, displayName });
   if (!parsed.success) {
@@ -93,6 +94,9 @@ export async function signUpWithEmail(
     options: {
       data: { display_name: parsed.data.displayName },
       emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
+      // Only sent when the signup page rendered a captcha widget; Supabase
+      // verifies it when captcha protection is enabled in Auth settings.
+      ...(captchaToken ? { captchaToken } : {}),
     },
   });
 

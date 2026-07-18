@@ -1,9 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import { signUpWithEmail, resendSignupEmail } from "@/lib/auth/client";
+
+// When unset, captcha is skipped entirely — signup works exactly as before
+// until the site key is configured and Supabase captcha protection is enabled.
+const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
 function EyeIcon({ className }: { className?: string }) {
   return (
@@ -57,6 +62,8 @@ export default function SignupPage() {
   const [info, setInfo] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const turnstileRef = useRef<TurnstileInstance | null>(null);
 
   const handleEmailSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,10 +77,23 @@ export default function SignupPage() {
       return;
     }
 
-    const result = await signUpWithEmail(email, password, confirmPassword, fullName);
+    if (TURNSTILE_SITE_KEY && !captchaToken) {
+      setError("Please complete the captcha check.");
+      setLoading(false);
+      return;
+    }
+
+    // Only pass the token when one exists — keeps the call shape identical
+    // to pre-captcha behavior when the widget is not configured.
+    const result = captchaToken
+      ? await signUpWithEmail(email, password, confirmPassword, fullName, captchaToken)
+      : await signUpWithEmail(email, password, confirmPassword, fullName);
     setLoading(false);
 
     if (!result.ok) {
+      // Tokens are single-use — reset so the user gets a fresh challenge.
+      turnstileRef.current?.reset();
+      setCaptchaToken(null);
       setError(result.error.message);
       return;
     }
@@ -226,9 +246,21 @@ export default function SignupPage() {
                 </div>
               </div>
 
+              {TURNSTILE_SITE_KEY && (
+                <div className="flex justify-center pt-1">
+                  <Turnstile
+                    ref={turnstileRef}
+                    siteKey={TURNSTILE_SITE_KEY}
+                    onSuccess={(token) => setCaptchaToken(token)}
+                    onExpire={() => setCaptchaToken(null)}
+                    onError={() => setCaptchaToken(null)}
+                  />
+                </div>
+              )}
+
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || (Boolean(TURNSTILE_SITE_KEY) && !captchaToken)}
                 className="mt-2 inline-flex h-14 w-full items-center justify-center rounded-full bg-primary px-6 text-base font-semibold text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-primary-400 hover:shadow-md active:translate-y-0 active:scale-[0.98] disabled:translate-y-0 disabled:scale-100 disabled:cursor-not-allowed disabled:bg-primary-200 disabled:text-primary-400 disabled:shadow-none"
               >
                 {loading ? "Creating account..." : "Create account"}
