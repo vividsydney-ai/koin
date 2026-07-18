@@ -64,7 +64,9 @@ describe("FriendsPage QR flow", () => {
     await waitFor(() => {
       expect(screen.getByText("Invite friends")).toBeInTheDocument();
     });
-    expect(screen.getByLabelText("QR code for Budi")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByLabelText("QR code for Budi")).toBeInTheDocument();
+    });
     expect(screen.getByRole("button", { name: /Share/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Scan QR/i })).toBeInTheDocument();
   });

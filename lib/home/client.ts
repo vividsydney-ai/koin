@@ -76,7 +76,7 @@ export async function getStreak(userId: string): Promise<StreakSummary | null> {
     .from("streaks")
     .select("current_streak_days, longest_streak_days, streak_status")
     .eq("user_id", userId)
-    .single();
+    .maybeSingle();
 
   if (error) {
     console.error("getStreak error:", error.message);
