@@ -18,7 +18,7 @@
 - **Red:** danger/destructive only.
 - **Green:** success.
 - **Blue:** info / XP.
-- **Gold:** reward surfaces (streak, badges, Koin Points). *Pending human decision: `colors.streak` is still red from the red-brand era; v4 treats streak as gold.*
+- **Gold:** reward surfaces (streak, badges, Koin Points). *Decided 2026-07-18 (human): streak moved from red to gold.*
 
 ## Gradient rule
 

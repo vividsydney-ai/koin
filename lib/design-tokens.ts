@@ -34,7 +34,7 @@ export const colors = {
   accent: "#6b2d5c",
 
   // Gamification accents
-  streak: "#c41f26",
+  streak: "#b8992e",
   xp: "#0a6f90",
   koinPoints: "#b8992e",
 } as const;
