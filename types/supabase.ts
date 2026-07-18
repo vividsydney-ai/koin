@@ -1091,6 +1091,7 @@ export type Database = {
           created_at: string | null
           high_price: number | null
           id: string
+          is_simulated: boolean
           low_price: number | null
           open_price: number | null
           source_url: string | null
@@ -1104,6 +1105,7 @@ export type Database = {
           created_at?: string | null
           high_price?: number | null
           id?: string
+          is_simulated?: boolean
           low_price?: number | null
           open_price?: number | null
           source_url?: string | null
@@ -1117,6 +1119,7 @@ export type Database = {
           created_at?: string | null
           high_price?: number | null
           id?: string
+          is_simulated?: boolean
           low_price?: number | null
           open_price?: number | null
           source_url?: string | null
@@ -1913,6 +1916,7 @@ export type Database = {
           close_price: number
           company_name: string
           id: string
+          is_simulated: boolean
           symbol: string
           trade_date: string
           volume: number

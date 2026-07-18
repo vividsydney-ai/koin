@@ -43,6 +43,7 @@ export interface MarketData {
   tradeDate: string;
   closePrice: number;
   volume: number | null;
+  isSimulated: boolean;
 }
 
 export interface TradeResult {
@@ -195,6 +196,7 @@ function mapMarketDataRow(row: Record<string, unknown>): MarketData {
     tradeDate: String(row.trade_date),
     closePrice: Number(row.close_price),
     volume: (row.volume as number | null) ?? null,
+    isSimulated: row.is_simulated === true,
   };
 }
 

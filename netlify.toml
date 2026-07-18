@@ -12,6 +12,11 @@
   to = "/.netlify/functions/streak-reminders"
   status = 200
 
+[[redirects]]
+  from = "/api/cron/market-data-update"
+  to = "/.netlify/functions/market-data-update"
+  status = 200
+
 [functions]
   directory = "netlify/functions"
   node_bundler = "esbuild"

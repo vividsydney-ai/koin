@@ -217,6 +217,7 @@ export default function TradePage() {
             holdings={holdings}
             onExecute={handleExecute}
           />
+          <DataDisclaimer marketData={marketData} />
 
           <HoldingsCard holdings={holdings} marketData={marketData} />
           <TradesCard trades={trades} />
@@ -554,6 +555,25 @@ function TradesCard({ trades }: { trades: Trade[] }) {
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+function DataDisclaimer({ marketData }: { marketData: MarketData[] }) {
+  if (marketData.length === 0) return null;
+
+  const latestDate = marketData
+    .map((m) => m.tradeDate)
+    .sort()
+    .at(-1);
+  const hasSimulated = marketData.some((m) => m.isSimulated);
+
+  return (
+    <div className="rounded-radius-md border border-warning/20 bg-warning/5 p-3 text-xs leading-relaxed text-muted-foreground">
+      <span className="font-semibold text-foreground">Data disclaimer:</span>{" "}
+      Prices are delayed and for paper-trading practice only. Latest data:{" "}
+      {latestDate ? new Date(latestDate).toLocaleDateString("id-ID") : "—"}.
+      {hasSimulated && " Some prices are simulated when official data is unavailable."} Not financial advice.
     </div>
   );
 }
