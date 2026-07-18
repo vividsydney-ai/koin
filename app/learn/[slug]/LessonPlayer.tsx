@@ -18,14 +18,9 @@ import { validateQuestion, applyParameters, type ProcessedQuestion } from "@/lib
 import { completeLesson, type CompletionResult } from "@/lib/lessons/completion";
 import { getFinancialLiteracyLevel } from "@/lib/profile/client";
 import { trackEvent } from "@/lib/analytics/client";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
-const STEPS = [
-  { id: "intro", label: "Intro" },
-  { id: "concept", label: "Concept" },
-  { id: "example", label: "Example" },
-  { id: "quiz", label: "Quiz" },
-  { id: "source", label: "Source" },
-];
+const STEP_IDS = ["intro", "concept", "example", "quiz", "source"] as const;
 
 export default function LessonPlayer({
   slug,
@@ -38,6 +33,8 @@ export default function LessonPlayer({
 }) {
   const router = useRouter();
   const { user } = useAuth(true);
+  const { t } = useLocale();
+  const steps = STEP_IDS.map((id) => ({ id, label: t(`lesson.step.${id}`) }));
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [exampleVariant, setExampleVariant] = useState<ContentVariant | null>(null);
   const [exampleVariants, setExampleVariants] = useState<ContentVariant[]>([]);
@@ -145,7 +142,7 @@ export default function LessonPlayer({
       } catch (e) {
         console.error("LessonPlayer load error:", e);
         if (mounted) {
-          setLoadError("We couldn't load this lesson. Please try again.");
+          setLoadError(t("lesson.loadError"));
           setLoading(false);
         }
       }
@@ -158,8 +155,8 @@ export default function LessonPlayer({
   }, [slug, user, retryCounter]);
 
 
-  const nextStep = () => setStep((s) => Math.min(s + 1, STEPS.length - 1));
-  const isLastStep = step === STEPS.length - 1;
+  const nextStep = () => setStep((s) => Math.min(s + 1, steps.length - 1));
+  const isLastStep = step === steps.length - 1;
 
   const finishLesson = async () => {
     if (showSummary) {
@@ -185,7 +182,7 @@ export default function LessonPlayer({
     setCompleting(false);
 
     if (!result) {
-      setCompletionError("We couldn't save your progress. Please check your connection and try again.");
+      setCompletionError(t("lesson.completionError"));
       return;
     }
 
@@ -274,7 +271,7 @@ export default function LessonPlayer({
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="text-sm text-muted-foreground">Loading lesson…</div>
+        <div className="text-sm text-muted-foreground">{t("lesson.loading")}</div>
       </div>
     );
   }
@@ -282,20 +279,20 @@ export default function LessonPlayer({
   if (loadError) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-background p-6 text-center">
-        <h1 className="text-xl font-bold text-foreground">Something went wrong</h1>
+        <h1 className="text-xl font-bold text-foreground">{t("lesson.errorTitle")}</h1>
         <p className="mt-2 text-sm text-muted-foreground">{loadError}</p>
         <div className="mt-6 flex w-full max-w-xs flex-col gap-3">
           <button
             onClick={() => setRetryCounter((c) => c + 1)}
             className="rounded-radius-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground"
           >
-            Try again
+            {t("lesson.tryAgain")}
           </button>
           <button
             onClick={() => router.push("/learn")}
             className="rounded-radius-md border border-muted bg-surface px-5 py-2.5 text-sm font-semibold text-foreground"
           >
-            Back to Learn
+            {t("lesson.backToLearn")}
           </button>
         </div>
       </div>
@@ -305,13 +302,13 @@ export default function LessonPlayer({
   if (!lesson) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-background p-6 text-center">
-        <h1 className="text-xl font-bold text-foreground">Lesson not found</h1>
-        <p className="mt-2 text-sm text-muted-foreground">This topic is not available yet.</p>
+        <h1 className="text-xl font-bold text-foreground">{t("lesson.notFoundTitle")}</h1>
+        <p className="mt-2 text-sm text-muted-foreground">{t("lesson.notFoundBody")}</p>
         <button
           onClick={() => router.push("/learn")}
           className="mt-6 rounded-radius-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground"
         >
-          Back to Learn
+          {t("lesson.backToLearn")}
         </button>
       </div>
     );
@@ -322,19 +319,21 @@ export default function LessonPlayer({
       <header className="sticky top-0 z-10 border-b border-muted/60 bg-background/90 px-5 py-3 backdrop-blur-md">
         <div className="flex items-center justify-between">
           <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            {chapterLabel ?? `Lesson ${lesson.lessonNumber}${totalLessons ? ` of ${totalLessons}` : ""}`}
+            {chapterLabel ??
+              `${t("lesson.lessonWord")} ${lesson.lessonNumber}${totalLessons ? ` ${t("lesson.of")} ${totalLessons}` : ""}`}
           </span>
           <button
             onClick={() => router.push("/learn")}
             className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground hover:text-foreground"
           >
-            Exit
+            {t("lesson.exit")}
           </button>
         </div>
         <div className="mt-2.5 flex gap-1.5">
-          {STEPS.map((s, i) => (
+          {steps.map((s, i) => (
             <div
               key={s.id}
+              aria-label={s.label}
               className={`h-1 flex-1 rounded-full transition-all duration-500 ${
                 i <= step ? "bg-primary" : "bg-muted"
               }`}
@@ -407,7 +406,7 @@ export default function LessonPlayer({
             disabled={(step === 3 && !quizDone) || completing}
             className="flex w-full items-center justify-center gap-2 rounded-radius-md bg-primary py-3.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all duration-200 hover:bg-primary/90 active:scale-[0.98] disabled:opacity-50"
           >
-            {isLastStep ? "Finish lesson" : "Continue"}
+            {isLastStep ? t("lesson.finish") : t("lesson.continue")}
             <ArrowRightIcon />
           </button>
         )}
@@ -418,21 +417,23 @@ export default function LessonPlayer({
 }
 
 function IntroStep({ lesson }: { lesson: Lesson }) {
+  const { t, locale } = useLocale();
+  const title = locale === "id" ? lesson.titleId : lesson.title;
   return (
     <div className="flex flex-col items-center text-center">
       <div className="mb-6 flex h-28 w-28 items-center justify-center rounded-full bg-primary/8">
         <LessonIcon />
       </div>
       <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">
-        {lesson.title.split(":")[0]}
+        {title.split(":")[0]}
       </span>
       <h1 className="mt-2 text-[28px] font-bold leading-[1.15] tracking-tight text-foreground">
-        {lesson.title}
+        {title}
       </h1>
       <p className="mt-4 text-base leading-relaxed text-muted-foreground">{lesson.summary}</p>
       <div className="mt-8 flex items-center gap-3 text-xs font-medium text-muted-foreground">
         <BookIcon />
-        <span>~{lesson.estimatedMinutes} minutes</span>
+        <span>~{lesson.estimatedMinutes} {t("lesson.minutes")}</span>
         <span className="h-1 w-1 rounded-full bg-muted-foreground/40" />
         <span className="text-xp">{lesson.xpReward} XP</span>
       </div>
@@ -449,6 +450,7 @@ function ConceptStep({
 }) {
   const [simplerVariant, setSimplerVariant] = useState<ContentVariant | null>(null);
   const [showSimpler, setShowSimpler] = useState(false);
+  const { t, locale } = useLocale();
 
   const handleShowSimpler = () => {
     const variant = onExplainSimpler?.();
@@ -461,9 +463,9 @@ function ConceptStep({
   return (
     <div className="space-y-6">
       <div>
-        <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">The concept</span>
+        <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">{t("lesson.theConcept")}</span>
         <h2 className="mt-1.5 text-[22px] font-bold leading-tight tracking-tight text-foreground">
-          {lesson.title}
+          {locale === "id" ? lesson.titleId : lesson.title}
         </h2>
       </div>
       {!showSimpler ? (
@@ -481,18 +483,18 @@ function ConceptStep({
         <button
           onClick={handleShowSimpler}
           className="inline-flex min-h-[44px] items-center gap-1.5 text-sm font-medium text-primary hover:underline"
-          aria-label="Penjelasan lebih sederhana"
+          aria-label={t("lesson.simplerExplanation")}
         >
-          Penjelasan lebih sederhana
+          {t("lesson.simplerExplanation")}
         </button>
       )}
       {showSimpler && (
         <button
           onClick={() => setShowSimpler(false)}
           className="inline-flex min-h-[44px] items-center gap-1.5 text-sm font-medium text-primary hover:underline"
-          aria-label="Kembali ke penjelasan utama"
+          aria-label={t("lesson.backToMainExplanation")}
         >
-          Kembali ke penjelasan utama
+          {t("lesson.backToMainExplanation")}
         </button>
       )}
       {lesson.whyThisMatters && (
@@ -521,6 +523,7 @@ function ExampleStep({
 }) {
   const [alternateVariant, setAlternateVariant] = useState<ContentVariant | null>(null);
   const [showAlternate, setShowAlternate] = useState(false);
+  const { t } = useLocale();
 
   const mainText = (exampleVariant?.body?.text as string | undefined) ?? lesson.indonesianExample;
   const displayText = showAlternate && alternateVariant
@@ -543,9 +546,9 @@ function ExampleStep({
   return (
     <div className="space-y-6">
       <div>
-        <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">Indonesian example</span>
+        <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">{t("lesson.indonesianExample")}</span>
         <h2 className="mt-1.5 text-[22px] font-bold leading-tight tracking-tight text-foreground">
-          How this plays out
+          {t("lesson.exampleHeading")}
         </h2>
       </div>
       <div className="rounded-radius-lg border border-muted/60 bg-surface p-5 shadow-sm">
@@ -555,23 +558,23 @@ function ExampleStep({
         <button
           onClick={handleShowAlternate}
           className="inline-flex min-h-[44px] items-center gap-1.5 text-sm font-medium text-primary hover:underline"
-          aria-label="Lihat contoh lain"
+          aria-label={t("lesson.seeAnotherExample")}
         >
-          Lihat contoh lain
+          {t("lesson.seeAnotherExample")}
         </button>
       )}
       {showAlternate && (
         <button
           onClick={() => setShowAlternate(false)}
           className="inline-flex min-h-[44px] items-center gap-1.5 text-sm font-medium text-primary hover:underline"
-          aria-label="Kembali ke contoh utama"
+          aria-label={t("lesson.backToMainExample")}
         >
-          Kembali ke contoh utama
+          {t("lesson.backToMainExample")}
         </button>
       )}
       {lesson.commonMistake && (
         <p className="text-[15px] leading-relaxed text-muted-foreground">
-          <strong className="text-foreground">Common mistake:</strong> {lesson.commonMistake}
+          <strong className="text-foreground">{t("lesson.commonMistake")}</strong> {lesson.commonMistake}
         </p>
       )}
     </div>
@@ -591,6 +594,7 @@ function QuizStep({
   onComplete: (correct: boolean) => void;
   onAnotherQuestion?: () => ProcessedQuestion | null;
 }) {
+  const { t } = useLocale();
   if (!question) {
     const concept = lesson.conceptBody.trim().replace(/\.$/, "");
     const fallbackQuestion: ProcessedQuestion = {
@@ -605,9 +609,9 @@ function QuizStep({
     return (
       <div className="space-y-5">
         <div>
-          <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">Quick check</span>
+          <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">{t("lesson.quickCheck")}</span>
           <h2 className="mt-1.5 text-[22px] font-bold leading-tight tracking-tight text-foreground">
-            Test your understanding
+            {t("lesson.quizHeading")}
           </h2>
         </div>
         <QuizEngine
@@ -628,9 +632,9 @@ function QuizStep({
   return (
     <div className="space-y-5">
       <div>
-        <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">Quick check</span>
+        <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">{t("lesson.quickCheck")}</span>
         <h2 className="mt-1.5 text-[22px] font-bold leading-tight tracking-tight text-foreground">
-          Test your understanding
+          {t("lesson.quizHeading")}
         </h2>
       </div>
 
@@ -645,9 +649,9 @@ function QuizStep({
         <button
           onClick={() => onAnotherQuestion()}
           className="inline-flex min-h-[44px] items-center gap-1.5 text-sm font-medium text-primary hover:underline"
-          aria-label="Coba soal lain"
+          aria-label={t("lesson.tryAnotherQuestion")}
         >
-          Coba soal lain
+          {t("lesson.tryAnotherQuestion")}
         </button>
       )}
     </div>
@@ -663,6 +667,7 @@ function SourceStep({
   quizPassed: boolean;
   xpReward: number;
 }) {
+  const { t } = useLocale();
   const primary = sources.filter((s) => s.relevanceType === "primary" || s.isPrimary);
   const supporting = sources.filter((s) => s.relevanceType === "supporting" && !s.isPrimary);
   const furtherReading = sources.filter((s) => s.relevanceType === "further_reading");
@@ -670,23 +675,22 @@ function SourceStep({
   return (
     <div className="space-y-6">
       <div>
-        <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">Source trust</span>
+        <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">{t("lesson.sourceTrust")}</span>
         <h2 className="mt-1.5 text-[22px] font-bold leading-tight tracking-tight text-foreground">
-          Where this comes from
+          {t("lesson.sourceHeading")}
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-          Koin only teaches from licensed Indonesian regulators and verified institutions. If you see unsourced advice,
-          question it.
+          {t("lesson.sourceBody")}
         </p>
       </div>
 
       {sources.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No source listed for this lesson.</p>
+        <p className="text-sm text-muted-foreground">{t("lesson.noSources")}</p>
       ) : (
         <div className="space-y-5">
           {primary.length > 0 && (
             <div className="space-y-3">
-              <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Primary source</h3>
+              <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{t("lesson.primarySource")}</h3>
               {primary.map((source) => (
                 <SourceCard key={source.id} source={source} highlighted />
               ))}
@@ -695,7 +699,7 @@ function SourceStep({
 
           {supporting.length > 0 && (
             <div className="space-y-3">
-              <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Supporting sources</h3>
+              <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{t("lesson.supportingSources")}</h3>
               {supporting.map((source) => (
                 <SourceCard key={source.id} source={source} />
               ))}
@@ -704,7 +708,7 @@ function SourceStep({
 
           {furtherReading.length > 0 && (
             <div className="space-y-3">
-              <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Further reading</h3>
+              <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{t("lesson.furtherReading")}</h3>
               {furtherReading.map((source) => (
                 <SourceCard key={source.id} source={source} />
               ))}
@@ -717,7 +721,7 @@ function SourceStep({
         <div className="flex items-center gap-3 rounded-radius-lg border border-success/30 bg-success/5 px-4 py-3.5 text-success">
           <CheckIcon />
           <div>
-            <p className="font-semibold">Lesson complete</p>
+            <p className="font-semibold">{t("lesson.complete")}</p>
             <p className="text-sm">+{xpReward} XP</p>
           </div>
         </div>
@@ -727,6 +731,7 @@ function SourceStep({
 }
 
 function SourceCard({ source, highlighted = false }: { source: LessonSource; highlighted?: boolean }) {
+  const { t } = useLocale();
   const verified = source.status === "verified";
 
   return (
@@ -739,7 +744,7 @@ function SourceCard({ source, highlighted = false }: { source: LessonSource; hig
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary">
-              Tier {source.sourceTier}
+              {t("lesson.tier")} {source.sourceTier}
             </span>
             <span
               className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
@@ -748,10 +753,10 @@ function SourceCard({ source, highlighted = false }: { source: LessonSource; hig
             >
               {verified ? (
                 <>
-                  <CheckIconMini /> Verified
+                  <CheckIconMini /> {t("lesson.verified")}
                 </>
               ) : (
-                "Needs review"
+                t("lesson.needsReview")
               )}
             </span>
           </div>
@@ -772,7 +777,7 @@ function SourceCard({ source, highlighted = false }: { source: LessonSource; hig
           rel="noreferrer"
           className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
         >
-          Read source
+          {t("lesson.readSource")}
           <ExternalLinkIcon />
         </a>
       )}
@@ -796,6 +801,7 @@ function CompletionStep({
   lesson: Lesson;
 }) {
   const router = useRouter();
+  const { t } = useLocale();
   const xpEarned = result?.xpEarned ?? lesson.xpReward;
   const quizBonus = result?.quizBonus ?? 0;
   const streakDays = result?.streakDays ?? 0;
@@ -807,28 +813,30 @@ function CompletionStep({
       <div className="mb-6 flex h-28 w-28 items-center justify-center rounded-full bg-success/10">
         <CheckIcon />
       </div>
-      <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-success">Lesson complete</span>
+      <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-success">{t("lesson.complete")}</span>
       <h2 className="mt-2 text-[28px] font-bold leading-[1.15] tracking-tight text-foreground">
         +{xpEarned} XP
       </h2>
       {quizBonus > 0 && (
-        <p className="mt-1 text-sm font-medium text-xp">Includes +{quizBonus} quiz bonus</p>
+        <p className="mt-1 text-sm font-medium text-xp">
+          {t("lesson.quizBonus").replace("{bonus}", String(quizBonus))}
+        </p>
       )}
 
       <div className="mt-6 grid w-full grid-cols-2 gap-3">
         <div className="rounded-radius-lg bg-streak/10 p-4 text-center">
           <div className="text-xl font-bold text-streak">{streakDays}d</div>
-          <div className="text-xs font-medium text-streak/80">Streak</div>
+          <div className="text-xs font-medium text-streak/80">{t("lesson.streak")}</div>
         </div>
         <div className="rounded-radius-lg bg-xp/10 p-4 text-center">
           <div className="text-xl font-bold text-xp">{lesson.xpReward}</div>
-          <div className="text-xs font-medium text-xp/80">Base XP</div>
+          <div className="text-xs font-medium text-xp/80">{t("lesson.baseXp")}</div>
         </div>
       </div>
 
       {badges.length > 0 && (
         <div className="mt-6 w-full rounded-radius-lg border border-warning/20 bg-warning/5 p-4 text-left">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-warning">Badge earned</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-warning">{t("lesson.badgeEarned")}</p>
           <div className="mt-2 flex flex-wrap gap-2">
             {badges.map((badge) => (
               <span
@@ -849,14 +857,14 @@ function CompletionStep({
             onClick={() => router.push(`/learn/${nextSlug}`)}
             className="w-full rounded-radius-md border border-primary bg-primary/5 py-3.5 text-sm font-semibold text-primary transition-colors hover:bg-primary/10"
           >
-            Next lesson
+            {t("lesson.nextLesson")}
           </button>
         )}
         <button
           onClick={() => router.push("/learn")}
           className="w-full rounded-radius-md border border-muted bg-surface py-3.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted/10"
         >
-          Back to Learn
+          {t("lesson.backToLearn")}
         </button>
       </div>
     </div>

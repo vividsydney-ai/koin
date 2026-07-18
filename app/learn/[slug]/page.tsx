@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { getTopicsWithChapters } from "@/lib/lessons/client";
+import { LocaleProvider } from "@/lib/i18n/LocaleProvider";
 import LessonPlayer from "./LessonPlayer";
 
 export async function generateStaticParams() {
@@ -33,5 +34,9 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
     }
   }
 
-  return <LessonPlayer slug={slug} totalLessons={count ?? undefined} chapterLabel={chapterLabel} />;
+  return (
+    <LocaleProvider>
+      <LessonPlayer slug={slug} totalLessons={count ?? undefined} chapterLabel={chapterLabel} />
+    </LocaleProvider>
+  );
 }

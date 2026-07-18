@@ -76,7 +76,7 @@ describe("LessonPlayer", () => {
     vi.mocked(lessonsClient.seededIndex).mockReturnValue(0);
   });
 
-  it("shows a different example when clicking Lihat contoh lain", async () => {
+  it("shows a different example when clicking See another example", async () => {
     render(<LessonPlayer slug="test-lesson" />);
 
     await waitFor(() => expect(screen.queryByText("Loading lesson…")).not.toBeInTheDocument());
@@ -88,9 +88,9 @@ describe("LessonPlayer", () => {
     await waitFor(() => expect(screen.getByText("Indonesian example")).toBeInTheDocument());
 
     expect(screen.getByText("Contoh utama")).toBeInTheDocument();
-    expect(screen.getByLabelText("Lihat contoh lain")).toBeInTheDocument();
+    expect(screen.getByLabelText("See another example")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByLabelText("Lihat contoh lain"));
+    fireEvent.click(screen.getByLabelText("See another example"));
 
     await waitFor(() => {
       expect(screen.getByText("Contoh alternatif pertama")).toBeInTheDocument();
@@ -108,26 +108,26 @@ describe("LessonPlayer", () => {
     await waitFor(() => expect(screen.getByText("Indonesian example")).toBeInTheDocument());
 
     // First alternate.
-    fireEvent.click(screen.getByLabelText("Lihat contoh lain"));
+    fireEvent.click(screen.getByLabelText("See another example"));
     await waitFor(() => expect(screen.getByText("Contoh alternatif pertama")).toBeInTheDocument());
 
     // Return to main.
-    fireEvent.click(screen.getByLabelText("Kembali ke contoh utama"));
+    fireEvent.click(screen.getByLabelText("Back to main example"));
     await waitFor(() => expect(screen.getByText("Contoh utama")).toBeInTheDocument());
 
     // Second alternate.
-    fireEvent.click(screen.getByLabelText("Lihat contoh lain"));
+    fireEvent.click(screen.getByLabelText("See another example"));
     await waitFor(() => expect(screen.getByText("Contoh alternatif kedua")).toBeInTheDocument());
 
     // Return to main.
-    fireEvent.click(screen.getByLabelText("Kembali ke contoh utama"));
+    fireEvent.click(screen.getByLabelText("Back to main example"));
     await waitFor(() => expect(screen.getByText("Contoh utama")).toBeInTheDocument());
 
     // Button should be hidden because all alternates are exhausted.
-    expect(screen.queryByLabelText("Lihat contoh lain")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("See another example")).not.toBeInTheDocument();
   });
 
-  it("hides Lihat contoh lain when there is only one example variant", async () => {
+  it("hides See another example when there is only one example variant", async () => {
     vi.mocked(lessonsClient.getLessonVariants).mockImplementation(async (_lessonId, variantType) => {
       if (variantType === "example") return [exampleVariants[0]];
       if (variantType === "explanation") return [];
@@ -144,6 +144,6 @@ describe("LessonPlayer", () => {
     fireEvent.click(screen.getByText("Continue"));
     await waitFor(() => expect(screen.getByText("Indonesian example")).toBeInTheDocument());
 
-    expect(screen.queryByLabelText("Lihat contoh lain")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("See another example")).not.toBeInTheDocument();
   });
 });

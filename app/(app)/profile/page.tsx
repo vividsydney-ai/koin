@@ -7,11 +7,19 @@ import { signOut } from "@/lib/auth/client";
 import { getUserStats, type UserStats } from "@/lib/gamification/client";
 import { getPortfolioSnapshot, type PortfolioSnapshot } from "@/lib/portfolio/client";
 import { EmptyState } from "@/components/EmptyState";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
+import type { Locale } from "@/lib/i18n/types";
 import EditProfileModal from "./EditProfileModal";
+
+const LANGUAGE_OPTIONS: { value: Locale; label: string }[] = [
+  { value: "en", label: "English" },
+  { value: "id", label: "Bahasa Indonesia" },
+];
 
 export default function ProfilePage() {
   const router = useRouter();
   const { user, profile, loading: authLoading } = useAuth(true);
+  const { locale, setLocale, t } = useLocale();
   const [stats, setStats] = useState<UserStats | null>(null);
   const [portfolio, setPortfolio] = useState<PortfolioSnapshot | null>(null);
   const [dataLoading, setDataLoading] = useState(true);
@@ -49,7 +57,7 @@ export default function ProfilePage() {
   if (authLoading || dataLoading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center p-6">
-        <div className="text-muted-foreground">Loading profile…</div>
+        <div className="text-muted-foreground">{t("profile.loading")}</div>
       </div>
     );
   }
@@ -81,34 +89,34 @@ export default function ProfilePage() {
         <button
           onClick={() => setIsEditing(true)}
           className="shrink-0 rounded-radius-md border border-muted bg-surface px-3 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted/10 touch-target"
-          aria-label="Edit profile"
+          aria-label={t("profile.edit")}
         >
-          Edit
+          {t("profile.edit")}
         </button>
       </header>
 
       <section className="mb-6 grid grid-cols-3 gap-3">
-        <StatCard label="Streak" value={`${stats?.streakDays ?? 0}d`} tone="streak" />
+        <StatCard label={t("profile.streak")} value={`${stats?.streakDays ?? 0}d`} tone="streak" />
         <StatCard label="XP" value={stats?.xp ?? 0} tone="xp" />
         <StatCard label="Koin" value={stats?.koinPoints ?? 0} tone="koin-points" />
       </section>
 
       <section className="mb-6 rounded-radius-lg border border-muted bg-surface p-5">
         <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-          Paper Portfolio
+          {t("profile.paperPortfolio")}
         </h2>
         {portfolio ? (
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Total value</span>
+              <span className="text-muted-foreground">{t("profile.totalValue")}</span>
               <span className="text-lg font-bold">Rp {portfolio.totalValue.toLocaleString("id-ID")}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Cash</span>
+              <span className="text-muted-foreground">{t("profile.cash")}</span>
               <span>Rp {portfolio.cashBalance.toLocaleString("id-ID")}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Return</span>
+              <span className="text-muted-foreground">{t("profile.return")}</span>
               <span className={portfolio.returnPct >= 0 ? "text-success" : "text-danger"}>
                 {portfolio.returnPct >= 0 ? "+" : ""}
                 {portfolio.returnPct.toFixed(2)}%
@@ -117,14 +125,14 @@ export default function ProfilePage() {
           </div>
         ) : (
           <p className="text-sm text-muted-foreground">
-            No portfolio yet. Start paper trading from the Trade tab.
+            {t("profile.noPortfolio")}
           </p>
         )}
       </section>
 
       <section className="mb-8">
         <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-          Badges
+          {t("profile.badges")}
         </h2>
         {stats?.badges && stats.badges.length > 0 ? (
           <div className="flex flex-wrap gap-2">
@@ -149,11 +157,40 @@ export default function ProfilePage() {
         )}
       </section>
 
+      <section className="mb-8 rounded-radius-lg border border-muted bg-surface p-5">
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+          {t("settings.title")}
+        </h2>
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-sm font-medium text-foreground">{t("settings.language")}</span>
+          <div
+            role="group"
+            aria-label={t("settings.language")}
+            className="flex rounded-radius-md border border-muted bg-background p-1"
+          >
+            {LANGUAGE_OPTIONS.map((option) => (
+              <button
+                key={option.value}
+                onClick={() => setLocale(option.value)}
+                aria-pressed={locale === option.value}
+                className={`min-h-[44px] rounded-radius-sm px-4 text-sm font-semibold transition-colors ${
+                  locale === option.value
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <button
         onClick={handleLogout}
         className="w-full rounded-radius-md border border-danger/30 bg-surface py-3 font-semibold text-danger hover:bg-danger/5 touch-target"
       >
-        Log out
+        {t("profile.logout")}
       </button>
 
       {isEditing && user && (

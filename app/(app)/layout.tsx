@@ -6,20 +6,30 @@ import { useAuth } from "@/lib/auth/use-auth";
 import { signOut } from "@/lib/auth/client";
 import { useRouter } from "next/navigation";
 import { NotificationBell } from "@/components/NotificationsSheet";
+import { LocaleProvider, useLocale } from "@/lib/i18n/LocaleProvider";
 
 const NAV_ITEMS = [
-  { href: "/", label: "Home", icon: "🏠" },
-  { href: "/learn", label: "Learn", icon: "📚" },
-  { href: "/trade", label: "Trade", icon: "📈" },
-  { href: "/friends", label: "Friends", icon: "👥" },
-  { href: "/library", label: "Library", icon: "🔖" },
-  { href: "/profile", label: "Profile", icon: "👤" },
+  { href: "/", labelKey: "nav.home", icon: "🏠" },
+  { href: "/learn", labelKey: "nav.learn", icon: "📚" },
+  { href: "/trade", labelKey: "nav.trade", icon: "📈" },
+  { href: "/friends", labelKey: "nav.friends", icon: "👥" },
+  { href: "/library", labelKey: "nav.library", icon: "🔖" },
+  { href: "/profile", labelKey: "nav.profile", icon: "👤" },
 ];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <LocaleProvider>
+      <AppShell>{children}</AppShell>
+    </LocaleProvider>
+  );
+}
+
+function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, loading } = useAuth(true);
+  const { t } = useLocale();
 
   const handleSignOut = async () => {
     await signOut();
@@ -66,7 +76,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   <span className="text-lg leading-none" aria-hidden="true">
                     {item.icon}
                   </span>
-                  <span className="mt-1">{item.label}</span>
+                  <span className="mt-1">{t(item.labelKey)}</span>
                 </Link>
               </li>
             );
