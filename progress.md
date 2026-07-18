@@ -2,6 +2,14 @@
 # Loop reads and writes this. Human can also read to understand where we are.
 # v2: MVP reshaped around paper trading. Original v1 loop files archived in /_archived.
 
+## 2026-07-18 — Deploy incident: Netlify credits exhausted, rolled back
+
+- Git builds after the ui-lift push published `.next` (netlify.toml default) → all routes 404. Fixed `publish = "out"`; then `@netlify/plugin-nextjs` failed on the static export → added `NETLIFY_NEXT_PLUGIN_SKIP = "true"` (verified via local `netlify build`).
+- **Netlify account hit credit usage limit** ("Skipped due to account credit usage exceeded"); CLI deploy also Forbidden. Production restored via `POST /deploys/6a5ada6c80a466398bb22b8b/restore` (no credits needed) — currently serving the 11:45 UTC build (replay fixes + i18n language picker; NO ui-lift, NO Turnstile widget).
+- Pending when credits reset (or plan upgraded): the next git build will ship ui-lift + Turnstile + corrected publish config.
+- Linear synced: KO-62..66 (UI-LIFT-1..5 Done), KO-67 (rounded-radius sweep, backlog), KO-68 (UI-LIFT-6 screenshot QA, backlog), KO-61 closed (Turnstile activated in Supabase).
+- openwiki-update.yml workflow needs GitHub secrets OPENROUTER_API_KEY + LANGSMITH_API_KEY, or switch it to OPENAI_API_KEY.
+
 ## 2026-07-18 — UI-LIFT-1..5 landed + Turnstile fully activated
 
 - **Swarm execution (4 Makers in parallel, Conductor verify/land):**
