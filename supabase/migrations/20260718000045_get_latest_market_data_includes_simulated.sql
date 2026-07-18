@@ -1,8 +1,12 @@
 -- Migration 045: Include is_simulated flag in latest market data RPC.
+-- Postgres rejects changing the OUT-parameter row type with CREATE OR REPLACE,
+-- so we drop and recreate the function.
 
 BEGIN;
 
-CREATE OR REPLACE FUNCTION get_latest_market_data()
+DROP FUNCTION IF EXISTS get_latest_market_data();
+
+CREATE FUNCTION get_latest_market_data()
 RETURNS TABLE (
   id UUID,
   symbol TEXT,
