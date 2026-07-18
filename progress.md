@@ -2,6 +2,22 @@
 # Loop reads and writes this. Human can also read to understand where we are.
 # v2: MVP reshaped around paper trading. Original v1 loop files archived in /_archived.
 
+## 2026-07-18 — KO-ABUSE-001: RPC abuse hardening landed
+
+- RPC audit found: `complete_lesson` awarded XP/KP/streak-milestone rewards on every replay; `award_koin_points` granted to authenticated+anon with no auth guard (direct mint); `check_in_streak` executable by PUBLIC; no time validation; no friend-add rate limit.
+- Migration `20260718000048_abuse_hardening.sql`:
+  - Idempotent lesson XP and quiz bonus via `xp_events` ledger checks (replay → 0 XP; first correct quiz attempt still earns bonus).
+  - Koin Points for lesson completion only on first completion; streak milestone awards capped at once per day.
+  - 30-second minimum completion time (exception below).
+  - `award_koin_points` and `check_in_streak` REVOKEd from authenticated/anon/PUBLIC (internal-only, still callable from SECURITY DEFINER functions).
+  - `complete_lesson` anon grant revoked.
+  - `add_friend_by_qr` capped at 20 new friendships per user per day.
+- Test `tests/migrations/048_abuse_hardening.test.ts` (11 assertions).
+- Gates: `npx tsc --noEmit` ✅, `npm run lint` ✅ 0 errors, `npx vitest run` ✅ 325 passed / 5 skipped.
+- Migration pushed to production; `scripts/smoke/abuse-hardening.mjs` production smoke test: **12/12 PASS** — first completion awarded 35 XP, replay awarded 0 XP with unchanged xp_events/KP balance, direct mint denied, direct check_in_streak denied, sub-30s completion rejected.
+- Committed `497296c`, pushed to `origin/web-koinaku`.
+- Follow-up (not in scope): Turnstile captcha on signup needs human action in Supabase dashboard (Auth → Protection) + client widget.
+
 ## 2026-07-18 — KO-DEDUP-001: Duplicate Foundation 0 variants deactivated
 
 - Conductor resumed from 6-slice MVP polish plan. Production audit found 9 duplicate example variants and 15 duplicate question variants across the first 3 Foundation 0 lessons (What Is Money?, What Is Inflation?, What Is Interest?).
