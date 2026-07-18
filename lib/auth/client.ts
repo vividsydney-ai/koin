@@ -63,14 +63,18 @@ export async function getSession(): Promise<Result<Session, AuthError>> {
 
 export async function signInWithEmail(
   email: string,
-  password: string
+  password: string,
+  captchaToken?: string
 ): Promise<Result<Session, AuthError>> {
   const parsed = signInSchema.safeParse({ email, password });
   if (!parsed.success) {
     return err({ code: "invalid_email", message: parsed.error.issues[0].message });
   }
 
-  const { data, error } = await supabase.auth.signInWithPassword(parsed.data);
+  const { data, error } = await supabase.auth.signInWithPassword({
+    ...parsed.data,
+    ...(captchaToken ? { captchaToken } : {}),
+  });
   if (error) return err(normalizeAuthError(error));
   if (!data.session) return err({ code: "unknown", message: "Sign in succeeded but no session was returned." });
   return ok(data.session);

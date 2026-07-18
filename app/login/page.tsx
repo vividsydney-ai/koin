@@ -1,10 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import { signInWithEmail, resendSignupEmail } from "@/lib/auth/client";
 import { trackEvent } from "@/lib/analytics/client";
+
+const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
 export default function LoginPage() {
   const router = useRouter();
@@ -14,6 +17,8 @@ export default function LoginPage() {
   const [info, setInfo] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showResend, setShowResend] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const turnstileRef = useRef<TurnstileInstance | null>(null);
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,10 +27,20 @@ export default function LoginPage() {
     setInfo(null);
     setShowResend(false);
 
-    const result = await signInWithEmail(email, password);
+    if (TURNSTILE_SITE_KEY && !captchaToken) {
+      setError("Please complete the captcha check.");
+      setLoading(false);
+      return;
+    }
+
+    const result = captchaToken
+      ? await signInWithEmail(email, password, captchaToken)
+      : await signInWithEmail(email, password);
     setLoading(false);
 
     if (!result.ok) {
+      turnstileRef.current?.reset();
+      setCaptchaToken(null);
       setError(result.error.message);
       if (result.error.code === "email_not_confirmed") {
         setShowResend(true);
@@ -111,9 +126,21 @@ export default function LoginPage() {
             />
           </div>
 
+          {TURNSTILE_SITE_KEY && (
+            <div className="flex justify-center pt-1">
+              <Turnstile
+                ref={turnstileRef}
+                siteKey={TURNSTILE_SITE_KEY}
+                onSuccess={(token) => setCaptchaToken(token)}
+                onExpire={() => setCaptchaToken(null)}
+                onError={() => setCaptchaToken(null)}
+              />
+            </div>
+          )}
+
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || (Boolean(TURNSTILE_SITE_KEY) && !captchaToken)}
             className="mt-2 inline-flex h-14 w-full items-center justify-center rounded-full bg-primary px-6 text-base font-semibold text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-primary-400 hover:shadow-md active:translate-y-0 active:scale-[0.98] disabled:translate-y-0 disabled:scale-100 disabled:cursor-not-allowed disabled:bg-primary-200 disabled:text-primary-400 disabled:shadow-none"
           >
             {loading ? "Signing in..." : "Sign in"}
