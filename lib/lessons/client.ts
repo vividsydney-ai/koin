@@ -247,6 +247,29 @@ export async function getAllLessons(): Promise<
 
 export { seededIndex, seededShuffle } from "./random";
 
+/**
+ * Return the user's progress status for a single lesson, or null when there is
+ * no progress row yet (lesson never attempted).
+ */
+export async function getLessonStatus(
+  userId: string,
+  lessonId: string
+): Promise<LessonStatus | null> {
+  const { data, error } = await supabase
+    .from("lesson_progress")
+    .select("status")
+    .eq("user_id", userId)
+    .eq("lesson_id", lessonId)
+    .maybeSingle();
+
+  if (error) {
+    console.error("getLessonStatus error:", error.message);
+    return null;
+  }
+
+  return (data?.status as LessonStatus | undefined) ?? null;
+}
+
 interface AttemptAnswer {
   variant_id?: string;
 }

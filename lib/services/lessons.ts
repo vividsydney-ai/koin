@@ -18,10 +18,10 @@ export async function completeLesson(
   const { userId, lessonId, score, maxScore, answersJson, timeSpentSeconds, quizCorrect } =
     parsed.data;
 
-  const sanitizedAnswers =
-    answersJson && typeof answersJson === "object" && !Array.isArray(answersJson)
-      ? (answersJson as Record<string, unknown>)
-      : {};
+  // Pass answer arrays through unchanged; anything else becomes an empty
+  // array. (Previously this was inverted and wrote '{}' for every attempt,
+  // which produced the object-shaped rows behind KO-REPLAY-001.)
+  const sanitizedAnswers = Array.isArray(answersJson) ? answersJson : [];
 
   const { data, error } = await supabase.rpc("complete_lesson", {
     p_user_id: userId,
@@ -48,5 +48,6 @@ export async function completeLesson(
       ? (raw.badges_earned as CompletionResult["badgesEarned"])
       : [],
     nextLessonSlug: typeof raw.next_lesson_slug === "string" ? raw.next_lesson_slug : null,
+    alreadyCompleted: Boolean(raw.already_completed ?? false),
   });
 }

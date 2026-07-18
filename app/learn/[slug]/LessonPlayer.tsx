@@ -7,6 +7,7 @@ import {
   getLessonVariants,
   getLessonSources,
   getRecentAttemptVariantIds,
+  getLessonStatus,
   seededIndex,
   type Lesson,
   type ContentVariant,
@@ -54,6 +55,7 @@ export default function LessonPlayer({
   const [shownVariantIds, setShownVariantIds] = useState<Set<string>>(new Set());
   const [loadError, setLoadError] = useState<string | null>(null);
   const [retryCounter, setRetryCounter] = useState(0);
+  const [alreadyCompleted, setAlreadyCompleted] = useState(false);
   const startTimeRef = useRef<number>(0);
 
   useEffect(() => {
@@ -80,12 +82,13 @@ export default function LessonPlayer({
         const level = user ? await getFinancialLiteracyLevel(user.id) : null;
         if (!mounted) return;
 
-        const [fetchedExampleVariants, explanationData, fetchedQuestionVariants, sourceData, recentIds] = await Promise.all([
+        const [fetchedExampleVariants, explanationData, fetchedQuestionVariants, sourceData, recentIds, lessonStatus] = await Promise.all([
           getLessonVariants(data.id, "example", level),
           getLessonVariants(data.id, "explanation", level),
           getLessonVariants(data.id, "question", level),
           getLessonSources(data.id),
           user ? getRecentAttemptVariantIds(user.id, data.id) : Promise.resolve(new Set<string>()),
+          user ? getLessonStatus(user.id, data.id) : Promise.resolve(null),
         ]);
 
         if (!mounted) return;
@@ -125,6 +128,7 @@ export default function LessonPlayer({
         setActiveQuestion(processedQuestion);
         setSources(sourceData);
         setLiteracyLevel(level);
+        setAlreadyCompleted(lessonStatus === "completed");
         setShownVariantIds(new Set(example ? [example.id] : []));
         setLoading(false);
 
@@ -343,6 +347,17 @@ export default function LessonPlayer({
       </header>
 
       <main className="relative flex-1 px-5 py-7">
+        {alreadyCompleted && !showSummary && (
+          <div
+            role="status"
+            className="mb-5 flex items-start gap-2.5 rounded-radius-md border border-primary/25 bg-primary/5 px-4 py-3 text-[13px] leading-snug text-foreground"
+          >
+            <span aria-hidden="true" className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-primary/15 text-[10px] font-bold text-primary">
+              i
+            </span>
+            {t("lesson.replayNotice")}
+          </div>
+        )}
         <div key={showSummary ? "summary" : step} className="step-enter">
           {showSummary ? (
             <CompletionStep result={completionResult} lesson={lesson} />
@@ -802,7 +817,8 @@ function CompletionStep({
 }) {
   const router = useRouter();
   const { t } = useLocale();
-  const xpEarned = result?.xpEarned ?? lesson.xpReward;
+  const isReplay = result?.alreadyCompleted ?? false;
+  const xpEarned = result?.xpEarned ?? 0;
   const quizBonus = result?.quizBonus ?? 0;
   const streakDays = result?.streakDays ?? 0;
   const badges = result?.badgesEarned ?? [];
@@ -814,9 +830,20 @@ function CompletionStep({
         <CheckIcon />
       </div>
       <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-success">{t("lesson.complete")}</span>
-      <h2 className="mt-2 text-[28px] font-bold leading-[1.15] tracking-tight text-foreground">
-        +{xpEarned} XP
-      </h2>
+      {isReplay ? (
+        <>
+          <h2 className="mt-2 text-[28px] font-bold leading-[1.15] tracking-tight text-foreground">
+            {t("lesson.replayCompleteTitle")}
+          </h2>
+          <p className="mt-2 max-w-xs text-sm leading-relaxed text-muted-foreground">
+            {t("lesson.noNewXp")}
+          </p>
+        </>
+      ) : (
+        <h2 className="mt-2 text-[28px] font-bold leading-[1.15] tracking-tight text-foreground">
+          +{xpEarned} XP
+        </h2>
+      )}
       {quizBonus > 0 && (
         <p className="mt-1 text-sm font-medium text-xp">
           {t("lesson.quizBonus").replace("{bonus}", String(quizBonus))}

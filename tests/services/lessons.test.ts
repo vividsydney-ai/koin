@@ -33,7 +33,7 @@ describe("lessons service", () => {
     }
   });
 
-  it("sanitizes an array answersJson to an empty object before calling RPC", async () => {
+  it("passes an array answersJson through to the RPC unchanged", async () => {
     rpc.mockResolvedValueOnce({
       data: {
         xp_earned: 60,
@@ -47,12 +47,14 @@ describe("lessons service", () => {
       error: null,
     });
 
+    const answers = [{ variant_id: "variant-1", correct: true }];
+
     const result = await completeLesson({
       userId: TEST_USER_ID,
       lessonId: TEST_LESSON_ID,
       score: 1,
       maxScore: 1,
-      answersJson: [{ variant_id: "variant-1", correct: true }],
+      answersJson: answers,
       timeSpentSeconds: 45,
       quizCorrect: true,
     });
@@ -63,7 +65,7 @@ describe("lessons service", () => {
       expect.objectContaining({
         p_user_id: TEST_USER_ID,
         p_lesson_id: TEST_LESSON_ID,
-        p_answers_json: {},
+        p_answers_json: answers,
       })
     );
 
@@ -80,7 +82,7 @@ describe("lessons service", () => {
     }
   });
 
-  it("completes a lesson successfully with an object answersJson", async () => {
+  it("sanitizes a non-array answersJson to an empty array before calling RPC", async () => {
     rpc.mockResolvedValueOnce({
       data: {
         xp_earned: 50,
@@ -94,14 +96,12 @@ describe("lessons service", () => {
       error: null,
     });
 
-    const answers = { q1: "a", q2: "b" };
-
     const result = await completeLesson({
       userId: TEST_USER_ID,
       lessonId: TEST_LESSON_ID,
       score: 2,
       maxScore: 2,
-      answersJson: answers,
+      answersJson: { q1: "a", q2: "b" },
       timeSpentSeconds: 30,
       quizCorrect: false,
     });
@@ -112,7 +112,7 @@ describe("lessons service", () => {
       expect.objectContaining({
         p_user_id: TEST_USER_ID,
         p_lesson_id: TEST_LESSON_ID,
-        p_answers_json: answers,
+        p_answers_json: [],
       })
     );
   });

@@ -25,6 +25,7 @@ export interface CompletionResult {
   streakStatus: "active" | "at_risk" | "frozen" | "broken";
   badgesEarned: EarnedBadge[];
   nextLessonSlug: string | null;
+  alreadyCompleted: boolean;
 }
 
 export async function completeLesson(input: CompletionInput): Promise<CompletionResult | null> {

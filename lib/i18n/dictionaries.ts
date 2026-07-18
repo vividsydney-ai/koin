@@ -57,6 +57,12 @@ export interface Dictionary {
   "lesson.baseXp": string;
   "lesson.badgeEarned": string;
   "lesson.nextLesson": string;
+  "lesson.replayNotice": string;
+  "lesson.replayCompleteTitle": string;
+  "lesson.noNewXp": string;
+
+  // Quiz engine
+  "quiz.correctAnswer": string;
 
   // Profile page
   "profile.loading": string;
@@ -136,6 +142,12 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "lesson.baseXp": "Base XP",
     "lesson.badgeEarned": "Badge earned",
     "lesson.nextLesson": "Next lesson",
+    "lesson.replayNotice":
+      "You've already completed this lesson. Replaying is great practice, but you won't earn XP again.",
+    "lesson.replayCompleteTitle": "Practice complete",
+    "lesson.noNewXp": "No new XP — you already earned the XP for this lesson.",
+
+    "quiz.correctAnswer": "Correct answer:",
 
     "profile.loading": "Loading profile…",
     "profile.edit": "Edit",
@@ -208,6 +220,12 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "lesson.baseXp": "XP dasar",
     "lesson.badgeEarned": "Lencana didapat",
     "lesson.nextLesson": "Pelajaran berikutnya",
+    "lesson.replayNotice":
+      "Kamu sudah menyelesaikan pelajaran ini. Mengulang bagus untuk latihan, tapi XP tidak bertambah lagi.",
+    "lesson.replayCompleteTitle": "Latihan selesai",
+    "lesson.noNewXp": "Tidak ada XP baru — kamu sudah mendapat XP untuk pelajaran ini.",
+
+    "quiz.correctAnswer": "Jawaban benar:",
 
     "profile.loading": "Memuat profil…",
     "profile.edit": "Ubah",

@@ -48,7 +48,7 @@ describe("completeLesson", () => {
       p_lesson_id: TEST_LESSON_ID,
       p_score: 1,
       p_max_score: 1,
-      p_answers_json: {},
+      p_answers_json: [{ variant_id: "variant-1", correct: true }],
       p_time_spent_seconds: 45,
       p_quiz_correct: true,
     });
@@ -61,6 +61,7 @@ describe("completeLesson", () => {
       streakStatus: "active",
       badgesEarned: [{ slug: "first_lesson", name: "First Lesson", icon: "📚" }],
       nextLessonSlug: "budgeting-101",
+      alreadyCompleted: false,
     });
   });
 

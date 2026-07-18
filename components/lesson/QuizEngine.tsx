@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { QuizCard } from "./QuizCard";
 import { seededShuffle } from "@/lib/lessons/random";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 import {
   normalizeAnswer,
   type ProcessedQuestion,
@@ -109,7 +110,7 @@ function TrueFalse({
           onClick={() => handleSelect(false)}
         />
       </div>
-      {showResult && <Explanation isCorrect={isCorrect} text={question.explanation} />}
+      {showResult && <Explanation isCorrect={isCorrect} text={question.explanation} correctAnswer={question.answer ? "True" : "False"} />}
     </div>
   );
 }
@@ -153,7 +154,7 @@ function FillBlank({
           Check answer
         </button>
       </form>
-      {showResult && <Explanation isCorrect={isCorrect} text={question.explanation} />}
+      {showResult && <Explanation isCorrect={isCorrect} text={question.explanation} correctAnswer={question.answer} />}
     </div>
   );
 }
@@ -237,7 +238,7 @@ function WordBank({
       >
         Check answer
       </button>
-      {showResult && <Explanation isCorrect={isCorrect} text={question.explanation} />}
+      {showResult && <Explanation isCorrect={isCorrect} text={question.explanation} correctAnswer={question.answer.join(" → ")} />}
     </div>
   );
 }
@@ -308,7 +309,7 @@ function Ordering({
       >
         Check answer
       </button>
-      {showResult && <Explanation isCorrect={isCorrect} text={question.explanation} />}
+      {showResult && <Explanation isCorrect={isCorrect} text={question.explanation} correctAnswer={question.answer.join(" → ")} />}
     </div>
   );
 }
@@ -397,7 +398,13 @@ function Matching({
       >
         Check answer
       </button>
-      {showResult && <Explanation isCorrect={isCorrect} text={question.explanation} />}
+      {showResult && (
+        <Explanation
+          isCorrect={isCorrect}
+          text={question.explanation}
+          correctAnswer={leftItems.map((left) => `${left}: ${question.answer[left]}`).join(" · ")}
+        />
+      )}
     </div>
   );
 }
@@ -461,14 +468,20 @@ function AnswerButton({
   );
 }
 
-function Explanation({ isCorrect, text }: { isCorrect: boolean; text: string }) {
+function Explanation({ isCorrect, text, correctAnswer }: { isCorrect: boolean; text: string; correctAnswer?: string }) {
+  const { t } = useLocale();
   return (
     <div
-      className={`rounded-radius-md border px-4 py-3 text-sm ${
+      className={`space-y-1.5 rounded-radius-md border px-4 py-3 text-sm ${
         isCorrect ? "border-success/30 bg-success/5 text-success" : "border-danger/30 bg-danger/5 text-danger"
       }`}
     >
-      {text}
+      {!isCorrect && correctAnswer && (
+        <p className="font-semibold">
+          {t("quiz.correctAnswer")} {correctAnswer}
+        </p>
+      )}
+      <p>{text}</p>
     </div>
   );
 }
