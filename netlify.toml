@@ -6,6 +6,9 @@
 [build.environment]
   NODE_VERSION = "20"
   PNPM_VERSION = "10"
+  # This app is a static export (output: export) — the Next.js runtime plugin
+  # expects a server build and fails on it. Serve out/ as plain static files.
+  NETLIFY_NEXT_PLUGIN_SKIP = "true"
 
 [[redirects]]
   from = "/api/cron/streak-reminders"
