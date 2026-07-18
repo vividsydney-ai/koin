@@ -85,7 +85,7 @@ describe("home client", () => {
           return {
             select: vi.fn().mockReturnValue({
               eq: vi.fn().mockReturnValue({
-                single: vi.fn().mockResolvedValue({
+                maybeSingle: vi.fn().mockResolvedValue({
                   data: startingLessonId ? { starting_lesson_id: startingLessonId } : null,
                   error: null,
                 }),

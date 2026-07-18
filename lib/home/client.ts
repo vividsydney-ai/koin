@@ -167,12 +167,14 @@ export async function getRecentBadge(userId: string): Promise<RecentBadge | null
     .eq("user_id", userId)
     .order("earned_at", { ascending: false })
     .limit(1)
-    .single();
+    .maybeSingle();
 
-  if (error || !data) {
-    if (error && error.code !== "PGRST116") console.error("getRecentBadge error:", error.message);
+  if (error) {
+    console.error("getRecentBadge error:", error.message);
     return null;
   }
+
+  if (!data) return null;
 
   const badges = (data.badges as Record<string, unknown>[]) ?? [];
   const badge = badges[0] ?? {};
@@ -188,7 +190,7 @@ export async function getContinueLesson(userId: string): Promise<ContinueLesson 
   const [{ data: lessons, error: lessonsError }, { data: progress, error: progressError }, { data: settings, error: settingsError }] = await Promise.all([
     supabase.from("lessons").select("id, slug, title, lesson_number").eq("is_published", true).order("lesson_number", { ascending: true }),
     supabase.from("lesson_progress").select("lesson_id, status").eq("user_id", userId),
-    supabase.from("user_settings").select("starting_lesson_id").eq("user_id", userId).single(),
+    supabase.from("user_settings").select("starting_lesson_id").eq("user_id", userId).maybeSingle(),
   ]);
 
   if (lessonsError) {

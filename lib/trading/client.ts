@@ -62,12 +62,10 @@ export async function getPortfolio(userId: string): Promise<Portfolio | null> {
     .from("portfolios")
     .select("id, user_id, starting_cash, cash_balance, total_value, status, created_at, updated_at")
     .eq("user_id", userId)
-    .single();
+    .maybeSingle();
 
   if (error) {
-    if (error.code !== "PGRST116") {
-      console.error("getPortfolio error:", error.message);
-    }
+    console.error("getPortfolio error:", error.message);
     return null;
   }
 
