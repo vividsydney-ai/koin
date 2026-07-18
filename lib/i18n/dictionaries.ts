@@ -28,6 +28,7 @@ export interface Dictionary {
   "lesson.notFoundTitle": string;
   "lesson.notFoundBody": string;
   "lesson.completionError": string;
+  "lesson.errorTooFast": string;
   "lesson.minutes": string;
   "lesson.theConcept": string;
   "lesson.simplerExplanation": string;
@@ -133,6 +134,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "lesson.notFoundBody": "This topic is not available yet.",
     "lesson.completionError":
       "We couldn't save your progress. Please check your connection and try again.",
+    "lesson.errorTooFast":
+      "Please spend at least a few more moments on this lesson before finishing.",
     "lesson.minutes": "minutes",
     "lesson.theConcept": "The concept",
     "lesson.simplerExplanation": "Simpler explanation",
@@ -226,6 +229,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "lesson.notFoundBody": "Topik ini belum tersedia.",
     "lesson.completionError":
       "Kami tidak dapat menyimpan progresmu. Periksa koneksimu dan coba lagi.",
+    "lesson.errorTooFast":
+      "Silakan luangkan waktu sebentar lagi untuk pelajaran ini sebelum menyelesaikannya.",
     "lesson.minutes": "menit",
     "lesson.theConcept": "Konsepnya",
     "lesson.simplerExplanation": "Penjelasan lebih sederhana",

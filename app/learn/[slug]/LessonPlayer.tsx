@@ -17,6 +17,7 @@ import { useAuth } from "@/lib/auth/use-auth";
 import { QuizEngine } from "@/components/lesson/QuizEngine";
 import { validateQuestion, applyParameters, type ProcessedQuestion } from "@/lib/lessons/question";
 import { completeLesson, type CompletionResult } from "@/lib/lessons/completion";
+import type { ServiceError } from "@/lib/types/service-error";
 import { getFinancialLiteracyLevel } from "@/lib/profile/client";
 import { trackEvent } from "@/lib/analytics/client";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
@@ -196,8 +197,23 @@ export default function LessonPlayer({
     });
     setCompleting(false);
 
-    if (!result) {
-      setCompletionError(t("lesson.completionError"));
+    if ("code" in result) {
+      const error = result as ServiceError;
+      if (error.message.toLowerCase().includes("too quickly")) {
+        setCompletionError(t("lesson.errorTooFast"));
+      } else {
+        setCompletionError(t("lesson.completionError"));
+      }
+      trackEvent({
+        userId: user.id,
+        name: "lesson_completion_failed",
+        properties: {
+          lesson_id: lesson.id,
+          lesson_slug: lesson.slug,
+          error_code: error.code,
+          error_message: error.message,
+        },
+      });
       return;
     }
 

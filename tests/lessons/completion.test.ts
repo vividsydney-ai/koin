@@ -69,7 +69,7 @@ describe("completeLesson", () => {
     });
   });
 
-  it("returns null when the RPC fails", async () => {
+  it("returns the service error when the RPC fails", async () => {
     rpc
       .mockResolvedValueOnce({ data: null, error: { message: "boom" } })
       .mockResolvedValueOnce({ data: null, error: { message: "boom" } });
@@ -84,7 +84,7 @@ describe("completeLesson", () => {
       quizCorrect: false,
     });
 
-    expect(result).toBeNull();
+    expect(result).toEqual({ code: "rpc_error", message: "boom" });
     expect(rpc).toHaveBeenCalledTimes(2);
   });
 });

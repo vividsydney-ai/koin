@@ -7,6 +7,7 @@ export type AnalyticsEventName =
   | "onboarding_completed"
   | "lesson_started"
   | "lesson_completed"
+  | "lesson_completion_failed"
   | "quiz_completed"
   | "trade_onboarding_completed"
   | "trade_executed"

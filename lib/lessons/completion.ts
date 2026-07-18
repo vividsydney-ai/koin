@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/auth/client";
 import * as lessonService from "@/lib/services/lessons";
 import { getLessonStatus } from "@/lib/lessons/client";
+import type { ServiceError } from "@/lib/types/service-error";
 
 export interface CompletionInput {
   userId: string;
@@ -30,7 +31,7 @@ export interface CompletionResult {
   alreadyCompleted: boolean;
 }
 
-export async function completeLesson(input: CompletionInput): Promise<CompletionResult | null> {
+export async function completeLesson(input: CompletionInput): Promise<CompletionResult | ServiceError> {
   const result = await lessonService.completeLesson(input);
   if (result.ok) {
     return result.data;
@@ -61,7 +62,7 @@ export async function completeLesson(input: CompletionInput): Promise<Completion
     };
   }
 
-  return null;
+  return result.error;
 }
 
 export async function getNextLessonSlug(currentLessonNumber: number): Promise<string | null> {

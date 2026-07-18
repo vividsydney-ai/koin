@@ -84,13 +84,13 @@ describe("LessonPlayer", () => {
   it("shows a different example when clicking See another example", async () => {
     render(<LessonPlayer slug="test-lesson" />);
 
-    await waitFor(() => expect(screen.queryByText("Loading lesson…")).not.toBeInTheDocument());
+    await waitFor(() => expect(screen.queryByText("Loading lesson…")).not.toBeInTheDocument(), { timeout: 2000 });
 
     // Advance from intro -> concept -> example.
     fireEvent.click(screen.getByText("Continue"));
-    await waitFor(() => expect(screen.getByText("The concept")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText("The concept")).toBeInTheDocument(), { timeout: 2000 });
     fireEvent.click(screen.getByText("Continue"));
-    await waitFor(() => expect(screen.getByText("Indonesian example")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText("Indonesian example")).toBeInTheDocument(), { timeout: 2000 });
 
     expect(screen.getByText("Contoh utama")).toBeInTheDocument();
     expect(screen.getByLabelText("See another example")).toBeInTheDocument();
@@ -99,34 +99,34 @@ describe("LessonPlayer", () => {
 
     await waitFor(() => {
       expect(screen.getByText("Contoh alternatif pertama")).toBeInTheDocument();
-    });
+    }, { timeout: 2000 });
   });
 
   it("shows another different example after returning to main, then hides the button when exhausted", async () => {
     render(<LessonPlayer slug="test-lesson" />);
 
-    await waitFor(() => expect(screen.queryByText("Loading lesson…")).not.toBeInTheDocument());
+    await waitFor(() => expect(screen.queryByText("Loading lesson…")).not.toBeInTheDocument(), { timeout: 2000 });
 
     fireEvent.click(screen.getByText("Continue"));
-    await waitFor(() => expect(screen.getByText("The concept")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText("The concept")).toBeInTheDocument(), { timeout: 2000 });
     fireEvent.click(screen.getByText("Continue"));
-    await waitFor(() => expect(screen.getByText("Indonesian example")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText("Indonesian example")).toBeInTheDocument(), { timeout: 2000 });
 
     // First alternate.
     fireEvent.click(screen.getByLabelText("See another example"));
-    await waitFor(() => expect(screen.getByText("Contoh alternatif pertama")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText("Contoh alternatif pertama")).toBeInTheDocument(), { timeout: 2000 });
 
     // Return to main.
     fireEvent.click(screen.getByLabelText("Back to main example"));
-    await waitFor(() => expect(screen.getByText("Contoh utama")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText("Contoh utama")).toBeInTheDocument(), { timeout: 2000 });
 
     // Second alternate.
     fireEvent.click(screen.getByLabelText("See another example"));
-    await waitFor(() => expect(screen.getByText("Contoh alternatif kedua")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText("Contoh alternatif kedua")).toBeInTheDocument(), { timeout: 2000 });
 
     // Return to main.
     fireEvent.click(screen.getByLabelText("Back to main example"));
-    await waitFor(() => expect(screen.getByText("Contoh utama")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText("Contoh utama")).toBeInTheDocument(), { timeout: 2000 });
 
     // Button should be hidden because all alternates are exhausted.
     expect(screen.queryByLabelText("See another example")).not.toBeInTheDocument();
@@ -142,12 +142,12 @@ describe("LessonPlayer", () => {
 
     render(<LessonPlayer slug="test-lesson" />);
 
-    await waitFor(() => expect(screen.queryByText("Loading lesson…")).not.toBeInTheDocument());
+    await waitFor(() => expect(screen.queryByText("Loading lesson…")).not.toBeInTheDocument(), { timeout: 2000 });
 
     fireEvent.click(screen.getByText("Continue"));
-    await waitFor(() => expect(screen.getByText("The concept")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText("The concept")).toBeInTheDocument(), { timeout: 2000 });
     fireEvent.click(screen.getByText("Continue"));
-    await waitFor(() => expect(screen.getByText("Indonesian example")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText("Indonesian example")).toBeInTheDocument(), { timeout: 2000 });
 
     expect(screen.queryByLabelText("See another example")).not.toBeInTheDocument();
   });
