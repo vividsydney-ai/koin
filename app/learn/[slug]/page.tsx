@@ -6,7 +6,7 @@ export async function generateStaticParams() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
   const client = createClient(supabaseUrl, supabaseAnonKey);
-  const { data } = await client.from("lessons").select("slug");
+  const { data } = await client.from("lessons").select("slug").eq("is_published", true);
   return (data ?? []).map((l: { slug: string }) => ({ slug: l.slug }));
 }
 
@@ -15,7 +15,10 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
   const client = createClient(supabaseUrl, supabaseAnonKey);
-  const { count } = await client.from("lessons").select("*", { count: "exact", head: true });
+  const { count } = await client
+    .from("lessons")
+    .select("*", { count: "exact", head: true })
+    .eq("is_published", true);
 
   const chapters = await getTopicsWithChapters();
   let chapterLabel: string | undefined;

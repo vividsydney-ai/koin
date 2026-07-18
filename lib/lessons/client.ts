@@ -420,6 +420,7 @@ interface TopicWithLessonsRow {
     xp_reward: number;
     estimated_minutes: number;
     summary: string;
+    is_published: boolean;
   }[];
 }
 
@@ -433,7 +434,7 @@ export async function getTopicsWithChapters(
   const primary = await supabase
     .from("topics")
     .select(
-      "id, slug, name, name_id, icon, color, display_order, chapter, lessons(id, slug, title, lesson_number, difficulty, xp_reward, estimated_minutes, summary)"
+      "id, slug, name, name_id, icon, color, display_order, chapter, lessons(id, slug, title, lesson_number, difficulty, xp_reward, estimated_minutes, summary, is_published)"
     )
     .order("display_order", { ascending: true })
     .order("lesson_number", { referencedTable: "lessons", ascending: true });
@@ -446,7 +447,7 @@ export async function getTopicsWithChapters(
     const fallback = await supabase
       .from("topics")
       .select(
-        "id, slug, name, name_id, icon, color, display_order, lessons(id, slug, title, lesson_number, difficulty, xp_reward, estimated_minutes, summary)"
+        "id, slug, name, name_id, icon, color, display_order, lessons(id, slug, title, lesson_number, difficulty, xp_reward, estimated_minutes, summary, is_published)"
       )
       .order("display_order", { ascending: true })
       .order("lesson_number", { referencedTable: "lessons", ascending: true });
@@ -463,6 +464,7 @@ export async function getTopicsWithChapters(
 
   for (const topic of data ?? []) {
     const lessons = (topic.lessons ?? [])
+      .filter((l) => l.is_published !== false)
       .sort((a, b) => lessonDisplayOrder(a) - lessonDisplayOrder(b))
       .map((l) => ({
         id: l.id,
