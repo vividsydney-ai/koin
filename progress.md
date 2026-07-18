@@ -2,6 +2,17 @@
 # Loop reads and writes this. Human can also read to understand where we are.
 # v2: MVP reshaped around paper trading. Original v1 loop files archived in /_archived.
 
+## 2026-07-18 — KO-REPLAY-001: Lesson replay hang + quiz repetition fixed
+
+- **Root cause (replay hang):** 5 production `lesson_attempts` rows had `answers_json = '{}'` (object, not array). `getRecentAttemptVariantIds` iterated rows with `for...of`, throwing a TypeError inside `Promise.all` — the rejection was uncaught, leaving the lesson player on "Loading lesson…" forever. Only users with prior attempts (i.e., replays) hit it.
+- Fixes:
+  - `lib/lessons/client.ts`: defensive `Array.isArray` guard in `getRecentAttemptVariantIds`.
+  - `app/learn/[slug]/LessonPlayer.tsx`: full try/catch around load with an error state + "Try again" retry; question selection now uses per-load entropy (`Date.now()` in seed) so replays surface a different question instead of the same seeded variant all day ("always true/false" complaint — audit confirmed every published lesson has ≥4 valid question variants, so repetition was seed-related, not content-related).
+  - Migration `20260718000049_fix_answers_json_shape.sql`: normalizes the 5 bad rows and adds a CHECK constraint (`answers_json` must be null or an array). Applied to production; smoke query confirms 0 bad rows remain.
+- Tests: `tests/lessons/recent-attempts.test.ts` (3 tests: array, object, null shapes).
+- Gates: tsc ✅, lint ✅ 0 errors, vitest ✅ 333 passed / 5 skipped. Commit `6931bca` pushed.
+- Also: root `LOOP_ENGINEERING.md` updated — all Vercel/`web-mvp` references replaced with Netlify/`web-koinaku` (0 remaining).
+
 ## 2026-07-18 — KO-CAPTCHA-001: Turnstile captcha on signup (client side)
 
 - Wired Cloudflare Turnstile into the signup page with graceful degradation:
