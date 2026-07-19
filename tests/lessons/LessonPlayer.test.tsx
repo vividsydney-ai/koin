@@ -95,7 +95,7 @@ describe("LessonPlayer", () => {
       return [];
     });
     vi.mocked(lessonsClient.getLessonSources).mockResolvedValue([] as LessonSource[]);
-    vi.mocked(lessonsClient.getRecentAttemptVariantIds).mockResolvedValue(new Set());
+    vi.mocked(lessonsClient.getRecentAttemptVariantIds).mockResolvedValue({ ids: new Set(), lastVariantId: null });
     vi.mocked(lessonsClient.seededIndex).mockReturnValue(0);
   });
 

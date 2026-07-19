@@ -12,10 +12,16 @@ import {
   type Lesson,
   type ContentVariant,
   type LessonSource,
+  type RecentAttemptInfo,
 } from "@/lib/lessons/client";
 import { useAuth } from "@/lib/auth/use-auth";
 import { QuizEngine } from "@/components/lesson/QuizEngine";
-import { validateQuestion, applyParameters, type ProcessedQuestion } from "@/lib/lessons/question";
+import {
+  validateQuestion,
+  applyParameters,
+  type ProcessedQuestion,
+  type QuizQuestion,
+} from "@/lib/lessons/question";
 import { completeLesson, type CompletionResult } from "@/lib/lessons/completion";
 import type { ServiceError } from "@/lib/types/service-error";
 import { getFinancialLiteracyLevel } from "@/lib/profile/client";
@@ -24,6 +30,40 @@ import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { StatCard } from "@/components/StatCard";
 
 const STEP_IDS = ["intro", "concept", "example", "quiz", "source"] as const;
+
+interface ValidatedQuestionVariant {
+  variant: ContentVariant;
+  question: QuizQuestion;
+}
+
+function getValidatedQuestionVariants(variants: ContentVariant[]): ValidatedQuestionVariant[] {
+  return variants
+    .map((variant) => {
+      const question = validateQuestion(variant.body);
+      return question ? { variant, question } : null;
+    })
+    .filter((item): item is ValidatedQuestionVariant => item !== null);
+}
+
+function pickRotatedQuestionVariant(
+  infos: ValidatedQuestionVariant[],
+  avoidIds: Set<string>,
+  avoidType: string | null,
+  seed: string
+): ContentVariant | null {
+  if (infos.length === 0) return null;
+
+  let pool = infos.filter((info) => !avoidIds.has(info.variant.id));
+  if (pool.length === 0) pool = infos;
+
+  if (avoidType) {
+    const differentType = pool.filter((info) => info.question.type !== avoidType);
+    if (differentType.length > 0) pool = differentType;
+  }
+
+  const index = seededIndex(seed, pool.length);
+  return pool[index]?.variant ?? null;
+}
 
 export default function LessonPlayer({
   slug,
@@ -89,12 +129,14 @@ export default function LessonPlayer({
         const level = user ? await getFinancialLiteracyLevel(user.id) : null;
         if (!mounted) return;
 
-        const [fetchedExampleVariants, explanationData, fetchedQuestionVariants, sourceData, recentIds, lessonStatus] = await Promise.all([
+        const [fetchedExampleVariants, explanationData, fetchedQuestionVariants, sourceData, recentInfo, lessonStatus] = await Promise.all([
           getLessonVariants(data.id, "example", level, locale),
           getLessonVariants(data.id, "explanation", level, locale),
           getLessonVariants(data.id, "question", level, locale),
           getLessonSources(data.id),
-          user ? getRecentAttemptVariantIds(user.id, data.id) : Promise.resolve(new Set<string>()),
+          user
+            ? getRecentAttemptVariantIds(user.id, data.id)
+            : Promise.resolve<RecentAttemptInfo>({ ids: new Set(), lastVariantId: null }),
           user ? getLessonStatus(user.id, data.id) : Promise.resolve(null),
         ]);
 
@@ -112,9 +154,16 @@ export default function LessonPlayer({
         // based on locale inside getLessonVariants.
         example = fetchedExampleVariants[seededIndex(seed, fetchedExampleVariants.length)] ?? null;
 
-        const eligibleQuestions = fetchedQuestionVariants.filter((v) => !recentIds.has(v.id));
-        const questionPool = eligibleQuestions.length > 0 ? eligibleQuestions : fetchedQuestionVariants;
-        const selectedQuestionVariant = questionPool[seededIndex(`${seed}:q:${Date.now()}`, questionPool.length)] ?? null;
+        const questionInfos = getValidatedQuestionVariants(fetchedQuestionVariants);
+        const lastAttemptedType = recentInfo.lastVariantId
+          ? questionInfos.find((info) => info.variant.id === recentInfo.lastVariantId)?.question.type ?? null
+          : null;
+        const selectedQuestionVariant = pickRotatedQuestionVariant(
+          questionInfos,
+          recentInfo.ids,
+          lastAttemptedType,
+          `${seed}:q:${Date.now()}`
+        );
         if (selectedQuestionVariant) {
           const validated = validateQuestion(selectedQuestionVariant.body);
           if (validated) {
@@ -283,13 +332,13 @@ export default function LessonPlayer({
   const handleAnotherQuestion = (): ProcessedQuestion | null => {
     if (!lesson || questionVariants.length === 0) return null;
 
-    // Prefer questions the user has not already seen during this session.
-    const validVariants = questionVariants.filter((v) => validateQuestion(v.body));
-    const available = validVariants.filter((v) => !shownQuestionVariantIds.has(v.id));
-    const pool = available.length > 0 ? available : validVariants;
-    if (pool.length === 0) return null;
-
-    const variant = pool[seededIndex(`${seedBase}:quiz:${shownQuestionVariantIds.size}:${Date.now()}`, pool.length)];
+    const infos = getValidatedQuestionVariants(questionVariants);
+    const variant = pickRotatedQuestionVariant(
+      infos,
+      shownQuestionVariantIds,
+      activeQuestion?.type ?? null,
+      `${seedBase}:quiz:${shownQuestionVariantIds.size}:${Date.now()}`
+    );
 
     if (variant) {
       const validated = validateQuestion(variant.body);
@@ -354,7 +403,7 @@ export default function LessonPlayer({
   }
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-md flex-col bg-background">
+    <div className="mx-auto flex min-h-screen max-w-md flex-col bg-background sm:max-w-2xl lg:max-w-3xl xl:max-w-4xl">
       <header className="sticky top-0 z-10 border-b border-muted/60 bg-background/90 px-5 py-3 backdrop-blur-md">
         <div className="flex items-center justify-between">
           <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
@@ -511,6 +560,61 @@ function IntroStep({ lesson }: { lesson: Lesson }) {
   );
 }
 
+function splitSentences(text: string): string[] {
+  if (!text) return [];
+  if (text.length <= 200) return [text];
+  const sentences = text
+    .split(/(?<=[.!?])(?:\s+|$)/)
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+  return sentences.length > 0 ? sentences : [text];
+}
+
+function SplitParagraphs({
+  text,
+  className = "",
+}: {
+  text: string | null | undefined;
+  className?: string;
+}) {
+  if (!text) return null;
+  const parts = splitSentences(String(text));
+  return (
+    <div className={className}>
+      {parts.map((part, i) => (
+        <p key={i} className="text-[15px] leading-relaxed sm:text-base">
+          {part}
+        </p>
+      ))}
+    </div>
+  );
+}
+
+function SectionKicker({
+  icon,
+  label,
+  tone = "primary",
+}: {
+  icon: React.ReactNode;
+  label: string;
+  tone?: "primary" | "success" | "warning" | "info";
+}) {
+  const toneClasses = {
+    primary: "bg-primary/10 text-primary",
+    success: "bg-success/10 text-success",
+    warning: "bg-warning/10 text-warning",
+    info: "bg-info/10 text-info",
+  };
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide ${toneClasses[tone]}`}
+    >
+      {icon}
+      {label}
+    </span>
+  );
+}
+
 function ConceptStep({
   lesson,
   onExplainSimpler,
@@ -543,14 +647,21 @@ function ConceptStep({
         {title}
       </h2>
       {!showSimpler ? (
-        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{conceptBody}</p>
+        <div className="mt-4 space-y-3">
+          <SectionKicker icon={<LightbulbIcon />} label={t("lesson.theIdea")} tone="primary" />
+          <SplitParagraphs text={conceptBody} className="space-y-3 text-muted-foreground" />
+        </div>
       ) : (
         simplerVariant && (
           <div
-            className="mt-3 rounded-md border border-primary/20 p-4 text-sm leading-relaxed text-foreground"
+            className="mt-4 space-y-3 rounded-md border border-primary/20 p-4 text-foreground"
             style={{ background: "color-mix(in srgb, var(--color-primary) 8%, var(--color-surface))" }}
           >
-            {String(simplerVariant.body?.text ?? simplerVariant.body)}
+            <SectionKicker icon={<LightbulbIcon />} label={t("lesson.simplerExplanation")} tone="primary" />
+            <SplitParagraphs
+              text={String(simplerVariant.body?.text ?? simplerVariant.body)}
+              className="space-y-3"
+            />
           </div>
         )
       )}
@@ -574,10 +685,11 @@ function ConceptStep({
       )}
       {whyThisMatters && (
         <div
-          className="mt-4 rounded-md border border-primary/20 p-4 text-sm leading-relaxed text-foreground"
-          style={{ background: "color-mix(in srgb, var(--color-primary) 8%, var(--color-surface))" }}
+          className="mt-4 space-y-3 rounded-md border border-success/20 p-4 text-foreground"
+          style={{ background: "color-mix(in srgb, var(--color-success) 8%, var(--color-surface))" }}
         >
-          {whyThisMatters}
+          <SectionKicker icon={<HeartIcon />} label={t("lesson.whyItMatters")} tone="success" />
+          <SplitParagraphs text={whyThisMatters} className="space-y-3" />
         </div>
       )}
     </article>
@@ -630,8 +742,9 @@ function ExampleStep({
       <h2 className="mt-2 font-display text-lg font-bold text-foreground">
         {t("lesson.exampleHeading")}
       </h2>
-      <div className="mt-3 rounded-lg border border-muted/60 bg-surface-raised p-4">
-        <p className="text-sm leading-relaxed text-muted-foreground">{String(displayText ?? "")}</p>
+      <div className="mt-3 space-y-3 rounded-lg border border-muted/60 bg-surface-raised p-4">
+        <SectionKicker icon={<MapPinIcon />} label={t("lesson.realExample")} tone="info" />
+        <SplitParagraphs text={String(displayText ?? "")} className="space-y-3 text-muted-foreground" />
       </div>
       {canShowAnother && !showAlternate && (
         <button
@@ -653,9 +766,13 @@ function ExampleStep({
         </button>
       )}
       {commonMistake && (
-        <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-          <strong className="text-foreground">{t("lesson.commonMistake")}</strong> {commonMistake}
-        </p>
+        <div
+          className="mt-4 space-y-3 rounded-md border border-warning/20 p-4 text-foreground"
+          style={{ background: "color-mix(in srgb, var(--color-warning) 8%, var(--color-surface))" }}
+        >
+          <SectionKicker icon={<AlertIcon />} label={t("lesson.commonMistake")} tone="warning" />
+          <SplitParagraphs text={commonMistake} className="space-y-3" />
+        </div>
       )}
     </article>
   );
@@ -772,8 +889,8 @@ function SourceStep({
       ) : (
         <div className="space-y-5">
           {primary.length > 0 && (
-            <div className="space-y-3">
-              <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{t("lesson.primarySource")}</h3>
+            <div className="@container grid grid-cols-1 gap-3">
+              <h3 className="col-span-full text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{t("lesson.primarySource")}</h3>
               {primary.map((source) => (
                 <SourceCard key={source.id} source={source} highlighted />
               ))}
@@ -781,8 +898,8 @@ function SourceStep({
           )}
 
           {supporting.length > 0 && (
-            <div className="space-y-3">
-              <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{t("lesson.supportingSources")}</h3>
+            <div className="@container grid grid-cols-1 gap-3 @[640px]:grid-cols-2">
+              <h3 className="col-span-full text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{t("lesson.supportingSources")}</h3>
               {supporting.map((source) => (
                 <SourceCard key={source.id} source={source} />
               ))}
@@ -790,8 +907,8 @@ function SourceStep({
           )}
 
           {furtherReading.length > 0 && (
-            <div className="space-y-3">
-              <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{t("lesson.furtherReading")}</h3>
+            <div className="@container grid grid-cols-1 gap-3 @[640px]:grid-cols-2">
+              <h3 className="col-span-full text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{t("lesson.furtherReading")}</h3>
               {furtherReading.map((source) => (
                 <SourceCard key={source.id} source={source} />
               ))}
@@ -831,28 +948,29 @@ function SourceCard({ source, highlighted = false }: { source: LessonSource; hig
 
   if (highlighted) {
     return (
-      <article className="rounded-card border border-primary/30 bg-gradient-to-br from-[var(--rup-orbit-900)] to-[#0b0916] p-5 text-white">
+      <article className="relative overflow-hidden rounded-card border border-primary/30 bg-surface p-5 shadow-sm transition-colors hover:border-primary/50">
+        <div className="absolute inset-x-0 top-0 h-1 bg-primary" aria-hidden="true" />
         <div className="flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-white">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-primary">
             <FileTextIcon size={14} />
             {t("lesson.tier")} {source.sourceTier}
           </span>
           <span
-            className={`inline-flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide ${
-              verified ? "text-success" : "text-warning"
+            className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide ${
+              verified ? "bg-success/10 text-success" : "bg-warning/10 text-warning"
             }`}
           >
             {verified && <CheckIconMini />}
             {verified ? t("lesson.verified") : t("lesson.needsReview")}
           </span>
         </div>
-        <h4 className="mt-3 font-display text-lg font-bold text-white">{displayTitle}</h4>
-        <p className="mt-1 text-sm text-white/70">{source.organization}</p>
+        <h4 className="mt-3 font-display text-lg font-bold text-foreground">{displayTitle}</h4>
+        <p className="mt-1 text-sm text-muted-foreground">{source.organization}</p>
         {source.citationLabel && (
-          <p className="mt-1 text-xs text-white/60">{source.citationLabel}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{source.citationLabel}</p>
         )}
         {blurb && (
-          <p className={`mt-3 text-sm leading-relaxed text-white/80 ${expanded ? "" : "line-clamp-3"}`}>
+          <p className={`mt-3 text-sm leading-relaxed text-foreground ${expanded ? "" : "line-clamp-3"}`}>
             {blurb}
           </p>
         )}
@@ -862,7 +980,8 @@ function SourceCard({ source, highlighted = false }: { source: LessonSource; hig
               href={source.url}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-1 text-sm font-bold text-white/90 hover:text-white"
+              aria-label={`${t("lesson.readSource")}: ${displayTitle}`}
+              className="inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline"
             >
               {t("lesson.readSource")}
               <ArrowRightMiniIcon />
@@ -873,7 +992,8 @@ function SourceCard({ source, highlighted = false }: { source: LessonSource; hig
               type="button"
               onClick={() => setExpanded((e) => !e)}
               aria-expanded={expanded}
-              className="inline-flex items-center gap-1 text-sm font-bold text-white/90 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 rounded-md"
+              aria-label={`${expanded ? t("library.showLess") : t("library.readMore")}: ${displayTitle}`}
+              className="inline-flex items-center gap-1 rounded-md text-sm font-bold text-primary hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               {expanded ? t("library.showLess") : t("library.readMore")}
               <ChevronIcon expanded={expanded} />
@@ -881,21 +1001,21 @@ function SourceCard({ source, highlighted = false }: { source: LessonSource; hig
           )}
         </div>
         {expanded && (
-          <div className="mt-4 space-y-3 border-t border-white/10 pt-3">
+          <div className="mt-4 space-y-3 border-t border-muted pt-3">
             {activeSynopsis && (
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/60">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                   {t("library.synopsis")}
                 </p>
-                <p className="mt-1 text-sm leading-relaxed text-white/80">{activeSynopsis}</p>
+                <p className="mt-1 text-sm leading-relaxed text-foreground">{activeSynopsis}</p>
               </div>
             )}
             {activeRelevance && (
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/60">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                   {t("library.relevance")}
                 </p>
-                <p className="mt-1 text-sm leading-relaxed text-white/80">{activeRelevance}</p>
+                <p className="mt-1 text-sm leading-relaxed text-foreground">{activeRelevance}</p>
               </div>
             )}
           </div>
@@ -905,7 +1025,7 @@ function SourceCard({ source, highlighted = false }: { source: LessonSource; hig
   }
 
   return (
-    <article className="rounded-card border border-muted bg-surface p-4 grid grid-cols-[80px_minmax(0,1fr)] gap-4">
+    <article className="rounded-card border border-muted bg-surface p-4 grid grid-cols-[80px_minmax(0,1fr)] gap-4 transition-colors hover:border-primary/30">
       <div className="flex h-20 w-full items-center justify-center rounded-md bg-gradient-to-br from-primary/10 to-surface-raised text-primary">
         <FileTextIcon size={26} />
       </div>
@@ -938,6 +1058,7 @@ function SourceCard({ source, highlighted = false }: { source: LessonSource; hig
               href={source.url}
               target="_blank"
               rel="noreferrer"
+              aria-label={`${t("lesson.readSource")}: ${displayTitle}`}
               className="inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline"
             >
               {t("lesson.readSource")}
@@ -949,7 +1070,8 @@ function SourceCard({ source, highlighted = false }: { source: LessonSource; hig
               type="button"
               onClick={() => setExpanded((e) => !e)}
               aria-expanded={expanded}
-              className="inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-md"
+              aria-label={`${expanded ? t("library.showLess") : t("library.readMore")}: ${displayTitle}`}
+              className="inline-flex items-center gap-1 rounded-md text-sm font-bold text-primary hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               {expanded ? t("library.showLess") : t("library.readMore")}
               <ChevronIcon expanded={expanded} />
@@ -964,7 +1086,7 @@ function SourceCard({ source, highlighted = false }: { source: LessonSource; hig
               <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                 {t("library.synopsis")}
               </p>
-              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{activeSynopsis}</p>
+              <p className="mt-1 text-sm leading-relaxed text-foreground">{activeSynopsis}</p>
             </div>
           )}
           {activeRelevance && (
@@ -972,7 +1094,7 @@ function SourceCard({ source, highlighted = false }: { source: LessonSource; hig
               <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                 {t("library.relevance")}
               </p>
-              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{activeRelevance}</p>
+              <p className="mt-1 text-sm leading-relaxed text-foreground">{activeRelevance}</p>
             </div>
           )}
         </div>
@@ -1188,6 +1310,43 @@ function CheckIconLarge() {
     <svg className="h-10 w-10 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="12" r="10" />
       <path d="m9 12 2 2 4-4" />
+    </svg>
+  );
+}
+
+function LightbulbIcon() {
+  return (
+    <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9 18h6" />
+      <path d="M10 22h4" />
+      <path d="M12 2a7 7 0 0 0-7 7c0 2.5 1.5 4.5 3 6v2h8v-2c1.5-1.5 3-3.5 3-6a7 7 0 0 0-7-7z" />
+    </svg>
+  );
+}
+
+function HeartIcon() {
+  return (
+    <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+    </svg>
+  );
+}
+
+function MapPinIcon() {
+  return (
+    <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+      <circle cx="12" cy="10" r="3" />
+    </svg>
+  );
+}
+
+function AlertIcon() {
+  return (
+    <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+      <path d="M12 9v4" />
+      <path d="M12 17h.01" />
     </svg>
   );
 }

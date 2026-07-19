@@ -47,17 +47,17 @@ function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <header className="sticky top-0 z-30 border-b border-border bg-background/95 px-4 py-3 backdrop-blur-md">
-        <div className="mx-auto flex max-w-md items-center justify-between">
+      <header className="sticky top-0 z-30 border-b border-border bg-background/95 px-4 py-3 backdrop-blur-md sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-md items-center justify-between sm:max-w-2xl lg:max-w-4xl xl:max-w-5xl">
           <span className="font-display text-xl font-bold tracking-tight text-foreground">Koinaku</span>
           {user && <NotificationBell userId={user.id} />}
         </div>
       </header>
 
-      <main className="mx-auto max-w-md flex-1 pb-24">{children}</main>
+      <main className="mx-auto max-w-md flex-1 pb-24 sm:max-w-2xl lg:max-w-4xl xl:max-w-5xl">{children}</main>
 
       <nav className="fixed bottom-0 left-0 right-0 border-t border-border bg-surface">
-        <ul className="mx-auto flex max-w-md justify-around">
+        <ul className="mx-auto flex max-w-md justify-around sm:max-w-2xl lg:max-w-4xl xl:max-w-5xl">
           {NAV_ITEMS.map((item) => {
             const isActive =
               item.href === "/"

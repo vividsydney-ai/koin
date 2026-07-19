@@ -95,6 +95,21 @@ describe("QuizEngine", () => {
     expect(onComplete).toHaveBeenCalledWith(true);
   });
 
+  it("renders swipe_yes_no as a Yes / No binary choice", () => {
+    const question: ProcessedQuestion = {
+      ...base,
+      type: "swipe_yes_no",
+      question: "Is this a good habit?",
+      answer: true,
+    };
+    const onComplete = vi.fn();
+    render(<QuizEngine question={question} seed="s7" onComplete={onComplete} />);
+
+    expect(screen.getByText("Yes / No")).toBeInTheDocument();
+    fireEvent.click(screen.getByText("Yes"));
+    expect(onComplete).toHaveBeenCalledWith(true);
+  });
+
   it("shows unsupported message for unimplemented types", () => {
     const question: ProcessedQuestion = {
       ...base,

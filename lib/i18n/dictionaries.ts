@@ -31,13 +31,16 @@ export interface Dictionary {
   "lesson.errorTooFast": string;
   "lesson.minutes": string;
   "lesson.theConcept": string;
+  "lesson.theIdea": string;
   "lesson.simplerExplanation": string;
   "lesson.backToMainExplanation": string;
   "lesson.indonesianExample": string;
   "lesson.exampleHeading": string;
+  "lesson.realExample": string;
   "lesson.seeAnotherExample": string;
   "lesson.backToMainExample": string;
   "lesson.commonMistake": string;
+  "lesson.whyItMatters": string;
   "lesson.quickCheck": string;
   "lesson.quizHeading": string;
   "lesson.tryAnotherQuestion": string;
@@ -71,6 +74,8 @@ export interface Dictionary {
   "quiz.fallbackExplanation": string;
   "quiz.true": string;
   "quiz.false": string;
+  "quiz.yes": string;
+  "quiz.no": string;
   "quiz.checkAnswer": string;
   "quiz.typeAnswer": string;
   "quiz.tapTwoItems": string;
@@ -198,6 +203,15 @@ export interface Dictionary {
   "friends.cameraNotAvailable": string;
   "friends.cameraError": string;
   "friends.createError": string;
+  "friends.copyInviteCode": string;
+  "friends.copyInviteLink": string;
+  "friends.inviteLinkCopied": string;
+  "friends.inviteFriend": string;
+  "friends.inviteFriendToCohort": string;
+  "friends.cohortLimitPro": string;
+  "friends.invitedFriend": string;
+  "friends.alreadyInCohort": string;
+  "friends.inviteError": string;
 
   // Trade / price chart
   "trade.simulatedPrices": string;
@@ -255,13 +269,16 @@ export const dictionaries: Record<Locale, Dictionary> = {
       "Please spend at least a few more moments on this lesson before finishing.",
     "lesson.minutes": "minutes",
     "lesson.theConcept": "The concept",
+    "lesson.theIdea": "The idea",
     "lesson.simplerExplanation": "Simpler explanation",
     "lesson.backToMainExplanation": "Back to main explanation",
     "lesson.indonesianExample": "Indonesian example",
     "lesson.exampleHeading": "How this plays out",
+    "lesson.realExample": "Real example",
     "lesson.seeAnotherExample": "See another example",
     "lesson.backToMainExample": "Back to main example",
-    "lesson.commonMistake": "Common mistake:",
+    "lesson.commonMistake": "Common mistake",
+    "lesson.whyItMatters": "Why it matters",
     "lesson.quickCheck": "Quick check",
     "lesson.quizHeading": "Test your understanding",
     "lesson.tryAnotherQuestion": "Try another question",
@@ -296,6 +313,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "quiz.fallbackExplanation": "Grasping the basics helps you make smarter everyday money choices.",
     "quiz.true": "True",
     "quiz.false": "False",
+    "quiz.yes": "Yes",
+    "quiz.no": "No",
     "quiz.checkAnswer": "Check answer",
     "quiz.typeAnswer": "Type your answer",
     "quiz.tapTwoItems": "Tap two items to swap their positions.",
@@ -426,6 +445,15 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "friends.cameraNotAvailable": "Camera not available in this browser. You can enter an invite link below.",
     "friends.cameraError": "Could not access camera. You can enter an invite link below.",
     "friends.createError": "Could not create cohort. Try again.",
+    "friends.copyInviteCode": "Copy invite code",
+    "friends.copyInviteLink": "Copy invite link",
+    "friends.inviteLinkCopied": "Invite link copied!",
+    "friends.inviteFriend": "Invite friend",
+    "friends.inviteFriendToCohort": "Invite friend to cohort",
+    "friends.cohortLimitPro": "Pro users can create up to 10 cohorts.",
+    "friends.invitedFriend": "Invited!",
+    "friends.alreadyInCohort": "Already in this cohort.",
+    "friends.inviteError": "Could not invite friend. Try again.",
 
     "trade.simulatedPrices": "Simulated prices",
     "trade.simulatedBody":
@@ -472,13 +500,16 @@ export const dictionaries: Record<Locale, Dictionary> = {
       "Silakan luangkan waktu sebentar lagi untuk pelajaran ini sebelum menyelesaikannya.",
     "lesson.minutes": "menit",
     "lesson.theConcept": "Konsepnya",
+    "lesson.theIdea": "Intinya",
     "lesson.simplerExplanation": "Penjelasan lebih sederhana",
     "lesson.backToMainExplanation": "Kembali ke penjelasan utama",
     "lesson.indonesianExample": "Contoh Indonesia",
     "lesson.exampleHeading": "Begini penerapannya",
+    "lesson.realExample": "Contoh nyata",
     "lesson.seeAnotherExample": "Lihat contoh lain",
     "lesson.backToMainExample": "Kembali ke contoh utama",
-    "lesson.commonMistake": "Kesalahan umum:",
+    "lesson.commonMistake": "Kesalahan umum",
+    "lesson.whyItMatters": "Mengapa penting",
     "lesson.quickCheck": "Cek cepat",
     "lesson.quizHeading": "Uji pemahamanmu",
     "lesson.tryAnotherQuestion": "Coba soal lain",
@@ -513,6 +544,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "quiz.fallbackExplanation": "Memahami dasar-dasar ini membantu kamu membuat keputusan uang yang lebih cerdas setiap hari.",
     "quiz.true": "Benar",
     "quiz.false": "Salah",
+    "quiz.yes": "Ya",
+    "quiz.no": "Tidak",
     "quiz.checkAnswer": "Periksa jawaban",
     "quiz.typeAnswer": "Ketik jawabanmu",
     "quiz.tapTwoItems": "Ketuk dua item untuk menukar posisinya.",
@@ -643,6 +676,15 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "friends.cameraNotAvailable": "Kamera tidak tersedia di browser ini. Kamu bisa memasukkan tautan undangan di bawah.",
     "friends.cameraError": "Tidak dapat mengakses kamera. Kamu bisa memasukkan tautan undangan di bawah.",
     "friends.createError": "Tidak dapat membuat kelompok. Coba lagi.",
+    "friends.copyInviteCode": "Salin kode undangan",
+    "friends.copyInviteLink": "Salin tautan undangan",
+    "friends.inviteLinkCopied": "Tautan undangan disalin!",
+    "friends.inviteFriend": "Undang teman",
+    "friends.inviteFriendToCohort": "Undang teman ke kelompok",
+    "friends.cohortLimitPro": "Pengguna Pro bisa membuat hingga 10 kelompok.",
+    "friends.invitedFriend": "Diundang!",
+    "friends.alreadyInCohort": "Sudah di kelompok ini.",
+    "friends.inviteError": "Tidak dapat mengundang teman. Coba lagi.",
 
     "trade.simulatedPrices": "Harga simulasi",
     "trade.simulatedBody":

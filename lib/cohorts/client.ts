@@ -65,6 +65,36 @@ export interface CreatedCohort {
   inviteCode: string;
 }
 
+export interface CohortInviteResult {
+  membershipId: string;
+  cohortId: string;
+  alreadyMember: boolean;
+}
+
+export async function inviteFriendToCohort(
+  userId: string,
+  friendId: string,
+  cohortId: string
+): Promise<CohortInviteResult | null> {
+  const { data, error } = await supabase.rpc("invite_friend_to_cohort", {
+    p_user_id: userId,
+    p_friend_id: friendId,
+    p_cohort_id: cohortId,
+  });
+
+  if (error || !data) {
+    console.error("inviteFriendToCohort error:", error?.message);
+    return null;
+  }
+
+  const raw = data as Record<string, unknown>;
+  return {
+    membershipId: String(raw.membership_id ?? ""),
+    cohortId: String(raw.cohort_id ?? ""),
+    alreadyMember: Boolean(raw.already_member),
+  };
+}
+
 export async function createCohort(userId: string, name: string): Promise<CreatedCohort | null> {
   const { data, error } = await supabase.rpc("create_cohort", {
     p_user_id: userId,

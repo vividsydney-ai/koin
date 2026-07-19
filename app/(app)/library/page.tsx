@@ -90,7 +90,7 @@ export default function LibraryPage() {
   };
 
   return (
-    <main className="min-h-screen bg-background p-5 pb-28">
+    <main className="min-h-screen bg-background p-5 pb-28 sm:p-6 lg:p-8 xl:p-10">
       <header className="mb-6">
         <h1 className="text-2xl font-bold tracking-tight text-foreground">Library</h1>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -162,7 +162,7 @@ export default function LibraryPage() {
       </div>
 
       {loading ? (
-        <div className="space-y-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 lg:gap-5 xl:gap-8">
           <SourceCardSkeleton />
           <SourceCardSkeleton />
           <SourceCardSkeleton />
@@ -180,7 +180,7 @@ export default function LibraryPage() {
           )}
         </div>
       ) : (
-        <ul className="space-y-3" role="list">
+        <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 lg:gap-5 xl:gap-8" role="list">
           {filtered.map((source) => (
             <li key={source.id}>
               <SourceCard source={source} />
@@ -203,28 +203,29 @@ function SourceCard({ source }: { source: Source }) {
 
   if (isTier1) {
     return (
-      <article className="rounded-card border border-primary/30 bg-gradient-to-br from-[var(--rup-orbit-900)] to-[#0b0916] p-5 text-white transition-colors hover:border-primary/50">
+      <article className="relative overflow-hidden rounded-card border border-primary/30 bg-surface p-5 shadow-sm transition-colors hover:border-primary/50">
+        <div className="absolute inset-x-0 top-0 h-1 bg-primary" aria-hidden="true" />
         <div className="flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-white">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-primary">
             <FileTextIcon size={14} />
             {TIER_LABELS[source.sourceTier]}
           </span>
-          <span className="rounded-md bg-white/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white/90">
+          <span className="rounded-md bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary">
             {source.sourceType}
           </span>
-          <StatusPill status={source.status} variant="dark" />
+          <StatusPill status={source.status} variant="light" />
         </div>
-        <h2 className="mt-3 font-display text-lg font-bold text-white">{source.title}</h2>
+        <h2 className="mt-3 font-display text-lg font-bold text-foreground">{source.title}</h2>
         {source.localTitle && source.localTitle !== source.title && (
-          <p className="mt-1 text-sm text-white/70">{source.localTitle}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{source.localTitle}</p>
         )}
-        <p className="mt-1 text-sm text-white/70">
+        <p className="mt-1 text-sm text-muted-foreground">
           {source.organization}
           {source.publicationYear ? ` · ${source.publicationYear}` : ""}
           {source.language ? ` · ${source.language.toUpperCase()}` : ""}
         </p>
         {blurb && (
-          <p className={`mt-3 text-sm leading-relaxed text-white/80 ${expanded ? "" : "line-clamp-3"}`}>
+          <p className={`mt-3 text-sm leading-relaxed text-foreground ${expanded ? "" : "line-clamp-3"}`}>
             {blurb}
           </p>
         )}
@@ -234,7 +235,8 @@ function SourceCard({ source }: { source: Source }) {
               href={source.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-sm font-bold text-white/90 hover:text-white"
+              aria-label={`${t("lesson.readSource")}: ${source.title}`}
+              className="inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline"
             >
               {t("lesson.readSource")}
               <ArrowRightIcon />
@@ -245,7 +247,8 @@ function SourceCard({ source }: { source: Source }) {
               type="button"
               onClick={() => setExpanded((e) => !e)}
               aria-expanded={expanded}
-              className="inline-flex items-center gap-1 text-sm font-bold text-white/90 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 rounded-md"
+              aria-label={`${expanded ? t("library.showLess") : t("library.readMore")}: ${source.title}`}
+              className="inline-flex items-center gap-1 rounded-md text-sm font-bold text-primary hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               {expanded ? t("library.showLess") : t("library.readMore")}
               <ChevronIcon expanded={expanded} />
@@ -253,21 +256,21 @@ function SourceCard({ source }: { source: Source }) {
           )}
         </div>
         {expanded && (
-          <div className="mt-4 space-y-3 border-t border-white/10 pt-3">
+          <div className="mt-4 space-y-3 border-t border-muted pt-3">
             {activeSynopsis && (
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/60">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                   {t("library.synopsis")}
                 </p>
-                <p className="mt-1 text-sm leading-relaxed text-white/80">{activeSynopsis}</p>
+                <p className="mt-1 text-sm leading-relaxed text-foreground">{activeSynopsis}</p>
               </div>
             )}
             {activeRelevance && (
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/60">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                   {t("library.relevance")}
                 </p>
-                <p className="mt-1 text-sm leading-relaxed text-white/80">{activeRelevance}</p>
+                <p className="mt-1 text-sm leading-relaxed text-foreground">{activeRelevance}</p>
               </div>
             )}
           </div>
@@ -311,6 +314,7 @@ function SourceCard({ source }: { source: Source }) {
               href={source.url}
               target="_blank"
               rel="noopener noreferrer"
+              aria-label={`${t("lesson.readSource")}: ${source.title}`}
               className="inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline"
             >
               {t("lesson.readSource")}
@@ -322,7 +326,8 @@ function SourceCard({ source }: { source: Source }) {
               type="button"
               onClick={() => setExpanded((e) => !e)}
               aria-expanded={expanded}
-              className="inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-md"
+              aria-label={`${expanded ? t("library.showLess") : t("library.readMore")}: ${source.title}`}
+              className="inline-flex items-center gap-1 rounded-md text-sm font-bold text-primary hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               {expanded ? t("library.showLess") : t("library.readMore")}
               <ChevronIcon expanded={expanded} />

@@ -375,36 +375,48 @@ export async function ensureLessonProgressAvailable(
   }
 }
 
+export interface RecentAttemptInfo {
+  ids: Set<string>;
+  lastVariantId: string | null;
+}
+
 export async function getRecentAttemptVariantIds(
   userId: string,
   lessonId: string,
   days = 7
-): Promise<Set<string>> {
+): Promise<RecentAttemptInfo> {
   const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
 
   const { data, error } = await supabase
     .from("lesson_attempts")
-    .select("answers_json")
+    .select("answers_json, created_at")
     .eq("user_id", userId)
     .eq("lesson_id", lessonId)
-    .gte("created_at", since);
+    .gte("created_at", since)
+    .order("created_at", { ascending: false });
 
   if (error || !data) {
     console.error("getRecentAttemptVariantIds error:", error?.message);
-    return new Set();
+    return { ids: new Set(), lastVariantId: null };
   }
 
   const ids = new Set<string>();
+  let lastVariantId: string | null = null;
   for (const row of data) {
     // Defensive: legacy rows may store answers_json as an object instead of an
     // array. Iterating a non-array would throw and leave the lesson player
     // stuck on its loading screen (see KO-REPLAY-001).
     const answers = Array.isArray(row.answers_json) ? (row.answers_json as AttemptAnswer[]) : [];
     for (const answer of answers) {
-      if (answer?.variant_id) ids.add(answer.variant_id);
+      if (answer?.variant_id) {
+        ids.add(answer.variant_id);
+        if (lastVariantId === null) {
+          lastVariantId = answer.variant_id;
+        }
+      }
     }
   }
-  return ids;
+  return { ids, lastVariantId };
 }
 
 export interface ChapterLesson {

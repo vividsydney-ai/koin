@@ -31,18 +31,20 @@ vi.mock("@/lib/home/client", () => ({
 vi.mock("@/lib/cohorts/client", () => ({
   joinCohortByCode: vi.fn(),
   getCohorts: (...args: unknown[]) => mockGetCohorts(...args),
+  inviteFriendToCohort: vi.fn(),
 }));
 
 vi.mock("next/navigation", () => ({
   usePathname: vi.fn().mockReturnValue("/friends"),
   useRouter: vi.fn().mockReturnValue({ push: vi.fn() }),
+  useSearchParams: vi.fn().mockReturnValue(new URLSearchParams()),
 }));
 
 import { useAuth } from "@/lib/auth/use-auth";
 import FriendsPage from "@/app/(app)/friends/page";
 
 const mockUser = { id: "user-1", email: "budi@example.com" };
-const mockProfile = { display_name: "Budi" };
+const mockProfile = { display_name: "Budi", subscription_tier: "free" };
 
 const mockLeaderboard = {
   weekStart: "2026-07-13",

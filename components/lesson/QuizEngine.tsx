@@ -9,6 +9,7 @@ import {
   type ProcessedQuestion,
   type MultipleChoiceQuestion,
   type TrueFalseQuestion,
+  type SwipeYesNoQuestion,
   type FillBlankQuestion,
   type WordBankQuestion,
   type OrderingQuestion,
@@ -29,6 +30,8 @@ export function QuizEngine({ question, seed, onComplete }: QuizEngineProps) {
       return <MultipleChoice question={question} seed={seed} onComplete={onComplete} />;
     case "true_false":
       return <TrueFalse question={question} onComplete={onComplete} />;
+    case "swipe_yes_no":
+      return <YesNo question={question} onComplete={onComplete} />;
     case "fill_blank":
       return <FillBlank question={question} onComplete={onComplete} />;
     case "word_bank":
@@ -90,9 +93,32 @@ function TrueFalse({
       answer={question.answer}
       explanation={question.explanation}
       onComplete={onComplete}
-      kicker="True / False"
+      kicker={`${t("quiz.true")} / ${t("quiz.false")}`}
       kickerIcon={<ToggleIcon />}
       tint="primary"
+    />
+  );
+}
+
+function YesNo({
+  question,
+  onComplete,
+}: {
+  question: SwipeYesNoQuestion;
+  onComplete?: (correct: boolean) => void;
+}) {
+  const { t } = useLocale();
+  return (
+    <BinaryChoice
+      question={question.question}
+      trueLabel={t("quiz.yes")}
+      falseLabel={t("quiz.no")}
+      answer={question.answer}
+      explanation={question.explanation}
+      onComplete={onComplete}
+      kicker={`${t("quiz.yes")} / ${t("quiz.no")}`}
+      kickerIcon={<ThumbsUpIcon />}
+      tint="info"
     />
   );
 }
@@ -686,6 +712,15 @@ function XIcon({ className }: { className?: string }) {
     <svg className={className} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M18 6 6 18" />
       <path d="m6 6 12 12" />
+    </svg>
+  );
+}
+
+function ThumbsUpIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M7 10v12" />
+      <path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h3" />
     </svg>
   );
 }

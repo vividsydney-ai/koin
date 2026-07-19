@@ -5,7 +5,8 @@ const rangeResult = { data: [] as Record<string, unknown>[], error: null };
 const query = {
   select: vi.fn().mockReturnThis(),
   eq: vi.fn().mockReturnThis(),
-  gte: vi.fn().mockResolvedValue(rangeResult),
+  gte: vi.fn().mockReturnThis(),
+  order: vi.fn().mockResolvedValue(rangeResult),
 };
 
 vi.mock("@/lib/auth/client", () => ({
@@ -26,9 +27,10 @@ describe("getRecentAttemptVariantIds (KO-REPLAY-001)", () => {
       { answers_json: [{ variant_id: "c" }] },
     ];
 
-    const ids = await getRecentAttemptVariantIds("user1", "lesson1");
+    const result = await getRecentAttemptVariantIds("user1", "lesson1");
 
-    expect(ids).toEqual(new Set(["a", "b", "c"]));
+    expect(result.ids).toEqual(new Set(["a", "b", "c"]));
+    expect(result.lastVariantId).toBe("a");
   });
 
   it("does not throw on object-shaped answers_json (legacy rows)", async () => {
@@ -37,16 +39,18 @@ describe("getRecentAttemptVariantIds (KO-REPLAY-001)", () => {
       { answers_json: [{ variant_id: "x" }] },
     ];
 
-    const ids = await getRecentAttemptVariantIds("user1", "lesson1");
+    const result = await getRecentAttemptVariantIds("user1", "lesson1");
 
-    expect(ids).toEqual(new Set(["x"]));
+    expect(result.ids).toEqual(new Set(["x"]));
+    expect(result.lastVariantId).toBe("x");
   });
 
   it("handles null answers_json", async () => {
     rangeResult.data = [{ answers_json: null }];
 
-    const ids = await getRecentAttemptVariantIds("user1", "lesson1");
+    const result = await getRecentAttemptVariantIds("user1", "lesson1");
 
-    expect(ids.size).toBe(0);
+    expect(result.ids.size).toBe(0);
+    expect(result.lastVariantId).toBeNull();
   });
 });
