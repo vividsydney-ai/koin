@@ -69,3 +69,25 @@ tmp-screenshots/
 
 # Local Netlify folder
 .netlify
+
+# --- Local-only / confidential / trade-secret files ---
+# Keep these on the local Mac; do not push to GitHub.
+_sessions/
+.loop/
+openwiki/
+loop-state.md
+loop-budget.md
+PRD.md
+PRODUCT.md
+VISION.md
+TASKS.md
+ADL.md
+RECURRING.md
+ui-lift.md
+docs/KNOWN_GAPS.md
+docs/MVP_RELEASE_SPEC.md
+docs/ANALYTICS_PLAYBOOK.md
+docs/BUG_TRACKER.md
+supabase/seed.sql
+supabase/seed_content_variants.sql
+scripts/generate-migration-021.py
