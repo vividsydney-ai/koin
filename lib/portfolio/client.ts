@@ -12,7 +12,7 @@ export async function getPortfolioSnapshot(userId: string): Promise<PortfolioSna
     .from("portfolios")
     .select("cash_balance, total_value, starting_cash")
     .eq("user_id", userId)
-    .single();
+    .maybeSingle();
 
   if (error || !data) return null;
 

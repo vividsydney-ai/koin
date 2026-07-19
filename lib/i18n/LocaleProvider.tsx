@@ -63,16 +63,23 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
   const setLocale = useCallback(
     (next: Locale) => {
       setLocaleState(next);
-      if (user) {
-        void supabase.from("user_settings").upsert(
+      if (!user) return;
+
+      supabase
+        .from("user_settings")
+        .upsert(
           {
             user_id: user.id,
             locale: next,
             updated_at: new Date().toISOString(),
           },
           { onConflict: "user_id" }
-        );
-      }
+        )
+        .then(({ error }) => {
+          if (error) {
+            console.error("setLocale error:", error.message);
+          }
+        });
     },
     [user]
   );

@@ -216,8 +216,8 @@ describe("findChapterForLesson", () => {
           name: "Foundation Zero",
           displayOrder: 0,
           lessons: [
-            { id: "l-1", slug: "lesson-1", title: "First", lessonNumber: 1, difficulty: "beginner", xpReward: 10, estimatedMinutes: 3, summary: "" },
-            { id: "l-2", slug: "lesson-2", title: "Second", lessonNumber: 2, difficulty: "beginner", xpReward: 10, estimatedMinutes: 3, summary: "" },
+            { id: "l-1", slug: "lesson-1", title: "First", titleId: null, lessonNumber: 1, difficulty: "beginner", xpReward: 10, estimatedMinutes: 3, summary: "", summaryId: null },
+            { id: "l-2", slug: "lesson-2", title: "Second", titleId: null, lessonNumber: 2, difficulty: "beginner", xpReward: 10, estimatedMinutes: 3, summary: "", summaryId: null },
           ],
         },
       ],
@@ -234,7 +234,7 @@ describe("findChapterForLesson", () => {
           name: "Scam Defense",
           displayOrder: 1,
           lessons: [
-            { id: "l-3", slug: "lesson-3", title: "Third", lessonNumber: 3, difficulty: "beginner", xpReward: 10, estimatedMinutes: 3, summary: "" },
+            { id: "l-3", slug: "lesson-3", title: "Third", titleId: null, lessonNumber: 3, difficulty: "beginner", xpReward: 10, estimatedMinutes: 3, summary: "", summaryId: null },
           ],
         },
       ],

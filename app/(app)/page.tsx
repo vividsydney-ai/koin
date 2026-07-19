@@ -22,6 +22,7 @@ import {
 import { ProgressCardModal, type ProgressCardData } from "@/components/ProgressCard";
 import { EmptyState } from "@/components/EmptyState";
 import { StatCard, type StatCardTone } from "@/components/StatCard";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 import {
   getLessonRecommendations,
   checkAdaptiveTriggers,
@@ -31,6 +32,7 @@ import {
 
 export default function Home() {
   const { user, profile, loading: authLoading } = useAuth(true);
+  const { t } = useLocale();
   const [streak, setStreak] = useState<StreakSummary | null>(null);
   const [xp, setXp] = useState<XpSummary | null>(null);
   const [koinPoints, setKoinPoints] = useState<KoinPointsSummary | null>(null);
@@ -84,7 +86,7 @@ export default function Home() {
     <main className="min-h-screen bg-background p-5 pb-28">
       <header className="mb-6 flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <p className="text-sm text-muted-foreground">Good to see you,</p>
+          <p className="text-sm text-muted-foreground">{t("home.greeting")}</p>
           <h1 className="break-words text-xl font-bold leading-tight tracking-tight text-foreground text-balance sm:text-2xl">
             {profile?.display_name ?? "Learner"}
           </h1>
@@ -92,9 +94,9 @@ export default function Home() {
         <button
           onClick={() => setShowProgressCard(true)}
           className="shrink-0 rounded-radius-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground active:opacity-90"
-          aria-label="Share progress"
+          aria-label={t("home.share")}
         >
-          Share
+          {t("home.share")}
         </button>
       </header>
 
@@ -143,22 +145,23 @@ export default function Home() {
 }
 
 function StreakCard({ streak }: { streak: StreakSummary | null }) {
+  const { t } = useLocale();
   const days = streak?.currentStreakDays ?? 0;
   const status = streak?.streakStatus ?? "active";
   const atRisk = status === "at_risk";
   const frozen = status === "frozen";
   const broken = status === "broken";
 
-  let statusText = "Keep learning daily to build it.";
-  if (broken) statusText = "Streak lost. Start a new one today!";
-  else if (frozen) statusText = "Freeze used — you're still in the game.";
-  else if (atRisk) statusText = "Complete a lesson today to keep it alive.";
+  let statusText = t("home.streak.keepLearning");
+  if (broken) statusText = t("home.streak.broken");
+  else if (frozen) statusText = t("home.streak.frozen");
+  else if (atRisk) statusText = t("home.streak.atRisk");
 
   const tone: StatCardTone = broken ? "danger" : atRisk ? "warning" : frozen ? "info" : "streak";
 
   return (
     <StatCard
-      label="Streak"
+      label={t("home.streak.label")}
       value={`${days} day${days === 1 ? "" : "s"}`}
       tone={tone}
       icon={broken ? "💔" : atRisk ? "⚠️" : frozen ? "🧊" : "🔥"}
@@ -172,18 +175,20 @@ function StreakCard({ streak }: { streak: StreakSummary | null }) {
 }
 
 function ContinueLessonCard({ lesson }: { lesson: ContinueLesson | null }) {
+  const { t, locale } = useLocale();
   if (!lesson) {
     return (
       <EmptyState
         icon="📚"
-        title="All lessons completed"
-        description="You've finished every available lesson. Check the Library for more trusted sources, or replay a favorite lesson."
-        action={{ label: "Browse Library", href: "/library" }}
+        title={t("home.allLessonsCompleted")}
+        description={t("home.allLessonsCompletedBody")}
+        action={{ label: t("home.browseLibrary"), href: "/library" }}
       />
     );
   }
 
-  const label = lesson.status === "in_progress" ? "Continue lesson" : "Start today's lesson";
+  const label = lesson.status === "in_progress" ? t("home.continueLesson") : t("home.startTodaysLesson");
+  const title = locale === "id" && lesson.titleId ? lesson.titleId : lesson.title;
 
   return (
     <Link href={`/learn/${lesson.slug}`} className="block">
@@ -191,8 +196,8 @@ function ContinueLessonCard({ lesson }: { lesson: ContinueLesson | null }) {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">{label}</p>
-            <p className="mt-1 font-semibold text-foreground">{lesson.title}</p>
-            <p className="text-xs text-muted-foreground">Lesson {lesson.lessonNumber}</p>
+            <p className="mt-1 font-semibold text-foreground">{title}</p>
+            <p className="text-xs text-muted-foreground">{t("lesson.lessonWord")} {lesson.lessonNumber}</p>
           </div>
           <ArrowRightIcon />
         </div>
@@ -202,23 +207,30 @@ function ContinueLessonCard({ lesson }: { lesson: ContinueLesson | null }) {
 }
 
 function XpLevelCard({ xp }: { xp: XpSummary | null }) {
+  const { t, locale } = useLocale();
   const current = xp?.currentLevel;
   const next = xp?.nextLevel;
   const progress = xp && xp.xpToNextLevel ? Math.min(100, Math.round((xp.xpIntoLevel / xp.xpToNextLevel) * 100)) : 0;
+  const currentName = current ? (locale === "id" && current.nameId ? current.nameId : current.name) : t("home.level");
+  const nextName = next ? (locale === "id" && next.nameId ? next.nameId : next.name) : null;
 
   return (
     <StatCard
-      label="Level"
-      value={current ? current.name : "Newbie"}
+      label={t("home.level")}
+      value={currentName}
       tone="xp"
       sublabel={
-        <p className="mt-1 text-xs text-muted-foreground">{xp?.totalXp ?? 0} total XP</p>
+        <p className="mt-1 text-xs text-muted-foreground">{t("home.totalXp").replace("{xp}", String(xp?.totalXp ?? 0))}</p>
       }
       aside={
-        next ? (
+        nextName ? (
           <div className="shrink-0 text-right">
-            <p className="text-xs text-muted-foreground">Next: {next.name}</p>
-            <p className="text-xs font-medium text-secondary">{xp?.xpIntoLevel ?? 0} / {xp?.xpToNextLevel ?? 0} XP</p>
+            <p className="text-xs text-muted-foreground">{t("home.nextLevel").replace("{name}", nextName)}</p>
+            <p className="text-xs font-medium text-secondary">
+              {t("home.xpProgress")
+                .replace("{current}", String(xp?.xpIntoLevel ?? 0))
+                .replace("{target}", String(xp?.xpToNextLevel ?? 0))}
+            </p>
           </div>
         ) : undefined
       }
@@ -232,35 +244,37 @@ function XpLevelCard({ xp }: { xp: XpSummary | null }) {
 }
 
 function KoinPointsCard({ koinPoints }: { koinPoints: KoinPointsSummary | null }) {
+  const { t } = useLocale();
   const balance = koinPoints?.currentBalance ?? 0;
 
   return (
     <StatCard
-      label="Koin Points"
+      label={t("home.koinPoints")}
       value={balance.toLocaleString("id-ID")}
       tone="koin-points"
       sublabel={
-        <p className="mt-1 text-xs text-muted-foreground">Earn more by ranking up.</p>
+        <p className="mt-1 text-xs text-muted-foreground">{t("home.koinPointsBody")}</p>
       }
     />
   );
 }
 
 function RecentBadgeCard({ badge }: { badge: RecentBadge | null }) {
+  const { t } = useLocale();
   if (!badge) {
     return (
       <EmptyState
         icon="🏅"
-        title="No badges yet"
-        description="Finish a lesson, hit a streak, or make your first trade to earn your first badge."
-        action={{ label: "Start learning", href: "/learn" }}
+        title={t("home.noBadges")}
+        description={t("home.noBadgesBody")}
+        action={{ label: t("home.startLearning"), href: "/learn" }}
       />
     );
   }
 
   return (
     <div className="rounded-radius-lg border border-border/60 bg-surface p-4 shadow-sm">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Latest badge</p>
+      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">{t("home.latestBadge")}</p>
       <div className="mt-2 flex items-center gap-2">
         <span className="text-2xl">{badge.icon}</span>
         <p className="text-sm font-semibold text-foreground">{badge.name}</p>
@@ -270,13 +284,14 @@ function RecentBadgeCard({ badge }: { badge: RecentBadge | null }) {
 }
 
 function PortfolioCard({ portfolio }: { portfolio: PortfolioSnapshot | null }) {
+  const { t } = useLocale();
   if (!portfolio) {
     return (
       <EmptyState
         icon="📈"
-        title="Start paper trading"
-        description="Your portfolio snapshot will appear here once you unlock paper trading from the Trade tab."
-        action={{ label: "Go to Trade", href: "/trade" }}
+        title={t("home.startPaperTrading")}
+        description={t("home.portfolioEmptyBody")}
+        action={{ label: t("home.goToTrade"), href: "/trade" }}
       />
     );
   }
@@ -285,7 +300,7 @@ function PortfolioCard({ portfolio }: { portfolio: PortfolioSnapshot | null }) {
 
   return (
     <StatCard
-      label="Portfolio"
+      label={t("home.portfolio")}
       value={`Rp ${portfolio.totalValue.toLocaleString("id-ID")}`}
       tone={positive ? "success" : "danger"}
       sublabel={
@@ -304,20 +319,21 @@ function PortfolioCard({ portfolio }: { portfolio: PortfolioSnapshot | null }) {
 }
 
 function LeaderboardCard({ entries }: { entries: LeaderboardEntry[] }) {
+  const { t } = useLocale();
   if (entries.length === 0) {
     return (
       <EmptyState
         icon="🏆"
-        title="No friends on the board"
-        description="Invite friends to see who tops the weekly XP and Koin Points boards."
-        action={{ label: "Invite friends", href: "/friends" }}
+        title={t("home.noFriendsOnBoard")}
+        description={t("home.inviteFriendsBody")}
+        action={{ label: t("home.inviteFriends"), href: "/friends" }}
       />
     );
   }
 
   return (
     <div className="rounded-radius-lg border border-border/60 bg-surface p-4 shadow-sm">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Weekly leaderboard</p>
+      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">{t("home.weeklyLeaderboard")}</p>
       <div className="mt-3 space-y-2">
         {entries.map((entry) => (
           <div key={entry.displayName + entry.rank} className={`flex items-center justify-between rounded-radius-md px-3 py-2 ${entry.isCurrentUser ? "bg-primary/5" : "bg-background"}`}>
@@ -340,6 +356,7 @@ function RecommendationsCard({
   recommendations: LessonRecommendation[];
   onDismiss: (id: string) => void;
 }) {
+  const { t } = useLocale();
   if (recommendations.length === 0) return null;
 
   return (
@@ -351,20 +368,20 @@ function RecommendationsCard({
         >
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">Recommended for you</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">{t("home.recommendedForYou")}</p>
               <p className="mt-1 font-semibold text-foreground">{rec.title}</p>
               <p className="text-sm leading-relaxed text-muted-foreground">{rec.reason}</p>
               <Link
                 href={`/learn/${rec.slug}`}
                 className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-primary"
               >
-                Start lesson <ArrowRightIcon />
+                {t("learn.startLesson")} <ArrowRightIcon />
               </Link>
             </div>
             <button
               onClick={() => onDismiss(rec.id)}
               className="shrink-0 rounded-radius-md p-2 text-muted-foreground hover:bg-primary/10 hover:text-foreground"
-              aria-label="Dismiss recommendation"
+              aria-label={t("home.dismissRecommendation")}
             >
               ✕
             </button>

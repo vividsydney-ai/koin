@@ -63,11 +63,76 @@ export interface Dictionary {
   "lesson.noNewXp": string;
   "lesson.alreadyEarned": string;
   "lesson.alreadyEarnedValue": string;
+  "lesson.chapterLabel": string;
 
   // Quiz engine
   "quiz.correctAnswer": string;
   "quiz.fallbackStatement": string;
   "quiz.fallbackExplanation": string;
+  "quiz.true": string;
+  "quiz.false": string;
+  "quiz.checkAnswer": string;
+  "quiz.typeAnswer": string;
+  "quiz.tapTwoItems": string;
+  "quiz.tapDefinition": string;
+  "quiz.notSupported": string;
+
+  // Home page
+  "home.greeting": string;
+  "home.share": string;
+  "home.streak.label": string;
+  "home.streak.keepLearning": string;
+  "home.streak.broken": string;
+  "home.streak.frozen": string;
+  "home.streak.atRisk": string;
+  "home.continueLesson": string;
+  "home.startTodaysLesson": string;
+  "home.allLessonsCompleted": string;
+  "home.allLessonsCompletedBody": string;
+  "home.browseLibrary": string;
+  "home.level": string;
+  "home.totalXp": string;
+  "home.nextLevel": string;
+  "home.xpProgress": string;
+  "home.koinPoints": string;
+  "home.koinPointsBody": string;
+  "home.noBadges": string;
+  "home.noBadgesBody": string;
+  "home.startLearning": string;
+  "home.latestBadge": string;
+  "home.portfolio": string;
+  "home.startPaperTrading": string;
+  "home.portfolioEmptyBody": string;
+  "home.goToTrade": string;
+  "home.weeklyLeaderboard": string;
+  "home.noFriendsOnBoard": string;
+  "home.inviteFriendsBody": string;
+  "home.inviteFriends": string;
+  "home.recommendedForYou": string;
+  "home.dismissRecommendation": string;
+
+  // Learn page
+  "learn.title": string;
+  "learn.subtitle": string;
+  "learn.startLesson": string;
+  "learn.startSideQuest": string;
+  "learn.sideQuest": string;
+  "learn.goalBody": string;
+  "learn.needFoundation": string;
+  "learn.readyForMore": string;
+  "learn.startFrom": string;
+  "learn.foundationPath": string;
+  "learn.tailoredPath": string;
+  "learn.completedOf": string;
+  "learn.minutesShort": string;
+
+  // Chapter titles (mapped from DB English titles)
+  "chapter.moneyBasics": string;
+  "chapter.protectYourself": string;
+  "chapter.growYourMoney": string;
+  "chapter.investingInIndonesia": string;
+  "chapter.moneyLifeSkills": string;
+  "chapter.uncategorized": string;
 
   // Profile page
   "profile.loading": string;
@@ -80,6 +145,11 @@ export interface Dictionary {
   "profile.noPortfolio": string;
   "profile.badges": string;
   "profile.logout": string;
+  "profile.xp": string;
+  "profile.koin": string;
+  "profile.noBadgesYet": string;
+  "profile.noBadgesBody": string;
+  "profile.startLearning": string;
 
   // Settings section
   "settings.title": string;
@@ -113,6 +183,21 @@ export interface Dictionary {
   "friends.alreadyMember": string;
   "friends.joinedCohort": string;
   "friends.friendsTitle": string;
+  "friends.pending": string;
+  "friends.requestSentStatus": string;
+  "friends.requestReceived": string;
+  "friends.friend": string;
+  "friends.weeklyLeaderboard": string;
+  "friends.scanQrTitle": string;
+  "friends.close": string;
+  "friends.pasteInviteLink": string;
+  "friends.add": string;
+  "friends.creating": string;
+  "friends.cancel": string;
+  "friends.joinedAt": string;
+  "friends.cameraNotAvailable": string;
+  "friends.cameraError": string;
+  "friends.createError": string;
 
   // Trade / price chart
   "trade.simulatedPrices": string;
@@ -204,10 +289,79 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "lesson.noNewXp": "No new XP — you already earned the XP for this lesson.",
     "lesson.alreadyEarned": "Already earned",
     "lesson.alreadyEarnedValue": "0",
+    "lesson.chapterLabel": "Chapter {chapterNumber} · Lesson {lessonNumber} of {total}",
 
     "quiz.correctAnswer": "Correct answer:",
-    "quiz.fallbackStatement": "{concept} is important for managing money well.",
-    "quiz.fallbackExplanation": "Understanding this is basic for everyday money management.",
+    "quiz.fallbackStatement": "Understanding this concept is important for managing money well.",
+    "quiz.fallbackExplanation": "Grasping the basics helps you make smarter everyday money choices.",
+    "quiz.true": "True",
+    "quiz.false": "False",
+    "quiz.checkAnswer": "Check answer",
+    "quiz.typeAnswer": "Type your answer",
+    "quiz.tapTwoItems": "Tap two items to swap their positions.",
+    "quiz.tapDefinition": "Tap a definition to match it with each term.",
+    "quiz.notSupported": "This question type ({type}) is not supported yet.",
+
+    "home.greeting": "Good to see you,",
+    "home.share": "Share",
+    "home.streak.label": "Streak",
+    "home.streak.keepLearning": "Keep learning daily to build it.",
+    "home.streak.broken": "Streak lost. Start a new one today!",
+    "home.streak.frozen": "Freeze used — you're still in the game.",
+    "home.streak.atRisk": "Complete a lesson today to keep it alive.",
+    "home.continueLesson": "Continue lesson",
+    "home.startTodaysLesson": "Start today's lesson",
+    "home.allLessonsCompleted": "All lessons completed",
+    "home.allLessonsCompletedBody":
+      "You've finished every available lesson. Check the Library for more trusted sources, or replay a favorite lesson.",
+    "home.browseLibrary": "Browse Library",
+    "home.level": "Level",
+    "home.totalXp": "{xp} total XP",
+    "home.nextLevel": "Next: {name}",
+    "home.xpProgress": "{current} / {target} XP",
+    "home.koinPoints": "Koin Points",
+    "home.koinPointsBody": "Earn more by ranking up.",
+    "home.noBadges": "No badges yet",
+    "home.noBadgesBody":
+      "Finish a lesson, hit a streak, or make your first trade to earn your first badge.",
+    "home.startLearning": "Start learning",
+    "home.latestBadge": "Latest badge",
+    "home.portfolio": "Portfolio",
+    "home.startPaperTrading": "Start paper trading",
+    "home.portfolioEmptyBody":
+      "Your portfolio snapshot will appear here once you unlock paper trading from the Trade tab.",
+    "home.goToTrade": "Go to Trade",
+    "home.weeklyLeaderboard": "Weekly leaderboard",
+    "home.noFriendsOnBoard": "No friends on the board",
+    "home.inviteFriendsBody":
+      "Invite friends to see who tops the weekly XP and Koin Points boards.",
+    "home.inviteFriends": "Invite friends",
+    "home.recommendedForYou": "Recommended for you",
+    "home.dismissRecommendation": "Dismiss recommendation",
+
+    "learn.title": "Learn",
+    "learn.subtitle": "Bite-sized money lessons, one concept at a time.",
+    "learn.startLesson": "Start lesson",
+    "learn.startSideQuest": "Start side quest",
+    "learn.sideQuest": "Side quest",
+    "learn.goalBody":
+      "This lesson supports one of the financial goals you chose during onboarding.",
+    "learn.needFoundation": "You need to strengthen the basics",
+    "learn.readyForMore": "You're ready for more",
+    "learn.startFrom": "Start from {title}",
+    "learn.foundationPath":
+      "Based on your assessment, we'll start with the most basic money concepts.",
+    "learn.tailoredPath":
+      "Based on your assessment, you can start from the lesson that fits you best.",
+    "learn.completedOf": "{completed} of {total} completed",
+    "learn.minutesShort": "min",
+
+    "chapter.moneyBasics": "Money Basics",
+    "chapter.protectYourself": "Protect Yourself",
+    "chapter.growYourMoney": "Grow Your Money",
+    "chapter.investingInIndonesia": "Investing in Indonesia",
+    "chapter.moneyLifeSkills": "Money Life Skills",
+    "chapter.uncategorized": "Uncategorized",
 
     "profile.loading": "Loading profile…",
     "profile.edit": "Edit",
@@ -219,6 +373,12 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "profile.noPortfolio": "No portfolio yet. Start paper trading from the Trade tab.",
     "profile.badges": "Badges",
     "profile.logout": "Log out",
+    "profile.xp": "XP",
+    "profile.koin": "Koin",
+    "profile.noBadgesYet": "No badges yet",
+    "profile.noBadgesBody":
+      "Complete lessons, hit streaks, and make your first trade to earn badges.",
+    "profile.startLearning": "Start learning",
 
     "settings.title": "Settings",
     "settings.language": "Language",
@@ -241,7 +401,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "friends.cohortName": "Cohort name",
     "friends.create": "Create",
     "friends.created": "Cohort created",
-    "friends.cohortLimitFree": "Free users can create 1 cohort. Upgrade to Pro to create more.",
+    "friends.cohortLimitFree":
+      "Free users can create 1 cohort. Upgrade to Pro to create more.",
     "friends.upgradeToPro": "Upgrade to Pro",
     "friends.joinCohort": "Join a cohort",
     "friends.cohortCode": "Cohort code",
@@ -250,6 +411,22 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "friends.alreadyMember": "You're already in this cohort.",
     "friends.joinedCohort": "Joined!",
     "friends.friendsTitle": "Friends",
+    "friends.pending": "Pending",
+    "friends.requestSentStatus": "Request sent",
+    "friends.requestReceived": "Request received",
+    "friends.friend": "Friend",
+    "friends.weeklyLeaderboard": "Weekly leaderboard",
+    "friends.scanQrTitle": "Scan friend's QR",
+    "friends.close": "Close",
+    "friends.pasteInviteLink": "Or paste invite link",
+    "friends.add": "Add",
+    "friends.creating": "Creating…",
+    "friends.cancel": "Cancel",
+    "friends.joinedAt": "Joined {date}",
+    "friends.cameraNotAvailable": "Camera not available in this browser. You can enter an invite link below.",
+    "friends.cameraError": "Could not access camera. You can enter an invite link below.",
+    "friends.createError": "Could not create cohort. Try again.",
+
     "trade.simulatedPrices": "Simulated prices",
     "trade.simulatedBody":
       "some data points are generated when official IDX data is unavailable. For paper-trading practice only.",
@@ -329,10 +506,79 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "lesson.noNewXp": "Tidak ada XP baru — kamu sudah mendapat XP untuk pelajaran ini.",
     "lesson.alreadyEarned": "Sudah didapat",
     "lesson.alreadyEarnedValue": "0",
+    "lesson.chapterLabel": "Bab {chapterNumber} · Pelajaran {lessonNumber} dari {total}",
 
     "quiz.correctAnswer": "Jawaban benar:",
-    "quiz.fallbackStatement": "{concept} penting untuk mengelola uang dengan baik.",
-    "quiz.fallbackExplanation": "Pemahaman ini dasar untuk mengelola keuangan sehari-hari.",
+    "quiz.fallbackStatement": "Memahami konsep ini penting untuk mengelola uang dengan baik.",
+    "quiz.fallbackExplanation": "Memahami dasar-dasar ini membantu kamu membuat keputusan uang yang lebih cerdas setiap hari.",
+    "quiz.true": "Benar",
+    "quiz.false": "Salah",
+    "quiz.checkAnswer": "Periksa jawaban",
+    "quiz.typeAnswer": "Ketik jawabanmu",
+    "quiz.tapTwoItems": "Ketuk dua item untuk menukar posisinya.",
+    "quiz.tapDefinition": "Ketuk definisi untuk mencocokkannya dengan setiap istilah.",
+    "quiz.notSupported": "Tipe soal ({type}) belum didukung.",
+
+    "home.greeting": "Senang melihatmu,",
+    "home.share": "Bagikan",
+    "home.streak.label": "Rentetan",
+    "home.streak.keepLearning": "Terus belajar setiap hari untuk membangunnya.",
+    "home.streak.broken": "Rentetan hilang. Mulai yang baru hari ini!",
+    "home.streak.frozen": "Beku digunakan — kamu masih dalam permainan.",
+    "home.streak.atRisk": "Selesaikan pelajaran hari ini untuk menjaganya.",
+    "home.continueLesson": "Lanjutkan pelajaran",
+    "home.startTodaysLesson": "Mulai pelajaran hari ini",
+    "home.allLessonsCompleted": "Semua pelajaran selesai",
+    "home.allLessonsCompletedBody":
+      "Kamu sudah menyelesaikan semua pelajaran yang tersedia. Cek Pustaka untuk sumber tepercaya lainnya, atau ulangi pelajaran favoritmu.",
+    "home.browseLibrary": "Jelajahi Pustaka",
+    "home.level": "Level",
+    "home.totalXp": "{xp} XP total",
+    "home.nextLevel": "Berikutnya: {name}",
+    "home.xpProgress": "{current} / {target} XP",
+    "home.koinPoints": "Poin Koin",
+    "home.koinPointsBody": "Dapatkan lebih banyak dengan naik level.",
+    "home.noBadges": "Belum ada lencana",
+    "home.noBadgesBody":
+      "Selesaikan pelajaran, jaga rentetan, atau lakukan transaksi pertama untuk mendapatkan lencana pertamamu.",
+    "home.startLearning": "Mulai belajar",
+    "home.latestBadge": "Lencana terbaru",
+    "home.portfolio": "Portofolio",
+    "home.startPaperTrading": "Mulai trading simulasi",
+    "home.portfolioEmptyBody":
+      "Snapshot portofoliomu akan muncul di sini setelah kamu membuka kunci trading simulasi dari tab Trading.",
+    "home.goToTrade": "Ke Trading",
+    "home.weeklyLeaderboard": "Papan peringkat mingguan",
+    "home.noFriendsOnBoard": "Belum ada teman di papan peringkat",
+    "home.inviteFriendsBody":
+      "Undang teman untuk melihat siapa yang memuncaki papan XP dan Poin Koin mingguan.",
+    "home.inviteFriends": "Undang teman",
+    "home.recommendedForYou": "Direkomendasikan untukmu",
+    "home.dismissRecommendation": "Tutup rekomendasi",
+
+    "learn.title": "Belajar",
+    "learn.subtitle": "Pelajaran uang ringkas, satu konsep dalam satu waktu.",
+    "learn.startLesson": "Mulai pelajaran",
+    "learn.startSideQuest": "Mulai side quest",
+    "learn.sideQuest": "Side quest",
+    "learn.goalBody":
+      "Pelajaran ini mendukung salah satu tujuan finansial yang kamu pilih saat onboarding.",
+    "learn.needFoundation": "Kamu perlu memperkuat dasar",
+    "learn.readyForMore": "Kamu sudah paham dasar",
+    "learn.startFrom": "Mulai dari {title}",
+    "learn.foundationPath":
+      "Berdasarkan hasil asesmen, kita mulai dari konsep keuangan paling dasar dulu.",
+    "learn.tailoredPath":
+      "Berdasarkan hasil asesmen, kamu bisa langsung mulai dari pelajaran yang paling sesuai.",
+    "learn.completedOf": "{completed} dari {total} selesai",
+    "learn.minutesShort": "mnt",
+
+    "chapter.moneyBasics": "Dasar Uang",
+    "chapter.protectYourself": "Lindungi Diri",
+    "chapter.growYourMoney": "Kembangkan Uangmu",
+    "chapter.investingInIndonesia": "Berinvestasi di Indonesia",
+    "chapter.moneyLifeSkills": "Keterampilan Keuangan",
+    "chapter.uncategorized": "Tidak Berkategori",
 
     "profile.loading": "Memuat profil…",
     "profile.edit": "Ubah",
@@ -344,6 +590,12 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "profile.noPortfolio": "Belum ada portofolio. Mulai trading simulasi dari tab Trading.",
     "profile.badges": "Lencana",
     "profile.logout": "Keluar",
+    "profile.xp": "XP",
+    "profile.koin": "Koin",
+    "profile.noBadgesYet": "Belum ada lencana",
+    "profile.noBadgesBody":
+      "Selesaikan pelajaran, jaga rentetan, dan lakukan transaksi pertama untuk mendapatkan lencana.",
+    "profile.startLearning": "Mulai belajar",
 
     "settings.title": "Pengaturan",
     "settings.language": "Bahasa",
@@ -366,7 +618,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "friends.cohortName": "Nama kelompok",
     "friends.create": "Buat",
     "friends.created": "Kelompok dibuat",
-    "friends.cohortLimitFree": "Pengguna gratis bisa membuat 1 kelompok. Upgrade ke Pro untuk membuat lebih banyak.",
+    "friends.cohortLimitFree":
+      "Pengguna gratis bisa membuat 1 kelompok. Upgrade ke Pro untuk membuat lebih banyak.",
     "friends.upgradeToPro": "Upgrade ke Pro",
     "friends.joinCohort": "Gabung kelompok",
     "friends.cohortCode": "Kode kelompok",
@@ -375,6 +628,22 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "friends.alreadyMember": "Kamu sudah bergabung di kelompok ini.",
     "friends.joinedCohort": "Bergabung!",
     "friends.friendsTitle": "Teman",
+    "friends.pending": "Menunggu",
+    "friends.requestSentStatus": "Permintaan terkirim",
+    "friends.requestReceived": "Permintaan diterima",
+    "friends.friend": "Teman",
+    "friends.weeklyLeaderboard": "Papan peringkat mingguan",
+    "friends.scanQrTitle": "Pindai QR teman",
+    "friends.close": "Tutup",
+    "friends.pasteInviteLink": "Atau tempel tautan undangan",
+    "friends.add": "Tambah",
+    "friends.creating": "Membuat…",
+    "friends.cancel": "Batal",
+    "friends.joinedAt": "Bergabung {date}",
+    "friends.cameraNotAvailable": "Kamera tidak tersedia di browser ini. Kamu bisa memasukkan tautan undangan di bawah.",
+    "friends.cameraError": "Tidak dapat mengakses kamera. Kamu bisa memasukkan tautan undangan di bawah.",
+    "friends.createError": "Tidak dapat membuat kelompok. Coba lagi.",
+
     "trade.simulatedPrices": "Harga simulasi",
     "trade.simulatedBody":
       "beberapa titik data dibuat saat data resmi IDX tidak tersedia. Hanya untuk latihan paper trading.",

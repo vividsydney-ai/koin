@@ -46,7 +46,7 @@ describe("QuizEngine", () => {
     const onComplete = vi.fn();
     render(<QuizEngine question={question} seed="s3" onComplete={onComplete} />);
 
-    const input = screen.getByLabelText("Answer");
+    const input = screen.getByLabelText("Type your answer");
     fireEvent.change(input, { target: { value: "jakarta" } });
     fireEvent.click(screen.getByText("Check answer"));
     expect(onComplete).toHaveBeenCalledWith(true);

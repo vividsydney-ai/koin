@@ -20,11 +20,26 @@ import {
   type LessonRecommendation,
 } from "@/lib/adaptive/client";
 import { getGoalBasedRecommendation } from "@/lib/adaptive/goals";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
+
+const CHAPTER_TITLE_KEY: Record<string, string> = {
+  "Money Basics": "chapter.moneyBasics",
+  "Protect Yourself": "chapter.protectYourself",
+  "Grow Your Money": "chapter.growYourMoney",
+  "Investing in Indonesia": "chapter.investingInIndonesia",
+  "Money Life Skills": "chapter.moneyLifeSkills",
+};
+
+function localizedChapterTitle(title: string, t: (key: string) => string): string {
+  const key = CHAPTER_TITLE_KEY[title];
+  return key ? t(key) : title;
+}
 
 export default function LearnPage() {
   const { user } = useAuth(true);
+  const { t, locale } = useLocale();
   const [lessons, setLessons] = useState<
-    Pick<Lesson, "id" | "slug" | "title" | "lessonNumber" | "difficulty" | "xpReward" | "estimatedMinutes" | "summary">[]
+    Pick<Lesson, "id" | "slug" | "title" | "titleId" | "lessonNumber" | "difficulty" | "xpReward" | "estimatedMinutes" | "summary" | "summaryId">[]
   >([]);
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [derivedProgress, setDerivedProgress] = useState<Record<string, LessonStatus> | null>(null);
@@ -136,11 +151,14 @@ export default function LearnPage() {
     });
   };
 
+  const localizedTitle = (lesson: { title: string; titleId: string | null }) =>
+    locale === "id" && lesson.titleId ? lesson.titleId : lesson.title;
+
   return (
     <div className="p-5 pb-28">
       <header className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">Learn</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Bite-sized money lessons, one concept at a time.</p>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">{t("learn.title")}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{t("learn.subtitle")}</p>
       </header>
 
       {recommendations.length > 0 && !loading && (
@@ -152,14 +170,14 @@ export default function LearnPage() {
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">Recommended for you</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">{t("home.recommendedForYou")}</p>
                   <p className="mt-1 font-semibold text-foreground">{rec.title}</p>
                   <p className="text-sm leading-relaxed text-muted-foreground">{rec.reason}</p>
                   <Link
                     href={`/learn/${rec.slug}`}
                     className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-primary"
                   >
-                    Start lesson <span aria-hidden>→</span>
+                    {t("learn.startLesson")} <span aria-hidden>→</span>
                   </Link>
                 </div>
                 <button
@@ -168,7 +186,7 @@ export default function LearnPage() {
                     setRecommendations((prev) => prev.filter((r) => r.id !== rec.id));
                   }}
                   className="shrink-0 rounded-radius-md p-2 text-muted-foreground hover:bg-primary/10 hover:text-foreground"
-                  aria-label="Dismiss recommendation"
+                  aria-label={t("home.dismissRecommendation")}
                 >
                   ✕
                 </button>
@@ -191,13 +209,13 @@ export default function LearnPage() {
               learningPath.foundationZeroRequired ? "text-primary" : "text-success"
             }`}
           >
-            {learningPath.foundationZeroRequired ? "Kamu perlu memperkuat dasar" : "Kamu sudah paham dasar"}
+            {learningPath.foundationZeroRequired ? t("learn.needFoundation") : t("learn.readyForMore")}
           </p>
-          <p className="mt-1 font-semibold text-foreground">Mulai dari {firstUnlockedIncomplete.title}</p>
+          <p className="mt-1 font-semibold text-foreground">
+            {t("learn.startFrom").replace("{title}", localizedTitle(firstUnlockedIncomplete))}
+          </p>
           <p className="text-sm leading-relaxed text-muted-foreground">
-            {learningPath.foundationZeroRequired
-              ? "Berdasarkan hasil asesmen, kita mulai dari konsep keuangan paling dasar dulu."
-              : "Berdasarkan hasil asesmen, kamu bisa langsung mulai dari pelajaran yang paling sesuai."}
+            {learningPath.foundationZeroRequired ? t("learn.foundationPath") : t("learn.tailoredPath")}
           </p>
           <Link
             href={`/learn/${firstUnlockedIncomplete.slug}`}
@@ -205,7 +223,7 @@ export default function LearnPage() {
               learningPath.foundationZeroRequired ? "text-primary" : "text-success"
             }`}
           >
-            Mulai pelajaran <span aria-hidden>→</span>
+            {t("learn.startLesson")} <span aria-hidden>→</span>
           </Link>
         </div>
       )}
@@ -217,16 +235,14 @@ export default function LearnPage() {
               <QuestIcon />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-warning">Side quest</p>
-              <p className="mt-1 font-semibold text-foreground">{goalLesson.title}</p>
-              <p className="text-sm leading-relaxed text-muted-foreground">
-                Pelajaran ini mendukung salah satu tujuan finansial yang kamu pilih saat onboarding.
-              </p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-warning">{t("learn.sideQuest")}</p>
+              <p className="mt-1 font-semibold text-foreground">{localizedTitle(goalLesson)}</p>
+              <p className="text-sm leading-relaxed text-muted-foreground">{t("learn.goalBody")}</p>
               <Link
                 href={`/learn/${goalLesson.slug}`}
                 className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-warning"
               >
-                Mulai side quest <span aria-hidden>→</span>
+                {t("learn.startSideQuest")} <span aria-hidden>→</span>
               </Link>
             </div>
           </div>
@@ -267,6 +283,7 @@ function ChapterCard({
   isExpanded: boolean;
   onToggle: () => void;
 }) {
+  const { t } = useLocale();
   const completedCount = chapter.topics.reduce(
     (count, topic) =>
       count + topic.lessons.filter((lesson) => derivedProgress?.[lesson.id] === "completed").length,
@@ -287,11 +304,13 @@ function ChapterCard({
       >
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <h2 className="font-semibold text-foreground">{chapter.title}</h2>
+            <h2 className="font-semibold text-foreground">{localizedChapterTitle(chapter.title, t)}</h2>
             {isComplete && <CheckIconMini className="h-4 w-4 text-success" />}
           </div>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            {completedCount} of {chapter.lessonCount} completed
+            {t("learn.completedOf")
+              .replace("{completed}", String(completedCount))
+              .replace("{total}", String(chapter.lessonCount))}
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
@@ -331,8 +350,10 @@ function LessonRow({
   lesson: ChapterLesson;
   status: "locked" | "available" | "in_progress" | "completed";
 }) {
+  const { t, locale } = useLocale();
   const isCompleted = status === "completed";
   const isLocked = status === "locked";
+  const title = locale === "id" && lesson.titleId ? lesson.titleId : lesson.title;
 
   const content = (
     <div
@@ -354,10 +375,10 @@ function LessonRow({
 
       <div className="min-w-0 flex-1">
         <h3 className={`truncate text-sm font-medium ${isLocked ? "text-muted-foreground" : "text-foreground"}`}>
-          {lesson.title}
+          {title}
         </h3>
         <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
-          <span>{lesson.estimatedMinutes} min</span>
+          <span>{lesson.estimatedMinutes} {t("learn.minutesShort")}</span>
           <span className="h-1 w-1 rounded-full bg-muted-foreground/40" />
           <span className="text-xp">{lesson.xpReward} XP</span>
         </div>

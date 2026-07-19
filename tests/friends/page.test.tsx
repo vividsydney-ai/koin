@@ -121,6 +121,6 @@ describe("FriendsPage QR flow", () => {
     fireEvent.change(input, { target: { value: "bad-id" } });
     fireEvent.submit(input.closest("form")!);
 
-    expect(await screen.findByText(/Could not add friend/i)).toBeInTheDocument();
+    expect(await screen.findByText(/User not found/i)).toBeInTheDocument();
   });
 });

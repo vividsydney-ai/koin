@@ -99,7 +99,7 @@ describe("LessonPlayer", () => {
     vi.mocked(lessonsClient.seededIndex).mockReturnValue(0);
   });
 
-  it("in English locale the example uses base content and hides alternate-example UI", async () => {
+  it("in English locale the example uses the variant pool and shows alternate-example UI", async () => {
     render(<LessonPlayer slug="test-lesson" />);
 
     await waitFor(() => expect(screen.queryByText("Loading lesson…")).not.toBeInTheDocument(), { timeout: 2000 });
@@ -109,8 +109,8 @@ describe("LessonPlayer", () => {
     fireEvent.click(screen.getByText("Continue"));
     await waitFor(() => expect(screen.getByText("How this plays out")).toBeInTheDocument(), { timeout: 2000 });
 
-    expect(screen.getByText("Learn to save")).toBeInTheDocument();
-    expect(screen.queryByLabelText("See another example")).not.toBeInTheDocument();
+    expect(screen.getByText("Contoh utama")).toBeInTheDocument();
+    expect(screen.getByLabelText("See another example")).toBeInTheDocument();
   });
 
   it("in Indonesian locale shows a different example when clicking Lihat contoh lain", async () => {

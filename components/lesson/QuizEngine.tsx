@@ -23,6 +23,7 @@ interface QuizEngineProps {
 }
 
 export function QuizEngine({ question, seed, onComplete }: QuizEngineProps) {
+  const { t } = useLocale();
   switch (question.type) {
     case "multiple_choice":
       return <MultipleChoice question={question} seed={seed} onComplete={onComplete} />;
@@ -41,7 +42,7 @@ export function QuizEngine({ question, seed, onComplete }: QuizEngineProps) {
     default:
       return (
         <div className="rounded-radius-md border border-warning/30 bg-warning/5 px-4 py-3 text-sm text-warning">
-          This question type ({question.type}) is not supported yet.
+          {t("quiz.notSupported").replace("{type}", question.type)}
         </div>
       );
   }
@@ -80,6 +81,7 @@ function TrueFalse({
   question: TrueFalseQuestion;
   onComplete?: (correct: boolean) => void;
 }) {
+  const { t } = useLocale();
   const [showResult, setShowResult] = useState(false);
   const [selected, setSelected] = useState<boolean | null>(null);
   const isCorrect = selected === question.answer;
@@ -96,21 +98,21 @@ function TrueFalse({
       <h3 className="text-lg font-semibold leading-snug text-foreground">{question.question}</h3>
       <div className="grid grid-cols-2 gap-3">
         <AnswerButton
-          label="True"
+          label={t("quiz.true")}
           showResult={showResult}
           isSelected={selected === true}
           isCorrect={question.answer === true}
           onClick={() => handleSelect(true)}
         />
         <AnswerButton
-          label="False"
+          label={t("quiz.false")}
           showResult={showResult}
           isSelected={selected === false}
           isCorrect={question.answer === false}
           onClick={() => handleSelect(false)}
         />
       </div>
-      {showResult && <Explanation isCorrect={isCorrect} text={question.explanation} correctAnswer={question.answer ? "True" : "False"} />}
+      {showResult && <Explanation isCorrect={isCorrect} text={question.explanation} correctAnswer={question.answer ? t("quiz.true") : t("quiz.false")} />}
     </div>
   );
 }
@@ -122,6 +124,7 @@ function FillBlank({
   question: FillBlankQuestion;
   onComplete?: (correct: boolean) => void;
 }) {
+  const { t } = useLocale();
   const [value, setValue] = useState("");
   const [showResult, setShowResult] = useState(false);
   const isCorrect = normalizeAnswer(value) === normalizeAnswer(question.answer);
@@ -142,16 +145,16 @@ function FillBlank({
           value={value}
           onChange={(e) => setValue(e.target.value)}
           disabled={showResult}
-          placeholder="Type your answer"
+          placeholder={t("quiz.typeAnswer")}
           className="w-full rounded-radius-md border border-muted bg-surface px-4 py-3 text-sm text-foreground outline-none transition-colors focus:border-primary"
-          aria-label="Answer"
+          aria-label={t("quiz.typeAnswer")}
         />
         <button
           type="submit"
           disabled={showResult || !value.trim()}
           className="w-full rounded-radius-md bg-primary py-3.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-[0.98] disabled:opacity-50"
         >
-          Check answer
+          {t("quiz.checkAnswer")}
         </button>
       </form>
       {showResult && <Explanation isCorrect={isCorrect} text={question.explanation} correctAnswer={question.answer} />}
@@ -168,6 +171,7 @@ function WordBank({
   seed: string;
   onComplete?: (correct: boolean) => void;
 }) {
+  const { t } = useLocale();
   const shuffledBank = useMemo(() => seededShuffle(`${seed}:wb`, question.options), [question.options, seed]);
   const [bank, setBank] = useState<string[]>(shuffledBank);
   const [slots, setSlots] = useState<(string | null)[]>(question.answer.map(() => null));
@@ -236,7 +240,7 @@ function WordBank({
         disabled={!filled || showResult}
         className="w-full rounded-radius-md bg-primary py-3.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-[0.98] disabled:opacity-50"
       >
-        Check answer
+        {t("quiz.checkAnswer")}
       </button>
       {showResult && <Explanation isCorrect={isCorrect} text={question.explanation} correctAnswer={question.answer.join(" → ")} />}
     </div>
@@ -252,6 +256,7 @@ function Ordering({
   seed: string;
   onComplete?: (correct: boolean) => void;
 }) {
+  const { t } = useLocale();
   const [order, setOrder] = useState<string[]>(() => seededShuffle(`${seed}:ord`, question.options));
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
@@ -282,7 +287,7 @@ function Ordering({
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold leading-snug text-foreground">{question.question}</h3>
-      <p className="text-xs text-muted-foreground">Tap two items to swap their positions.</p>
+      <p className="text-xs text-muted-foreground">{t("quiz.tapTwoItems")}</p>
       <div className="space-y-2">
         {order.map((item, i) => (
           <button
@@ -307,7 +312,7 @@ function Ordering({
         disabled={showResult}
         className="w-full rounded-radius-md bg-primary py-3.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-[0.98] disabled:opacity-50"
       >
-        Check answer
+        {t("quiz.checkAnswer")}
       </button>
       {showResult && <Explanation isCorrect={isCorrect} text={question.explanation} correctAnswer={question.answer.join(" → ")} />}
     </div>
@@ -323,6 +328,7 @@ function Matching({
   seed: string;
   onComplete?: (correct: boolean) => void;
 }) {
+  const { t } = useLocale();
   const leftItems = useMemo(() => question.pairs.map(([left]) => left), [question.pairs]);
   const rightItems = useMemo(() => seededShuffle(`${seed}:match`, question.pairs.map(([, right]) => right)), [question.pairs, seed]);
   const [matches, setMatches] = useState<Record<string, string | null>>(() =>
@@ -354,7 +360,7 @@ function Matching({
   return (
     <div className="space-y-5">
       <h3 className="text-lg font-semibold leading-snug text-foreground">{question.question}</h3>
-      <p className="text-xs text-muted-foreground">Tap a definition to match it with each term.</p>
+      <p className="text-xs text-muted-foreground">{t("quiz.tapDefinition")}</p>
       <div className="space-y-3">
         {leftItems.map((left) => (
           <div key={left} className="rounded-radius-md border border-muted bg-surface p-4">
@@ -396,7 +402,7 @@ function Matching({
         disabled={!filled || showResult}
         className="w-full rounded-radius-md bg-primary py-3.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-[0.98] disabled:opacity-50"
       >
-        Check answer
+        {t("quiz.checkAnswer")}
       </button>
       {showResult && (
         <Explanation

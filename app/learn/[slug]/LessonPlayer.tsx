@@ -28,11 +28,15 @@ const STEP_IDS = ["intro", "concept", "example", "quiz", "source"] as const;
 export default function LessonPlayer({
   slug,
   totalLessons,
-  chapterLabel,
+  chapterNumber,
+  lessonNumber,
+  chapterLessonsCount,
 }: {
   slug: string;
   totalLessons?: number;
-  chapterLabel?: string;
+  chapterNumber?: number;
+  lessonNumber?: number;
+  chapterLessonsCount?: number;
 }) {
   const router = useRouter();
   const { user } = useAuth(true);
@@ -55,6 +59,7 @@ export default function LessonPlayer({
   const [showSummary, setShowSummary] = useState(false);
   const [literacyLevel, setLiteracyLevel] = useState<string | null>(null);
   const [shownVariantIds, setShownVariantIds] = useState<Set<string>>(new Set());
+  const [shownQuestionVariantIds, setShownQuestionVariantIds] = useState<Set<string>>(new Set());
   const [loadError, setLoadError] = useState<string | null>(null);
   const [retryCounter, setRetryCounter] = useState(0);
   const [alreadyCompleted, setAlreadyCompleted] = useState(false);
@@ -98,42 +103,43 @@ export default function LessonPlayer({
         const seed = user ? `${user.id}:${data.id}:${todayKey()}` : `${data.id}:${todayKey()}`;
 
         let example: ContentVariant | null = null;
-        let exampleVariants: ContentVariant[] = [];
-        let explanationVariants: ContentVariant[] = [];
-        let questionVariants: ContentVariant[] = [];
+        let exampleVariants: ContentVariant[] = fetchedExampleVariants;
+        const explanationVariants: ContentVariant[] = explanationData;
+        const questionVariants: ContentVariant[] = fetchedQuestionVariants;
         let processedQuestion: ProcessedQuestion | null = null;
 
-        if (locale === "id") {
-          // Indonesian uses the localized variant pool (body already swapped by getLessonVariants).
-          exampleVariants = fetchedExampleVariants;
-          explanationVariants = explanationData;
-          questionVariants = fetchedQuestionVariants;
-          example = fetchedExampleVariants[seededIndex(seed, fetchedExampleVariants.length)] ?? null;
+        // Use the localized variant pool for both locales; it already swaps body/body_id
+        // based on locale inside getLessonVariants.
+        example = fetchedExampleVariants[seededIndex(seed, fetchedExampleVariants.length)] ?? null;
 
-          const eligibleQuestions = fetchedQuestionVariants.filter((v) => !recentIds.has(v.id));
-          const pool = eligibleQuestions.length > 0 ? eligibleQuestions : fetchedQuestionVariants;
-          const selectedVariant = pool[seededIndex(`${seed}:q:${Date.now()}`, pool.length)] ?? null;
-          if (selectedVariant) {
-            const validated = validateQuestion(selectedVariant.body);
-            if (validated) {
-              processedQuestion = {
-                ...applyParameters(seed, validated),
-                variantId: selectedVariant.id,
-              };
-            }
+        const eligibleQuestions = fetchedQuestionVariants.filter((v) => !recentIds.has(v.id));
+        const questionPool = eligibleQuestions.length > 0 ? eligibleQuestions : fetchedQuestionVariants;
+        const selectedQuestionVariant = questionPool[seededIndex(`${seed}:q:${Date.now()}`, questionPool.length)] ?? null;
+        if (selectedQuestionVariant) {
+          const validated = validateQuestion(selectedQuestionVariant.body);
+          if (validated) {
+            processedQuestion = {
+              ...applyParameters(seed, validated),
+              variantId: selectedQuestionVariant.id,
+            };
           }
-          // Fallback to translated lesson.quizData_id if no valid variant exists.
-          if (!processedQuestion && data.quizDataId && data.quizDataId.length > 0) {
-            const validated = validateQuestion(data.quizDataId[0]);
-            if (validated) {
-              processedQuestion = applyParameters(seed, validated);
-            }
-          }
-        } else {
-          // English sticks to the base lesson columns so the experience is fully English
-          // even while the variant pool is still being translated to English.
-          if (data.quizData.length > 0) {
-            const validated = validateQuestion(data.quizData[0]);
+        }
+
+        // Fallback to the base Indonesian example only when the variant pool is empty.
+        if (!example && locale === "id" && data.indonesianExample) {
+          example = {
+            id: `base-example:${data.id}`,
+            variantType: "example",
+            body: { text: data.indonesianExample },
+            difficulty: data.difficulty,
+            topicTag: null,
+          };
+          exampleVariants = [example];
+        }
+        if (!processedQuestion) {
+          const baseQuizData = locale === "id" && data.quizDataId ? data.quizDataId : data.quizData;
+          if (baseQuizData.length > 0) {
+            const validated = validateQuestion(baseQuizData[0]);
             if (validated) {
               processedQuestion = applyParameters(seed, validated);
             }
@@ -150,6 +156,7 @@ export default function LessonPlayer({
         setLiteracyLevel(level);
         setAlreadyCompleted(lessonStatus === "completed");
         setShownVariantIds(new Set(example ? [example.id] : []));
+        setShownQuestionVariantIds(new Set(processedQuestion?.variantId ? [processedQuestion.variantId] : []));
         setLoading(false);
 
         if (user) {
@@ -258,10 +265,10 @@ export default function LessonPlayer({
   };
 
   const handleAnotherExample = (): ContentVariant | null => {
-    if (!lesson) return null;
-    const available = exampleVariants.filter((v) => !shownVariantIds.has(v.id) && v.id !== exampleVariant?.id);
+    if (!lesson || exampleVariants.length === 0) return null;
+    const available = exampleVariants.filter((v) => !shownVariantIds.has(v.id));
     if (available.length === 0) return null;
-    const variant = available[seededIndex(`${seedBase}:example:${shownVariantIds.size}`, available.length)];
+    const variant = available[seededIndex(`${seedBase}:example:${shownVariantIds.size}:${Date.now()}`, available.length)];
 
     if (variant) {
       setShownVariantIds((prev) => new Set([...prev, variant.id]));
@@ -274,14 +281,15 @@ export default function LessonPlayer({
   };
 
   const handleAnotherQuestion = (): ProcessedQuestion | null => {
-    if (!lesson) return null;
+    if (!lesson || questionVariants.length === 0) return null;
 
-    const available = questionVariants.filter((v) => {
-      const valid = validateQuestion(v.body);
-      return valid && v.id !== activeQuestion?.variantId;
-    });
-    const pool = available.length > 0 ? available : questionVariants;
-    const variant = pool[seededIndex(`${seedBase}:quiz:${Date.now()}`, pool.length)];
+    // Prefer questions the user has not already seen during this session.
+    const validVariants = questionVariants.filter((v) => validateQuestion(v.body));
+    const available = validVariants.filter((v) => !shownQuestionVariantIds.has(v.id));
+    const pool = available.length > 0 ? available : validVariants;
+    if (pool.length === 0) return null;
+
+    const variant = pool[seededIndex(`${seedBase}:quiz:${shownQuestionVariantIds.size}:${Date.now()}`, pool.length)];
 
     if (variant) {
       const validated = validateQuestion(variant.body);
@@ -291,18 +299,9 @@ export default function LessonPlayer({
         setQuizDone(false);
         setQuizCorrect(null);
         setActiveQuestion(processed);
+        setShownQuestionVariantIds((prev) => new Set([...prev, variant.id]));
         return processed;
       }
-    }
-
-    // Fallback: re-parameterize the current question if no alternate is available.
-    if (activeQuestion) {
-      const nextSeed = `${seedBase}:q:${Date.now()}`;
-      const processed = { ...applyParameters(nextSeed, activeQuestion), variantId: activeQuestion.variantId };
-      setQuizDone(false);
-      setQuizCorrect(null);
-      setActiveQuestion(processed);
-      return processed;
     }
 
     return null;
@@ -359,8 +358,12 @@ export default function LessonPlayer({
       <header className="sticky top-0 z-10 border-b border-muted/60 bg-background/90 px-5 py-3 backdrop-blur-md">
         <div className="flex items-center justify-between">
           <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            {chapterLabel ??
-              `${t("lesson.lessonWord")} ${lesson.lessonNumber}${totalLessons ? ` ${t("lesson.of")} ${totalLessons}` : ""}`}
+            {chapterNumber && lessonNumber && chapterLessonsCount
+              ? t("lesson.chapterLabel")
+                  .replace("{chapterNumber}", String(chapterNumber))
+                  .replace("{lessonNumber}", String(lessonNumber))
+                  .replace("{total}", String(chapterLessonsCount))
+              : `${t("lesson.lessonWord")} ${lesson.lessonNumber}${totalLessons ? ` ${t("lesson.of")} ${totalLessons}` : ""}`}
           </span>
           <button
             onClick={() => router.push("/learn")}
@@ -445,9 +448,12 @@ export default function LessonPlayer({
                     }
                   }}
                   onAnotherQuestion={handleAnotherQuestion}
+                  canShowAnotherQuestion={
+                    questionVariants.filter((v) => validateQuestion(v.body) && v.id !== activeQuestion?.variantId).length > 0
+                  }
                 />
               )}
-              {step === 4 && <SourceStep sources={sources} quizPassed={quizDone} xpReward={lesson.xpReward} />}
+              {step === 4 && <SourceStep sources={sources} quizPassed={quizDone} xpReward={lesson.xpReward} alreadyCompleted={alreadyCompleted} />}
             </>
           )}
         </div>
@@ -597,8 +603,8 @@ function ExampleStep({
     : mainText;
 
   const canShowAnother =
-    exampleVariants.length > 1 &&
-    exampleVariants.some((v) => v.id !== exampleVariant?.id && !shownVariantIds.has(v.id));
+    exampleVariants.length > 0 &&
+    exampleVariants.some((v) => !shownVariantIds.has(v.id));
 
   const handleShowAlternate = () => {
     const variant = onAnotherExample?.();
@@ -653,20 +659,20 @@ function QuizStep({
   onNext,
   onComplete,
   onAnotherQuestion,
+  canShowAnotherQuestion,
 }: {
   lesson: Lesson;
   question: ProcessedQuestion | null;
   onNext: () => void;
   onComplete: (correct: boolean) => void;
   onAnotherQuestion?: () => ProcessedQuestion | null;
+  canShowAnotherQuestion?: boolean;
 }) {
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   if (!question) {
-    const conceptBody = locale === "id" ? (lesson.conceptBodyId ?? lesson.conceptBody) : lesson.conceptBody;
-    const concept = conceptBody.trim().replace(/\.$/, "");
     const fallbackQuestion: ProcessedQuestion = {
       type: "true_false",
-      question: t("quiz.fallbackStatement").replace("{concept}", concept),
+      question: t("quiz.fallbackStatement"),
       answer: true,
       explanation: t("quiz.fallbackExplanation"),
       parameters: {},
@@ -712,7 +718,7 @@ function QuizStep({
         onComplete={(correct) => onComplete(correct)}
       />
 
-      {onAnotherQuestion && (
+      {onAnotherQuestion && canShowAnotherQuestion && (
         <button
           onClick={() => onAnotherQuestion()}
           className="inline-flex min-h-[44px] items-center gap-1.5 text-sm font-medium text-primary hover:underline"
@@ -729,10 +735,12 @@ function SourceStep({
   sources,
   quizPassed,
   xpReward,
+  alreadyCompleted,
 }: {
   sources: LessonSource[];
   quizPassed: boolean;
   xpReward: number;
+  alreadyCompleted?: boolean;
 }) {
   const { t } = useLocale();
   const primary = sources.filter((s) => s.relevanceType === "primary" || s.isPrimary);
@@ -785,11 +793,17 @@ function SourceStep({
       )}
 
       {quizPassed && (
-        <div className="flex items-center gap-3 rounded-radius-lg border border-success/30 bg-success/5 px-4 py-3.5 text-success">
-          <CheckIcon />
+        <div
+          className={`flex items-center gap-3 rounded-radius-lg border px-4 py-3.5 ${
+            alreadyCompleted
+              ? "border-muted bg-muted/10 text-muted-foreground"
+              : "border-success/30 bg-success/5 text-success"
+          }`}
+        >
+          {alreadyCompleted ? <InfoIcon /> : <CheckIcon />}
           <div>
-            <p className="font-semibold">{t("lesson.complete")}</p>
-            <p className="text-sm">+{xpReward} XP</p>
+            <p className="font-semibold">{alreadyCompleted ? t("lesson.alreadyEarned") : t("lesson.complete")}</p>
+            <p className="text-sm">{alreadyCompleted ? `0 XP` : `+${xpReward} XP`}</p>
           </div>
         </div>
       )}
@@ -1043,6 +1057,16 @@ function CheckIcon() {
     <svg className="h-6 w-6 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="12" r="10" />
       <path d="m9 12 2 2 4-4" />
+    </svg>
+  );
+}
+
+function InfoIcon() {
+  return (
+    <svg className="h-6 w-6 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 16v-4" />
+      <path d="M12 8h.01" />
     </svg>
   );
 }

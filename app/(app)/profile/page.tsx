@@ -99,8 +99,8 @@ export default function ProfilePage() {
 
       <section className="mb-6 grid grid-cols-3 gap-3">
         <StatCard variant="tile" label={t("profile.streak")} value={`${stats?.streakDays ?? 0}d`} tone="streak" />
-        <StatCard variant="tile" label="XP" value={stats?.xp ?? 0} tone="xp" />
-        <StatCard variant="tile" label="Koin" value={stats?.koinPoints ?? 0} tone="koin-points" />
+        <StatCard variant="tile" label={t("profile.xp")} value={stats?.xp ?? 0} tone="xp" />
+        <StatCard variant="tile" label={t("profile.koin")} value={stats?.koinPoints ?? 0} tone="koin-points" />
       </section>
 
       <section className="mb-6 rounded-radius-lg border border-muted bg-surface p-5">
@@ -141,9 +141,9 @@ export default function ProfilePage() {
         ) : (
           <EmptyState
             icon="🏅"
-            title="No badges yet"
-            description="Complete lessons, hit streaks, and make your first trade to earn badges."
-            action={{ label: "Start learning", href: "/learn" }}
+            title={t("profile.noBadgesYet")}
+            description={t("profile.noBadgesBody")}
+            action={{ label: t("profile.startLearning"), href: "/learn" }}
           />
         )}
       </section>

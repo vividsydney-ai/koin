@@ -19,6 +19,7 @@ export interface XpSummary {
   nextLevel: {
     id: number;
     name: string;
+    nameId: string | null;
     xpRequired: number;
   } | null;
   xpIntoLevel: number;
@@ -41,6 +42,7 @@ export interface ContinueLesson {
   id: string;
   slug: string;
   title: string;
+  titleId: string | null;
   lessonNumber: number;
   status: "available" | "in_progress" | "completed";
 }
@@ -119,14 +121,14 @@ export async function getXpSummary(userId: string): Promise<XpSummary> {
       };
       const next = sortedLevels[i + 1];
       if (next) {
-        nextLevel = { id: next.id, name: next.name, xpRequired: next.xp_required };
+        nextLevel = { id: next.id, name: next.name, nameId: next.name_id ?? null, xpRequired: next.xp_required };
       }
     }
   }
 
   // If no level matched, user is below level 1; next level is the first one.
   if (!currentLevel && sortedLevels.length > 0) {
-    nextLevel = { id: sortedLevels[0].id, name: sortedLevels[0].name, xpRequired: sortedLevels[0].xp_required };
+    nextLevel = { id: sortedLevels[0].id, name: sortedLevels[0].name, nameId: sortedLevels[0].name_id ?? null, xpRequired: sortedLevels[0].xp_required };
   }
 
   const currentLevelXp = currentLevel?.xpRequired ?? 0;
@@ -188,7 +190,7 @@ export async function getRecentBadge(userId: string): Promise<RecentBadge | null
 
 export async function getContinueLesson(userId: string): Promise<ContinueLesson | null> {
   const [{ data: lessons, error: lessonsError }, { data: progress, error: progressError }, { data: settings, error: settingsError }] = await Promise.all([
-    supabase.from("lessons").select("id, slug, title, lesson_number").eq("is_published", true).order("lesson_number", { ascending: true }),
+    supabase.from("lessons").select("id, slug, title, title_id, lesson_number").eq("is_published", true).order("lesson_number", { ascending: true }),
     supabase.from("lesson_progress").select("lesson_id, status").eq("user_id", userId),
     supabase.from("user_settings").select("starting_lesson_id").eq("user_id", userId).maybeSingle(),
   ]);
@@ -232,6 +234,7 @@ export async function getContinueLesson(userId: string): Promise<ContinueLesson 
         id: lesson.id,
         slug: lesson.slug,
         title: lesson.title,
+        titleId: lesson.title_id ?? null,
         lessonNumber: lesson.lesson_number,
         status: "in_progress",
       };
@@ -242,6 +245,7 @@ export async function getContinueLesson(userId: string): Promise<ContinueLesson 
         id: lesson.id,
         slug: lesson.slug,
         title: lesson.title,
+        titleId: lesson.title_id ?? null,
         lessonNumber: lesson.lesson_number,
         status: (status as ContinueLesson["status"]) || "available",
       };

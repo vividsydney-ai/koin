@@ -29,8 +29,8 @@ describe("QuizEngine wrong-answer reveal (KO-REPLAY-002)", () => {
   it("shows the correct answer on a wrong fill_blank attempt", () => {
     render(<QuizEngine question={fillBlank} seed="s1" />);
 
-    fireEvent.change(screen.getByLabelText("Answer"), { target: { value: "saving" } });
-    fireEvent.click(screen.getByRole("button", { name: /check answer/i }));
+    fireEvent.change(screen.getByLabelText("quiz.typeAnswer"), { target: { value: "saving" } });
+    fireEvent.click(screen.getByRole("button", { name: /quiz\.checkAnswer/i }));
 
     const label = screen.getByText(/quiz\.correctAnswer/);
     expect(label.textContent).toContain("exchange");
@@ -39,8 +39,8 @@ describe("QuizEngine wrong-answer reveal (KO-REPLAY-002)", () => {
   it("does not show the correct-answer line on a correct attempt", () => {
     render(<QuizEngine question={fillBlank} seed="s1" />);
 
-    fireEvent.change(screen.getByLabelText("Answer"), { target: { value: "exchange" } });
-    fireEvent.click(screen.getByRole("button", { name: /check answer/i }));
+    fireEvent.change(screen.getByLabelText("quiz.typeAnswer"), { target: { value: "exchange" } });
+    fireEvent.click(screen.getByRole("button", { name: /quiz\.checkAnswer/i }));
 
     expect(screen.queryByText(/quiz\.correctAnswer/)).not.toBeInTheDocument();
   });
@@ -48,9 +48,9 @@ describe("QuizEngine wrong-answer reveal (KO-REPLAY-002)", () => {
   it("shows the correct answer on a wrong true_false attempt", () => {
     render(<QuizEngine question={trueFalseWrong} seed="s1" />);
 
-    fireEvent.click(screen.getByRole("button", { name: "False" }));
+    fireEvent.click(screen.getByRole("button", { name: "quiz.false" }));
 
     const label = screen.getByText(/quiz\.correctAnswer/);
-    expect(label.textContent).toContain("True");
+    expect(label.textContent).toContain("quiz.true");
   });
 });

@@ -1,5 +1,19 @@
 import { supabase } from "@/lib/auth/client";
 
+const SESSION_COOKIE = "koin_analytics_session";
+
+function getCookie(name: string): string | undefined {
+  if (typeof document === "undefined") return undefined;
+  const match = document.cookie.match(new RegExp("(?:^|; )" + name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "=([^;]*)"));
+  return match ? decodeURIComponent(match[1]) : undefined;
+}
+
+function setCookie(name: string, value: string, maxAgeSeconds: number): void {
+  if (typeof document === "undefined") return;
+  const secure = location.protocol === "https:" ? "; Secure" : "";
+  document.cookie = `${name}=${encodeURIComponent(value)}; path=/; max-age=${maxAgeSeconds}; SameSite=Lax${secure}`;
+}
+
 export type AnalyticsEventName =
   | "login"
   | "onboarding_started"
@@ -25,11 +39,11 @@ export interface TrackEventInput {
 function getSessionId(): string | undefined {
   if (typeof window === "undefined") return undefined;
   try {
-    const key = "koin_analytics_session";
-    let sessionId = sessionStorage.getItem(key);
+    let sessionId = getCookie(SESSION_COOKIE);
     if (!sessionId) {
       sessionId = crypto.randomUUID();
-      sessionStorage.setItem(key, sessionId);
+      // 4-hour analytics session, renewed on each event.
+      setCookie(SESSION_COOKIE, sessionId, 4 * 60 * 60);
     }
     return sessionId;
   } catch {

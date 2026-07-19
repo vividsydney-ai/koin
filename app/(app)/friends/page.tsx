@@ -93,7 +93,7 @@ export default function FriendsPage() {
 
           {pendingFriends.length > 0 && (
             <section>
-              <h2 className="mb-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">Pending</h2>
+              <h2 className="mb-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">{t("friends.pending")}</h2>
               <div className="space-y-2">
                 {pendingFriends.map((friend) => (
                   <FriendRow key={friend.userId} friend={friend} />
@@ -107,8 +107,8 @@ export default function FriendsPage() {
             {acceptedFriends.length === 0 ? (
               <EmptyState
                 icon="👥"
-                title="No friends yet"
-                description="Share your invite link or scan a friend's code to start learning together."
+                title={t("friends.friendsTitle")}
+                description={t("friends.inviteBody")}
               />
             ) : (
               <div className="space-y-2">
@@ -121,9 +121,9 @@ export default function FriendsPage() {
 
           {leaderboard && (
             <section>
-              <h2 className="mb-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">Weekly leaderboard</h2>
+              <h2 className="mb-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">{t("friends.weeklyLeaderboard")}</h2>
               <LeaderboardSection title="XP" entries={leaderboard.xp} valueKey="xpThisWeek" />
-              <LeaderboardSection title="Koin Points" entries={leaderboard.koinPoints} valueKey="koinPointsThisWeek" />
+              <LeaderboardSection title={t("home.koinPoints")} entries={leaderboard.koinPoints} valueKey="koinPointsThisWeek" />
             </section>
           )}
 
@@ -237,7 +237,7 @@ function InviteCard({
       setMessage(result.status === "accepted" ? t("friends.accepted") : t("friends.requestSent"));
       await onFriendAdded();
     } else {
-      setMessage("Could not add friend. Check the invite and try again.");
+      setMessage(t("friends.userNotFound"));
     }
   };
 
@@ -274,7 +274,7 @@ function InviteCard({
             />
           ) : (
             <div className="flex h-44 w-44 items-center justify-center bg-muted">
-              <span className="text-xs text-muted-foreground">Loading QR…</span>
+              <span className="text-xs text-muted-foreground">{t("profile.loading")}</span>
             </div>
           )}
         </div>
@@ -321,6 +321,8 @@ function InviteCard({
 }
 
 function QrScannerModal({ onClose, onScan }: { onClose: () => void; onScan: (userId: string) => void }) {
+  const { t } = useLocale();
+  const origin = typeof window !== "undefined" ? window.location.origin : "https://web.koinaku.com";
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -328,7 +330,7 @@ function QrScannerModal({ onClose, onScan }: { onClose: () => void; onScan: (use
   const isCameraSupported =
     typeof navigator !== "undefined" && !!navigator.mediaDevices?.getUserMedia;
   const [cameraError, setCameraError] = useState<string | null>(
-    isCameraSupported ? null : "Camera not available in this browser. You can enter an invite link below."
+    isCameraSupported ? null : t("friends.cameraNotAvailable")
   );
   const [manualInput, setManualInput] = useState("");
 
@@ -371,7 +373,7 @@ function QrScannerModal({ onClose, onScan }: { onClose: () => void; onScan: (use
         rafRef.current = requestAnimationFrame(tick);
       })
       .catch(() => {
-        setCameraError("Could not access camera. You can enter an invite link below.");
+        setCameraError(t("friends.cameraError"));
       });
 
     return () => {
@@ -395,13 +397,13 @@ function QrScannerModal({ onClose, onScan }: { onClose: () => void; onScan: (use
       aria-label="Scan QR code"
     >
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-bold text-foreground">Scan friend&apos;s QR</h3>
+        <h3 className="text-lg font-bold text-foreground">{t("friends.scanQrTitle")}</h3>
         <button
           onClick={onClose}
           className="rounded-radius-md px-3 py-1.5 text-sm font-semibold text-muted-foreground active:opacity-70"
-          aria-label="Close scanner"
+          aria-label={t("friends.close")}
         >
-          Close
+          {t("friends.close")}
         </button>
       </div>
 
@@ -420,7 +422,7 @@ function QrScannerModal({ onClose, onScan }: { onClose: () => void; onScan: (use
 
         <form onSubmit={handleManualSubmit} className="w-full max-w-sm space-y-2">
           <label htmlFor="manual-invite-link" className="block text-xs font-medium text-muted-foreground">
-            Or paste invite link
+            {t("friends.pasteInviteLink")}
           </label>
           <div className="flex gap-2">
             <input
@@ -428,7 +430,7 @@ function QrScannerModal({ onClose, onScan }: { onClose: () => void; onScan: (use
               type="text"
               value={manualInput}
               onChange={(e) => setManualInput(e.target.value)}
-              placeholder="https://web.koinaku.com/friends/accept?user=..."
+              placeholder={`${origin}/friends/accept?user=...`}
               className="flex-1 rounded-radius-md border border-muted bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
             />
             <button
@@ -436,7 +438,7 @@ function QrScannerModal({ onClose, onScan }: { onClose: () => void; onScan: (use
               disabled={!manualInput.trim()}
               className="rounded-radius-md bg-foreground px-4 py-2 text-sm font-semibold text-background disabled:opacity-50 active:opacity-90"
             >
-              Add
+              {t("friends.add")}
             </button>
           </div>
         </form>
@@ -462,7 +464,7 @@ function CohortSection({
   onCohortsChange: (cohorts: Cohort[]) => void;
   message: string | null;
 }) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const [createOpen, setCreateOpen] = useState(false);
   const [newCohortName, setNewCohortName] = useState("");
   const [createMessage, setCreateMessage] = useState<string | null>(null);
@@ -482,7 +484,7 @@ function CohortSection({
       const cohortsData = await getCohorts(userId);
       onCohortsChange(cohortsData);
     } else {
-      setCreateMessage(canCreateFree ? "Could not create cohort. Try again." : t("friends.cohortLimitFree"));
+      setCreateMessage(canCreateFree ? t("friends.createError") : t("friends.cohortLimitFree"));
     }
     setCreating(false);
   };
@@ -528,7 +530,7 @@ function CohortSection({
                 onClick={() => setCreateOpen(false)}
                 className="text-xs text-muted-foreground underline"
               >
-                Cancel
+                {t("friends.cancel")}
               </button>
             </div>
             <input
@@ -547,13 +549,13 @@ function CohortSection({
               disabled={!newCohortName.trim() || creating || !canCreateFree}
               className="w-full rounded-radius-md bg-primary py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-50 active:opacity-90"
             >
-              {creating ? "Creating…" : t("friends.create")}
+              {creating ? t("friends.creating") : t("friends.create")}
             </button>
           </form>
         )}
 
         {message && (
-          <p className={`mt-2 text-xs ${message.includes("Joined") || message.includes("already") ? "text-success" : "text-danger"}`}>
+          <p className={`mt-2 text-xs ${message.includes(t("friends.joinedCohort")) || message.includes(t("friends.alreadyMember")) ? "text-success" : "text-danger"}`}>
             {message}
           </p>
         )}
@@ -568,7 +570,7 @@ function CohortSection({
                 <p className="text-sm font-semibold text-foreground">{cohort.name}</p>
                 <div className="flex items-center justify-between">
                   <p className="text-[10px] text-muted-foreground">
-                    Joined {new Date(cohort.joinedAt).toLocaleDateString("id-ID")}
+                    {t("friends.joinedAt").replace("{date}", new Date(cohort.joinedAt).toLocaleDateString(locale === "id" ? "id-ID" : "en-US"))}
                   </p>
                   {cohort.inviteCode && (
                     <p className="text-[10px] font-mono text-muted-foreground">{cohort.inviteCode}</p>
@@ -688,6 +690,13 @@ function LeaderboardSection({
 }
 
 function FriendRow({ friend }: { friend: Friend }) {
+  const { t } = useLocale();
+  const statusText =
+    friend.status === "pending"
+      ? friend.isRequester
+        ? t("friends.requestSentStatus")
+        : t("friends.requestReceived")
+      : t("friends.friend");
   const initials = friend.displayName
     .split(" ")
     .map((n) => n[0])
@@ -706,9 +715,7 @@ function FriendRow({ friend }: { friend: Friend }) {
       )}
       <div className="flex-1">
         <p className="text-sm font-semibold text-foreground">{friend.displayName}</p>
-        <p className="text-xs text-muted-foreground">
-          {friend.status === "pending" ? (friend.isRequester ? "Request sent" : "Request received") : "Friend"}
-        </p>
+        <p className="text-xs text-muted-foreground">{statusText}</p>
       </div>
     </div>
   );

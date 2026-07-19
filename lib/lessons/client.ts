@@ -105,7 +105,7 @@ export async function getLessonBySlug(slug: string): Promise<Lesson | null> {
       "id, slug, title, title_id, lesson_number, difficulty, xp_reward, estimated_minutes, summary, summary_id, concept_body, concept_body_id, indonesian_example, why_this_matters, why_this_matters_id, common_mistake, common_mistake_id, quiz_data, quiz_data_id"
     )
     .eq("slug", slug)
-    .single();
+    .maybeSingle();
 
   if (error || !data) {
     console.error("getLessonBySlug error:", error?.message);
@@ -248,11 +248,11 @@ export async function getLessonSources(lessonId: string): Promise<LessonSource[]
 }
 
 export async function getAllLessons(): Promise<
-  Pick<Lesson, "id" | "slug" | "title" | "lessonNumber" | "difficulty" | "xpReward" | "estimatedMinutes" | "summary">[]
+  Pick<Lesson, "id" | "slug" | "title" | "titleId" | "lessonNumber" | "difficulty" | "xpReward" | "estimatedMinutes" | "summary" | "summaryId">[]
 > {
   const { data, error } = await supabase
     .from("lessons")
-    .select("id, slug, title, lesson_number, difficulty, xp_reward, estimated_minutes, summary")
+    .select("id, slug, title, title_id, lesson_number, difficulty, xp_reward, estimated_minutes, summary, summary_id")
     .order("lesson_number", { ascending: true });
 
   if (error) {
@@ -265,11 +265,13 @@ export async function getAllLessons(): Promise<
       id: l.id,
       slug: l.slug,
       title: l.title,
+      titleId: l.title_id ?? null,
       lessonNumber: l.lesson_number,
       difficulty: l.difficulty,
       xpReward: l.xp_reward,
       estimatedMinutes: l.estimated_minutes,
       summary: l.summary,
+      summaryId: l.summary_id ?? null,
     })) ?? []
   );
 }
@@ -409,11 +411,13 @@ export interface ChapterLesson {
   id: string;
   slug: string;
   title: string;
+  titleId: string | null;
   lessonNumber: number;
   difficulty: string;
   xpReward: number;
   estimatedMinutes: number;
   summary: string;
+  summaryId: string | null;
 }
 
 export interface ChapterTopic {
@@ -470,11 +474,13 @@ interface TopicWithLessonsRow {
     id: string;
     slug: string;
     title: string;
+    title_id: string | null;
     lesson_number: number;
     difficulty: string;
     xp_reward: number;
     estimated_minutes: number;
     summary: string;
+    summary_id: string | null;
     is_published: boolean;
   }[];
 }
@@ -489,7 +495,7 @@ export async function getTopicsWithChapters(
   const primary = await supabase
     .from("topics")
     .select(
-      "id, slug, name, name_id, icon, color, display_order, chapter, lessons(id, slug, title, lesson_number, difficulty, xp_reward, estimated_minutes, summary, is_published)"
+      "id, slug, name, name_id, icon, color, display_order, chapter, lessons(id, slug, title, title_id, lesson_number, difficulty, xp_reward, estimated_minutes, summary, summary_id, is_published)"
     )
     .order("display_order", { ascending: true })
     .order("lesson_number", { referencedTable: "lessons", ascending: true });
@@ -502,7 +508,7 @@ export async function getTopicsWithChapters(
     const fallback = await supabase
       .from("topics")
       .select(
-        "id, slug, name, name_id, icon, color, display_order, lessons(id, slug, title, lesson_number, difficulty, xp_reward, estimated_minutes, summary, is_published)"
+        "id, slug, name, name_id, icon, color, display_order, lessons(id, slug, title, title_id, lesson_number, difficulty, xp_reward, estimated_minutes, summary, summary_id, is_published)"
       )
       .order("display_order", { ascending: true })
       .order("lesson_number", { referencedTable: "lessons", ascending: true });
@@ -525,11 +531,13 @@ export async function getTopicsWithChapters(
         id: l.id,
         slug: l.slug,
         title: l.title,
+        titleId: l.title_id ?? null,
         lessonNumber: l.lesson_number,
         difficulty: l.difficulty,
         xpReward: l.xp_reward,
         estimatedMinutes: l.estimated_minutes,
         summary: l.summary,
+        summaryId: l.summary_id ?? null,
       }));
 
     const chapterTitle =
