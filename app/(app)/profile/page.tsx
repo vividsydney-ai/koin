@@ -72,7 +72,7 @@ export default function ProfilePage() {
     .toUpperCase();
 
   return (
-    <div className="mx-auto max-w-md p-6 pb-32">
+    <div className="p-5 pb-32 sm:p-6 lg:p-8">
       <header className="mb-8 flex items-center gap-4">
         <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary text-2xl font-bold text-primary-foreground">
           {initials}
@@ -97,92 +97,98 @@ export default function ProfilePage() {
         </button>
       </header>
 
-      <section className="mb-6 grid grid-cols-3 gap-3">
-        <StatCard variant="tile" label={t("profile.streak")} value={`${stats?.streakDays ?? 0}d`} tone="streak" />
-        <StatCard variant="tile" label={t("profile.xp")} value={stats?.xp ?? 0} tone="xp" />
-        <StatCard variant="tile" label={t("profile.koin")} value={stats?.koinPoints ?? 0} tone="koin-points" />
-      </section>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="space-y-6 lg:col-span-2">
+          <section className="grid grid-cols-3 gap-3">
+            <StatCard variant="tile" label={t("profile.streak")} value={`${stats?.streakDays ?? 0}d`} tone="streak" />
+            <StatCard variant="tile" label={t("profile.xp")} value={stats?.xp ?? 0} tone="xp" />
+            <StatCard variant="tile" label={t("profile.koin")} value={stats?.koinPoints ?? 0} tone="koin-points" />
+          </section>
 
-      <section className="mb-6 rounded-lg border border-muted bg-surface p-5">
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-          {t("profile.paperPortfolio")}
-        </h2>
-        {portfolio ? (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">{t("profile.totalValue")}</span>
-              <span className="text-lg font-bold">Rp {portfolio.totalValue.toLocaleString("id-ID")}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">{t("profile.cash")}</span>
-              <span>Rp {portfolio.cashBalance.toLocaleString("id-ID")}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">{t("profile.return")}</span>
-              <span className={portfolio.returnPct >= 0 ? "text-success" : "text-danger"}>
-                {portfolio.returnPct >= 0 ? "+" : ""}
-                {portfolio.returnPct.toFixed(2)}%
-              </span>
-            </div>
-          </div>
-        ) : (
-          <p className="text-sm text-muted-foreground">
-            {t("profile.noPortfolio")}
-          </p>
-        )}
-      </section>
+          <section className="rounded-lg border border-muted bg-surface p-5">
+            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+              {t("profile.paperPortfolio")}
+            </h2>
+            {portfolio ? (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">{t("profile.totalValue")}</span>
+                  <span className="text-lg font-bold">Rp {portfolio.totalValue.toLocaleString("id-ID")}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">{t("profile.cash")}</span>
+                  <span>Rp {portfolio.cashBalance.toLocaleString("id-ID")}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">{t("profile.return")}</span>
+                  <span className={portfolio.returnPct >= 0 ? "text-success" : "text-danger"}>
+                    {portfolio.returnPct >= 0 ? "+" : ""}
+                    {portfolio.returnPct.toFixed(2)}%
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                {t("profile.noPortfolio")}
+              </p>
+            )}
+          </section>
 
-      <section className="mb-8">
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-          {t("profile.badges")}
-        </h2>
-        {stats?.badges && stats.badges.length > 0 ? (
-          <BadgeGrid badges={stats.badges} />
-        ) : (
-          <EmptyState
-            icon="🏅"
-            title={t("profile.noBadgesYet")}
-            description={t("profile.noBadgesBody")}
-            action={{ label: t("profile.startLearning"), href: "/learn" }}
-          />
-        )}
-      </section>
-
-      <section className="mb-8 rounded-lg border border-muted bg-surface p-5">
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-          {t("settings.title")}
-        </h2>
-        <div className="flex items-center justify-between gap-3">
-          <span className="text-sm font-medium text-foreground">{t("settings.language")}</span>
-          <div
-            role="group"
-            aria-label={t("settings.language")}
-            className="flex rounded-md border border-muted bg-background p-1"
-          >
-            {LANGUAGE_OPTIONS.map((option) => (
-              <button
-                key={option.value}
-                onClick={() => setLocale(option.value)}
-                aria-pressed={locale === option.value}
-                className={`min-h-[44px] rounded-sm px-4 text-sm font-semibold transition-colors ${
-                  locale === option.value
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
+          <section>
+            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+              {t("profile.badges")}
+            </h2>
+            {stats?.badges && stats.badges.length > 0 ? (
+              <BadgeGrid badges={stats.badges} />
+            ) : (
+              <EmptyState
+                icon="🏅"
+                title={t("profile.noBadgesYet")}
+                description={t("profile.noBadgesBody")}
+                action={{ label: t("profile.startLearning"), href: "/learn" }}
+              />
+            )}
+          </section>
         </div>
-      </section>
 
-      <button
-        onClick={handleLogout}
-        className="w-full rounded-md border border-danger/30 bg-surface py-3 font-semibold text-danger hover:bg-danger/5 touch-target"
-      >
-        {t("profile.logout")}
-      </button>
+        <div className="space-y-6">
+          <section className="rounded-lg border border-muted bg-surface p-5">
+            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+              {t("settings.title")}
+            </h2>
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-sm font-medium text-foreground">{t("settings.language")}</span>
+              <div
+                role="group"
+                aria-label={t("settings.language")}
+                className="flex rounded-md border border-muted bg-background p-1"
+              >
+                {LANGUAGE_OPTIONS.map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => setLocale(option.value)}
+                    aria-pressed={locale === option.value}
+                    className={`min-h-[44px] rounded-sm px-4 text-sm font-semibold transition-colors ${
+                      locale === option.value
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          <button
+            onClick={handleLogout}
+            className="w-full rounded-md border border-danger/30 bg-surface py-3 font-semibold text-danger hover:bg-danger/5 touch-target"
+          >
+            {t("profile.logout")}
+          </button>
+        </div>
+      </div>
 
       {isEditing && user && (
         <EditProfileModal

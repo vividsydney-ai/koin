@@ -40,5 +40,8 @@ Never use a raw `-50` background token directly. Always:
 - Card radius `--radius-card` (18px); pill-shaped primary buttons.
 - Focus ring `--shadow-focus-ring` on interactive elements.
 - 44px minimum touch targets.
+- Mobile design baseline is iPhone 15 Pro logical width: 393px. Do not optimize the primary mobile layout below 393px unless explicitly handling an edge case.
+- The wide product breakpoint starts at 1200px or higher. Do not treat 1080px/1180px as the widest layout target.
+- Blur tokens (`--blur-sm`, `--blur-md`, `--blur-lg`) are blur-only effects. Do not add borders to blur token demos or blur-only panels; use shadow/elevation if they need separation.
 - Bottom nav: 6 tabs (Home, Learn, Trade, Friends, Library, Profile) — keep 6; v4's 4-tab example is styling reference only.
 - Bottom nav icons: SVG with gradient active state (pattern: v4 `GradientIcon`), not emoji.

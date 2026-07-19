@@ -419,8 +419,8 @@ export default function LessonPlayer({
   }
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-md flex-col bg-background sm:max-w-2xl lg:max-w-3xl xl:max-w-4xl">
-      <header className="sticky top-0 z-10 border-b border-muted/60 bg-background/90 px-5 py-3 backdrop-blur-md">
+    <div className="mx-auto flex min-h-screen w-full max-w-md flex-col bg-background sm:max-w-2xl lg:max-w-4xl xl:max-w-7xl 2xl:max-w-[1440px]">
+      <header className="sticky top-0 z-10 border-b border-muted/60 bg-background/90 px-5 py-3 backdrop-blur-md sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
           <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
             {chapterNumber && lessonNumber && chapterLessonsCount
@@ -450,7 +450,7 @@ export default function LessonPlayer({
         </div>
       </header>
 
-      <main className="relative flex-1 px-5 py-7">
+      <main className="relative flex-1 px-5 py-7 sm:px-6 lg:px-8">
         {alreadyCompleted && !showSummary && (
           <div
             role="status"
@@ -522,7 +522,7 @@ export default function LessonPlayer({
         </div>
       </main>
 
-      <footer className="border-t border-muted/60 bg-surface px-5 py-4">
+      <footer className="border-t border-muted/60 bg-surface px-5 py-4 sm:px-6 lg:px-8">
         {completionError && (
           <div className="mb-4 rounded-md border border-danger/30 bg-danger/5 px-4 py-3 text-sm text-danger">
             {completionError}
@@ -1150,7 +1150,7 @@ function CompletionStep({
 
   return (
     <article
-      className="flex flex-col items-center rounded-card border border-success/30 p-6 text-center"
+      className="flex w-full flex-col items-center rounded-card border border-success/30 p-6 text-center sm:max-w-2xl lg:max-w-4xl xl:max-w-7xl 2xl:max-w-[1440px]"
       style={{ background: "color-mix(in srgb, var(--color-success) 6%, var(--color-surface))" }}
     >
       <div className="flex h-24 w-24 items-center justify-center rounded-full bg-success/15 text-success">
@@ -1164,7 +1164,7 @@ function CompletionStep({
           <h2 className="mt-2 font-display text-[28px] font-bold leading-[1.15] tracking-tight text-foreground">
             {t("lesson.replayCompleteTitle")}
           </h2>
-          <p className="mt-2 max-w-xs text-sm leading-relaxed text-muted-foreground">
+          <p className="mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
             {t("lesson.noNewXp")}
           </p>
         </>

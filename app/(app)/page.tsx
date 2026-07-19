@@ -83,7 +83,7 @@ export default function Home() {
   const isLoading = authLoading || loading;
 
   return (
-    <main className="min-h-screen bg-background p-5 pb-28">
+    <div className="min-h-screen bg-background p-5 pb-28">
       <header className="mb-6 flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <p className="text-sm text-muted-foreground">{t("home.greeting")}</p>
@@ -107,23 +107,27 @@ export default function Home() {
           <div className="h-24 animate-pulse rounded-card bg-surface-inset" />
         </div>
       ) : (
-        <div className="space-y-4">
-          <StreakCard streak={streak} />
-          <RecommendationsCard
-            recommendations={recommendations}
-            onDismiss={async (id) => {
-              await dismissRecommendation(id);
-              setRecommendations((prev) => prev.filter((r) => r.id !== id));
-            }}
-          />
-          <ContinueLessonCard lesson={continueLesson} />
-          <XpLevelCard xp={xp} />
-          <div className="grid grid-cols-2 gap-3">
-            <KoinPointsCard koinPoints={koinPoints} />
-            <RecentBadgeCard badge={recentBadge} />
+        <div className="space-y-4 lg:grid lg:grid-cols-3 lg:gap-4 lg:space-y-0">
+          <div className="space-y-4 lg:col-span-2">
+            <StreakCard streak={streak} />
+            <RecommendationsCard
+              recommendations={recommendations}
+              onDismiss={async (id) => {
+                await dismissRecommendation(id);
+                setRecommendations((prev) => prev.filter((r) => r.id !== id));
+              }}
+            />
+            <ContinueLessonCard lesson={continueLesson} />
+            <XpLevelCard xp={xp} />
+            <PortfolioCard portfolio={portfolio} />
           </div>
-          <PortfolioCard portfolio={portfolio} />
-          <LeaderboardCard entries={leaderboard} />
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3 lg:grid-cols-1">
+              <KoinPointsCard koinPoints={koinPoints} />
+              <RecentBadgeCard badge={recentBadge} />
+            </div>
+            <LeaderboardCard entries={leaderboard} />
+          </div>
         </div>
       )}
 
@@ -140,7 +144,7 @@ export default function Home() {
           onClose={() => setShowProgressCard(false)}
         />
       )}
-    </main>
+    </div>
   );
 }
 
