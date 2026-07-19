@@ -5,12 +5,12 @@
 
 ## Current branch and deploy
 - **Integration branch:** `web-koinaku`
-- **Production URL:** https://web.koinaku.com
+- **Production URL:** https://web.koinaku.com on Vercel
 - **Last deploy smoke check:** 200 OK
 
 ## Last known state
 - Phases 1–5 complete.
-- Phase 6 6-slice MVP polish shipped to `https://web.koinaku.com` (Netlify).
+- Phase 6 6-slice MVP polish shipped to `https://web.koinaku.com` on Vercel.
 - Auth sign-up confirmations re-enabled with custom Google Workspace SMTP (hello@koinaku.com app password) via Supabase config push (KO-46).
 - Signup form UX modernized: full name, password confirmation, show/hide toggles, inline validation.
 - Cofounder duplicate auth account removed (KO-47); he can now sign up cleanly with arjuna@koinaku.com or arjuna.dhananjaya08@gmail.com.

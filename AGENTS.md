@@ -8,6 +8,8 @@ Every agent starts by reading `loop-state.md`. If it exists and state is not `DO
 
 Every task request in this repo runs Loop Engineering v2 with the session agent as **Conductor** — no special invocation needed. If the user gives no task, pick the first `[ ]` in `TASKS.md` and start the loop. The `/loop` skill (`.agents/skills/loop/SKILL.md`, also installed at `~/.agents/skills/loop/`) is a shortcut to the same protocol; invoke it whenever the user says "loop", "use loop eng", or "act as conductor".
 
+Production deployment is **Vercel only** for `https://web.koinaku.com`. Treat Netlify deployment references as stale history unless the human explicitly asks about the paused fallback.
+
 ## OpenWiki pre-flight (mandatory for Loop Engineering v2)
 
 OpenWiki is part of the Koin loop for Kimi Code, Codex, Claude Code, and any other AI agent. Treat it as repo memory and codebase discovery, not as an authority above human-owned rules.
@@ -25,6 +27,8 @@ For one-file UI fixes or trivial tweaks: one agent runs the full loop alone.
 
 ## Multi-agent / swarm sessions (complex or risky slices)
 Use separate agents for Plan / Make / Verify / Fix / Land so the verifier never approves its own work.
+
+The Conductor may run multiple tasks in parallel only when they are independent: no migrations, no generated Supabase types, no auth/session, no dependency/config/deploy/native changes, and disjoint file ownership. Otherwise, run tasks linearly and fully verify/land one before starting the next.
 
 ### Roles
 | Role | Responsibility | Writes? |
