@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import { signUpWithEmail, resendSignupEmail } from "@/lib/auth/client";
+import { LegalLinks } from "@/components/LegalLinks";
 
 // When unset, captcha is skipped entirely — signup works exactly as before
 // until the site key is configured and Supabase captcha protection is enabled.
@@ -204,7 +205,7 @@ export default function SignupPage() {
                     onClick={() => setShowPassword((prev) => !prev)}
                     aria-label={showPassword ? "Hide password" : "Show password"}
                     aria-pressed={showPassword}
-                    className="absolute right-2 top-1/2 inline-flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-surface-raised hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    className="absolute right-2 top-1/2 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-surface-raised hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   >
                     {showPassword ? (
                       <EyeOffIcon className="h-5 w-5" />
@@ -235,7 +236,7 @@ export default function SignupPage() {
                     onClick={() => setShowConfirmPassword((prev) => !prev)}
                     aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
                     aria-pressed={showConfirmPassword}
-                    className="absolute right-2 top-1/2 inline-flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-surface-raised hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    className="absolute right-2 top-1/2 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-surface-raised hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   >
                     {showConfirmPassword ? (
                       <EyeOffIcon className="h-5 w-5" />
@@ -267,7 +268,12 @@ export default function SignupPage() {
               </button>
             </form>
 
-            <p className="mt-6 text-center text-sm text-muted-foreground">
+            <LegalLinks
+              actionText="By creating an account, you agree to our"
+              className="mt-4"
+            />
+
+            <p className="mt-4 text-center text-sm text-muted-foreground">
               Already have an account?{" "}
               <Link href="/login" className="font-semibold text-primary hover:underline">
                 Sign in

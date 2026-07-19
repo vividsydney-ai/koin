@@ -123,6 +123,27 @@ export async function resendSignupEmail(email: string): Promise<Result<null, Aut
   return ok(null);
 }
 
+export async function sendPasswordResetEmail(email: string): Promise<Result<null, AuthError>> {
+  const parsed = resendEmailSchema.safeParse({ email });
+  if (!parsed.success) {
+    return err({ code: "invalid_email", message: parsed.error.issues[0].message });
+  }
+
+  const { error } = await supabase.auth.resetPasswordForEmail(parsed.data.email, {
+    redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/reset-password`,
+  });
+
+  if (error) return err(normalizeAuthError(error));
+  return ok(null);
+}
+
+export async function updatePassword(password: string): Promise<Result<User, AuthError>> {
+  const { data, error } = await supabase.auth.updateUser({ password });
+  if (error) return err(normalizeAuthError(error));
+  if (!data.user) return err({ code: "unknown", message: "Password updated but no user returned." });
+  return ok(data.user);
+}
+
 export async function signOut(): Promise<Result<null, AuthError>> {
   const { error } = await supabase.auth.signOut();
   if (error) return err(normalizeAuthError(error));

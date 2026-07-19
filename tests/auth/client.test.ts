@@ -14,6 +14,8 @@ const mockResend = vi.fn();
 const mockSignOut = vi.fn();
 const mockGetUser = vi.fn();
 const mockGetSession = vi.fn();
+const mockResetPasswordForEmail = vi.fn();
+const mockUpdateUser = vi.fn();
 
 vi.mock("@supabase/supabase-js", () => ({
   createClient: vi.fn().mockReturnValue({
@@ -24,6 +26,8 @@ vi.mock("@supabase/supabase-js", () => ({
       signUp: (args: unknown) => mockSignUp(args),
       resend: (args: unknown) => mockResend(args),
       signOut: () => mockSignOut(),
+      resetPasswordForEmail: (email: string, options: unknown) => mockResetPasswordForEmail(email, options),
+      updateUser: (attrs: unknown) => mockUpdateUser(attrs),
       onAuthStateChange: vi.fn().mockReturnValue({ subscription: { unsubscribe: vi.fn() } }),
     },
   }),
@@ -34,6 +38,8 @@ import {
   signInWithEmail,
   signUpWithEmail,
   resendSignupEmail,
+  sendPasswordResetEmail,
+  updatePassword,
   signOut,
   getCurrentUser,
   getSession,
@@ -168,6 +174,50 @@ describe("auth client", () => {
       const result = await signOut();
       expect(result.ok).toBe(true);
       expect(mockSignOut).toHaveBeenCalled();
+    });
+  });
+
+  describe("sendPasswordResetEmail", () => {
+    it("validates email before calling Supabase", async () => {
+      const result = await sendPasswordResetEmail("not-an-email");
+      expect(result.ok).toBe(false);
+      expect(mockResetPasswordForEmail).not.toHaveBeenCalled();
+    });
+
+    it("calls auth.resetPasswordForEmail with redirectTo", async () => {
+      mockResetPasswordForEmail.mockResolvedValue({ error: null });
+      const result = await sendPasswordResetEmail("a@b.com");
+      expect(result.ok).toBe(true);
+      expect(mockResetPasswordForEmail).toHaveBeenCalledWith("a@b.com", {
+        redirectTo: expect.stringContaining("/reset-password"),
+      });
+    });
+
+    it("normalizes error on failure", async () => {
+      mockResetPasswordForEmail.mockResolvedValue({ error: { message: "rate limit" } });
+      const result = await sendPasswordResetEmail("a@b.com");
+      expect(result.ok).toBe(false);
+    });
+  });
+
+  describe("updatePassword", () => {
+    it("returns user on success", async () => {
+      mockUpdateUser.mockResolvedValue({ data: { user: { id: "user-1" } }, error: null });
+      const result = await updatePassword("newpassword123");
+      expect(result.ok).toBe(true);
+      expect(mockUpdateUser).toHaveBeenCalledWith({ password: "newpassword123" });
+    });
+
+    it("returns error when no user is returned", async () => {
+      mockUpdateUser.mockResolvedValue({ data: { user: null }, error: null });
+      const result = await updatePassword("newpassword123");
+      expect(result.ok).toBe(false);
+    });
+
+    it("normalizes error on failure", async () => {
+      mockUpdateUser.mockResolvedValue({ data: { user: null }, error: { message: "weak password" } });
+      const result = await updatePassword("newpassword123");
+      expect(result.ok).toBe(false);
     });
   });
 });

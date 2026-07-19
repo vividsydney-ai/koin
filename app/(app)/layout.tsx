@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { NotificationBell } from "@/components/NotificationsSheet";
 import { LocaleProvider, useLocale } from "@/lib/i18n/LocaleProvider";
 import { GradientIcon, type GradientIconName } from "@/components/GradientIcon";
+import { Footer } from "@/components/Footer";
 
 const NAV_ITEMS: { href: string; labelKey: string; icon: GradientIconName }[] = [
   { href: "/", labelKey: "nav.home", icon: "home" },
@@ -29,7 +30,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, loading } = useAuth(true);
+  const { user, loading, error, retry } = useAuth(true);
   const { t } = useLocale();
 
   const handleSignOut = async () => {
@@ -40,7 +41,30 @@ function AppShell({ children }: { children: React.ReactNode }) {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" aria-label="Memuat" />
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" aria-label={t("auth.loading")} />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-background p-6 text-center">
+        <h1 className="text-xl font-bold text-foreground">{t("auth.loadingErrorTitle")}</h1>
+        <p className="mt-2 text-sm text-muted-foreground">{error}</p>
+        <div className="mt-6 flex w-full max-w-xs flex-col gap-3">
+          <button
+            onClick={retry}
+            className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-primary-400 hover:shadow-md active:translate-y-0 active:scale-[0.98]"
+          >
+            {t("auth.retry")}
+          </button>
+          <button
+            onClick={() => router.push("/login")}
+            className="rounded-full border-[1.5px] border-border bg-surface px-6 py-3 text-sm font-semibold text-foreground transition-all hover:bg-surface-raised"
+          >
+            {t("auth.goToSignIn")}
+          </button>
+        </div>
       </div>
     );
   }
@@ -55,6 +79,8 @@ function AppShell({ children }: { children: React.ReactNode }) {
       </header>
 
       <main className="mx-auto w-full max-w-md flex-1 pb-24 sm:max-w-2xl lg:max-w-4xl xl:max-w-7xl 2xl:max-w-[1440px]">{children}</main>
+
+      <Footer />
 
       <nav className="fixed bottom-0 left-0 right-0 border-t border-border bg-surface">
         <ul className="mx-auto flex w-full max-w-md justify-around sm:max-w-2xl lg:max-w-4xl xl:max-w-7xl 2xl:max-w-[1440px]">

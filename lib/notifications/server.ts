@@ -45,9 +45,22 @@ Tim Koinaku`;
   return { subject, text, html };
 }
 
+function getJakartaTimeParts(date: Date): { hour: string; minute: string } {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Jakarta",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(date);
+  const hour = parts.find((p) => p.type === "hour")?.value ?? "00";
+  const minute = parts.find((p) => p.type === "minute")?.value ?? "00";
+  return { hour, minute };
+}
+
 export async function getStreakReminderCandidates(): Promise<StreakReminderCandidate[]> {
   const now = new Date();
-  const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}:00`;
+  const { hour, minute } = getJakartaTimeParts(now);
+  const currentTime = `${hour}:${minute}:00`;
 
   const { data, error } = await getAdminClient().rpc("get_streak_reminder_candidates", {
     p_current_time: currentTime,

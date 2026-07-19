@@ -9,6 +9,12 @@ export interface Dictionary {
   "nav.library": string;
   "nav.profile": string;
 
+  // Auth
+  "auth.loading": string;
+  "auth.loadingErrorTitle": string;
+  "auth.retry": string;
+  "auth.goToSignIn": string;
+
   // Lesson player chrome
   "lesson.step.intro": string;
   "lesson.step.concept": string;
@@ -246,6 +252,11 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "nav.library": "Library",
     "nav.profile": "Profile",
 
+    "auth.loading": "Loading…",
+    "auth.loadingErrorTitle": "Sign-in check timed out",
+    "auth.retry": "Try again",
+    "auth.goToSignIn": "Go to sign in",
+
     "lesson.step.intro": "Intro",
     "lesson.step.concept": "Concept",
     "lesson.step.example": "Example",
@@ -476,6 +487,11 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "nav.friends": "Teman",
     "nav.library": "Pustaka",
     "nav.profile": "Profil",
+
+    "auth.loading": "Memuat…",
+    "auth.loadingErrorTitle": "Pemeriksaan masuk habis waktu",
+    "auth.retry": "Coba lagi",
+    "auth.goToSignIn": "Ke halaman masuk",
 
     "lesson.step.intro": "Intro",
     "lesson.step.concept": "Konsep",

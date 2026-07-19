@@ -7,6 +7,17 @@ import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import { signInWithEmail, resendSignupEmail } from "@/lib/auth/client";
 import { trackEvent } from "@/lib/analytics/client";
 
+function ForgotPasswordLink() {
+  return (
+    <Link
+      href="/forgot-password"
+      className="text-xs font-medium text-primary hover:underline"
+    >
+      Forgot password?
+    </Link>
+  );
+}
+
 const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
 export default function LoginPage() {
@@ -112,9 +123,12 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-foreground">
-              Password
-            </label>
+            <div className="flex items-center justify-between">
+              <label htmlFor="password" className="block text-sm font-medium text-foreground">
+                Password
+              </label>
+              <ForgotPasswordLink />
+            </div>
             <input
               id="password"
               type="password"
