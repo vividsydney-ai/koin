@@ -2,6 +2,28 @@
 # Loop reads and writes this. Human can also read to understand where we are.
 # v2: MVP reshaped around paper trading. Original v1 loop files archived in /_archived.
 
+## 2026-07-19 — KO-LESSON-004: lesson save fix, EN/ID parity, source synopses
+
+- **Goal:** Fix persistent "We couldn't save your progress" error; achieve EN/ID content parity; add source synopses/relevance blurbs in Library.
+- **Swarm execution:** Conductor (kimi-code) → CopyWriter agent → SourceResearch agent → Verifier.
+- **Changes landed:**
+  - Reduced `complete_lesson` min-time gate from 30s to 10s and surfaced real RPC errors in the UI (`lib/lessons/completion.ts`, `app/learn/[slug]/LessonPlayer.tsx`, `lib/i18n/dictionaries.ts`).
+  - Indonesian locale now reads localized lesson content from `content_variants.body_id` and lesson `*_id` columns.
+  - English locale uses base lesson columns to guarantee no Indonesian leakage while the variant pool is still being translated.
+  - Added `synopsis`, `synopsis_id`, `relevance_blurb`, `relevance_blurb_id` to `sources`; updated Library + lesson source cards with locale-aware fallbacks.
+  - Deduplicated source rows (OJK-004/OJK-006, IDX duplicates) and rewrote `source_ids` arrays in `content_variants`.
+  - Replay completion UI now shows already-earned XP state instead of new-XP ticks.
+  - Updated `tests/lessons/LessonPlayer.test.tsx` for the new EN-base / ID-variant behavior.
+- **DB migrations applied:** `20260719000052`, `20260719000100`, `20260719000200`, `20260719000300`, `20260719000400`.
+- **Deploy:** Vercel project `koin-web-koinaku` aliased to `https://web.koinaku.com`.
+- **Verification:**
+  - `pnpm type-check` ✅ clean
+  - `pnpm test` ✅ 374 passed / 5 skipped
+  - `pnpm build` ✅ clean
+  - gstack browse smoke test: login/signup pages load, valid lesson slug fetches data, auth guards redirect anonymous users.
+- **Linear:** KO-70 moved to **Done** with summary comment.
+- **Note:** Netlify build credits exhausted; production deploys now route through Vercel. Authenticated E2E flows (lesson completion, locale switch, replay, library synopses) need dogfooding with real credentials.
+
 ## 2026-07-19 — KO-VERCEL-001: Migrated web app from Netlify to Vercel
 
 - **Goal:** Serve Koinaku web app from Vercel at `https://web.koinaku.com`, with working cron jobs.
