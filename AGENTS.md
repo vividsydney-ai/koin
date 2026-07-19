@@ -2,7 +2,7 @@
 
 > **Last updated:** 2026-07-18
 
-Every agent starts by reading `loop-state.md`. If it exists and state is not `DONE`, resume from that state. Otherwise run the OpenWiki pre-flight below, then read `HANDOFF.md`, `KIMI_HANDOFF.md`, `TASKS.md`, and `docs/agents/LOOP_ENGINEERING.md`.
+Every agent starts by reading `loop-state.md`. If it exists and state is not `DONE`, resume from that state. Otherwise run the OpenWiki pre-flight below, then read `identity.md`, `HANDOFF.md`, `KIMI_HANDOFF.md`, `TASKS.md`, and `docs/agents/LOOP_ENGINEERING.md`.
 
 ## Default operating mode (auto-loop)
 
@@ -48,7 +48,7 @@ Use separate agents for Plan / Make / Verify / Fix / Land so the verifier never 
 ## Pre-flight checklist
 1. Read `loop-state.md` first. Resume if state != DONE.
 2. Run the OpenWiki pre-flight above.
-3. Read `HANDOFF.md`, `KIMI_HANDOFF.md`, `TASKS.md`, `RULES.md`, `CONTEXT.md`, `ADL.md`, `SCHEMA.md`.
+3. Read `identity.md`, `HANDOFF.md`, `KIMI_HANDOFF.md`, `TASKS.md`, `RULES.md`, `CONTEXT.md`, `ADL.md`, `SCHEMA.md`.
 4. Identify the vertical slice: smallest end-to-end piece that can be built and verified independently.
 5. Initialize `loop-state.md` with `npm run loop:init <ID> "<title>"` if starting fresh.
 6. Search reflexion: `npm run loop:reflexion <tag>` before planning.

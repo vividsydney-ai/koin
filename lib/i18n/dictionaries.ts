@@ -87,6 +87,32 @@ export interface Dictionary {
 
   // Friends / leaderboard
   "friends.you": string;
+  "friends.inviteTitle": string;
+  "friends.inviteBody": string;
+  "friends.share": string;
+  "friends.scanQr": string;
+  "friends.copyLink": string;
+  "friends.linkCopied": string;
+  "friends.acceptTitle": string;
+  "friends.acceptBody": string;
+  "friends.acceptButton": string;
+  "friends.accepted": string;
+  "friends.requestSent": string;
+  "friends.userNotFound": string;
+  "friends.cohorts": string;
+  "friends.createCohort": string;
+  "friends.cohortName": string;
+  "friends.create": string;
+  "friends.created": string;
+  "friends.cohortLimitFree": string;
+  "friends.upgradeToPro": string;
+  "friends.joinCohort": string;
+  "friends.cohortCode": string;
+  "friends.join": string;
+  "friends.cohortNotFound": string;
+  "friends.alreadyMember": string;
+  "friends.joinedCohort": string;
+  "friends.friendsTitle": string;
 
   // Trade / price chart
   "trade.simulatedPrices": string;
@@ -198,6 +224,32 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "settings.language": "Language",
 
     "friends.you": "You",
+    "friends.inviteTitle": "Invite friends",
+    "friends.inviteBody": "Share your card so friends can add you on Koin.",
+    "friends.share": "Share",
+    "friends.scanQr": "Scan QR",
+    "friends.copyLink": "Copy invite link",
+    "friends.linkCopied": "Invite link copied!",
+    "friends.acceptTitle": "Add friend",
+    "friends.acceptBody": "wants to learn with you on Koin.",
+    "friends.acceptButton": "Accept friend request",
+    "friends.accepted": "You're now friends!",
+    "friends.requestSent": "Friend request sent.",
+    "friends.userNotFound": "User not found. The invite link may be invalid.",
+    "friends.cohorts": "Cohorts",
+    "friends.createCohort": "Create a cohort",
+    "friends.cohortName": "Cohort name",
+    "friends.create": "Create",
+    "friends.created": "Cohort created",
+    "friends.cohortLimitFree": "Free users can create 1 cohort. Upgrade to Pro to create more.",
+    "friends.upgradeToPro": "Upgrade to Pro",
+    "friends.joinCohort": "Join a cohort",
+    "friends.cohortCode": "Cohort code",
+    "friends.join": "Join",
+    "friends.cohortNotFound": "Cohort not found. Check the code and try again.",
+    "friends.alreadyMember": "You're already in this cohort.",
+    "friends.joinedCohort": "Joined!",
+    "friends.friendsTitle": "Friends",
     "trade.simulatedPrices": "Simulated prices",
     "trade.simulatedBody":
       "some data points are generated when official IDX data is unavailable. For paper-trading practice only.",
@@ -297,6 +349,32 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "settings.language": "Bahasa",
 
     "friends.you": "Kamu",
+    "friends.inviteTitle": "Undang teman",
+    "friends.inviteBody": "Bagikan kartumu agar teman bisa menambahkanmu di Koin.",
+    "friends.share": "Bagikan",
+    "friends.scanQr": "Pindai QR",
+    "friends.copyLink": "Salin tautan undangan",
+    "friends.linkCopied": "Tautan undangan disalin!",
+    "friends.acceptTitle": "Tambah teman",
+    "friends.acceptBody": "ingin belajar bersamamu di Koin.",
+    "friends.acceptButton": "Terima undangan teman",
+    "friends.accepted": "Kalian sekarang berteman!",
+    "friends.requestSent": "Undangan teman terkirim.",
+    "friends.userNotFound": "Pengguna tidak ditemukan. Tautan undangan mungkin tidak valid.",
+    "friends.cohorts": "Kelompok",
+    "friends.createCohort": "Buat kelompok",
+    "friends.cohortName": "Nama kelompok",
+    "friends.create": "Buat",
+    "friends.created": "Kelompok dibuat",
+    "friends.cohortLimitFree": "Pengguna gratis bisa membuat 1 kelompok. Upgrade ke Pro untuk membuat lebih banyak.",
+    "friends.upgradeToPro": "Upgrade ke Pro",
+    "friends.joinCohort": "Gabung kelompok",
+    "friends.cohortCode": "Kode kelompok",
+    "friends.join": "Gabung",
+    "friends.cohortNotFound": "Kelompok tidak ditemukan. Periksa kode dan coba lagi.",
+    "friends.alreadyMember": "Kamu sudah bergabung di kelompok ini.",
+    "friends.joinedCohort": "Bergabung!",
+    "friends.friendsTitle": "Teman",
     "trade.simulatedPrices": "Harga simulasi",
     "trade.simulatedBody":
       "beberapa titik data dibuat saat data resmi IDX tidak tersedia. Hanya untuk latihan paper trading.",

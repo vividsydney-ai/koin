@@ -30,13 +30,15 @@ export async function joinCohortByCode(userId: string, code: string): Promise<Co
 export interface Cohort {
   id: string;
   name: string;
+  inviteCode: string | null;
   joinedAt: string;
+  isCreator: boolean;
 }
 
 export async function getCohorts(userId: string): Promise<Cohort[]> {
   const { data, error } = await supabase
     .from("cohort_memberships")
-    .select("id, joined_at, cohort:cohorts(id, name)")
+    .select("id, joined_at, cohort:cohorts(id, name, invite_code, created_by)")
     .eq("user_id", userId)
     .order("joined_at", { ascending: false });
 
@@ -50,7 +52,34 @@ export async function getCohorts(userId: string): Promise<Cohort[]> {
     return {
       id: String(cohort.id ?? ""),
       name: String(cohort.name ?? "Unknown"),
+      inviteCode: cohort.invite_code === null || cohort.invite_code === undefined ? null : String(cohort.invite_code),
       joinedAt: String(row.joined_at ?? new Date().toISOString()),
+      isCreator: cohort.created_by === userId,
     };
   });
+}
+
+export interface CreatedCohort {
+  cohortId: string;
+  name: string;
+  inviteCode: string;
+}
+
+export async function createCohort(userId: string, name: string): Promise<CreatedCohort | null> {
+  const { data, error } = await supabase.rpc("create_cohort", {
+    p_user_id: userId,
+    p_name: name,
+  });
+
+  if (error || !data) {
+    console.error("createCohort error:", error?.message);
+    return null;
+  }
+
+  const raw = data as Record<string, unknown>;
+  return {
+    cohortId: String(raw.cohort_id ?? ""),
+    name: String(raw.name ?? ""),
+    inviteCode: String(raw.invite_code ?? ""),
+  };
 }

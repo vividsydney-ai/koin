@@ -12,7 +12,8 @@
 - **Repo:** `/Users/vividm4/Documents/Projects/Side-Gigs/Koin/Github-repo`
 - **Shipping branch:** `web-koinaku` (this is the integration + deploy branch — there is NO `main` PR flow for this MVP)
 - **Stack:** Next.js + TypeScript (strict) + Supabase (Postgres, RLS) + Vitest + Tailwind
-- **Prod:** https://web.koinaku.com
+- **Prod:** https://web.koinaku.com (Vercel project `koin-web-koinaku`)
+- **Deploy target:** Vercel only. Netlify is a paused fallback; do not rely on it for production deploys.
 - **Current state:** Phases 1–5 done; Phase 6 6-slice MVP polish shipped to `https://web.koinaku.com`. KO-DEDUP-001 landed: duplicate example/question variants in Foundation 0 lessons deactivated via migration 047, production smoke verified, Friends QR flow smoke-tested end-to-end. Security & engineering credibility pass (SEC-001) landed on `web-koinaku`: CI workflow, typed auth errors, Zod input validation, typed service layer (`lib/services/*`), RLS smoke tests, service tests, security docs (`SECURITY.md`, `docs/security.md`, `docs/adr/001-tenancy-and-rls.md`), and lint-staged pre-commit hooks. `npx vitest run` → 314 passed / 5 skipped; `npm run type-check` clean; `npm run lint` 0 errors.
 
 **First actions (in this order, no exceptions):**

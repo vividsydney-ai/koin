@@ -104,6 +104,10 @@ bash scripts/verify-loop.sh
 
 Run Lighthouse and browser QA for final QA tasks.
 
+### Deployment
+
+The `web-koinaku` branch deploys automatically to **Vercel** and is aliased to `https://web.koinaku.com`. Netlify is a paused fallback only; do not rely on it for production deploys. After gates pass, push `web-koinaku` and verify the production URL loads.
+
 ### Native/Hybrid Beta
 
 Do not resume native work until web MVP gates pass and the human explicitly restarts the native track.

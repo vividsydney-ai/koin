@@ -6,11 +6,12 @@ import jsQR from "jsqr";
 import { useAuth } from "@/lib/auth/use-auth";
 import { addFriendByQr, getFriends, type Friend } from "@/lib/friends/client";
 import { getWeeklyLeaderboard, type WeeklyLeaderboard } from "@/lib/home/client";
-import { joinCohortByCode, getCohorts, type Cohort } from "@/lib/cohorts/client";
+import { createCohort, joinCohortByCode, getCohorts, type Cohort } from "@/lib/cohorts/client";
 import { EmptyState } from "@/components/EmptyState";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 export default function FriendsPage() {
+  const { t } = useLocale();
   const { user, profile, loading: authLoading } = useAuth(true);
   const [friends, setFriends] = useState<Friend[]>([]);
   const [cohorts, setCohorts] = useState<Cohort[]>([]);
@@ -54,12 +55,12 @@ export default function FriendsPage() {
     setCohortMessage(null);
     const result = await joinCohortByCode(user.id, cohortCodeInput.trim());
     if (result) {
-      setCohortMessage(result.alreadyMember ? "You're already in this cohort." : `Joined ${result.cohortName}!`);
+      setCohortMessage(result.alreadyMember ? t("friends.alreadyMember") : t("friends.joinedCohort"));
       setCohortCodeInput("");
       const cohortsData = await getCohorts(user.id);
       setCohorts(cohortsData);
     } else {
-      setCohortMessage("Cohort not found. Check the code and try again.");
+      setCohortMessage(t("friends.cohortNotFound"));
     }
   };
 
@@ -70,8 +71,8 @@ export default function FriendsPage() {
   return (
     <main className="min-h-screen bg-background p-5 pb-28">
       <header className="mb-6">
-        <p className="text-sm text-muted-foreground">Learn together,</p>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">Friends</h1>
+        <p className="text-sm text-muted-foreground">{t("friends.inviteBody")}</p>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">{t("friends.inviteTitle")}</h1>
       </header>
 
       {isLoading ? (
@@ -81,9 +82,10 @@ export default function FriendsPage() {
         </div>
       ) : (
         <div className="space-y-5">
-          <QrSection
+          <InviteCard
             userId={user?.id ?? ""}
             displayName={profile?.display_name ?? "Learner"}
+            avatarUrl={profile?.avatar_url ?? null}
             onFriendAdded={handleFriendAdded}
             message={message}
             setMessage={setMessage}
@@ -101,12 +103,12 @@ export default function FriendsPage() {
           )}
 
           <section>
-            <h2 className="mb-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">Friends</h2>
+            <h2 className="mb-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">{t("friends.friendsTitle")}</h2>
             {acceptedFriends.length === 0 ? (
               <EmptyState
                 icon="👥"
                 title="No friends yet"
-                description="Share your QR code or scan a friend's code to start learning together."
+                description="Share your invite link or scan a friend's code to start learning together."
               />
             ) : (
               <div className="space-y-2">
@@ -126,10 +128,12 @@ export default function FriendsPage() {
           )}
 
           <CohortSection
+            userId={user?.id ?? ""}
             cohorts={cohorts}
             codeInput={cohortCodeInput}
             onCodeChange={setCohortCodeInput}
             onJoin={handleJoinCohort}
+            onCohortsChange={setCohorts}
             message={cohortMessage}
           />
         </div>
@@ -138,26 +142,33 @@ export default function FriendsPage() {
   );
 }
 
-function QrSection({
+function InviteCard({
   userId,
   displayName,
+  avatarUrl,
   onFriendAdded,
   message,
   setMessage,
 }: {
   userId: string;
   displayName: string;
+  avatarUrl: string | null;
   onFriendAdded: () => void;
   message: string | null;
   setMessage: (value: string | null) => void;
 }) {
+  const { t } = useLocale();
   const [qrSvg, setQrSvg] = useState<string | null>(null);
   const [scannerOpen, setScannerOpen] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
+
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
+  const inviteUrl = `${origin}/friends/accept?user=${encodeURIComponent(userId)}`;
 
   useEffect(() => {
     if (!userId) return;
     let cancelled = false;
-    QRCode.toString(userId, {
+    QRCode.toString(inviteUrl, {
       type: "svg",
       width: 200,
       margin: 2,
@@ -172,15 +183,23 @@ function QrSection({
     return () => {
       cancelled = true;
     };
-  }, [userId]);
+  }, [inviteUrl, userId]);
 
-  const shareText = `Add me on Koin and learn to invest together! My user ID: ${userId}`;
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(inviteUrl);
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+    } catch {
+      // ignore
+    }
+  };
 
   const handleShare = async () => {
     const shareData = {
-      title: `Add ${displayName} on Koin`,
-      text: shareText,
-      url: typeof window !== "undefined" ? window.location.origin : "",
+      title: t("friends.inviteTitle"),
+      text: `${displayName} ${t("friends.acceptBody")}`,
+      url: inviteUrl,
     };
     if (navigator.canShare && navigator.canShare(shareData)) {
       try {
@@ -188,24 +207,62 @@ function QrSection({
       } catch {
         // User cancelled or share failed.
       }
+    } else {
+      await handleCopyLink();
     }
   };
 
-  const handleScanResult = async (scannedUserId: string) => {
+  const extractUserIdFromScan = (raw: string): string | null => {
+    if (!raw) return null;
+    // Deep-link URL like https://web.koinaku.com/friends/accept?user=<uuid>
+    try {
+      const url = new URL(raw);
+      const user = url.searchParams.get("user");
+      if (user) return user;
+    } catch {
+      // Not a URL — treat as raw user id.
+    }
+    return raw.trim();
+  };
+
+  const handleScanResult = async (scanned: string) => {
     setMessage(null);
-    const result = await addFriendByQr(scannedUserId.trim());
+    const scannedUserId = extractUserIdFromScan(scanned);
+    if (!scannedUserId) {
+      setMessage("Could not read invite. Try again.");
+      return;
+    }
+    const result = await addFriendByQr(scannedUserId);
     if (result) {
-      setMessage(result.status === "accepted" ? "You're now friends!" : "Friend request sent.");
+      setMessage(result.status === "accepted" ? t("friends.accepted") : t("friends.requestSent"));
       await onFriendAdded();
     } else {
-      setMessage("Could not add friend. Check the QR code and try again.");
+      setMessage("Could not add friend. Check the invite and try again.");
     }
   };
+
+  const initials = displayName
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
   return (
     <div className="rounded-radius-lg border border-muted/60 bg-surface p-4 shadow-sm">
-      <h2 className="text-sm font-semibold text-foreground">Invite friends</h2>
-      <p className="text-xs text-muted-foreground">Share your QR code or scan a friend&apos;s code to connect.</p>
+      <div className="flex items-center gap-3">
+        {avatarUrl ? (
+          <img src={avatarUrl} alt="" className="h-12 w-12 rounded-full object-cover" />
+        ) : (
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-base font-bold text-primary">
+            {initials || "?"}
+          </div>
+        )}
+        <div>
+          <p className="text-sm font-semibold text-foreground">{displayName}</p>
+          <p className="text-xs text-muted-foreground">{t("friends.inviteBody")}</p>
+        </div>
+      </div>
 
       <div className="mt-4 flex flex-col items-center gap-4">
         <div className="rounded-radius-md bg-white p-3 shadow-sm">
@@ -227,19 +284,25 @@ function QrSection({
             onClick={handleShare}
             className="flex-1 rounded-radius-md bg-primary py-2.5 text-sm font-semibold text-primary-foreground active:opacity-90"
           >
-            Share
+            {t("friends.share")}
           </button>
           <button
             onClick={() => setScannerOpen(true)}
             className="flex-1 rounded-radius-md bg-foreground py-2.5 text-sm font-semibold text-background active:opacity-90"
           >
-            Scan QR
+            {t("friends.scanQr")}
           </button>
         </div>
+        <button
+          onClick={handleCopyLink}
+          className="w-full rounded-radius-md border border-muted bg-background py-2.5 text-sm font-semibold text-foreground active:opacity-90"
+        >
+          {linkCopied ? t("friends.linkCopied") : t("friends.copyLink")}
+        </button>
       </div>
 
       {message && (
-        <p className={`mt-4 text-center text-xs ${message.includes("friends") || message.includes("sent") ? "text-success" : "text-danger"}`}>
+        <p className={`mt-4 text-center text-xs ${message.includes(t("friends.accepted")) || message.includes(t("friends.requestSent")) ? "text-success" : "text-danger"}`}>
           {message}
         </p>
       )}
@@ -265,7 +328,7 @@ function QrScannerModal({ onClose, onScan }: { onClose: () => void; onScan: (use
   const isCameraSupported =
     typeof navigator !== "undefined" && !!navigator.mediaDevices?.getUserMedia;
   const [cameraError, setCameraError] = useState<string | null>(
-    isCameraSupported ? null : "Camera not available in this browser. You can enter a user ID manually below."
+    isCameraSupported ? null : "Camera not available in this browser. You can enter an invite link below."
   );
   const [manualInput, setManualInput] = useState("");
 
@@ -308,7 +371,7 @@ function QrScannerModal({ onClose, onScan }: { onClose: () => void; onScan: (use
         rafRef.current = requestAnimationFrame(tick);
       })
       .catch(() => {
-        setCameraError("Could not access camera. You can enter a user ID manually below.");
+        setCameraError("Could not access camera. You can enter an invite link below.");
       });
 
     return () => {
@@ -356,16 +419,16 @@ function QrScannerModal({ onClose, onScan }: { onClose: () => void; onScan: (use
         )}
 
         <form onSubmit={handleManualSubmit} className="w-full max-w-sm space-y-2">
-          <label htmlFor="manual-user-id" className="block text-xs font-medium text-muted-foreground">
-            Or enter user ID manually
+          <label htmlFor="manual-invite-link" className="block text-xs font-medium text-muted-foreground">
+            Or paste invite link
           </label>
           <div className="flex gap-2">
             <input
-              id="manual-user-id"
+              id="manual-invite-link"
               type="text"
               value={manualInput}
               onChange={(e) => setManualInput(e.target.value)}
-              placeholder="Paste user ID"
+              placeholder="https://web.koinaku.com/friends/accept?user=..."
               className="flex-1 rounded-radius-md border border-muted bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
             />
             <button
@@ -383,43 +446,119 @@ function QrScannerModal({ onClose, onScan }: { onClose: () => void; onScan: (use
 }
 
 function CohortSection({
+  userId,
   cohorts,
   codeInput,
   onCodeChange,
   onJoin,
+  onCohortsChange,
   message,
 }: {
+  userId: string;
   cohorts: Cohort[];
   codeInput: string;
   onCodeChange: (value: string) => void;
   onJoin: (e: React.FormEvent) => void;
+  onCohortsChange: (cohorts: Cohort[]) => void;
   message: string | null;
 }) {
+  const { t } = useLocale();
+  const [createOpen, setCreateOpen] = useState(false);
+  const [newCohortName, setNewCohortName] = useState("");
+  const [createMessage, setCreateMessage] = useState<string | null>(null);
+  const [creating, setCreating] = useState(false);
+  const createdCount = cohorts.filter((c) => c.isCreator).length;
+  const canCreateFree = createdCount < 1;
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!userId || !newCohortName.trim()) return;
+    setCreateMessage(null);
+    setCreating(true);
+    const result = await createCohort(userId, newCohortName.trim());
+    if (result) {
+      setNewCohortName("");
+      setCreateOpen(false);
+      const cohortsData = await getCohorts(userId);
+      onCohortsChange(cohortsData);
+    } else {
+      setCreateMessage(canCreateFree ? "Could not create cohort. Try again." : t("friends.cohortLimitFree"));
+    }
+    setCreating(false);
+  };
+
   return (
     <section>
-      <h2 className="mb-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">Cohorts</h2>
+      <h2 className="mb-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">{t("friends.cohorts")}</h2>
       <div className="rounded-radius-lg border border-muted/60 bg-surface p-4 shadow-sm">
-        <p className="text-xs text-muted-foreground">Join a class or group with an invite code.</p>
-        <form onSubmit={onJoin} className="mt-3 flex gap-2">
-          <input
-            type="text"
-            value={codeInput}
-            onChange={(e) => onCodeChange(e.target.value.toUpperCase())}
-            placeholder="Cohort code"
-            className="flex-1 rounded-radius-md border border-muted bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
-          />
-          <button
-            type="submit"
-            disabled={!codeInput.trim()}
-            className="rounded-radius-md bg-foreground px-4 py-2 text-sm font-semibold text-background disabled:opacity-50 active:opacity-90"
-          >
-            Join
-          </button>
-        </form>
+        {!createOpen ? (
+          <>
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-muted-foreground">{t("friends.joinCohort")}</p>
+              <button
+                onClick={() => setCreateOpen(true)}
+                className="rounded-radius-md bg-foreground px-3 py-1.5 text-xs font-semibold text-background active:opacity-90"
+              >
+                {t("friends.createCohort")}
+              </button>
+            </div>
+            <form onSubmit={onJoin} className="mt-3 flex gap-2">
+              <input
+                type="text"
+                value={codeInput}
+                onChange={(e) => onCodeChange(e.target.value.toUpperCase())}
+                placeholder={t("friends.cohortCode")}
+                className="flex-1 rounded-radius-md border border-muted bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
+              />
+              <button
+                type="submit"
+                disabled={!codeInput.trim()}
+                className="rounded-radius-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50 active:opacity-90"
+              >
+                {t("friends.join")}
+              </button>
+            </form>
+          </>
+        ) : (
+          <form onSubmit={handleCreate} className="space-y-3">
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-semibold text-foreground">{t("friends.createCohort")}</p>
+              <button
+                type="button"
+                onClick={() => setCreateOpen(false)}
+                className="text-xs text-muted-foreground underline"
+              >
+                Cancel
+              </button>
+            </div>
+            <input
+              type="text"
+              value={newCohortName}
+              onChange={(e) => setNewCohortName(e.target.value)}
+              placeholder={t("friends.cohortName")}
+              maxLength={60}
+              className="w-full rounded-radius-md border border-muted bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
+            />
+            {!canCreateFree && (
+              <p className="text-xs text-warning">{t("friends.cohortLimitFree")}</p>
+            )}
+            <button
+              type="submit"
+              disabled={!newCohortName.trim() || creating || !canCreateFree}
+              className="w-full rounded-radius-md bg-primary py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-50 active:opacity-90"
+            >
+              {creating ? "Creating…" : t("friends.create")}
+            </button>
+          </form>
+        )}
+
         {message && (
           <p className={`mt-2 text-xs ${message.includes("Joined") || message.includes("already") ? "text-success" : "text-danger"}`}>
             {message}
           </p>
+        )}
+        {createMessage && (
+          <p className="mt-2 text-xs text-danger">{createMessage}</p>
         )}
 
         {cohorts.length > 0 && (
@@ -427,7 +566,14 @@ function CohortSection({
             {cohorts.map((cohort) => (
               <div key={cohort.id} className="rounded-radius-md bg-muted px-3 py-2">
                 <p className="text-sm font-semibold text-foreground">{cohort.name}</p>
-                <p className="text-[10px] text-muted-foreground">Joined {new Date(cohort.joinedAt).toLocaleDateString("id-ID")}</p>
+                <div className="flex items-center justify-between">
+                  <p className="text-[10px] text-muted-foreground">
+                    Joined {new Date(cohort.joinedAt).toLocaleDateString("id-ID")}
+                  </p>
+                  {cohort.inviteCode && (
+                    <p className="text-[10px] font-mono text-muted-foreground">{cohort.inviteCode}</p>
+                  )}
+                </div>
               </div>
             ))}
           </div>

@@ -82,7 +82,7 @@ describe("FriendsPage QR flow", () => {
 
     expect(screen.getByRole("dialog")).toBeInTheDocument();
     expect(screen.getByText("Scan friend's QR")).toBeInTheDocument();
-    expect(screen.getByLabelText(/Or enter user ID manually/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Or paste invite link/i)).toBeInTheDocument();
   });
 
   it("adds friend from manual user id input", async () => {
@@ -96,7 +96,7 @@ describe("FriendsPage QR flow", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /Scan QR/i }));
 
-    const input = screen.getByLabelText(/Or enter user ID manually/i);
+    const input = screen.getByLabelText(/Or paste invite link/i);
     fireEvent.change(input, { target: { value: "user-2" } });
     fireEvent.click(screen.getByRole("button", { name: /^Add$/i }));
 
@@ -117,7 +117,7 @@ describe("FriendsPage QR flow", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /Scan QR/i }));
 
-    const input = screen.getByLabelText(/Or enter user ID manually/i);
+    const input = screen.getByLabelText(/Or paste invite link/i);
     fireEvent.change(input, { target: { value: "bad-id" } });
     fireEvent.submit(input.closest("form")!);
 

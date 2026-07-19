@@ -2,6 +2,30 @@
 # Loop reads and writes this. Human can also read to understand where we are.
 # v2: MVP reshaped around paper trading. Original v1 loop files archived in /_archived.
 
+## 2026-07-19 — KO-BATCH-007: cache purge, ID content translation, friends invite, cohort creation, docs, identity
+
+- **Goal:** Polish after KO-LESSON-004: purge stale Vercel cache; finish Indonesian content parity; redesign friends invite with deep-link user card; add cohort creation with free/Pro gating; update deployment docs; create identity.md.
+- **Swarm execution:** Conductor (kimi-code) single-agent with background CopyWriter-style translation script.
+- **Changes landed:**
+  - Redeployed `web-koinaku` to Vercel production, verifying stale ISR cache invalidation (`age: 0`, `x-vercel-cache: MISS`) (KO-71).
+  - Applied migration `20260719000500_cohort_creation_and_public_profile.sql`: added `profiles.subscription_tier`, `get_public_profile` RPC, `create_cohort` RPC with free (1) / Pro (50) limits, creator auto-membership, and creator RLS policy (KO-74).
+  - Redesigned `app/(app)/friends/page.tsx`: invite card with avatar, QR encoded as `/friends/accept?user=<id>`, copy-link button, native share; scanner parses deep-link URLs or raw user IDs; updated `tests/friends/page.test.tsx` label to match (KO-73).
+  - Added `app/friends/accept/page.tsx` + `AcceptFriendContent.tsx`: public profile lookup, accept friend request, redirect to `/friends` (KO-73).
+  - Added cohort creation UI in Friends page, integrated `createCohort` client helper, displayed invite codes (KO-74).
+  - Added 24 new i18n dictionary keys for friends/cohort flows in `lib/i18n/dictionaries.ts` (EN + ID).
+  - Updated deployment docs: root `LOOP_ENGINEERING.md`, `docs/agents/LOOP_ENGINEERING.md`, `KIMI_HANDOFF.md` all state Vercel as primary target and Netlify as paused fallback (KO-75).
+  - Created `identity.md` and updated `AGENTS.md` pre-flight to include it (KO-76).
+- **DB migrations applied:** `20260719000500`.
+- **Deploy:** Vercel project `koin-web-koinaku` aliased to `https://web.koinaku.com`.
+- **Verification:**
+  - `npx tsc --noEmit` ✅ clean
+  - `npm run lint` ✅ 0 errors (23 pre-existing warnings)
+  - `npx vitest run` ✅ 374 passed / 5 skipped
+  - `npm run build` ✅ clean
+  - `vercel --prod` ✅ deployed and aliased
+- **Translation status:** OpenAI background translation of `content_variants.body_id` to Indonesian is ~85% complete (544/637 variants). Resumed in background after 15-min timeout. Will finish without further code changes.
+- **Linear:** KO-71 Done, KO-72 In Progress, KO-73 Done, KO-74 Done, KO-75 Done, KO-76 Done.
+
 ## 2026-07-19 — KO-LESSON-004: lesson save fix, EN/ID parity, source synopses
 
 - **Goal:** Fix persistent "We couldn't save your progress" error; achieve EN/ID content parity; add source synopses/relevance blurbs in Library.
