@@ -1,8 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import type { ReactNode } from "react";
 import LessonPlayer from "@/app/learn/[slug]/LessonPlayer";
 import * as lessonsClient from "@/lib/lessons/client";
 import type { Lesson, ContentVariant, LessonSource } from "@/lib/lessons/client";
+import { dictionaries } from "@/lib/i18n/dictionaries";
+import type { Locale } from "@/lib/i18n/types";
 
 vi.mock("@/lib/lessons/client", async () => {
   const actual = await vi.importActual<typeof import("@/lib/lessons/client")>("@/lib/lessons/client");
@@ -17,7 +20,7 @@ vi.mock("@/lib/lessons/client", async () => {
 });
 
 vi.mock("@/lib/auth/use-auth", () => ({
-  useAuth: vi.fn().mockReturnValue({ user: { id: "user1" }, loading: false }),
+  useAuth: vi.fn().mockReturnValue({ user: { id: "00000000-0000-0000-0000-000000000001" }, loading: false }),
 }));
 
 vi.mock("next/navigation", () => ({
@@ -38,24 +41,38 @@ vi.mock("@/lib/lessons/completion", () => ({
   completeLesson: vi.fn().mockResolvedValue(null),
 }));
 
+const mockLocale = vi.fn<() => Locale>().mockReturnValue("en");
+
+vi.mock("@/lib/i18n/LocaleProvider", () => ({
+  useLocale: () => {
+    const locale = mockLocale();
+    return {
+      locale,
+      setLocale: vi.fn(),
+      t: (key: string) => dictionaries[locale][key as keyof typeof dictionaries.en] ?? key,
+    };
+  },
+  LocaleProvider: ({ children }: { children: ReactNode }) => children,
+}));
+
 const baseLesson: Lesson = {
   id: "lesson1",
   slug: "test-lesson",
-  title: "Menabung",
+  title: "Saving",
   titleId: "Menabung",
   lessonNumber: 1,
   difficulty: "beginner",
   xpReward: 10,
   estimatedMinutes: 3,
-  summary: "Belajar menabung",
-  summaryId: null,
-  conceptBody: "Menabung menyisihkan uang untuk masa depan",
-  conceptBodyId: null,
+  summary: "Learn to save",
+  summaryId: "Belajar menabung",
+  conceptBody: "Saving sets money aside for the future",
+  conceptBodyId: "Menabung menyisihkan uang untuk masa depan",
   indonesianExample: "Contoh utama",
-  whyThisMatters: "Penting",
-  whyThisMattersId: null,
-  commonMistake: "Lupa nabung",
-  commonMistakeId: null,
+  whyThisMatters: "Important",
+  whyThisMattersId: "Penting",
+  commonMistake: "Forget to save",
+  commonMistakeId: "Lupa nabung",
   quizData: [],
   quizDataId: null,
 };
@@ -69,6 +86,7 @@ const exampleVariants: ContentVariant[] = [
 describe("LessonPlayer", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockLocale.mockReturnValue("en");
     vi.mocked(lessonsClient.getLessonBySlug).mockResolvedValue(baseLesson);
     vi.mocked(lessonsClient.getLessonVariants).mockImplementation(async (_lessonId, variantType) => {
       if (variantType === "example") return exampleVariants;
@@ -81,58 +99,69 @@ describe("LessonPlayer", () => {
     vi.mocked(lessonsClient.seededIndex).mockReturnValue(0);
   });
 
-  it("shows a different example when clicking See another example", async () => {
+  it("in English locale the example uses base content and hides alternate-example UI", async () => {
     render(<LessonPlayer slug="test-lesson" />);
 
     await waitFor(() => expect(screen.queryByText("Loading lesson…")).not.toBeInTheDocument(), { timeout: 2000 });
 
-    // Advance from intro -> concept -> example.
     fireEvent.click(screen.getByText("Continue"));
     await waitFor(() => expect(screen.getByText("The concept")).toBeInTheDocument(), { timeout: 2000 });
     fireEvent.click(screen.getByText("Continue"));
-    await waitFor(() => expect(screen.getByText("Indonesian example")).toBeInTheDocument(), { timeout: 2000 });
+    await waitFor(() => expect(screen.getByText("How this plays out")).toBeInTheDocument(), { timeout: 2000 });
+
+    expect(screen.getByText("Learn to save")).toBeInTheDocument();
+    expect(screen.queryByLabelText("See another example")).not.toBeInTheDocument();
+  });
+
+  it("in Indonesian locale shows a different example when clicking Lihat contoh lain", async () => {
+    mockLocale.mockReturnValue("id");
+    render(<LessonPlayer slug="test-lesson" />);
+
+    await waitFor(() => expect(screen.queryByText("Memuat pelajaran…")).not.toBeInTheDocument(), { timeout: 2000 });
+
+    fireEvent.click(screen.getByText("Lanjut"));
+    await waitFor(() => expect(screen.getByText("Konsepnya")).toBeInTheDocument(), { timeout: 2000 });
+    fireEvent.click(screen.getByText("Lanjut"));
+    await waitFor(() => expect(screen.getByText("Begini penerapannya")).toBeInTheDocument(), { timeout: 2000 });
 
     expect(screen.getByText("Contoh utama")).toBeInTheDocument();
-    expect(screen.getByLabelText("See another example")).toBeInTheDocument();
+    expect(screen.getByLabelText("Lihat contoh lain")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByLabelText("See another example"));
+    fireEvent.click(screen.getByLabelText("Lihat contoh lain"));
 
     await waitFor(() => {
       expect(screen.getByText("Contoh alternatif pertama")).toBeInTheDocument();
     }, { timeout: 2000 });
   });
 
-  it("shows another different example after returning to main, then hides the button when exhausted", async () => {
+  it("in Indonesian locale shows another different example after returning to main, then hides the button when exhausted", async () => {
+    mockLocale.mockReturnValue("id");
     render(<LessonPlayer slug="test-lesson" />);
 
-    await waitFor(() => expect(screen.queryByText("Loading lesson…")).not.toBeInTheDocument(), { timeout: 2000 });
+    await waitFor(() => expect(screen.queryByText("Memuat pelajaran…")).not.toBeInTheDocument(), { timeout: 2000 });
 
-    fireEvent.click(screen.getByText("Continue"));
-    await waitFor(() => expect(screen.getByText("The concept")).toBeInTheDocument(), { timeout: 2000 });
-    fireEvent.click(screen.getByText("Continue"));
-    await waitFor(() => expect(screen.getByText("Indonesian example")).toBeInTheDocument(), { timeout: 2000 });
+    fireEvent.click(screen.getByText("Lanjut"));
+    await waitFor(() => expect(screen.getByText("Konsepnya")).toBeInTheDocument(), { timeout: 2000 });
+    fireEvent.click(screen.getByText("Lanjut"));
+    await waitFor(() => expect(screen.getByText("Begini penerapannya")).toBeInTheDocument(), { timeout: 2000 });
 
-    // First alternate.
-    fireEvent.click(screen.getByLabelText("See another example"));
+    fireEvent.click(screen.getByLabelText("Lihat contoh lain"));
     await waitFor(() => expect(screen.getByText("Contoh alternatif pertama")).toBeInTheDocument(), { timeout: 2000 });
 
-    // Return to main.
-    fireEvent.click(screen.getByLabelText("Back to main example"));
+    fireEvent.click(screen.getByLabelText("Kembali ke contoh utama"));
     await waitFor(() => expect(screen.getByText("Contoh utama")).toBeInTheDocument(), { timeout: 2000 });
 
-    // Second alternate.
-    fireEvent.click(screen.getByLabelText("See another example"));
+    fireEvent.click(screen.getByLabelText("Lihat contoh lain"));
     await waitFor(() => expect(screen.getByText("Contoh alternatif kedua")).toBeInTheDocument(), { timeout: 2000 });
 
-    // Return to main.
-    fireEvent.click(screen.getByLabelText("Back to main example"));
+    fireEvent.click(screen.getByLabelText("Kembali ke contoh utama"));
     await waitFor(() => expect(screen.getByText("Contoh utama")).toBeInTheDocument(), { timeout: 2000 });
 
-    // Button should be hidden because all alternates are exhausted.
-    expect(screen.queryByLabelText("See another example")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Lihat contoh lain")).not.toBeInTheDocument();
   });
 
-  it("hides See another example when there is only one example variant", async () => {
+  it("in Indonesian locale hides Lihat contoh lain when there is only one example variant", async () => {
+    mockLocale.mockReturnValue("id");
     vi.mocked(lessonsClient.getLessonVariants).mockImplementation(async (_lessonId, variantType) => {
       if (variantType === "example") return [exampleVariants[0]];
       if (variantType === "explanation") return [];
@@ -142,13 +171,13 @@ describe("LessonPlayer", () => {
 
     render(<LessonPlayer slug="test-lesson" />);
 
-    await waitFor(() => expect(screen.queryByText("Loading lesson…")).not.toBeInTheDocument(), { timeout: 2000 });
+    await waitFor(() => expect(screen.queryByText("Memuat pelajaran…")).not.toBeInTheDocument(), { timeout: 2000 });
 
-    fireEvent.click(screen.getByText("Continue"));
-    await waitFor(() => expect(screen.getByText("The concept")).toBeInTheDocument(), { timeout: 2000 });
-    fireEvent.click(screen.getByText("Continue"));
-    await waitFor(() => expect(screen.getByText("Indonesian example")).toBeInTheDocument(), { timeout: 2000 });
+    fireEvent.click(screen.getByText("Lanjut"));
+    await waitFor(() => expect(screen.getByText("Konsepnya")).toBeInTheDocument(), { timeout: 2000 });
+    fireEvent.click(screen.getByText("Lanjut"));
+    await waitFor(() => expect(screen.getByText("Begini penerapannya")).toBeInTheDocument(), { timeout: 2000 });
 
-    expect(screen.queryByLabelText("See another example")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Lihat contoh lain")).not.toBeInTheDocument();
   });
 });

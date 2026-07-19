@@ -13,13 +13,17 @@ export interface Source {
   language: string;
   publicationYear: number | null;
   status: "verified" | "needs_review" | "use_carefully" | "deprecated";
+  synopsis: string | null;
+  synopsisId: string | null;
+  relevanceBlurb: string | null;
+  relevanceBlurbId: string | null;
 }
 
 export async function getSources(): Promise<Source[]> {
   const { data, error } = await supabase
     .from("sources")
     .select(
-      "id, source_code, title, local_title, source_tier, source_type, organization, url, isbn, language, publication_year, status"
+      "id, source_code, title, local_title, source_tier, source_type, organization, url, isbn, language, publication_year, status, synopsis, synopsis_id, relevance_blurb, relevance_blurb_id"
     )
     .order("source_tier", { ascending: true })
     .order("title", { ascending: true });
@@ -43,6 +47,10 @@ export async function getSources(): Promise<Source[]> {
       language: row.language ?? "id",
       publicationYear: row.publication_year ?? null,
       status: row.status as Source["status"],
+      synopsis: row.synopsis ?? null,
+      synopsisId: row.synopsis_id ?? null,
+      relevanceBlurb: row.relevance_blurb ?? null,
+      relevanceBlurbId: row.relevance_blurb_id ?? null,
     })) ?? []
   );
 }

@@ -98,6 +98,12 @@ export interface Dictionary {
   "library.allTypes": string;
   "library.allLanguages": string;
 
+  // Library source card
+  "library.synopsis": string;
+  "library.relevance": string;
+  "library.readMore": string;
+  "library.showLess": string;
+
   // Badges
   "profile.locked": string;
   "profile.keepLearning": string;
@@ -199,6 +205,10 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "library.allTiers": "All tiers",
     "library.allTypes": "All types",
     "library.allLanguages": "All languages",
+    "library.synopsis": "What this source covers",
+    "library.relevance": "Why it matters to you",
+    "library.readMore": "Read more",
+    "library.showLess": "Show less",
     "profile.locked": "Locked",
     "profile.keepLearning": "Keep learning to unlock.",
   },
@@ -294,6 +304,10 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "library.allTiers": "Semua tingkat",
     "library.allTypes": "Semua tipe",
     "library.allLanguages": "Semua bahasa",
+    "library.synopsis": "Apa yang dibahas sumber ini",
+    "library.relevance": "Mengapa ini penting bagimu",
+    "library.readMore": "Baca selengkapnya",
+    "library.showLess": "Tampilkan lebih sedikit",
     "profile.locked": "Terkunci",
     "profile.keepLearning": "Terus belajar untuk membuka.",
   },

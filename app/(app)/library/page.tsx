@@ -193,6 +193,12 @@ export default function LibraryPage() {
 }
 
 function SourceCard({ source }: { source: Source }) {
+  const { t, locale } = useLocale();
+  const [expanded, setExpanded] = useState(false);
+  const activeSynopsis = locale === "id" ? (source.synopsisId ?? source.synopsis) : source.synopsis;
+  const activeRelevance = locale === "id" ? (source.relevanceBlurbId ?? source.relevanceBlurb) : source.relevanceBlurb;
+  const hasDetails = Boolean(activeSynopsis || activeRelevance);
+
   const titleContent = (
     <>
       <div className="mb-2 flex flex-wrap items-center gap-2">
@@ -234,7 +240,56 @@ function SourceCard({ source }: { source: Source }) {
       ) : (
         titleContent
       )}
+
+      {hasDetails && (
+        <button
+          type="button"
+          onClick={() => setExpanded((e) => !e)}
+          aria-expanded={expanded}
+          className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-radius-sm"
+        >
+          {expanded ? t("library.showLess") : t("library.readMore")}
+          <ChevronIcon expanded={expanded} />
+        </button>
+      )}
+
+      {expanded && (
+        <div className="mt-3 space-y-3 border-t border-muted pt-3">
+          {activeSynopsis && (
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                {t("library.synopsis")}
+              </p>
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{activeSynopsis}</p>
+            </div>
+          )}
+          {activeRelevance && (
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                {t("library.relevance")}
+              </p>
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{activeRelevance}</p>
+            </div>
+          )}
+        </div>
+      )}
     </div>
+  );
+}
+
+function ChevronIcon({ expanded }: { expanded: boolean }) {
+  return (
+    <svg
+      className={`h-4 w-4 transition-transform ${expanded ? "rotate-180" : ""}`}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="m6 9 6 6 6-6" />
+    </svg>
   );
 }
 

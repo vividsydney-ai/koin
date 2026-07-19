@@ -85,9 +85,9 @@ export default function LessonPlayer({
         if (!mounted) return;
 
         const [fetchedExampleVariants, explanationData, fetchedQuestionVariants, sourceData, recentIds, lessonStatus] = await Promise.all([
-          getLessonVariants(data.id, "example", level),
-          getLessonVariants(data.id, "explanation", level),
-          getLessonVariants(data.id, "question", level),
+          getLessonVariants(data.id, "example", level, locale),
+          getLessonVariants(data.id, "explanation", level, locale),
+          getLessonVariants(data.id, "question", level, locale),
           getLessonSources(data.id),
           user ? getRecentAttemptVariantIds(user.id, data.id) : Promise.resolve(new Set<string>()),
           user ? getLessonStatus(user.id, data.id) : Promise.resolve(null),
@@ -96,23 +96,23 @@ export default function LessonPlayer({
         if (!mounted) return;
 
         const seed = user ? `${user.id}:${data.id}:${todayKey()}` : `${data.id}:${todayKey()}`;
-        const example = fetchedExampleVariants[seededIndex(seed, fetchedExampleVariants.length)] ?? null;
 
-        const eligibleQuestions = fetchedQuestionVariants.filter((v) => !recentIds.has(v.id));
-        const pool = eligibleQuestions.length > 0 ? eligibleQuestions : fetchedQuestionVariants;
-        // Per-load entropy: replays should surface a different question each
-        // time instead of the same seeded variant all day.
-        const selectedVariant = pool[seededIndex(`${seed}:q:${Date.now()}`, pool.length)] ?? null;
-
+        let example: ContentVariant | null = null;
+        let exampleVariants: ContentVariant[] = [];
+        let explanationVariants: ContentVariant[] = [];
+        let questionVariants: ContentVariant[] = [];
         let processedQuestion: ProcessedQuestion | null = null;
-        // Indonesian locale prefers the translated quiz_data_id so the lesson
-        // stays fully in one language. English keeps the richer variant pool.
-        if (locale === "id" && data.quizDataId && data.quizDataId.length > 0) {
-          const validated = validateQuestion(data.quizDataId[0]);
-          if (validated) {
-            processedQuestion = { ...applyParameters(seed, validated), variantId: "id-quiz" };
-          }
-        } else if (locale !== "id") {
+
+        if (locale === "id") {
+          // Indonesian uses the localized variant pool (body already swapped by getLessonVariants).
+          exampleVariants = fetchedExampleVariants;
+          explanationVariants = explanationData;
+          questionVariants = fetchedQuestionVariants;
+          example = fetchedExampleVariants[seededIndex(seed, fetchedExampleVariants.length)] ?? null;
+
+          const eligibleQuestions = fetchedQuestionVariants.filter((v) => !recentIds.has(v.id));
+          const pool = eligibleQuestions.length > 0 ? eligibleQuestions : fetchedQuestionVariants;
+          const selectedVariant = pool[seededIndex(`${seed}:q:${Date.now()}`, pool.length)] ?? null;
           if (selectedVariant) {
             const validated = validateQuestion(selectedVariant.body);
             if (validated) {
@@ -122,8 +122,17 @@ export default function LessonPlayer({
               };
             }
           }
-          // Fallback to legacy lesson.quizData if no valid variant exists.
-          if (!processedQuestion && data.quizData.length > 0) {
+          // Fallback to translated lesson.quizData_id if no valid variant exists.
+          if (!processedQuestion && data.quizDataId && data.quizDataId.length > 0) {
+            const validated = validateQuestion(data.quizDataId[0]);
+            if (validated) {
+              processedQuestion = applyParameters(seed, validated);
+            }
+          }
+        } else {
+          // English sticks to the base lesson columns so the experience is fully English
+          // even while the variant pool is still being translated to English.
+          if (data.quizData.length > 0) {
             const validated = validateQuestion(data.quizData[0]);
             if (validated) {
               processedQuestion = applyParameters(seed, validated);
@@ -133,9 +142,9 @@ export default function LessonPlayer({
 
         setLesson(data);
         setExampleVariant(example);
-        setExampleVariants(fetchedExampleVariants);
-        setExplanationVariants(explanationData);
-        setQuestionVariants(fetchedQuestionVariants);
+        setExampleVariants(exampleVariants);
+        setExplanationVariants(explanationVariants);
+        setQuestionVariants(questionVariants);
         setActiveQuestion(processedQuestion);
         setSources(sourceData);
         setLiteracyLevel(level);
@@ -395,7 +404,9 @@ export default function LessonPlayer({
                 <ConceptStep
                   lesson={lesson}
                   onExplainSimpler={
-                    locale !== "id" && explanationVariants.length > 0 ? handleExplainSimpler : undefined
+                    explanationVariants.length > 0
+                      ? handleExplainSimpler
+                      : undefined
                   }
                 />
               )}
@@ -406,7 +417,9 @@ export default function LessonPlayer({
                   exampleVariants={exampleVariants}
                   shownVariantIds={shownVariantIds}
                   onAnotherExample={
-                    locale !== "id" && exampleVariants.length > 0 ? handleAnotherExample : undefined
+                    exampleVariants.length > 0
+                      ? handleAnotherExample
+                      : undefined
                   }
                   onShowAlternate={handleShowAlternateVariant}
                 />
@@ -431,7 +444,7 @@ export default function LessonPlayer({
                       });
                     }
                   }}
-                  onAnotherQuestion={locale !== "id" ? handleAnotherQuestion : undefined}
+                  onAnotherQuestion={handleAnotherQuestion}
                 />
               )}
               {step === 4 && <SourceStep sources={sources} quizPassed={quizDone} xpReward={lesson.xpReward} />}
@@ -577,15 +590,13 @@ function ExampleStep({
   const [showAlternate, setShowAlternate] = useState(false);
   const { t, locale } = useLocale();
 
-  const fallbackExample = locale === "id" ? lesson.indonesianExample : lesson.summary;
-  const mainText = locale === "id" ? lesson.indonesianExample : ((exampleVariant?.body?.text as string | undefined) ?? fallbackExample);
+  const mainText = (exampleVariant?.body?.text as string | undefined) ?? lesson.summary;
   const commonMistake = locale === "id" ? (lesson.commonMistakeId ?? lesson.commonMistake) : lesson.commonMistake;
-  const displayText = showAlternate && alternateVariant && locale !== "id"
+  const displayText = showAlternate && alternateVariant
     ? (alternateVariant.body?.text as string | undefined) ?? alternateVariant.body
     : mainText;
 
   const canShowAnother =
-    locale !== "id" &&
     exampleVariants.length > 1 &&
     exampleVariants.some((v) => v.id !== exampleVariant?.id && !shownVariantIds.has(v.id));
 
@@ -788,8 +799,12 @@ function SourceStep({
 
 function SourceCard({ source, highlighted = false }: { source: LessonSource; highlighted?: boolean }) {
   const { t, locale } = useLocale();
+  const [expanded, setExpanded] = useState(false);
   const verified = source.status === "verified";
   const displayTitle = locale === "id" ? (source.localTitle ?? source.title) : source.title;
+  const activeSynopsis = locale === "id" ? (source.synopsisId ?? source.synopsis) : source.synopsis;
+  const activeRelevance = locale === "id" ? (source.relevanceBlurbId ?? source.relevanceBlurb) : source.relevanceBlurb;
+  const hasDetails = Boolean(activeSynopsis || activeRelevance);
 
   return (
     <div
@@ -827,18 +842,69 @@ function SourceCard({ source, highlighted = false }: { source: LessonSource; hig
           {source.sourceCode}
         </span>
       </div>
-      {source.url && (
-        <a
-          href={source.url}
-          target="_blank"
-          rel="noreferrer"
-          className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
-        >
-          {t("lesson.readSource")}
-          <ExternalLinkIcon />
-        </a>
+
+      <div className="mt-4 flex flex-wrap items-center gap-4">
+        {source.url && (
+          <a
+            href={source.url}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
+          >
+            {t("lesson.readSource")}
+            <ExternalLinkIcon />
+          </a>
+        )}
+        {hasDetails && (
+          <button
+            type="button"
+            onClick={() => setExpanded((e) => !e)}
+            aria-expanded={expanded}
+            className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-radius-sm"
+          >
+            {expanded ? t("library.showLess") : t("library.readMore")}
+            <ChevronIcon expanded={expanded} />
+          </button>
+        )}
+      </div>
+
+      {expanded && (
+        <div className="mt-4 space-y-3 border-t border-muted pt-3">
+          {activeSynopsis && (
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                {t("library.synopsis")}
+              </p>
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{activeSynopsis}</p>
+            </div>
+          )}
+          {activeRelevance && (
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                {t("library.relevance")}
+              </p>
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{activeRelevance}</p>
+            </div>
+          )}
+        </div>
       )}
     </div>
+  );
+}
+
+function ChevronIcon({ expanded }: { expanded: boolean }) {
+  return (
+    <svg
+      className={`h-4 w-4 transition-transform ${expanded ? "rotate-180" : ""}`}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="m6 9 6 6 6-6" />
+    </svg>
   );
 }
 

@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/auth/client";
+import type { Locale } from "@/lib/i18n/types";
 import type { LessonStatus } from "./gating";
 import type { QuizQuestion } from "./question";
 
@@ -72,6 +73,7 @@ export interface ContentVariant {
   id: string;
   variantType: "explanation" | "example" | "question";
   body: Record<string, unknown>;
+  bodyId?: Record<string, unknown> | null;
   difficulty: string | null;
   topicTag: string | null;
 }
@@ -90,6 +92,10 @@ export interface LessonSource {
   isPrimary: boolean;
   relevanceType: "primary" | "supporting" | "further_reading";
   status: "verified" | "needs_review" | string;
+  synopsis: string | null;
+  synopsisId: string | null;
+  relevanceBlurb: string | null;
+  relevanceBlurbId: string | null;
 }
 
 export async function getLessonBySlug(slug: string): Promise<Lesson | null> {
@@ -132,11 +138,12 @@ export async function getLessonBySlug(slug: string): Promise<Lesson | null> {
 export async function getLessonVariants(
   lessonId: string,
   variantType?: ContentVariant["variantType"],
-  preferredDifficulty?: string | null
+  preferredDifficulty?: string | null,
+  locale?: Locale
 ): Promise<ContentVariant[]> {
   let query = supabase
     .from("content_variants")
-    .select("id, variant_type, body, difficulty, topic_tag")
+    .select("id, variant_type, body, body_id, difficulty, topic_tag")
     .eq("lesson_id", lessonId)
     .eq("is_active", true);
 
@@ -152,13 +159,19 @@ export async function getLessonVariants(
   }
 
   const variants =
-    data?.map((v) => ({
-      id: v.id,
-      variantType: v.variant_type as ContentVariant["variantType"],
-      body: (v.body as Record<string, unknown>) ?? {},
-      difficulty: v.difficulty,
-      topicTag: v.topic_tag,
-    })) ?? [];
+    data?.map((v) => {
+      const bodyId = (v.body_id as Record<string, unknown> | null) ?? null;
+      const localizedBody =
+        locale === "id" && bodyId ? bodyId : (v.body as Record<string, unknown>) ?? {};
+      return {
+        id: v.id,
+        variantType: v.variant_type as ContentVariant["variantType"],
+        body: localizedBody,
+        bodyId,
+        difficulty: v.difficulty,
+        topicTag: v.topic_tag,
+      };
+    }) ?? [];
 
   if (preferredDifficulty) {
     const filtered = variants.filter(
@@ -197,7 +210,7 @@ export async function getLessonSources(lessonId: string): Promise<LessonSource[]
   const { data, error } = await supabase
     .from("lesson_sources")
     .select(
-      "source_id, citation_label, is_primary, relevance_type, sources(source_code, title, local_title, organization, url, source_tier, status)"
+      "source_id, citation_label, is_primary, relevance_type, sources(source_code, title, local_title, organization, url, source_tier, status, synopsis, synopsis_id, relevance_blurb, relevance_blurb_id)"
     )
     .eq("lesson_id", lessonId)
     .order("display_order", { ascending: true });
@@ -224,6 +237,10 @@ export async function getLessonSources(lessonId: string): Promise<LessonSource[]
           isPrimary: Boolean(row.is_primary ?? false),
           relevanceType: (row.relevance_type ?? "supporting") as LessonSource["relevanceType"],
           status: (source.status ?? "needs_review") as LessonSource["status"],
+          synopsis: source.synopsis === null || source.synopsis === undefined ? null : String(source.synopsis),
+          synopsisId: source.synopsis_id === null || source.synopsis_id === undefined ? null : String(source.synopsis_id),
+          relevanceBlurb: source.relevance_blurb === null || source.relevance_blurb === undefined ? null : String(source.relevance_blurb),
+          relevanceBlurbId: source.relevance_blurb_id === null || source.relevance_blurb_id === undefined ? null : String(source.relevance_blurb_id),
         };
       })
       .filter(Boolean) as LessonSource[]

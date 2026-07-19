@@ -6,6 +6,7 @@
   PNPM_VERSION = "10"
   # Next.js runtime plugin handles serverless builds; no static export.
 
-# Cron jobs are now handled by Vercel Cron (see vercel.json).
-# The web.koinaku.com domain is served by Vercel; this site remains available
-# as a fallback via its Netlify default domain.
+# web.koinaku.com is served by Netlify.
+# Cron jobs still live in vercel.json as Next.js cron definitions; they are
+# invoked by an external scheduler (or can be migrated to Netlify scheduled
+# functions in a dedicated infra task).
