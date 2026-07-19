@@ -81,7 +81,7 @@ export default function TradeOnboarding({ userId, onComplete, onClose }: TradeOn
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-background/90 p-4 backdrop-blur-sm sm:items-center">
-      <div className="w-full max-w-md overflow-hidden rounded-radius-lg bg-surface shadow-xl">
+      <div className="w-full max-w-md overflow-hidden rounded-lg bg-surface shadow-xl">
         <div className="border-b border-muted px-5 py-4">
           <div className="flex items-center justify-between">
             <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
@@ -136,7 +136,7 @@ export default function TradeOnboarding({ userId, onComplete, onClose }: TradeOn
 
         <div className="border-t border-muted px-5 py-4">
           {finishError && (
-            <div className="mb-3 rounded-radius-md border border-danger/30 bg-danger/5 px-3 py-2.5 text-sm text-danger">
+            <div className="mb-3 rounded-md border border-danger/30 bg-danger/5 px-3 py-2.5 text-sm text-danger">
               {finishError}
             </div>
           )}
@@ -144,7 +144,7 @@ export default function TradeOnboarding({ userId, onComplete, onClose }: TradeOn
             {step > 1 && (
               <button
                 onClick={handleBack}
-                className="rounded-radius-md border border-muted bg-surface px-4 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted/10"
+                className="rounded-md border border-muted bg-surface px-4 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted/10"
               >
                 Back
               </button>
@@ -152,7 +152,7 @@ export default function TradeOnboarding({ userId, onComplete, onClose }: TradeOn
             <button
               onClick={isLastStep ? handleFinish : handleNext}
               disabled={!canProceed || submitting}
-              className="flex-1 rounded-radius-md bg-primary py-3 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-[0.98] disabled:opacity-50"
+              className="flex-1 rounded-md bg-primary py-3 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-[0.98] disabled:opacity-50"
             >
               {submitting
                 ? "Saving..."
@@ -195,7 +195,7 @@ function StocksStep() {
         a tiny piece of Bank Central Asia. If the company grows and earns more, the stock price may
         go up. If it struggles, the price may go down.
       </p>
-      <div className="rounded-radius-md bg-muted p-3 text-sm text-foreground">
+      <div className="rounded-md bg-muted p-3 text-sm text-foreground">
         <strong>Key terms</strong>
         <ul className="mt-2 list-disc space-y-1 pl-4 text-muted-foreground">
           <li>
@@ -224,7 +224,7 @@ function LotStep() {
         On IDX, stocks are traded in lots. <strong>1 lot = 100 shares.</strong> You cannot buy a
         single share; you must buy in multiples of 100.
       </p>
-      <div className="rounded-radius-md bg-primary/5 p-3 text-sm text-foreground">
+      <div className="rounded-md bg-primary/5 p-3 text-sm text-foreground">
         <strong>Example</strong>
         <p className="mt-1 text-muted-foreground">
           If BBCA is priced at Rp 8,650 per share, then 1 lot costs Rp 865,000. If you buy 2 lots,
@@ -248,7 +248,7 @@ function OrderStep() {
         stocks back into cash. In this app, orders are executed at the latest closing price for
         simplicity.
       </p>
-      <div className="rounded-radius-md bg-muted p-3 text-sm text-foreground">
+      <div className="rounded-md bg-muted p-3 text-sm text-foreground">
         <strong>Order tips</strong>
         <ul className="mt-2 list-disc space-y-1 pl-4 text-muted-foreground">
           <li>Check how much cash you have before buying.</li>
@@ -270,7 +270,7 @@ function RiskStep() {
         way to reduce risk is <strong>diversification</strong> — spreading your money across
         different companies and industries.
       </p>
-      <div className="rounded-radius-md bg-warning/5 p-3 text-sm text-warning">
+      <div className="rounded-md bg-warning/5 p-3 text-sm text-warning">
         <strong>Common mistakes</strong>
         <ul className="mt-2 list-disc space-y-1 pl-4">
           <li>Investing money you need for daily expenses.</li>
@@ -292,7 +292,7 @@ function BudgetStep() {
         fund, and paid off high-interest debt. Paper trading is a safe way to practice, but the
         habit matters: never trade with money you cannot afford to lose.
       </p>
-      <div className="rounded-radius-md bg-muted p-3 text-sm text-foreground">
+      <div className="rounded-md bg-muted p-3 text-sm text-foreground">
         <strong>Healthy order</strong>
         <ol className="mt-2 list-decimal space-y-1 pl-4 text-muted-foreground">
           <li>Cover needs and emergencies.</li>
@@ -370,7 +370,7 @@ function RiskQuizStep({
               <button
                 key={opt.label}
                 onClick={() => onAnswer(i, opt.score)}
-                className={`w-full rounded-radius-md border px-3 py-2.5 text-left text-sm transition-colors ${
+                className={`w-full rounded-md border px-3 py-2.5 text-left text-sm transition-colors ${
                   answers[i] === opt.score
                     ? "border-primary bg-primary/10 text-primary"
                     : "border-muted bg-background text-foreground hover:border-primary/40"
@@ -404,7 +404,7 @@ function FinishStep({ riskScore, riskLabel }: { riskScore: number; riskLabel: st
         Your paper portfolio starts with Rp 10,000,000. Use it to experiment, learn from mistakes,
         and build good habits before investing real money.
       </p>
-      <div className="rounded-radius-md bg-primary/5 p-3 text-sm text-foreground">
+      <div className="rounded-md bg-primary/5 p-3 text-sm text-foreground">
         <p className="font-semibold">Your risk profile</p>
         <p className="mt-1 capitalize text-muted-foreground">
           {labelText[riskLabel] ?? riskLabel} (score: {riskScore})

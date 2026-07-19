@@ -1,21 +1,54 @@
 "use client";
 
 import { useState } from "react";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 interface QuizOption {
   label: string;
   value: string;
 }
 
-interface QuizCardProps {
+export interface MultipleChoiceContentProps {
   question: string;
   options: QuizOption[];
   correctValue: string;
   explanation: string;
   onComplete?: (correct: boolean) => void;
+  kicker?: string;
 }
 
-export function QuizCard({ question, options, correctValue, explanation, onComplete }: QuizCardProps) {
+function ListIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <line x1="8" y1="6" x2="21" y2="6" />
+      <line x1="8" y1="12" x2="21" y2="12" />
+      <line x1="8" y1="18" x2="21" y2="18" />
+      <line x1="3" y1="6" x2="3.01" y2="6" />
+      <line x1="3" y1="12" x2="3.01" y2="12" />
+      <line x1="3" y1="18" x2="3.01" y2="18" />
+    </svg>
+  );
+}
+
+export function MultipleChoiceContent({
+  question,
+  options,
+  correctValue,
+  explanation,
+  onComplete,
+  kicker = "Multiple choice",
+}: MultipleChoiceContentProps) {
   const [selected, setSelected] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
 
@@ -29,10 +62,16 @@ export function QuizCard({ question, options, correctValue, explanation, onCompl
   const isCorrect = selected === correctValue;
 
   return (
-    <div className="space-y-4">
-      <h3 className="text-lg font-semibold leading-snug text-foreground">{question}</h3>
+    <>
+      {kicker && (
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-warning/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-warning">
+          <ListIcon />
+          {kicker}
+        </span>
+      )}
+      <h3 className={`text-lg font-semibold leading-snug text-foreground ${kicker ? "mt-3" : ""}`}>{question}</h3>
 
-      <div className="grid gap-2">
+      <div className="mt-4 grid gap-3">
         {options.map((option) => {
           const status =
             showResult && option.value === correctValue
@@ -46,7 +85,7 @@ export function QuizCard({ question, options, correctValue, explanation, onCompl
               key={option.value}
               onClick={() => handleSelect(option.value)}
               disabled={showResult}
-              className={`rounded-radius-md border px-4 py-3 text-left text-sm font-medium transition-all duration-200 ${
+              className={`flex w-full items-center gap-3 rounded-md border px-4 py-3.5 text-left text-sm font-semibold transition-all active:scale-[0.98] disabled:cursor-default ${
                 status === "correct"
                   ? "border-success bg-success/10 text-success"
                   : status === "wrong"
@@ -54,34 +93,59 @@ export function QuizCard({ question, options, correctValue, explanation, onCompl
                     : "border-muted bg-surface text-foreground hover:border-primary/40 hover:bg-primary/5"
               }`}
             >
-              <span className="flex items-center gap-3">
-                <span
-                  className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-xs ${
-                    status === "correct"
-                      ? "border-success bg-success text-white"
-                      : status === "wrong"
-                        ? "border-danger bg-danger text-white"
-                        : "border-muted-foreground/30"
-                  }`}
-                >
-                  {status === "correct" ? "✓" : status === "wrong" ? "✕" : ""}
-                </span>
-                {option.label}
+              <span
+                className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-xs ${
+                  status === "correct"
+                    ? "border-success bg-success text-white"
+                    : status === "wrong"
+                      ? "border-danger bg-danger text-white"
+                      : "border-muted-foreground/30"
+                }`}
+                aria-hidden="true"
+              >
+                {status === "correct" ? "✓" : status === "wrong" ? "✕" : ""}
               </span>
+              {option.label}
             </button>
           );
         })}
       </div>
 
       {showResult && (
-        <div
-          className={`rounded-radius-md border px-4 py-3 text-sm ${
-            isCorrect ? "border-success/30 bg-success/5 text-success" : "border-danger/30 bg-danger/5 text-danger"
-          }`}
-        >
-          {explanation}
-        </div>
+        <Explanation isCorrect={isCorrect} text={explanation} correctAnswer={correctValue} />
       )}
+    </>
+  );
+}
+
+function Explanation({
+  isCorrect,
+  text,
+  correctAnswer,
+}: {
+  isCorrect: boolean;
+  text: string;
+  correctAnswer?: string;
+}) {
+  const { t } = useLocale();
+  return (
+    <div className="mt-4 rounded-md bg-muted p-3 text-sm font-medium text-foreground">
+      {!isCorrect && correctAnswer && (
+        <p className="mb-1 font-bold">
+          {t("quiz.correctAnswer")} {correctAnswer}
+        </p>
+      )}
+      <p>{text}</p>
     </div>
+  );
+}
+
+type QuizCardProps = MultipleChoiceContentProps;
+
+export function QuizCard(props: QuizCardProps) {
+  return (
+    <article className="rounded-card border border-warning/30 bg-surface p-5 shadow-sm">
+      <MultipleChoiceContent {...props} />
+    </article>
   );
 }

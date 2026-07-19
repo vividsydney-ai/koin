@@ -111,7 +111,7 @@ export default function PriceChart({
   const hasSimulated = candles.some((c) => c.isSimulated);
 
   return (
-    <div className="rounded-radius-lg border border-muted/60 bg-surface p-4 shadow-sm">
+    <div className="rounded-lg border border-muted/60 bg-surface p-4 shadow-sm">
       <div className="flex items-start justify-between">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
@@ -142,9 +142,9 @@ export default function PriceChart({
       </div>
 
       {loading ? (
-        <div className="mt-3 h-32 animate-pulse rounded-radius-md bg-muted" />
+        <div className="mt-3 h-32 animate-pulse rounded-md bg-muted" />
       ) : candles.length === 0 ? (
-        <div className="mt-3 flex h-32 items-center justify-center rounded-radius-md bg-muted">
+        <div className="mt-3 flex h-32 items-center justify-center rounded-md bg-muted">
           <p className="text-xs text-muted-foreground">
             No price history yet for {symbol || "this stock"}.
           </p>
@@ -192,7 +192,7 @@ export default function PriceChart({
             </span>
           </div>
           {hasSimulated && (
-            <p className="mt-2 rounded-radius-md border border-warning/20 bg-warning/5 px-3 py-2 text-xs leading-relaxed text-muted-foreground">
+            <p className="mt-2 rounded-md border border-warning/20 bg-warning/5 px-3 py-2 text-xs leading-relaxed text-muted-foreground">
               <span className="font-semibold text-foreground">{t("trade.simulatedPrices")}</span> —{" "}
               {t("trade.simulatedBody")}
             </p>

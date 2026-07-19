@@ -171,6 +171,7 @@ Initialize each task with `npm run loop:init <ID> "<title>"`.
 - [x] KO-CURR-001 — Curriculum v2.0 overhaul: 32 foundation-first lessons, verified sources, matching + case_study quiz UI, full test + lint + type-check green
 - [x] 6-slice MVP polish — content deduplication, lesson player fixes, personalisation verification, chapter UI, paper trading IDX/simulated data, Friends QR-code overhaul deployed to `https://web.koinaku.com`
 - [x] KO-DEDUP-001 — Deactivated 24 duplicate content variants (9 examples + 15 questions) across first 3 Foundation 0 lessons; "Lihat contoh lain" now cycles unique examples and hides when exhausted
+- [x] KO-DESIGN-001 — Koinaku Design System v4 polish pass: lesson player step cards, quiz cards, source cards, app chrome, home/friends cards; fixed repo-wide `rounded-radius-*` tokens; gates green; deployed to `https://web.koinaku.com`
 
 **Suggested first move:** C1 — Recommended resources per lesson on `web-koinaku`.
 

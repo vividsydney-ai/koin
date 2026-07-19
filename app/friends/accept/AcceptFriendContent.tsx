@@ -58,12 +58,12 @@ export function AcceptFriendContent() {
   if (notFound || !inviterId || !inviter) {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center bg-background p-6 text-center">
-        <div className="mx-auto w-full max-w-sm rounded-radius-lg border border-muted/60 bg-surface p-6 shadow-sm">
+        <div className="mx-auto w-full max-w-sm rounded-lg border border-muted/60 bg-surface p-6 shadow-sm">
           <p className="text-4xl">😕</p>
           <h1 className="mt-4 text-lg font-bold text-foreground">{t("friends.userNotFound")}</h1>
           <button
             onClick={() => router.push("/friends")}
-            className="mt-4 w-full rounded-radius-md bg-primary py-3 text-sm font-semibold text-primary-foreground active:opacity-90"
+            className="mt-4 w-full rounded-md bg-primary py-3 text-sm font-semibold text-primary-foreground active:opacity-90"
           >
             Back to Friends
           </button>
@@ -81,7 +81,7 @@ export function AcceptFriendContent() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-background p-6 text-center">
-      <div className="mx-auto w-full max-w-sm rounded-radius-lg border border-muted/60 bg-surface p-6 shadow-sm">
+      <div className="mx-auto w-full max-w-sm rounded-lg border border-muted/60 bg-surface p-6 shadow-sm">
         {inviter.avatarUrl ? (
           <img src={inviter.avatarUrl} alt="" className="mx-auto h-20 w-20 rounded-full object-cover" />
         ) : (
@@ -95,14 +95,14 @@ export function AcceptFriendContent() {
         </p>
 
         {result ? (
-          <p className={`mt-4 rounded-radius-md p-3 text-sm ${result.ok ? "bg-success/10 text-success" : "bg-danger/10 text-danger"}`}>
+          <p className={`mt-4 rounded-md p-3 text-sm ${result.ok ? "bg-success/10 text-success" : "bg-danger/10 text-danger"}`}>
             {result.message}
           </p>
         ) : (
           <button
             onClick={handleAccept}
             disabled={!user || accepting}
-            className="mt-6 w-full rounded-radius-md bg-primary py-3 text-sm font-semibold text-primary-foreground disabled:opacity-50 active:opacity-90"
+            className="mt-6 w-full rounded-md bg-primary py-3 text-sm font-semibold text-primary-foreground disabled:opacity-50 active:opacity-90"
           >
             {accepting ? "Accepting…" : t("friends.acceptButton")}
           </button>
@@ -110,7 +110,7 @@ export function AcceptFriendContent() {
 
         <button
           onClick={() => router.push("/friends")}
-          className="mt-3 w-full rounded-radius-md border border-muted bg-background py-3 text-sm font-semibold text-foreground active:opacity-90"
+          className="mt-3 w-full rounded-md border border-muted bg-background py-3 text-sm font-semibold text-foreground active:opacity-90"
         >
           Back to Friends
         </button>

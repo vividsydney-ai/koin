@@ -15,13 +15,14 @@ describe("GradientIcon", () => {
     expect(container.firstChild).toBe(svg);
   });
 
-  it("renders a gradient tile with a white icon when active", () => {
+  it("renders a gradient tile with a gradient-stroke icon when active", () => {
     const { container } = render(<GradientIcon icon="trade" active />);
 
-    const tile = container.querySelector(".bg-brand");
+    const tile = container.querySelector(".bg-primary\\/10");
     expect(tile).toBeInTheDocument();
-    expect(tile).toHaveClass("text-primary-foreground");
-    expect(tile?.querySelector("svg")).toBeInTheDocument();
+    const svg = tile?.querySelector("svg");
+    expect(svg).toBeInTheDocument();
+    expect(svg).toHaveAttribute("stroke", "url(#koinaku-icon-gradient)");
   });
 
   it("defaults to the inactive state", () => {

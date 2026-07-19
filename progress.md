@@ -84,7 +84,7 @@
   - LIFT-4: `components/PriceChart.tsx` + `getMarketDataHistory` (30-day closes, no migration), synthesized candles (open=prior close), IDR header + simulated-data disclaimer.
 - **i18n sweep:** new copy moved to dictionaries (friends.you, trade.simulatedPrices/Body, library.all*, profile.locked/keepLearning) — EN+ID.
 - **Turnstile fully activated (KO-61):** Netlify env `NEXT_PUBLIC_TURNSTILE_SITE_KEY` set via API; Supabase captcha enabled (Turnstile + secret) via Management API (token from keyring). Enforcement verified: signup without captcha_token is rejected. Local dev needs `NEXT_PUBLIC_TURNSTILE_SITE_KEY` in `.env.local`.
-- **Flagged by Maker B:** `rounded-radius-*` classes generate zero CSS under Tailwind v4.3.1 (@theme maps to `rounded-card`/`rounded-lg`) — repo-wide pre-existing issue, ticketed separately.
+- **Flagged by Maker B:** `rounded-*` classes generate zero CSS under Tailwind v4.3.1 (@theme maps to `rounded-card`/`rounded-lg`) — repo-wide pre-existing issue, ticketed separately.
 - Gates: tsc ✅, lint ✅ 0 errors, vitest ✅ 370 passed / 5 skipped (26 new), build ✅, drift ✅. Commit `009124f`; Netlify auto-deploy (repo link restored by human).
 
 ## 2026-07-18 — UI-LIFT Step 1 audit complete (awaiting plan approval)
@@ -509,3 +509,41 @@ None active.
 
 **Follow-ups**
 - Translate `content_variants` example/question bodies to Indonesian and add locale-aware variant selection so ID users can use "see another example" / "try another question" with rich content.
+
+
+## 2026-07-19 — KO-DESIGN-001: v4 design-system polish pass
+
+**Scope**
+Apply Koinaku Design System v4 card patterns to lesson player, quiz cards, source cards, and app chrome.
+
+**Changes**
+- `app/learn/[slug]/LessonPlayer.tsx` — v4 step cards (intro hero, concept, example, quiz, source, completion states).
+- `components/lesson/QuizEngine.tsx` + `components/lesson/QuizCard.tsx` — v4 quiz option states and explanation callout.
+- `app/(app)/library/page.tsx` + LessonPlayer source cards — v4 thumbnail + metadata source cards.
+- `app/(app)/layout.tsx` + `components/GradientIcon.tsx` + bottom nav — active tab soft primary surface, gradient icon, muted inactive tabs.
+- `app/(app)/page.tsx` + `app/(app)/friends/page.tsx` — v4 progress and invite cards.
+- Repo-wide fix for broken `rounded-radius-*` Tailwind v4 tokens.
+- Updated `tests/components/GradientIcon.test.tsx` for new active-state wrapper.
+
+**Gate results**
+- `npm run type-check`: clean
+- `npm run lint`: 0 errors, 23 pre-existing warnings
+- `npm run test`: 374 passed / 5 skipped (62 files)
+- `npm run build`: clean
+- `npm run loop:design-drift`: clean
+
+**Deploy**
+- Vercel production deploy: `https://koin-web-koinaku-3hypks02p-vividsydney.vercel.app` aliased to `https://web.koinaku.com`
+
+**Smoke test**
+- `/login` and `/signup` render correctly on mobile/tablet/desktop; no app console errors.
+- `/learn` and `/learn/what-is-money` redirect or show skeleton for unauthenticated users (expected).
+- Cloudflare Turnstile emits a third-party `font-size:0;color:transparent NaN` console warning on signup; app functionality unaffected.
+- Authenticated lesson cards could not be visually verified in headless mode due to Turnstile blocking automated auth; verified via code review.
+
+**Linear**
+- Created/adopted KO-DESIGN-001 "v4 design-system polish pass" and moved to Done.
+
+**Follow-ups**
+- Manual QA of authenticated lesson player, quiz cards, and source cards with a real account.
+- Continue with recommended resources per lesson (TASKS.md next item).

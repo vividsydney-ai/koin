@@ -166,7 +166,7 @@ export default function LearnPage() {
           {recommendations.map((rec) => (
             <div
               key={rec.id}
-              className="relative rounded-radius-lg border border-primary/30 bg-primary/5 p-4 shadow-sm"
+              className="relative rounded-lg border border-primary/30 bg-primary/5 p-4 shadow-sm"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
@@ -185,7 +185,7 @@ export default function LearnPage() {
                     await dismissRecommendation(rec.id);
                     setRecommendations((prev) => prev.filter((r) => r.id !== rec.id));
                   }}
-                  className="shrink-0 rounded-radius-md p-2 text-muted-foreground hover:bg-primary/10 hover:text-foreground"
+                  className="shrink-0 rounded-md p-2 text-muted-foreground hover:bg-primary/10 hover:text-foreground"
                   aria-label={t("home.dismissRecommendation")}
                 >
                   ✕
@@ -198,7 +198,7 @@ export default function LearnPage() {
 
       {learningPath.assessmentScore !== null && firstUnlockedIncomplete && !loading && (
         <div
-          className={`mb-4 rounded-radius-lg border p-4 shadow-sm ${
+          className={`mb-4 rounded-lg border p-4 shadow-sm ${
             learningPath.foundationZeroRequired
               ? "border-primary/30 bg-primary/5"
               : "border-success/30 bg-success/5"
@@ -229,7 +229,7 @@ export default function LearnPage() {
       )}
 
       {showGoalCard && goalLesson && !loading && (
-        <div className="mb-5 rounded-radius-lg border border-warning/30 bg-warning/5 p-4 shadow-sm">
+        <div className="mb-5 rounded-lg border border-warning/30 bg-warning/5 p-4 shadow-sm">
           <div className="flex items-start gap-3">
             <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-warning/10 text-warning">
               <QuestIcon />
@@ -252,7 +252,7 @@ export default function LearnPage() {
       {loading ? (
         <div className="space-y-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-16 animate-pulse rounded-radius-lg bg-muted" />
+            <div key={i} className="h-16 animate-pulse rounded-lg bg-muted" />
           ))}
         </div>
       ) : (
@@ -293,7 +293,7 @@ function ChapterCard({
 
   return (
     <div
-      className="overflow-hidden rounded-radius-lg border border-muted/60 bg-surface shadow-sm"
+      className="overflow-hidden rounded-lg border border-muted/60 bg-surface shadow-sm"
       role="listitem"
     >
       <button
@@ -357,7 +357,7 @@ function LessonRow({
 
   const content = (
     <div
-      className={`flex items-center gap-3 rounded-radius-md p-3 transition-colors ${
+      className={`flex items-center gap-3 rounded-md p-3 transition-colors ${
         isLocked ? "opacity-60" : "hover:bg-muted/30"
       }`}
     >

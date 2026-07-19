@@ -90,7 +90,7 @@ export default function ProfilePage() {
         </div>
         <button
           onClick={() => setIsEditing(true)}
-          className="shrink-0 rounded-radius-md border border-muted bg-surface px-3 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted/10 touch-target"
+          className="shrink-0 rounded-md border border-muted bg-surface px-3 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted/10 touch-target"
           aria-label={t("profile.edit")}
         >
           {t("profile.edit")}
@@ -103,7 +103,7 @@ export default function ProfilePage() {
         <StatCard variant="tile" label={t("profile.koin")} value={stats?.koinPoints ?? 0} tone="koin-points" />
       </section>
 
-      <section className="mb-6 rounded-radius-lg border border-muted bg-surface p-5">
+      <section className="mb-6 rounded-lg border border-muted bg-surface p-5">
         <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           {t("profile.paperPortfolio")}
         </h2>
@@ -148,7 +148,7 @@ export default function ProfilePage() {
         )}
       </section>
 
-      <section className="mb-8 rounded-radius-lg border border-muted bg-surface p-5">
+      <section className="mb-8 rounded-lg border border-muted bg-surface p-5">
         <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           {t("settings.title")}
         </h2>
@@ -157,14 +157,14 @@ export default function ProfilePage() {
           <div
             role="group"
             aria-label={t("settings.language")}
-            className="flex rounded-radius-md border border-muted bg-background p-1"
+            className="flex rounded-md border border-muted bg-background p-1"
           >
             {LANGUAGE_OPTIONS.map((option) => (
               <button
                 key={option.value}
                 onClick={() => setLocale(option.value)}
                 aria-pressed={locale === option.value}
-                className={`min-h-[44px] rounded-radius-sm px-4 text-sm font-semibold transition-colors ${
+                className={`min-h-[44px] rounded-sm px-4 text-sm font-semibold transition-colors ${
                   locale === option.value
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:text-foreground"
@@ -179,7 +179,7 @@ export default function ProfilePage() {
 
       <button
         onClick={handleLogout}
-        className="w-full rounded-radius-md border border-danger/30 bg-surface py-3 font-semibold text-danger hover:bg-danger/5 touch-target"
+        className="w-full rounded-md border border-danger/30 bg-surface py-3 font-semibold text-danger hover:bg-danger/5 touch-target"
       >
         {t("profile.logout")}
       </button>

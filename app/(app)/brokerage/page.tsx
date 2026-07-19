@@ -33,9 +33,9 @@ export default function BrokeragePage() {
 
       {loading ? (
         <div className="space-y-3">
-          <div className="h-28 animate-pulse rounded-radius-lg bg-muted" />
-          <div className="h-28 animate-pulse rounded-radius-lg bg-muted" />
-          <div className="h-28 animate-pulse rounded-radius-lg bg-muted" />
+          <div className="h-28 animate-pulse rounded-lg bg-muted" />
+          <div className="h-28 animate-pulse rounded-lg bg-muted" />
+          <div className="h-28 animate-pulse rounded-lg bg-muted" />
         </div>
       ) : (
         <div className="space-y-3">
@@ -45,10 +45,10 @@ export default function BrokeragePage() {
               href={rec.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="block rounded-radius-lg border border-muted/60 bg-surface p-4 shadow-sm transition-colors hover:border-primary/30"
+              className="block rounded-lg border border-muted/60 bg-surface p-4 shadow-sm transition-colors hover:border-primary/30"
             >
               <div className="flex items-start gap-3">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-radius-md bg-muted text-xl">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-muted text-xl">
                   🏦
                 </div>
                 <div className="flex-1">
@@ -63,7 +63,7 @@ export default function BrokeragePage() {
                     {rec.productTypes.map((type) => (
                       <span
                         key={type}
-                        className="rounded-radius-md bg-muted px-2 py-0.5 text-[10px] text-muted-foreground"
+                        className="rounded-md bg-muted px-2 py-0.5 text-[10px] text-muted-foreground"
                       >
                         {type.replace("_", " ")}
                       </span>

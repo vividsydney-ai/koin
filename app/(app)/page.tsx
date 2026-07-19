@@ -19,7 +19,7 @@ import {
   type PortfolioSnapshot,
   type LeaderboardEntry,
 } from "@/lib/home/client";
-import { ProgressCardModal, type ProgressCardData } from "@/components/ProgressCard";
+import { ProgressCardModal } from "@/components/ProgressCard";
 import { EmptyState } from "@/components/EmptyState";
 import { StatCard, type StatCardTone } from "@/components/StatCard";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
@@ -93,7 +93,7 @@ export default function Home() {
         </div>
         <button
           onClick={() => setShowProgressCard(true)}
-          className="shrink-0 rounded-radius-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground active:opacity-90"
+          className="shrink-0 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground active:opacity-90"
           aria-label={t("home.share")}
         >
           {t("home.share")}
@@ -102,9 +102,9 @@ export default function Home() {
 
       {isLoading ? (
         <div className="space-y-3">
-          <div className="h-24 animate-pulse rounded-radius-lg bg-surface-inset" />
-          <div className="h-32 animate-pulse rounded-radius-lg bg-surface-inset" />
-          <div className="h-24 animate-pulse rounded-radius-lg bg-surface-inset" />
+          <div className="h-24 animate-pulse rounded-card bg-surface-inset" />
+          <div className="h-32 animate-pulse rounded-card bg-surface-inset" />
+          <div className="h-24 animate-pulse rounded-card bg-surface-inset" />
         </div>
       ) : (
         <div className="space-y-4">
@@ -158,17 +158,26 @@ function StreakCard({ streak }: { streak: StreakSummary | null }) {
   else if (atRisk) statusText = t("home.streak.atRisk");
 
   const tone: StatCardTone = broken ? "danger" : atRisk ? "warning" : frozen ? "info" : "streak";
+  const statusColor = atRisk || broken ? "text-danger" : frozen ? "text-info" : "text-muted-foreground";
 
   return (
     <StatCard
       label={t("home.streak.label")}
       value={`${days} day${days === 1 ? "" : "s"}`}
       tone={tone}
-      icon={broken ? "💔" : atRisk ? "⚠️" : frozen ? "🧊" : "🔥"}
+      icon={
+        broken ? (
+          <BrokenHeartIcon className="h-6 w-6" />
+        ) : atRisk ? (
+          <WarningIcon className="h-6 w-6" />
+        ) : frozen ? (
+          <SnowflakeIcon className="h-6 w-6" />
+        ) : (
+          <FlameIcon className="h-6 w-6" />
+        )
+      }
       sublabel={
-        <p className={`mt-1 text-xs ${atRisk || broken ? "text-danger" : frozen ? "text-warning" : "text-muted-foreground"}`}>
-          {statusText}
-        </p>
+        <p className={`mt-1 text-xs font-medium ${statusColor}`}>{statusText}</p>
       }
     />
   );
@@ -192,16 +201,26 @@ function ContinueLessonCard({ lesson }: { lesson: ContinueLesson | null }) {
 
   return (
     <Link href={`/learn/${lesson.slug}`} className="block">
-      <div className="rounded-radius-lg border border-primary/30 bg-primary/5 p-4 shadow-sm transition-colors hover:bg-primary/10">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">{label}</p>
-            <p className="mt-1 font-semibold text-foreground">{title}</p>
-            <p className="text-xs text-muted-foreground">{t("lesson.lessonWord")} {lesson.lessonNumber}</p>
+      <article
+        className="relative overflow-hidden rounded-card border border-primary/30 p-5 shadow-sm transition-colors hover:bg-[color-mix(in_srgb,var(--color-primary)_5%,var(--color-surface))]"
+        style={{ background: "color-mix(in srgb, var(--color-primary) 6%, var(--color-surface))" }}
+      >
+        <div className="relative flex items-center justify-between gap-4">
+          <div className="min-w-0">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-primary">
+              <PlayIcon className="h-3.5 w-3.5" />
+              {label}
+            </span>
+            <h3 className="mt-3 font-display text-xl font-bold text-foreground">{title}</h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {t("lesson.lessonWord")} {lesson.lessonNumber}
+            </p>
           </div>
-          <ArrowRightIcon />
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm">
+            <ArrowRightIcon className="h-5 w-5" />
+          </span>
         </div>
-      </div>
+      </article>
     </Link>
   );
 }
@@ -220,13 +239,15 @@ function XpLevelCard({ xp }: { xp: XpSummary | null }) {
       value={currentName}
       tone="xp"
       sublabel={
-        <p className="mt-1 text-xs text-muted-foreground">{t("home.totalXp").replace("{xp}", String(xp?.totalXp ?? 0))}</p>
+        <p className="mt-1 text-xs font-medium text-muted-foreground">
+          {t("home.totalXp").replace("{xp}", String(xp?.totalXp ?? 0))}
+        </p>
       }
       aside={
         nextName ? (
           <div className="shrink-0 text-right">
             <p className="text-xs text-muted-foreground">{t("home.nextLevel").replace("{name}", nextName)}</p>
-            <p className="text-xs font-medium text-secondary">
+            <p className="text-xs font-semibold text-xp">
               {t("home.xpProgress")
                 .replace("{current}", String(xp?.xpIntoLevel ?? 0))
                 .replace("{target}", String(xp?.xpToNextLevel ?? 0))}
@@ -236,9 +257,7 @@ function XpLevelCard({ xp }: { xp: XpSummary | null }) {
       }
       progress={next ? { percent: progress } : undefined}
     >
-      {current?.description && (
-        <p className="mt-2 text-xs italic text-muted-foreground">{current.description}</p>
-      )}
+      {current?.description && <p className="mt-2 text-xs italic text-muted-foreground">{current.description}</p>}
     </StatCard>
   );
 }
@@ -253,7 +272,7 @@ function KoinPointsCard({ koinPoints }: { koinPoints: KoinPointsSummary | null }
       value={balance.toLocaleString("id-ID")}
       tone="koin-points"
       sublabel={
-        <p className="mt-1 text-xs text-muted-foreground">{t("home.koinPointsBody")}</p>
+        <p className="mt-1 text-xs font-medium text-muted-foreground">{t("home.koinPointsBody")}</p>
       }
     />
   );
@@ -273,13 +292,18 @@ function RecentBadgeCard({ badge }: { badge: RecentBadge | null }) {
   }
 
   return (
-    <div className="rounded-radius-lg border border-border/60 bg-surface p-4 shadow-sm">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">{t("home.latestBadge")}</p>
-      <div className="mt-2 flex items-center gap-2">
-        <span className="text-2xl">{badge.icon}</span>
+    <article className="rounded-card border border-border/60 bg-surface p-4 shadow-sm">
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-koin-points/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-koin-points">
+        <MedalIcon className="h-3.5 w-3.5" />
+        {t("home.latestBadge")}
+      </span>
+      <div className="mt-3 flex items-center gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--color-koin-points)_12%,var(--color-surface))] text-koin-points">
+          <MedalIcon className="h-5 w-5" />
+        </div>
         <p className="text-sm font-semibold text-foreground">{badge.name}</p>
       </div>
-    </div>
+    </article>
   );
 }
 
@@ -304,8 +328,9 @@ function PortfolioCard({ portfolio }: { portfolio: PortfolioSnapshot | null }) {
       value={`Rp ${portfolio.totalValue.toLocaleString("id-ID")}`}
       tone={positive ? "success" : "danger"}
       sublabel={
-        <p className={`mt-1 text-xs font-medium ${positive ? "text-success" : "text-danger"}`}>
-          {positive ? "+" : ""}{portfolio.totalReturnPct.toFixed(1)}%
+        <p className={`mt-1 text-xs font-semibold ${positive ? "text-success" : "text-danger"}`}>
+          {positive ? "+" : ""}
+          {portfolio.totalReturnPct.toFixed(1)}%
         </p>
       }
       aside={
@@ -317,6 +342,25 @@ function PortfolioCard({ portfolio }: { portfolio: PortfolioSnapshot | null }) {
     />
   );
 }
+
+// Top-3 rank tints — color-mix against surface per DESIGN.md (never raw -50 backgrounds).
+const RANK_TIER_STYLES: Record<number, { badge: string; label: string }> = {
+  1: {
+    badge:
+      "bg-[color-mix(in_srgb,var(--rup-gold-500)_22%,var(--color-surface))] text-[var(--rup-gold-700)]",
+    label: "gold",
+  },
+  2: {
+    badge:
+      "bg-[color-mix(in_srgb,var(--rup-grey-500)_18%,var(--color-surface))] text-[var(--rup-grey-700)]",
+    label: "silver",
+  },
+  3: {
+    badge:
+      "bg-[color-mix(in_srgb,var(--rup-brown-400)_24%,var(--color-surface))] text-[var(--rup-brown-700)]",
+    label: "bronze",
+  },
+};
 
 function LeaderboardCard({ entries }: { entries: LeaderboardEntry[] }) {
   const { t } = useLocale();
@@ -332,20 +376,54 @@ function LeaderboardCard({ entries }: { entries: LeaderboardEntry[] }) {
   }
 
   return (
-    <div className="rounded-radius-lg border border-border/60 bg-surface p-4 shadow-sm">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">{t("home.weeklyLeaderboard")}</p>
-      <div className="mt-3 space-y-2">
-        {entries.map((entry) => (
-          <div key={entry.displayName + entry.rank} className={`flex items-center justify-between rounded-radius-md px-3 py-2 ${entry.isCurrentUser ? "bg-primary/5" : "bg-background"}`}>
-            <div className="flex items-center gap-3">
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-surface-inset text-xs font-bold text-muted-foreground">{entry.rank}</span>
-              <span className="text-sm font-medium text-foreground">{entry.displayName}</span>
-            </div>
-            <span className="text-sm font-semibold text-secondary">{entry.xpThisWeek.toLocaleString("id-ID")} XP</span>
-          </div>
-        ))}
-      </div>
-    </div>
+    <article className="rounded-card border border-muted bg-surface p-4 shadow-sm">
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-primary">
+        <TrophyIcon className="h-3.5 w-3.5" />
+        {t("home.weeklyLeaderboard")}
+      </span>
+      <ol className="mt-3 space-y-1">
+        {entries.map((entry) => {
+          const tier = RANK_TIER_STYLES[entry.rank];
+          return (
+            <li
+              key={entry.displayName + entry.rank}
+              data-rank={entry.rank}
+              data-tier={tier?.label}
+              data-current-user={entry.isCurrentUser || undefined}
+              className={`flex min-h-11 items-center gap-3 rounded-md px-2 py-1.5 ${
+                entry.isCurrentUser
+                  ? "bg-[color-mix(in_srgb,var(--color-primary)_8%,var(--color-surface))]"
+                  : ""
+              }`}
+            >
+              <span
+                className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+                  tier ? tier.badge : "bg-muted text-muted-foreground"
+                }`}
+                aria-label={`Rank ${entry.rank}`}
+              >
+                {entry.rank}
+              </span>
+              <span
+                aria-hidden="true"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--color-primary)_10%,var(--color-surface))] text-xs font-bold text-primary"
+              >
+                {initials(entry.displayName)}
+              </span>
+              <span className="flex-1 truncate text-sm font-semibold text-foreground">
+                {entry.displayName}
+                {entry.isCurrentUser && (
+                  <span className="ml-1.5 text-xs font-medium text-primary">{t("friends.you")}</span>
+                )}
+              </span>
+              <span className="text-sm font-semibold tabular-nums text-xp">
+                {entry.xpThisWeek.toLocaleString("id-ID")} XP
+              </span>
+            </li>
+          );
+        })}
+      </ol>
+    </article>
   );
 }
 
@@ -362,41 +440,194 @@ function RecommendationsCard({
   return (
     <div className="space-y-3">
       {recommendations.map((rec) => (
-        <div
-          key={rec.id}
-          className="relative rounded-radius-lg border border-primary/30 bg-primary/5 p-4 shadow-sm"
-        >
+        <article key={rec.id} className="rounded-card border border-muted bg-surface p-5 shadow-sm">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">{t("home.recommendedForYou")}</p>
-              <p className="mt-1 font-semibold text-foreground">{rec.title}</p>
-              <p className="text-sm leading-relaxed text-muted-foreground">{rec.reason}</p>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-primary">
+                <SparkleIcon className="h-3.5 w-3.5" />
+                {t("home.recommendedForYou")}
+              </span>
+              <h4 className="mt-3 font-display text-base font-bold text-foreground">{rec.title}</h4>
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{rec.reason}</p>
               <Link
                 href={`/learn/${rec.slug}`}
-                className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-primary"
+                className="mt-3 inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline"
               >
-                {t("learn.startLesson")} <ArrowRightIcon />
+                {t("learn.startLesson")} <ArrowRightIcon className="h-4 w-4" />
               </Link>
             </div>
             <button
               onClick={() => onDismiss(rec.id)}
-              className="shrink-0 rounded-radius-md p-2 text-muted-foreground hover:bg-primary/10 hover:text-foreground"
+              className="shrink-0 rounded-md p-2 text-muted-foreground transition-colors hover:bg-muted/30 hover:text-foreground"
               aria-label={t("home.dismissRecommendation")}
             >
-              ✕
+              <XIcon className="h-4 w-4" />
             </button>
           </div>
-        </div>
+        </article>
       ))}
     </div>
   );
 }
 
-function ArrowRightIcon() {
+function initials(name: string): string {
   return (
-    <svg className="h-5 w-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase() || "?"
+  );
+}
+
+function ArrowRightIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M5 12h14" />
       <path d="m12 5 7 7-7 7" />
+    </svg>
+  );
+}
+
+function PlayIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M8 5v14l11-7z" />
+    </svg>
+  );
+}
+
+function SparkleIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 2 14.5 9.5H22l-6 4.5 2.5 7.5-6.5-5-6.5 5 2.5-7.5-6-4.5h7.5z" />
+    </svg>
+  );
+}
+
+function XIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M18 6 6 18" />
+      <path d="m6 6 12 12" />
+    </svg>
+  );
+}
+
+function TrophyIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M6 9H4a2 2 0 0 1-2-2V5h6" />
+      <path d="M18 9h2a2 2 0 0 0 2-2V5h-6" />
+      <path d="M6 9v7a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V9" />
+      <path d="M12 18v3" />
+      <path d="M9 21h6" />
+    </svg>
+  );
+}
+
+function MedalIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="m8 3 2.5 7.5H18L13.5 13 16 20.5 11 16.5 6 20.5 8.5 13 4 10.5h5.5z" />
+      <circle cx="12" cy="14" r="3" />
+    </svg>
+  );
+}
+
+function FlameIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 2c0 4-3.5 6.5-3.5 10.5 0 2.5 1.5 4.5 3.5 4.5s3.5-2 3.5-4.5C15.5 8.5 12 6 12 2Zm0 13c-1.1 0-2-.9-2-2 0-1.2.8-2 2-3.3 1.2 1.3 2 2.1 2 3.3 0 1.1-.9 2-2 2Z" />
+    </svg>
+  );
+}
+
+function WarningIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="m12 5 8.7 14.5H3.3L12 5Z" />
+      <path d="M12 10v4" />
+      <path d="M12 17h.01" />
+    </svg>
+  );
+}
+
+function SnowflakeIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M12 3v18" />
+      <path d="M5 6l14 12" />
+      <path d="M19 6 5 18" />
+      <path d="M5 12h14" />
+      <path d="m8 9 4 3-4 3" />
+      <path d="m16 9-4 3 4 3" />
+    </svg>
+  );
+}
+
+function BrokenHeartIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M12 21s-6.7-4.3-9-8.5C.7 7.5 4.3 2 9 2c1.4 0 2.7.5 3 1 .3-.5 1.6-1 3-1 4.7 0 8.3 5.5 6 10.5C18.7 16.7 12 21 12 21Z" />
+      <path d="m12 7-2 4h3l-2 4" />
     </svg>
   );
 }

@@ -84,7 +84,7 @@ export default function EditProfileModal({
       aria-modal="true"
       aria-label="Edit profile"
     >
-      <div className="w-full max-w-md overflow-hidden rounded-radius-lg bg-surface shadow-xl">
+      <div className="w-full max-w-md overflow-hidden rounded-lg bg-surface shadow-xl">
         <div className="border-b border-muted px-5 py-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-bold text-foreground">Edit profile</h2>
@@ -100,7 +100,7 @@ export default function EditProfileModal({
 
         <form onSubmit={handleSubmit(onSubmit)} className="px-5 py-6">
           {serverError && (
-            <p className="mb-4 rounded-radius-md bg-danger/10 p-3 text-sm text-danger">{serverError}</p>
+            <p className="mb-4 rounded-md bg-danger/10 p-3 text-sm text-danger">{serverError}</p>
           )}
 
           <div className="space-y-4">
@@ -112,7 +112,7 @@ export default function EditProfileModal({
                 id="displayName"
                 type="text"
                 {...register("displayName")}
-                className="mt-1.5 w-full rounded-radius-md border border-muted bg-background px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary"
+                className="mt-1.5 w-full rounded-md border border-muted bg-background px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary"
                 disabled={isSubmitting || loadingSettings}
               />
               {errors.displayName && (
@@ -120,7 +120,7 @@ export default function EditProfileModal({
               )}
             </div>
 
-            <label className="flex items-center gap-3 rounded-radius-md border border-muted bg-background p-3">
+            <label className="flex items-center gap-3 rounded-md border border-muted bg-background p-3">
               <input
                 type="checkbox"
                 {...register("notificationsEnabled")}
@@ -136,14 +136,14 @@ export default function EditProfileModal({
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="flex-1 rounded-radius-md border border-muted bg-surface px-4 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted/10 disabled:opacity-50"
+              className="flex-1 rounded-md border border-muted bg-surface px-4 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted/10 disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting || loadingSettings}
-              className="flex-1 rounded-radius-md bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-[0.98] disabled:opacity-50"
+              className="flex-1 rounded-md bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-[0.98] disabled:opacity-50"
             >
               {isSubmitting ? "Saving..." : "Save"}
             </button>

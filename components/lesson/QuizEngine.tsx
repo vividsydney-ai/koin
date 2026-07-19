@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { QuizCard } from "./QuizCard";
+import { QuizCard, MultipleChoiceContent } from "./QuizCard";
 import { seededShuffle } from "@/lib/lessons/random";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import {
@@ -41,7 +41,7 @@ export function QuizEngine({ question, seed, onComplete }: QuizEngineProps) {
       return <CaseStudy question={question} seed={seed} onComplete={onComplete} />;
     default:
       return (
-        <div className="rounded-radius-md border border-warning/30 bg-warning/5 px-4 py-3 text-sm text-warning">
+        <div className="rounded-md border border-warning/30 bg-warning/5 px-4 py-3 text-sm text-warning">
           {t("quiz.notSupported").replace("{type}", question.type)}
         </div>
       );
@@ -82,38 +82,18 @@ function TrueFalse({
   onComplete?: (correct: boolean) => void;
 }) {
   const { t } = useLocale();
-  const [showResult, setShowResult] = useState(false);
-  const [selected, setSelected] = useState<boolean | null>(null);
-  const isCorrect = selected === question.answer;
-
-  const handleSelect = (value: boolean) => {
-    if (showResult) return;
-    setSelected(value);
-    setShowResult(true);
-    onComplete?.(value === question.answer);
-  };
-
   return (
-    <div className="space-y-4">
-      <h3 className="text-lg font-semibold leading-snug text-foreground">{question.question}</h3>
-      <div className="grid grid-cols-2 gap-3">
-        <AnswerButton
-          label={t("quiz.true")}
-          showResult={showResult}
-          isSelected={selected === true}
-          isCorrect={question.answer === true}
-          onClick={() => handleSelect(true)}
-        />
-        <AnswerButton
-          label={t("quiz.false")}
-          showResult={showResult}
-          isSelected={selected === false}
-          isCorrect={question.answer === false}
-          onClick={() => handleSelect(false)}
-        />
-      </div>
-      {showResult && <Explanation isCorrect={isCorrect} text={question.explanation} correctAnswer={question.answer ? t("quiz.true") : t("quiz.false")} />}
-    </div>
+    <BinaryChoice
+      question={question.question}
+      trueLabel={t("quiz.true")}
+      falseLabel={t("quiz.false")}
+      answer={question.answer}
+      explanation={question.explanation}
+      onComplete={onComplete}
+      kicker="True / False"
+      kickerIcon={<ToggleIcon />}
+      tint="primary"
+    />
   );
 }
 
@@ -137,28 +117,28 @@ function FillBlank({
   };
 
   return (
-    <div className="space-y-4">
-      <h3 className="text-lg font-semibold leading-snug text-foreground">{question.question}</h3>
-      <form onSubmit={handleSubmit} className="space-y-3">
+    <QuizCardShell kicker="Fill in the blank" kickerIcon={<TypeIcon />} tint="info">
+      <h3 className="mt-3 text-lg font-semibold leading-snug text-foreground">{question.question}</h3>
+      <form onSubmit={handleSubmit} className="mt-4 space-y-3">
         <input
           type="text"
           value={value}
           onChange={(e) => setValue(e.target.value)}
           disabled={showResult}
           placeholder={t("quiz.typeAnswer")}
-          className="w-full rounded-radius-md border border-muted bg-surface px-4 py-3 text-sm text-foreground outline-none transition-colors focus:border-primary"
+          className="w-full rounded-md border border-muted bg-surface px-4 py-3.5 text-sm text-foreground outline-none transition-colors focus:border-primary"
           aria-label={t("quiz.typeAnswer")}
         />
         <button
           type="submit"
           disabled={showResult || !value.trim()}
-          className="w-full rounded-radius-md bg-primary py-3.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-[0.98] disabled:opacity-50"
+          className="w-full rounded-md bg-primary px-5 py-3.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-[0.98] disabled:opacity-50"
         >
           {t("quiz.checkAnswer")}
         </button>
       </form>
       {showResult && <Explanation isCorrect={isCorrect} text={question.explanation} correctAnswer={question.answer} />}
-    </div>
+    </QuizCardShell>
   );
 }
 
@@ -208,15 +188,15 @@ function WordBank({
   };
 
   return (
-    <div className="space-y-4">
-      <h3 className="text-lg font-semibold leading-snug text-foreground">{question.question}</h3>
-      <div className="flex flex-wrap gap-2">
+    <QuizCardShell kicker="Word bank" kickerIcon={<GridIcon />}>
+      <h3 className="mt-3 text-lg font-semibold leading-snug text-foreground">{question.question}</h3>
+      <div className="mt-4 flex flex-wrap gap-2">
         {slots.map((word, i) => (
           <button
             key={i}
             onClick={() => returnToBank(i)}
             disabled={showResult || !word}
-            className="flex h-11 min-w-[5rem] items-center justify-center rounded-radius-md border border-dashed border-muted bg-surface px-3 text-sm font-medium text-foreground transition-colors hover:border-primary disabled:cursor-default"
+            className="flex h-11 min-w-[5rem] items-center justify-center rounded-md border border-dashed border-muted bg-surface px-3 text-sm font-semibold text-foreground transition-colors hover:border-primary disabled:cursor-default"
             aria-label={word ? `Filled slot ${i + 1}: ${word}` : `Empty slot ${i + 1}`}
           >
             {word ?? "—"}
@@ -229,7 +209,7 @@ function WordBank({
             key={word}
             onClick={() => fillSlot(word)}
             disabled={showResult}
-            className="rounded-radius-md bg-primary/10 px-3 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary/20"
+            className="rounded-md border border-muted bg-surface px-3 py-2 text-sm font-semibold text-foreground transition-colors hover:border-primary/40 hover:bg-primary/5 disabled:cursor-default disabled:opacity-50"
           >
             {word}
           </button>
@@ -238,12 +218,12 @@ function WordBank({
       <button
         onClick={check}
         disabled={!filled || showResult}
-        className="w-full rounded-radius-md bg-primary py-3.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-[0.98] disabled:opacity-50"
+        className="mt-4 w-full rounded-md bg-primary px-5 py-3.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-[0.98] disabled:opacity-50"
       >
         {t("quiz.checkAnswer")}
       </button>
       {showResult && <Explanation isCorrect={isCorrect} text={question.explanation} correctAnswer={question.answer.join(" → ")} />}
-    </div>
+    </QuizCardShell>
   );
 }
 
@@ -285,37 +265,36 @@ function Ordering({
   };
 
   return (
-    <div className="space-y-4">
-      <h3 className="text-lg font-semibold leading-snug text-foreground">{question.question}</h3>
-      <p className="text-xs text-muted-foreground">{t("quiz.tapTwoItems")}</p>
-      <div className="space-y-2">
-        {order.map((item, i) => (
-          <button
-            key={`${item}-${i}`}
-            onClick={() => handleSelect(i)}
-            disabled={showResult}
-            className={`flex w-full items-center gap-3 rounded-radius-md border px-4 py-3 text-left text-sm font-medium transition-all ${
-              selectedIndex === i
-                ? "border-primary bg-primary/10 text-primary"
-                : "border-muted bg-surface text-foreground hover:border-primary/40"
-            }`}
-          >
-            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-radius-sm bg-muted text-xs font-bold text-muted-foreground">
-              {i + 1}
-            </span>
-            {item}
-          </button>
-        ))}
+    <QuizCardShell kicker="Ordering" kickerIcon={<SortIcon />}>
+      <h3 className="mt-3 text-lg font-semibold leading-snug text-foreground">{question.question}</h3>
+      <p className="mt-2 text-xs text-muted-foreground">{t("quiz.tapTwoItems")}</p>
+      <div className="mt-4 space-y-3">
+        {order.map((item, i) => {
+          const status = selectedIndex === i ? "primary" : "neutral";
+          return (
+            <ChoiceButton
+              key={`${item}-${i}`}
+              status={status}
+              onClick={() => handleSelect(i)}
+              disabled={showResult}
+            >
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-sm bg-muted text-xs font-bold text-muted-foreground">
+                {i + 1}
+              </span>
+              {item}
+            </ChoiceButton>
+          );
+        })}
       </div>
       <button
         onClick={check}
         disabled={showResult}
-        className="w-full rounded-radius-md bg-primary py-3.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-[0.98] disabled:opacity-50"
+        className="mt-4 w-full rounded-md bg-primary px-5 py-3.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-[0.98] disabled:opacity-50"
       >
         {t("quiz.checkAnswer")}
       </button>
       {showResult && <Explanation isCorrect={isCorrect} text={question.explanation} correctAnswer={question.answer.join(" → ")} />}
-    </div>
+    </QuizCardShell>
   );
 }
 
@@ -358,23 +337,23 @@ function Matching({
   const usedRights = new Set(Object.values(matches).filter(Boolean));
 
   return (
-    <div className="space-y-5">
-      <h3 className="text-lg font-semibold leading-snug text-foreground">{question.question}</h3>
-      <p className="text-xs text-muted-foreground">{t("quiz.tapDefinition")}</p>
-      <div className="space-y-3">
+    <QuizCardShell kicker="Matching" kickerIcon={<LinkIcon />}>
+      <h3 className="mt-3 text-lg font-semibold leading-snug text-foreground">{question.question}</h3>
+      <p className="mt-2 text-xs text-muted-foreground">{t("quiz.tapDefinition")}</p>
+      <div className="mt-4 space-y-3">
         {leftItems.map((left) => (
-          <div key={left} className="rounded-radius-md border border-muted bg-surface p-4">
+          <div key={left} className="rounded-md border border-muted bg-surface p-4">
             <div className="mb-2 text-sm font-semibold text-foreground">{left}</div>
             {matches[left] ? (
               <button
                 onClick={() => unassign(left)}
                 disabled={showResult}
-                className={`rounded-radius-md px-3 py-2 text-sm font-medium transition-colors ${
+                className={`rounded-md border px-3 py-2 text-sm font-semibold transition-colors disabled:cursor-default ${
                   showResult
                     ? matches[left] === question.answer[left]
-                      ? "bg-success/10 text-success"
-                      : "bg-danger/10 text-danger"
-                    : "bg-primary/10 text-primary hover:bg-primary/20"
+                      ? "border-success bg-success/10 text-success"
+                      : "border-danger bg-danger/5 text-danger"
+                    : "border-primary bg-primary/10 text-primary hover:bg-primary/20"
                 }`}
               >
                 {matches[left]}
@@ -387,7 +366,7 @@ function Matching({
                     <button
                       key={`${left}-${right}`}
                       onClick={() => assign(left, right)}
-                      className="rounded-radius-md border border-muted bg-surface px-3 py-2 text-sm font-medium text-foreground transition-colors hover:border-primary hover:bg-primary/5"
+                      className="rounded-md border border-muted bg-surface px-3 py-2 text-sm font-semibold text-foreground transition-colors hover:border-primary/40 hover:bg-primary/5"
                     >
                       {right}
                     </button>
@@ -400,7 +379,7 @@ function Matching({
       <button
         onClick={check}
         disabled={!filled || showResult}
-        className="w-full rounded-radius-md bg-primary py-3.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-[0.98] disabled:opacity-50"
+        className="mt-4 w-full rounded-md bg-primary px-5 py-3.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-[0.98] disabled:opacity-50"
       >
         {t("quiz.checkAnswer")}
       </button>
@@ -411,7 +390,7 @@ function Matching({
           correctAnswer={leftItems.map((left) => `${left}: ${question.answer[left]}`).join(" · ")}
         />
       )}
-    </div>
+    </QuizCardShell>
   );
 }
 
@@ -424,32 +403,167 @@ function CaseStudy({
   seed: string;
   onComplete?: (correct: boolean) => void;
 }) {
+  const followUpOptions = useMemo(
+    () =>
+      seededShuffle(`${seed}:cs`, question.followUp.options).map((label) => ({
+        label,
+        value: label,
+      })),
+    [question.followUp.options, seed]
+  );
+
   return (
-    <div className="space-y-5">
-      <div className="rounded-radius-lg border border-primary/20 bg-primary/5 p-5">
+    <QuizCardShell kicker="Case study" kickerIcon={<FileTextIcon />}>
+      <div className="mt-3 rounded-lg border border-primary/20 bg-primary/5 p-5">
         <h3 className="text-lg font-semibold leading-snug text-foreground">{question.question}</h3>
         <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">{question.caseText}</p>
       </div>
-      <div>
+      <div className="mt-5">
         <p className="mb-3 text-sm font-semibold text-foreground">{question.followUp.question}</p>
-        <MultipleChoice
-          question={{ ...question.followUp, type: "multiple_choice" }}
-          seed={`${seed}:cs`}
+        <MultipleChoiceContent
+          question={question.followUp.question}
+          options={followUpOptions}
+          correctValue={question.followUp.answer}
+          explanation={question.followUp.explanation}
           onComplete={onComplete}
+          kicker=""
         />
       </div>
-    </div>
+    </QuizCardShell>
   );
 }
 
-function AnswerButton({
+type Tint = "primary" | "warning" | "info";
+
+const tintClasses: Record<Tint, { border: string; kicker: string }> = {
+  primary: { border: "border-primary/30", kicker: "bg-primary/10 text-primary" },
+  warning: { border: "border-warning/30", kicker: "bg-warning/10 text-warning" },
+  info: { border: "border-info/30", kicker: "bg-info/10 text-info" },
+};
+
+function QuizCardShell({
+  kicker,
+  kickerIcon,
+  tint = "primary",
+  children,
+}: {
+  kicker: string;
+  kickerIcon: React.ReactNode;
+  tint?: Tint;
+  children: React.ReactNode;
+}) {
+  const { border, kicker: kickerClass } = tintClasses[tint];
+  return (
+    <article className={`rounded-card border ${border} bg-surface p-5 shadow-sm`}>
+      <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide ${kickerClass}`}>
+        {kickerIcon}
+        {kicker}
+      </span>
+      {children}
+    </article>
+  );
+}
+
+function ChoiceButton({
+  status,
+  onClick,
+  disabled,
+  children,
+}: {
+  status: "neutral" | "correct" | "wrong" | "primary";
+  onClick?: () => void;
+  disabled?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={`flex w-full items-center gap-3 rounded-md border px-4 py-3.5 text-left text-sm font-semibold transition-all active:scale-[0.98] disabled:cursor-default disabled:opacity-50 ${
+        status === "correct"
+          ? "border-success bg-success/10 text-success"
+          : status === "wrong"
+            ? "border-danger bg-danger/5 text-danger"
+            : status === "primary"
+              ? "border-primary bg-primary/10 text-primary"
+              : "border-muted bg-surface text-foreground hover:border-primary/40 hover:bg-primary/5"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function BinaryChoice({
+  question,
+  trueLabel,
+  falseLabel,
+  answer,
+  explanation,
+  onComplete,
+  kicker,
+  kickerIcon,
+  tint = "primary",
+}: {
+  question: string;
+  trueLabel: string;
+  falseLabel: string;
+  answer: boolean;
+  explanation: string;
+  onComplete?: (correct: boolean) => void;
+  kicker: string;
+  kickerIcon: React.ReactNode;
+  tint?: Tint;
+}) {
+  const [showResult, setShowResult] = useState(false);
+  const [selected, setSelected] = useState<boolean | null>(null);
+  const isCorrect = selected === answer;
+
+  const handleSelect = (value: boolean) => {
+    if (showResult) return;
+    setSelected(value);
+    setShowResult(true);
+    onComplete?.(value === answer);
+  };
+
+  return (
+    <QuizCardShell kicker={kicker} kickerIcon={kickerIcon} tint={tint}>
+      <h3 className="mt-3 text-lg font-semibold leading-snug text-foreground">{question}</h3>
+      <div className="mt-4 grid grid-cols-2 gap-3">
+        <BinaryButton
+          label={trueLabel}
+          icon={<CheckIcon className="h-[18px] w-[18px]" />}
+          showResult={showResult}
+          isSelected={selected === true}
+          isCorrect={answer === true}
+          onClick={() => handleSelect(true)}
+        />
+        <BinaryButton
+          label={falseLabel}
+          icon={<XIcon className="h-[18px] w-[18px]" />}
+          showResult={showResult}
+          isSelected={selected === false}
+          isCorrect={answer === false}
+          onClick={() => handleSelect(false)}
+        />
+      </div>
+      {showResult && (
+        <Explanation isCorrect={isCorrect} text={explanation} correctAnswer={answer ? trueLabel : falseLabel} />
+      )}
+    </QuizCardShell>
+  );
+}
+
+function BinaryButton({
   label,
+  icon,
   showResult,
   isSelected,
   isCorrect,
   onClick,
 }: {
   label: string;
+  icon: React.ReactNode;
   showResult: boolean;
   isSelected: boolean;
   isCorrect: boolean;
@@ -461,7 +575,7 @@ function AnswerButton({
     <button
       onClick={onClick}
       disabled={showResult}
-      className={`min-h-11 rounded-radius-md border px-4 py-3 text-sm font-semibold transition-all active:scale-[0.98] disabled:cursor-default ${
+      className={`flex min-h-11 items-center justify-center gap-2 rounded-md border px-4 py-3.5 text-sm font-semibold transition-all active:scale-[0.98] disabled:cursor-default ${
         status === "correct"
           ? "border-success bg-success/10 text-success"
           : status === "wrong"
@@ -469,25 +583,109 @@ function AnswerButton({
             : "border-muted bg-surface text-foreground hover:border-primary/40 hover:bg-primary/5"
       }`}
     >
+      {icon}
       {label}
     </button>
   );
 }
 
-function Explanation({ isCorrect, text, correctAnswer }: { isCorrect: boolean; text: string; correctAnswer?: string }) {
+function Explanation({
+  isCorrect,
+  text,
+  correctAnswer,
+}: {
+  isCorrect: boolean;
+  text: string;
+  correctAnswer?: string;
+}) {
   const { t } = useLocale();
   return (
-    <div
-      className={`space-y-1.5 rounded-radius-md border px-4 py-3 text-sm ${
-        isCorrect ? "border-success/30 bg-success/5 text-success" : "border-danger/30 bg-danger/5 text-danger"
-      }`}
-    >
+    <div className="mt-4 rounded-md bg-muted p-3 text-sm font-medium text-foreground">
       {!isCorrect && correctAnswer && (
-        <p className="font-semibold">
+        <p className="mb-1 font-bold">
           {t("quiz.correctAnswer")} {correctAnswer}
         </p>
       )}
       <p>{text}</p>
     </div>
+  );
+}
+
+function ToggleIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="2" y="6" width="20" height="12" rx="6" />
+      <circle cx="8" cy="12" r="2" />
+    </svg>
+  );
+}
+
+function TypeIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <polyline points="4 7 4 4 20 4 20 7" />
+      <line x1="9" y1="20" x2="15" y2="20" />
+      <line x1="12" y1="4" x2="12" y2="20" />
+    </svg>
+  );
+}
+
+function GridIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="3" y="3" width="7" height="7" />
+      <rect x="14" y="3" width="7" height="7" />
+      <rect x="14" y="14" width="7" height="7" />
+      <rect x="3" y="14" width="7" height="7" />
+    </svg>
+  );
+}
+
+function SortIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="m3 16 4 4 4-4" />
+      <path d="M7 20V4" />
+      <path d="m21 8-4-4-4 4" />
+      <path d="M17 4v16" />
+    </svg>
+  );
+}
+
+function LinkIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+    </svg>
+  );
+}
+
+function FileTextIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+      <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+      <path d="M10 9H8" />
+      <path d="M16 13H8" />
+      <path d="M16 17H8" />
+    </svg>
+  );
+}
+
+function CheckIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  );
+}
+
+function XIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M18 6 6 18" />
+      <path d="m6 6 12 12" />
+    </svg>
   );
 }

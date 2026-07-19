@@ -70,7 +70,7 @@ export function PriceRiseAnimation() {
       {/* Wallet */}
       <div className="absolute right-[6%] top-[54%] z-20">
         <div
-          className={`wallet relative h-[58px] w-[88px] rounded-radius-md bg-foreground p-2 shadow-sm transition-transform duration-700 ease-out-quart ${
+          className={`wallet relative h-[58px] w-[88px] rounded-md bg-foreground p-2 shadow-sm transition-transform duration-700 ease-out-quart ${
             started ? "scale-100" : "scale-110"
           }`}
         >
@@ -168,7 +168,7 @@ function PriceTag({
       style={{ transitionDelay: `${delay}ms` }}
     >
       <span
-        className={`rounded-radius-md px-3 py-1.5 text-sm font-bold shadow-sm ${
+        className={`rounded-md px-3 py-1.5 text-sm font-bold shadow-sm ${
           highlight ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"
         }`}
       >

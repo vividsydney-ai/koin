@@ -59,32 +59,59 @@ export function GradientIcon({
   size = 22,
   className,
 }: GradientIconProps) {
-  const svg = (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      focusable="false"
-      className={className}
-    >
-      {ICON_PATHS[icon]}
-    </svg>
-  );
-
   if (!active) {
     // Color is inherited from the parent (text-muted-foreground).
-    return svg;
+    return (
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+        focusable="false"
+        className={className}
+      >
+        {ICON_PATHS[icon]}
+      </svg>
+    );
   }
 
   return (
-    <span className="flex h-10 w-10 items-center justify-center rounded-radius-md bg-brand text-primary-foreground">
-      {svg}
+    <span className="inline-flex items-center justify-center rounded-md bg-primary/10 p-1.5">
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="url(#koinaku-icon-gradient)"
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+        focusable="false"
+        className={className}
+      >
+        <defs>
+          <linearGradient
+            id="koinaku-icon-gradient"
+            x1="0"
+            y1="0"
+            x2="24"
+            y2="24"
+            gradientUnits="userSpaceOnUse"
+          >
+            <stop offset="0%" stopColor="#6b4cfa" />
+            <stop offset="33%" stopColor="#893da7" />
+            <stop offset="66%" stopColor="#a62e55" />
+            <stop offset="100%" stopColor="#c41f02" />
+          </linearGradient>
+        </defs>
+        {ICON_PATHS[icon]}
+      </svg>
     </span>
   );
 }

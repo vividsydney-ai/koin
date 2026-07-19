@@ -77,8 +77,8 @@ export default function FriendsPage() {
 
       {isLoading ? (
         <div className="space-y-3">
-          <div className="h-32 animate-pulse rounded-radius-lg bg-muted" />
-          <div className="h-24 animate-pulse rounded-radius-lg bg-muted" />
+          <div className="h-32 animate-pulse rounded-card bg-muted" />
+          <div className="h-24 animate-pulse rounded-card bg-muted" />
         </div>
       ) : (
         <div className="space-y-5">
@@ -93,7 +93,9 @@ export default function FriendsPage() {
 
           {pendingFriends.length > 0 && (
             <section>
-              <h2 className="mb-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">{t("friends.pending")}</h2>
+              <h2 className="mb-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                {t("friends.pending")}
+              </h2>
               <div className="space-y-2">
                 {pendingFriends.map((friend) => (
                   <FriendRow key={friend.userId} friend={friend} />
@@ -103,7 +105,9 @@ export default function FriendsPage() {
           )}
 
           <section>
-            <h2 className="mb-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">{t("friends.friendsTitle")}</h2>
+            <h2 className="mb-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+              {t("friends.friendsTitle")}
+            </h2>
             {acceptedFriends.length === 0 ? (
               <EmptyState
                 icon="👥"
@@ -121,7 +125,9 @@ export default function FriendsPage() {
 
           {leaderboard && (
             <section>
-              <h2 className="mb-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">{t("friends.weeklyLeaderboard")}</h2>
+              <h2 className="mb-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                {t("friends.weeklyLeaderboard")}
+              </h2>
               <LeaderboardSection title="XP" entries={leaderboard.xp} valueKey="xpThisWeek" />
               <LeaderboardSection title={t("home.koinPoints")} entries={leaderboard.koinPoints} valueKey="koinPointsThisWeek" />
             </section>
@@ -249,23 +255,23 @@ function InviteCard({
     .toUpperCase();
 
   return (
-    <div className="rounded-radius-lg border border-muted/60 bg-surface p-4 shadow-sm">
+    <div className="rounded-card border border-muted bg-surface p-4 shadow-sm">
       <div className="flex items-center gap-3">
         {avatarUrl ? (
           <img src={avatarUrl} alt="" className="h-12 w-12 rounded-full object-cover" />
         ) : (
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-base font-bold text-primary">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--color-primary)_10%,var(--color-surface))] text-base font-bold text-primary">
             {initials || "?"}
           </div>
         )}
-        <div>
+        <div className="min-w-0">
           <p className="text-sm font-semibold text-foreground">{displayName}</p>
           <p className="text-xs text-muted-foreground">{t("friends.inviteBody")}</p>
         </div>
       </div>
 
       <div className="mt-4 flex flex-col items-center gap-4">
-        <div className="rounded-radius-md bg-white p-3 shadow-sm">
+        <div className="rounded-md bg-white p-3 shadow-sm">
           {qrSvg ? (
             <div
               className="h-44 w-44"
@@ -273,7 +279,7 @@ function InviteCard({
               dangerouslySetInnerHTML={{ __html: qrSvg }}
             />
           ) : (
-            <div className="flex h-44 w-44 items-center justify-center bg-muted">
+            <div className="flex h-44 w-44 items-center justify-center rounded-md bg-muted">
               <span className="text-xs text-muted-foreground">{t("profile.loading")}</span>
             </div>
           )}
@@ -282,27 +288,36 @@ function InviteCard({
         <div className="flex w-full gap-2">
           <button
             onClick={handleShare}
-            className="flex-1 rounded-radius-md bg-primary py-2.5 text-sm font-semibold text-primary-foreground active:opacity-90"
+            className="flex flex-1 items-center justify-center gap-2 rounded-md bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-[0.98]"
           >
+            <ShareIcon className="h-4 w-4" />
             {t("friends.share")}
           </button>
           <button
             onClick={() => setScannerOpen(true)}
-            className="flex-1 rounded-radius-md bg-foreground py-2.5 text-sm font-semibold text-background active:opacity-90"
+            className="flex flex-1 items-center justify-center gap-2 rounded-md border border-muted bg-surface px-5 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted/20 active:scale-[0.98]"
           >
+            <ScanIcon className="h-4 w-4" />
             {t("friends.scanQr")}
           </button>
         </div>
         <button
           onClick={handleCopyLink}
-          className="w-full rounded-radius-md border border-muted bg-background py-2.5 text-sm font-semibold text-foreground active:opacity-90"
+          className="flex w-full items-center justify-center gap-2 rounded-md border border-muted bg-background px-5 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted/20 active:scale-[0.98]"
         >
+          <CopyIcon className="h-4 w-4" />
           {linkCopied ? t("friends.linkCopied") : t("friends.copyLink")}
         </button>
       </div>
 
       {message && (
-        <p className={`mt-4 text-center text-xs ${message.includes(t("friends.accepted")) || message.includes(t("friends.requestSent")) ? "text-success" : "text-danger"}`}>
+        <p
+          className={`mt-4 text-center text-xs ${
+            message.includes(t("friends.accepted")) || message.includes(t("friends.requestSent"))
+              ? "text-success"
+              : "text-danger"
+          }`}
+        >
           {message}
         </p>
       )}
@@ -400,7 +415,7 @@ function QrScannerModal({ onClose, onScan }: { onClose: () => void; onScan: (use
         <h3 className="text-lg font-bold text-foreground">{t("friends.scanQrTitle")}</h3>
         <button
           onClick={onClose}
-          className="rounded-radius-md px-3 py-1.5 text-sm font-semibold text-muted-foreground active:opacity-70"
+          className="rounded-md px-3 py-1.5 text-sm font-semibold text-muted-foreground active:opacity-70"
           aria-label={t("friends.close")}
         >
           {t("friends.close")}
@@ -408,14 +423,14 @@ function QrScannerModal({ onClose, onScan }: { onClose: () => void; onScan: (use
       </div>
 
       <div className="mt-4 flex flex-1 flex-col items-center justify-center gap-4">
-        <div className="relative w-full max-w-sm overflow-hidden rounded-radius-lg bg-black shadow-lg">
+        <div className="relative w-full max-w-sm overflow-hidden rounded-card bg-black shadow-lg">
           <video ref={videoRef} className="h-auto w-full" muted playsInline />
           <canvas ref={canvasRef} className="sr-only" />
-          <div className="pointer-events-none absolute inset-0 rounded-radius-lg border-2 border-primary/40" />
+          <div className="pointer-events-none absolute inset-0 rounded-card border-2 border-primary/40" />
         </div>
 
         {cameraError && (
-          <div className="w-full max-w-sm rounded-radius-md bg-surface-inset p-3 text-center">
+          <div className="w-full max-w-sm rounded-md bg-surface-inset p-3 text-center">
             <p className="text-xs text-danger">{cameraError}</p>
           </div>
         )}
@@ -431,12 +446,12 @@ function QrScannerModal({ onClose, onScan }: { onClose: () => void; onScan: (use
               value={manualInput}
               onChange={(e) => setManualInput(e.target.value)}
               placeholder={`${origin}/friends/accept?user=...`}
-              className="flex-1 rounded-radius-md border border-muted bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
+              className="flex-1 rounded-md border border-muted bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
             />
             <button
               type="submit"
               disabled={!manualInput.trim()}
-              className="rounded-radius-md bg-foreground px-4 py-2 text-sm font-semibold text-background disabled:opacity-50 active:opacity-90"
+              className="rounded-md bg-foreground px-4 py-2 text-sm font-semibold text-background disabled:opacity-50 active:opacity-90"
             >
               {t("friends.add")}
             </button>
@@ -491,15 +506,17 @@ function CohortSection({
 
   return (
     <section>
-      <h2 className="mb-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">{t("friends.cohorts")}</h2>
-      <div className="rounded-radius-lg border border-muted/60 bg-surface p-4 shadow-sm">
+      <h2 className="mb-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+        {t("friends.cohorts")}
+      </h2>
+      <div className="rounded-card border border-muted bg-surface p-4 shadow-sm">
         {!createOpen ? (
           <>
             <div className="flex items-center justify-between">
               <p className="text-xs text-muted-foreground">{t("friends.joinCohort")}</p>
               <button
                 onClick={() => setCreateOpen(true)}
-                className="rounded-radius-md bg-foreground px-3 py-1.5 text-xs font-semibold text-background active:opacity-90"
+                className="rounded-md bg-foreground px-3 py-1.5 text-xs font-semibold text-background transition-opacity hover:opacity-90 active:opacity-80"
               >
                 {t("friends.createCohort")}
               </button>
@@ -510,12 +527,12 @@ function CohortSection({
                 value={codeInput}
                 onChange={(e) => onCodeChange(e.target.value.toUpperCase())}
                 placeholder={t("friends.cohortCode")}
-                className="flex-1 rounded-radius-md border border-muted bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
+                className="flex-1 rounded-md border border-muted bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
               />
               <button
                 type="submit"
                 disabled={!codeInput.trim()}
-                className="rounded-radius-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50 active:opacity-90"
+                className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50 active:opacity-90"
               >
                 {t("friends.join")}
               </button>
@@ -528,7 +545,7 @@ function CohortSection({
               <button
                 type="button"
                 onClick={() => setCreateOpen(false)}
-                className="text-xs text-muted-foreground underline"
+                className="text-xs font-medium text-muted-foreground underline hover:text-foreground"
               >
                 {t("friends.cancel")}
               </button>
@@ -539,15 +556,13 @@ function CohortSection({
               onChange={(e) => setNewCohortName(e.target.value)}
               placeholder={t("friends.cohortName")}
               maxLength={60}
-              className="w-full rounded-radius-md border border-muted bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
+              className="w-full rounded-md border border-muted bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
             />
-            {!canCreateFree && (
-              <p className="text-xs text-warning">{t("friends.cohortLimitFree")}</p>
-            )}
+            {!canCreateFree && <p className="text-xs text-warning">{t("friends.cohortLimitFree")}</p>}
             <button
               type="submit"
               disabled={!newCohortName.trim() || creating || !canCreateFree}
-              className="w-full rounded-radius-md bg-primary py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-50 active:opacity-90"
+              className="w-full rounded-md bg-primary py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-50 active:opacity-90"
             >
               {creating ? t("friends.creating") : t("friends.create")}
             </button>
@@ -555,22 +570,29 @@ function CohortSection({
         )}
 
         {message && (
-          <p className={`mt-2 text-xs ${message.includes(t("friends.joinedCohort")) || message.includes(t("friends.alreadyMember")) ? "text-success" : "text-danger"}`}>
+          <p
+            className={`mt-2 text-xs ${
+              message.includes(t("friends.joinedCohort")) || message.includes(t("friends.alreadyMember"))
+                ? "text-success"
+                : "text-danger"
+            }`}
+          >
             {message}
           </p>
         )}
-        {createMessage && (
-          <p className="mt-2 text-xs text-danger">{createMessage}</p>
-        )}
+        {createMessage && <p className="mt-2 text-xs text-danger">{createMessage}</p>}
 
         {cohorts.length > 0 && (
           <div className="mt-4 space-y-2">
             {cohorts.map((cohort) => (
-              <div key={cohort.id} className="rounded-radius-md bg-muted px-3 py-2">
+              <div key={cohort.id} className="rounded-md bg-surface-inset px-3 py-2">
                 <p className="text-sm font-semibold text-foreground">{cohort.name}</p>
                 <div className="flex items-center justify-between">
                   <p className="text-[10px] text-muted-foreground">
-                    {t("friends.joinedAt").replace("{date}", new Date(cohort.joinedAt).toLocaleDateString(locale === "id" ? "id-ID" : "en-US"))}
+                    {t("friends.joinedAt").replace(
+                      "{date}",
+                      new Date(cohort.joinedAt).toLocaleDateString(locale === "id" ? "id-ID" : "en-US")
+                    )}
                   </p>
                   {cohort.inviteCode && (
                     <p className="text-[10px] font-mono text-muted-foreground">{cohort.inviteCode}</p>
@@ -637,9 +659,12 @@ function LeaderboardSection({
   const valueColor = valueKey === "koinPointsThisWeek" ? "text-koin-points" : "text-xp";
 
   return (
-    <div className="mt-3 rounded-radius-lg border border-muted/60 bg-surface p-4 shadow-sm">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">{title}</p>
-      <ol className="mt-2 space-y-1">
+    <div className="mt-3 rounded-card border border-muted bg-surface p-4 shadow-sm">
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-primary">
+        <TrophyIcon className="h-3.5 w-3.5" />
+        {title}
+      </span>
+      <ol className="mt-3 space-y-1">
         {entries.map((entry) => {
           const tier = RANK_TIER_STYLES[entry.rank];
           return (
@@ -648,7 +673,7 @@ function LeaderboardSection({
               data-rank={entry.rank}
               data-tier={tier?.label}
               data-current-user={entry.isCurrentUser || undefined}
-              className={`flex min-h-11 items-center gap-3 rounded-radius-md px-2 py-1.5 ${
+              className={`flex min-h-11 items-center gap-3 rounded-md px-2 py-1.5 ${
                 entry.isCurrentUser
                   ? "bg-[color-mix(in_srgb,var(--color-primary)_8%,var(--color-surface))]"
                   : ""
@@ -705,18 +730,95 @@ function FriendRow({ friend }: { friend: Friend }) {
     .toUpperCase();
 
   return (
-    <div className="flex items-center gap-3 rounded-radius-lg border border-muted/60 bg-surface p-3 shadow-sm">
+    <div className="flex items-center gap-3 rounded-card border border-muted bg-surface p-3 shadow-sm">
       {friend.avatarUrl ? (
         <img src={friend.avatarUrl} alt="" className="h-10 w-10 rounded-full object-cover" />
       ) : (
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--color-primary)_10%,var(--color-surface))] text-sm font-bold text-primary">
           {initials || "?"}
         </div>
       )}
-      <div className="flex-1">
+      <div className="min-w-0 flex-1">
         <p className="text-sm font-semibold text-foreground">{friend.displayName}</p>
         <p className="text-xs text-muted-foreground">{statusText}</p>
       </div>
     </div>
+  );
+}
+
+function ShareIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="18" cy="5" r="3" />
+      <circle cx="6" cy="12" r="3" />
+      <circle cx="18" cy="19" r="3" />
+      <path d="m8.6 10.5 6.8-4" />
+      <path d="m8.6 13.5 6.8 4" />
+    </svg>
+  );
+}
+
+function ScanIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M3 7V5a2 2 0 0 1 2-2h2" />
+      <path d="M17 3h2a2 2 0 0 1 2 2v2" />
+      <path d="M21 17v2a2 2 0 0 1-2 2h-2" />
+      <path d="M7 21H5a2 2 0 0 1-2-2v-2" />
+      <path d="M3 12h18" />
+    </svg>
+  );
+}
+
+function CopyIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+      <path d="M5 15V5a2 2 0 0 1 2-2h10" />
+    </svg>
+  );
+}
+
+function TrophyIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M6 9H4a2 2 0 0 1-2-2V5h6" />
+      <path d="M18 9h2a2 2 0 0 0 2-2V5h-6" />
+      <path d="M6 9v7a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V9" />
+      <path d="M12 18v3" />
+      <path d="M9 21h6" />
+    </svg>
   );
 }

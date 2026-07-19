@@ -323,13 +323,13 @@ export default function LessonPlayer({
         <div className="mt-6 flex w-full max-w-xs flex-col gap-3">
           <button
             onClick={() => setRetryCounter((c) => c + 1)}
-            className="rounded-radius-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground"
+            className="rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground"
           >
             {t("lesson.tryAgain")}
           </button>
           <button
             onClick={() => router.push("/learn")}
-            className="rounded-radius-md border border-muted bg-surface px-5 py-2.5 text-sm font-semibold text-foreground"
+            className="rounded-md border border-muted bg-surface px-5 py-2.5 text-sm font-semibold text-foreground"
           >
             {t("lesson.backToLearn")}
           </button>
@@ -345,7 +345,7 @@ export default function LessonPlayer({
         <p className="mt-2 text-sm text-muted-foreground">{t("lesson.notFoundBody")}</p>
         <button
           onClick={() => router.push("/learn")}
-          className="mt-6 rounded-radius-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground"
+          className="mt-6 rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground"
         >
           {t("lesson.backToLearn")}
         </button>
@@ -377,7 +377,7 @@ export default function LessonPlayer({
             <div
               key={s.id}
               aria-label={s.label}
-              className={`h-1 flex-1 rounded-full transition-all duration-500 ${
+              className={`h-1.5 flex-1 rounded-full transition-all duration-500 ${
                 i <= step ? "bg-primary" : "bg-muted"
               }`}
             />
@@ -389,7 +389,7 @@ export default function LessonPlayer({
         {alreadyCompleted && !showSummary && (
           <div
             role="status"
-            className="mb-5 flex items-start gap-2.5 rounded-radius-md border border-primary/25 bg-primary/5 px-4 py-3 text-[13px] leading-snug text-foreground"
+            className="mb-5 flex items-start gap-2.5 rounded-md border border-primary/25 bg-primary/5 px-4 py-3 text-[13px] leading-snug text-foreground"
           >
             <span aria-hidden="true" className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-primary/15 text-[10px] font-bold text-primary">
               i
@@ -461,7 +461,7 @@ export default function LessonPlayer({
 
       <footer className="border-t border-muted/60 bg-surface px-5 py-4">
         {completionError && (
-          <div className="mb-4 rounded-radius-md border border-danger/30 bg-danger/5 px-4 py-3 text-sm text-danger">
+          <div className="mb-4 rounded-md border border-danger/30 bg-danger/5 px-4 py-3 text-sm text-danger">
             {completionError}
           </div>
         )}
@@ -469,7 +469,7 @@ export default function LessonPlayer({
           <button
             onClick={isLastStep ? finishLesson : nextStep}
             disabled={(step === 3 && !quizDone) || completing}
-            className="flex w-full items-center justify-center gap-2 rounded-radius-md bg-primary py-3.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all duration-200 hover:bg-primary/90 active:scale-[0.98] disabled:opacity-50"
+            className="flex w-full items-center justify-center gap-2 rounded-md bg-primary px-5 py-3.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-[0.98] disabled:opacity-50"
           >
             {isLastStep ? t("lesson.finish") : t("lesson.continue")}
             <ArrowRightIcon />
@@ -486,24 +486,28 @@ function IntroStep({ lesson }: { lesson: Lesson }) {
   const title = locale === "id" ? lesson.titleId : lesson.title;
   const summary = locale === "id" ? (lesson.summaryId ?? lesson.summary) : lesson.summary;
   return (
-    <div className="flex flex-col items-center text-center">
-      <div className="mb-6 flex h-28 w-28 items-center justify-center rounded-full bg-primary/8">
-        <LessonIcon />
+    <article className="relative overflow-hidden rounded-card bg-gradient-to-br from-primary to-[var(--rup-orbit-700)] p-6 text-white">
+      <span className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10" />
+      <span className="absolute -bottom-10 -left-10 h-24 w-24 rounded-full border-[10px] border-white/10" />
+      <div className="relative flex flex-col items-center text-center">
+        <div className="mb-5 flex h-24 w-24 items-center justify-center rounded-full bg-white/10">
+          <LessonIcon className="h-12 w-12 text-white" />
+        </div>
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-white">
+          {title.split(":")[0]}
+        </span>
+        <h1 className="mt-3 font-display text-2xl font-bold leading-tight">
+          {title}
+        </h1>
+        <p className="mt-2 text-[15px] leading-relaxed text-white/80">{summary}</p>
+        <div className="mt-5 flex items-center gap-3 text-xs font-semibold text-white/80">
+          <BookIcon className="h-3.5 w-3.5 text-white" />
+          <span>~{lesson.estimatedMinutes} {t("lesson.minutes")}</span>
+          <span className="h-1 w-1 rounded-full bg-white/50" />
+          <span className="text-white">{lesson.xpReward} XP</span>
+        </div>
       </div>
-      <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">
-        {title.split(":")[0]}
-      </span>
-      <h1 className="mt-2 text-[28px] font-bold leading-[1.15] tracking-tight text-foreground">
-        {title}
-      </h1>
-      <p className="mt-4 text-base leading-relaxed text-muted-foreground">{summary}</p>
-      <div className="mt-8 flex items-center gap-3 text-xs font-medium text-muted-foreground">
-        <BookIcon />
-        <span>~{lesson.estimatedMinutes} {t("lesson.minutes")}</span>
-        <span className="h-1 w-1 rounded-full bg-muted-foreground/40" />
-        <span className="text-xp">{lesson.xpReward} XP</span>
-      </div>
-    </div>
+    </article>
   );
 }
 
@@ -529,31 +533,31 @@ function ConceptStep({
   const title = locale === "id" ? lesson.titleId : lesson.title;
   const conceptBody = locale === "id" ? (lesson.conceptBodyId ?? lesson.conceptBody) : lesson.conceptBody;
   const whyThisMatters = locale === "id" ? (lesson.whyThisMattersId ?? lesson.whyThisMatters) : lesson.whyThisMatters;
-  const commonMistake = locale === "id" ? (lesson.commonMistakeId ?? lesson.commonMistake) : lesson.commonMistake;
 
   return (
-    <div className="space-y-6">
-      <div>
-        <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">{t("lesson.theConcept")}</span>
-        <h2 className="mt-1.5 text-[22px] font-bold leading-tight tracking-tight text-foreground">
-          {title}
-        </h2>
-      </div>
+    <article className="rounded-card border border-muted bg-surface p-5 shadow-sm">
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-primary">
+        {t("lesson.theConcept")}
+      </span>
+      <h2 className="mt-2 font-display text-lg font-bold text-foreground">
+        {title}
+      </h2>
       {!showSimpler ? (
-        <p className="text-[15px] leading-relaxed text-muted-foreground">{conceptBody}</p>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{conceptBody}</p>
       ) : (
         simplerVariant && (
-          <div className="rounded-radius-md border border-primary/20 bg-primary/5 p-4">
-            <p className="text-[15px] leading-relaxed text-foreground">
-              {String(simplerVariant.body?.text ?? simplerVariant.body)}
-            </p>
+          <div
+            className="mt-3 rounded-md border border-primary/20 p-4 text-sm leading-relaxed text-foreground"
+            style={{ background: "color-mix(in srgb, var(--color-primary) 8%, var(--color-surface))" }}
+          >
+            {String(simplerVariant.body?.text ?? simplerVariant.body)}
           </div>
         )
       )}
       {onExplainSimpler && !showSimpler && (
         <button
           onClick={handleShowSimpler}
-          className="inline-flex min-h-[44px] items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+          className="mt-4 inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline"
           aria-label={t("lesson.simplerExplanation")}
         >
           {t("lesson.simplerExplanation")}
@@ -562,18 +566,21 @@ function ConceptStep({
       {showSimpler && (
         <button
           onClick={() => setShowSimpler(false)}
-          className="inline-flex min-h-[44px] items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+          className="mt-4 inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline"
           aria-label={t("lesson.backToMainExplanation")}
         >
           {t("lesson.backToMainExplanation")}
         </button>
       )}
       {whyThisMatters && (
-        <div className="rounded-radius-md border border-primary/20 bg-primary/5 p-4 text-[15px] leading-relaxed text-foreground">
+        <div
+          className="mt-4 rounded-md border border-primary/20 p-4 text-sm leading-relaxed text-foreground"
+          style={{ background: "color-mix(in srgb, var(--color-primary) 8%, var(--color-surface))" }}
+        >
           {whyThisMatters}
         </div>
       )}
-    </div>
+    </article>
   );
 }
 
@@ -616,40 +623,41 @@ function ExampleStep({
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">{t("lesson.indonesianExample")}</span>
-        <h2 className="mt-1.5 text-[22px] font-bold leading-tight tracking-tight text-foreground">
-          {t("lesson.exampleHeading")}
-        </h2>
-      </div>
-      <div className="rounded-radius-lg border border-muted/60 bg-surface p-5 shadow-sm">
-        <p className="text-[15px] leading-relaxed text-muted-foreground">{String(displayText ?? "")}</p>
+    <article className="rounded-card border border-muted bg-surface p-5 shadow-sm">
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-primary">
+        {t("lesson.indonesianExample")}
+      </span>
+      <h2 className="mt-2 font-display text-lg font-bold text-foreground">
+        {t("lesson.exampleHeading")}
+      </h2>
+      <div className="mt-3 rounded-lg border border-muted/60 bg-surface-raised p-4">
+        <p className="text-sm leading-relaxed text-muted-foreground">{String(displayText ?? "")}</p>
       </div>
       {canShowAnother && !showAlternate && (
         <button
           onClick={handleShowAlternate}
-          className="inline-flex min-h-[44px] items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+          className="mt-4 inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline"
           aria-label={t("lesson.seeAnotherExample")}
         >
           {t("lesson.seeAnotherExample")}
+          <ArrowRightMiniIcon />
         </button>
       )}
       {showAlternate && (
         <button
           onClick={() => setShowAlternate(false)}
-          className="inline-flex min-h-[44px] items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+          className="mt-4 inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline"
           aria-label={t("lesson.backToMainExample")}
         >
           {t("lesson.backToMainExample")}
         </button>
       )}
       {commonMistake && (
-        <p className="text-[15px] leading-relaxed text-muted-foreground">
+        <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
           <strong className="text-foreground">{t("lesson.commonMistake")}</strong> {commonMistake}
         </p>
       )}
-    </div>
+    </article>
   );
 }
 
@@ -794,7 +802,7 @@ function SourceStep({
 
       {quizPassed && (
         <div
-          className={`flex items-center gap-3 rounded-radius-lg border px-4 py-3.5 ${
+          className={`flex items-center gap-3 rounded-lg border px-4 py-3.5 ${
             alreadyCompleted
               ? "border-muted bg-muted/10 text-muted-foreground"
               : "border-success/30 bg-success/5 text-success"
@@ -819,71 +827,138 @@ function SourceCard({ source, highlighted = false }: { source: LessonSource; hig
   const activeSynopsis = locale === "id" ? (source.synopsisId ?? source.synopsis) : source.synopsis;
   const activeRelevance = locale === "id" ? (source.relevanceBlurbId ?? source.relevanceBlurb) : source.relevanceBlurb;
   const hasDetails = Boolean(activeSynopsis || activeRelevance);
+  const blurb = activeSynopsis || activeRelevance;
 
-  return (
-    <div
-      className={`rounded-radius-lg border p-5 ${
-        highlighted ? "border-primary/30 bg-primary/5" : "border-muted/60 bg-surface"
-      }`}
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary">
-              {t("lesson.tier")} {source.sourceTier}
-            </span>
-            <span
-              className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
-                verified ? "bg-success/10 text-success" : "bg-warning/10 text-warning"
-              }`}
+  if (highlighted) {
+    return (
+      <article className="rounded-card border border-primary/30 bg-gradient-to-br from-[var(--rup-orbit-900)] to-[#0b0916] p-5 text-white">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-white">
+            <FileTextIcon size={14} />
+            {t("lesson.tier")} {source.sourceTier}
+          </span>
+          <span
+            className={`inline-flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide ${
+              verified ? "text-success" : "text-warning"
+            }`}
+          >
+            {verified && <CheckIconMini />}
+            {verified ? t("lesson.verified") : t("lesson.needsReview")}
+          </span>
+        </div>
+        <h4 className="mt-3 font-display text-lg font-bold text-white">{displayTitle}</h4>
+        <p className="mt-1 text-sm text-white/70">{source.organization}</p>
+        {source.citationLabel && (
+          <p className="mt-1 text-xs text-white/60">{source.citationLabel}</p>
+        )}
+        {blurb && (
+          <p className={`mt-3 text-sm leading-relaxed text-white/80 ${expanded ? "" : "line-clamp-3"}`}>
+            {blurb}
+          </p>
+        )}
+        <div className="mt-3 flex flex-wrap items-center gap-4">
+          {source.url && (
+            <a
+              href={source.url}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1 text-sm font-bold text-white/90 hover:text-white"
             >
-              {verified ? (
-                <>
-                  <CheckIconMini /> {t("lesson.verified")}
-                </>
-              ) : (
-                t("lesson.needsReview")
-              )}
-            </span>
-          </div>
-          <h4 className="mt-2 font-semibold text-foreground">{displayTitle}</h4>
-          <p className="text-sm text-muted-foreground">{source.organization}</p>
-          {source.citationLabel && (
-            <p className="mt-1 text-xs text-muted-foreground">{source.citationLabel}</p>
+              {t("lesson.readSource")}
+              <ArrowRightMiniIcon />
+            </a>
+          )}
+          {hasDetails && (
+            <button
+              type="button"
+              onClick={() => setExpanded((e) => !e)}
+              aria-expanded={expanded}
+              className="inline-flex items-center gap-1 text-sm font-bold text-white/90 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 rounded-md"
+            >
+              {expanded ? t("library.showLess") : t("library.readMore")}
+              <ChevronIcon expanded={expanded} />
+            </button>
           )}
         </div>
-        <span className="shrink-0 rounded-full bg-muted px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-          {source.sourceCode}
-        </span>
-      </div>
-
-      <div className="mt-4 flex flex-wrap items-center gap-4">
-        {source.url && (
-          <a
-            href={source.url}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
-          >
-            {t("lesson.readSource")}
-            <ExternalLinkIcon />
-          </a>
+        {expanded && (
+          <div className="mt-4 space-y-3 border-t border-white/10 pt-3">
+            {activeSynopsis && (
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/60">
+                  {t("library.synopsis")}
+                </p>
+                <p className="mt-1 text-sm leading-relaxed text-white/80">{activeSynopsis}</p>
+              </div>
+            )}
+            {activeRelevance && (
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/60">
+                  {t("library.relevance")}
+                </p>
+                <p className="mt-1 text-sm leading-relaxed text-white/80">{activeRelevance}</p>
+              </div>
+            )}
+          </div>
         )}
-        {hasDetails && (
-          <button
-            type="button"
-            onClick={() => setExpanded((e) => !e)}
-            aria-expanded={expanded}
-            className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-radius-sm"
-          >
-            {expanded ? t("library.showLess") : t("library.readMore")}
-            <ChevronIcon expanded={expanded} />
-          </button>
-        )}
-      </div>
+      </article>
+    );
+  }
 
+  return (
+    <article className="rounded-card border border-muted bg-surface p-4 grid grid-cols-[80px_minmax(0,1fr)] gap-4">
+      <div className="flex h-20 w-full items-center justify-center rounded-md bg-gradient-to-br from-primary/10 to-surface-raised text-primary">
+        <FileTextIcon size={26} />
+      </div>
+      <div className="grid min-w-0 content-start gap-1.5">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary">
+            {t("lesson.tier")} {source.sourceTier}
+          </span>
+          <span
+            className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
+              verified ? "bg-success/10 text-success" : "bg-warning/10 text-warning"
+            }`}
+          >
+            {verified && <CheckIconMini />}
+            {verified ? t("lesson.verified") : t("lesson.needsReview")}
+          </span>
+          <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+            {source.sourceCode}
+          </span>
+        </div>
+        <h4 className="font-display text-base font-bold text-foreground">{displayTitle}</h4>
+        <p className="text-sm text-muted-foreground">{source.organization}</p>
+        {source.citationLabel && (
+          <p className="text-xs text-muted-foreground">{source.citationLabel}</p>
+        )}
+        {blurb && <p className="text-sm text-muted-foreground line-clamp-2">{blurb}</p>}
+        <div className="mt-1 flex flex-wrap items-center gap-4">
+          {source.url && (
+            <a
+              href={source.url}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline"
+            >
+              {t("lesson.readSource")}
+              <ExternalLinkIcon />
+            </a>
+          )}
+          {hasDetails && (
+            <button
+              type="button"
+              onClick={() => setExpanded((e) => !e)}
+              aria-expanded={expanded}
+              className="inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-md"
+            >
+              {expanded ? t("library.showLess") : t("library.readMore")}
+              <ChevronIcon expanded={expanded} />
+            </button>
+          )}
+        </div>
+      </div>
       {expanded && (
-        <div className="mt-4 space-y-3 border-t border-muted pt-3">
+        <div className="col-span-2 mt-2 space-y-3 border-t border-muted pt-3">
           {activeSynopsis && (
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
@@ -902,7 +977,7 @@ function SourceCard({ source, highlighted = false }: { source: LessonSource; hig
           )}
         </div>
       )}
-    </div>
+    </article>
   );
 }
 
@@ -947,14 +1022,19 @@ function CompletionStep({
   const nextSlug = result?.nextLessonSlug ?? null;
 
   return (
-    <div className="flex flex-col items-center text-center">
-      <div className="mb-6 flex h-28 w-28 items-center justify-center rounded-full bg-success/10">
-        <CheckIcon />
+    <article
+      className="flex flex-col items-center rounded-card border border-success/30 p-6 text-center"
+      style={{ background: "color-mix(in srgb, var(--color-success) 6%, var(--color-surface))" }}
+    >
+      <div className="flex h-24 w-24 items-center justify-center rounded-full bg-success/15 text-success">
+        <CheckIconLarge />
       </div>
-      <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-success">{t("lesson.complete")}</span>
+      <span className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-success/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-success">
+        {t("lesson.complete")}
+      </span>
       {isReplay ? (
         <>
-          <h2 className="mt-2 text-[28px] font-bold leading-[1.15] tracking-tight text-foreground">
+          <h2 className="mt-2 font-display text-[28px] font-bold leading-[1.15] tracking-tight text-foreground">
             {t("lesson.replayCompleteTitle")}
           </h2>
           <p className="mt-2 max-w-xs text-sm leading-relaxed text-muted-foreground">
@@ -962,12 +1042,12 @@ function CompletionStep({
           </p>
         </>
       ) : (
-        <h2 className="mt-2 text-[28px] font-bold leading-[1.15] tracking-tight text-foreground">
+        <h2 className="mt-2 font-display text-[28px] font-bold leading-[1.15] tracking-tight text-foreground">
           +{xpEarned} XP
         </h2>
       )}
       {quizBonus > 0 && (
-        <p className="mt-1 text-sm font-medium text-xp">
+        <p className="mt-1 text-sm font-semibold text-success">
           {t("lesson.quizBonus").replace("{bonus}", String(quizBonus))}
         </p>
       )}
@@ -983,7 +1063,7 @@ function CompletionStep({
       </div>
 
       {badges.length > 0 && (
-        <div className="mt-6 w-full rounded-radius-lg border border-warning/20 bg-warning/5 p-4 text-left">
+        <div className="mt-6 w-full rounded-lg border border-warning/20 bg-warning/5 p-4 text-left">
           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-warning">{t("lesson.badgeEarned")}</p>
           <div className="mt-2 flex flex-wrap gap-2">
             {badges.map((badge) => (
@@ -1003,19 +1083,19 @@ function CompletionStep({
         {nextSlug && (
           <button
             onClick={() => router.push(`/learn/${nextSlug}`)}
-            className="w-full rounded-radius-md border border-primary bg-primary/5 py-3.5 text-sm font-semibold text-primary transition-colors hover:bg-primary/10"
+            className="w-full rounded-md bg-primary px-5 py-3.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-[0.98]"
           >
             {t("lesson.nextLesson")}
           </button>
         )}
         <button
           onClick={() => router.push("/learn")}
-          className="w-full rounded-radius-md border border-muted bg-surface py-3.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted/10"
+          className="w-full rounded-md border border-muted bg-surface px-5 py-3.5 text-sm font-semibold text-foreground transition-all hover:bg-muted/20 active:scale-[0.98]"
         >
           {t("lesson.backToLearn")}
         </button>
       </div>
-    </div>
+    </article>
   );
 }
 
@@ -1033,11 +1113,22 @@ function ArrowRightIcon() {
   );
 }
 
-function BookIcon() {
+function BookIcon({ className = "h-3.5 w-3.5" }: { className?: string }) {
   return (
-    <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
       <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+    </svg>
+  );
+}
+
+function LessonIcon({ className = "h-14 w-14 text-primary" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 36h24" />
+      <path d="M14 12h20a2 2 0 0 1 2 2v20a2 2 0 0 1-2 2H14a2 2 0 0 1-2-2V14a2 2 0 0 1 2-2z" />
+      <path d="M18 20h12" />
+      <path d="M18 28h8" />
     </svg>
   );
 }
@@ -1048,6 +1139,18 @@ function ExternalLinkIcon() {
       <path d="M15 3h6v6" />
       <path d="M10 14 21 3" />
       <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+    </svg>
+  );
+}
+
+function FileTextIcon({ size = 24 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+      <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+      <path d="M10 9H8" />
+      <path d="M16 13H8" />
+      <path d="M16 17H8" />
     </svg>
   );
 }
@@ -1071,13 +1174,20 @@ function InfoIcon() {
   );
 }
 
-function LessonIcon() {
+function ArrowRightMiniIcon() {
   return (
-    <svg className="h-14 w-14 text-primary" viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 36h24" />
-      <path d="M14 12h20a2 2 0 0 1 2 2v20a2 2 0 0 1-2 2H14a2 2 0 0 1-2-2V14a2 2 0 0 1 2-2z" />
-      <path d="M18 20h12" />
-      <path d="M18 28h8" />
+    <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 12h14" />
+      <path d="m12 5 7 7-7 7" />
+    </svg>
+  );
+}
+
+function CheckIconLarge() {
+  return (
+    <svg className="h-10 w-10 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <path d="m9 12 2 2 4-4" />
     </svg>
   );
 }

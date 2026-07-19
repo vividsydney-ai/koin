@@ -138,7 +138,7 @@ export function ProgressCardModal({ data, onClose }: ProgressCardProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-md rounded-radius-lg bg-surface p-5 shadow-lg">
+      <div className="w-full max-w-md rounded-lg bg-surface p-5 shadow-lg">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-bold text-foreground">Share your progress</h2>
           <button onClick={onClose} className="text-2xl text-muted-foreground">
@@ -152,20 +152,20 @@ export function ProgressCardModal({ data, onClose }: ProgressCardProps) {
           <img
             src={imageUrl}
             alt="Progress card"
-            className="w-full rounded-radius-md"
+            className="w-full rounded-md"
           />
         )}
 
         <div className="mt-4 grid grid-cols-2 gap-3">
           <button
             onClick={handleDownload}
-            className="rounded-radius-md bg-muted py-2.5 text-sm font-semibold text-foreground active:opacity-90"
+            className="rounded-md bg-muted py-2.5 text-sm font-semibold text-foreground active:opacity-90"
           >
             Download
           </button>
           <button
             onClick={handleShare}
-            className="rounded-radius-md bg-primary py-2.5 text-sm font-semibold text-primary-foreground active:opacity-90"
+            className="rounded-md bg-primary py-2.5 text-sm font-semibold text-primary-foreground active:opacity-90"
           >
             Share
           </button>

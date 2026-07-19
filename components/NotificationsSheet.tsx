@@ -42,7 +42,7 @@ export function NotificationBell({ userId }: NotificationsSheetProps) {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="relative rounded-radius-md p-2 text-foreground hover:bg-surface-raised"
+        className="relative rounded-md p-2 text-foreground hover:bg-surface-raised"
         aria-label="Notifications"
       >
         <BellIcon className="h-6 w-6" />
@@ -64,7 +64,7 @@ export function NotificationBell({ userId }: NotificationsSheetProps) {
               <h2 className="text-lg font-bold text-foreground">Notifications</h2>
               <button
                 onClick={() => setOpen(false)}
-                className="rounded-radius-md p-2 text-muted-foreground hover:bg-surface-raised"
+                className="rounded-md p-2 text-muted-foreground hover:bg-surface-raised"
                 aria-label="Close"
               >
                 ✕
@@ -74,7 +74,7 @@ export function NotificationBell({ userId }: NotificationsSheetProps) {
             {loading ? (
               <div className="space-y-3">
                 {Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="h-20 animate-pulse rounded-radius-md bg-muted" />
+                  <div key={i} className="h-20 animate-pulse rounded-md bg-muted" />
                 ))}
               </div>
             ) : notifications.length === 0 ? (
@@ -85,7 +85,7 @@ export function NotificationBell({ userId }: NotificationsSheetProps) {
                   <button
                     key={n.id}
                     onClick={() => handleMarkRead(n.id)}
-                    className={`w-full rounded-radius-md border p-4 text-left transition-colors ${
+                    className={`w-full rounded-md border p-4 text-left transition-colors ${
                       n.readAt
                         ? "border-border bg-surface opacity-70"
                         : "border-primary/30 bg-primary/5"

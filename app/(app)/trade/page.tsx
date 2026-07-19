@@ -242,7 +242,7 @@ function LockedState({
   totalRequired: number;
 }) {
   return (
-    <div className="rounded-radius-lg border border-dashed border-muted bg-surface p-6 text-center">
+    <div className="rounded-lg border border-dashed border-muted bg-surface p-6 text-center">
       <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-warning/10 text-2xl">
         🔒
       </div>
@@ -269,7 +269,7 @@ function PortfolioSummaryCard({
   const positive = totalReturnPct >= 0;
 
   return (
-    <div className="rounded-radius-lg border border-muted/60 bg-surface p-4 shadow-sm">
+    <div className="rounded-lg border border-muted/60 bg-surface p-4 shadow-sm">
       <div className="flex items-start justify-between">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
@@ -336,15 +336,15 @@ function OrderCard({
   const maxSellLots = holding ? Math.floor(holding.shares / SHARES_PER_LOT) : 0;
 
   return (
-    <div className="rounded-radius-lg border border-muted/60 bg-surface p-4 shadow-sm">
+    <div className="rounded-lg border border-muted/60 bg-surface p-4 shadow-sm">
       <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
         Place an order
       </p>
 
-      <div className="mt-4 grid grid-cols-2 gap-2 rounded-radius-md bg-muted p-1">
+      <div className="mt-4 grid grid-cols-2 gap-2 rounded-md bg-muted p-1">
         <button
           onClick={() => setTradeType("buy")}
-          className={`rounded-radius-sm py-2 text-sm font-semibold transition-colors ${
+          className={`rounded-sm py-2 text-sm font-semibold transition-colors ${
             tradeType === "buy"
               ? "bg-surface text-success shadow-sm"
               : "text-muted-foreground hover:text-foreground"
@@ -354,7 +354,7 @@ function OrderCard({
         </button>
         <button
           onClick={() => setTradeType("sell")}
-          className={`rounded-radius-sm py-2 text-sm font-semibold transition-colors ${
+          className={`rounded-sm py-2 text-sm font-semibold transition-colors ${
             tradeType === "sell"
               ? "bg-surface text-danger shadow-sm"
               : "text-muted-foreground hover:text-foreground"
@@ -373,7 +373,7 @@ function OrderCard({
             id="symbol"
             value={symbol}
             onChange={(e) => setSymbol(e.target.value)}
-            className="mt-1.5 w-full rounded-radius-md border border-muted bg-background px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary"
+            className="mt-1.5 w-full rounded-md border border-muted bg-background px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary"
           >
             {marketData.map((m) => (
               <option key={m.symbol} value={m.symbol}>
@@ -397,7 +397,7 @@ function OrderCard({
               const n = parseInt(e.target.value, 10);
               setLotCount(Number.isNaN(n) ? 1 : Math.max(1, n));
             }}
-            className="mt-1.5 w-full rounded-radius-md border border-muted bg-background px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary"
+            className="mt-1.5 w-full rounded-md border border-muted bg-background px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary"
           />
           {tradeType === "buy" && (
             <p className="mt-1 text-xs text-muted-foreground">
@@ -411,7 +411,7 @@ function OrderCard({
           )}
         </div>
 
-        <div className="rounded-radius-md bg-muted p-3">
+        <div className="rounded-md bg-muted p-3">
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">Price per share</span>
             <span className="font-medium text-foreground">
@@ -427,12 +427,12 @@ function OrderCard({
         </div>
 
         {error && (
-          <div className="rounded-radius-md border border-danger/30 bg-danger/5 px-3 py-2.5 text-sm text-danger">
+          <div className="rounded-md border border-danger/30 bg-danger/5 px-3 py-2.5 text-sm text-danger">
             {error}
           </div>
         )}
         {success && (
-          <div className="rounded-radius-md border border-success/30 bg-success/5 px-3 py-2.5 text-sm text-success">
+          <div className="rounded-md border border-success/30 bg-success/5 px-3 py-2.5 text-sm text-success">
             {success}
           </div>
         )}
@@ -440,7 +440,7 @@ function OrderCard({
         <button
           onClick={onExecute}
           disabled={!canSubmit}
-          className={`w-full rounded-radius-md py-3.5 text-sm font-semibold text-white shadow-sm transition-all active:scale-[0.98] disabled:opacity-50 ${
+          className={`w-full rounded-md py-3.5 text-sm font-semibold text-white shadow-sm transition-all active:scale-[0.98] disabled:opacity-50 ${
             tradeType === "buy" ? "bg-success hover:bg-success/90" : "bg-danger hover:bg-danger/90"
           }`}
         >
@@ -471,7 +471,7 @@ function HoldingsCard({
   }
 
   return (
-    <div className="rounded-radius-lg border border-muted/60 bg-surface p-4 shadow-sm">
+    <div className="rounded-lg border border-muted/60 bg-surface p-4 shadow-sm">
       <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
         Holdings
       </p>
@@ -490,7 +490,7 @@ function HoldingsCard({
           return (
             <div
               key={h.id}
-              className="flex items-center justify-between rounded-radius-md border border-muted/40 bg-background p-3"
+              className="flex items-center justify-between rounded-md border border-muted/40 bg-background p-3"
             >
               <div>
                 <p className="font-semibold text-foreground">{h.symbol}</p>
@@ -527,7 +527,7 @@ function TradesCard({ trades }: { trades: Trade[] }) {
   }
 
   return (
-    <div className="rounded-radius-lg border border-muted/60 bg-surface p-4 shadow-sm">
+    <div className="rounded-lg border border-muted/60 bg-surface p-4 shadow-sm">
       <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
         Recent trades
       </p>
@@ -535,11 +535,11 @@ function TradesCard({ trades }: { trades: Trade[] }) {
         {trades.slice(0, 20).map((t) => (
           <div
             key={t.id}
-            className="flex items-center justify-between rounded-radius-md border border-muted/40 bg-background p-3"
+            className="flex items-center justify-between rounded-md border border-muted/40 bg-background p-3"
           >
             <div className="flex items-center gap-3">
               <span
-                className={`rounded-radius-sm px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
+                className={`rounded-sm px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
                   t.tradeType === "buy"
                     ? "bg-success/10 text-success"
                     : "bg-danger/10 text-danger"
@@ -575,7 +575,7 @@ function DataDisclaimer({ marketData }: { marketData: MarketData[] }) {
   const hasSimulated = marketData.some((m) => m.isSimulated);
 
   return (
-    <div className="rounded-radius-md border border-warning/20 bg-warning/5 p-3 text-xs leading-relaxed text-muted-foreground">
+    <div className="rounded-md border border-warning/20 bg-warning/5 p-3 text-xs leading-relaxed text-muted-foreground">
       <span className="font-semibold text-foreground">Data disclaimer:</span>{" "}
       Prices are delayed and for paper-trading practice only. Latest data:{" "}
       {latestDate ? new Date(latestDate).toLocaleDateString("id-ID") : "—"}.
@@ -586,7 +586,7 @@ function DataDisclaimer({ marketData }: { marketData: MarketData[] }) {
 
 function PortfolioSummarySkeleton() {
   return (
-    <div className="rounded-radius-lg border border-muted/60 bg-surface p-4 shadow-sm">
+    <div className="rounded-lg border border-muted/60 bg-surface p-4 shadow-sm">
       <div className="flex items-start justify-between">
         <div className="w-full">
           <div className="h-3 w-24 animate-pulse rounded bg-muted" />
@@ -604,22 +604,22 @@ function PortfolioSummarySkeleton() {
 
 function OrderCardSkeleton() {
   return (
-    <div className="rounded-radius-lg border border-muted/60 bg-surface p-4 shadow-sm">
+    <div className="rounded-lg border border-muted/60 bg-surface p-4 shadow-sm">
       <div className="h-3 w-24 animate-pulse rounded bg-muted" />
-      <div className="mt-4 grid grid-cols-2 gap-2 rounded-radius-md bg-muted p-1">
-        <div className="h-9 animate-pulse rounded-radius-sm bg-background" />
-        <div className="h-9 animate-pulse rounded-radius-sm bg-background" />
+      <div className="mt-4 grid grid-cols-2 gap-2 rounded-md bg-muted p-1">
+        <div className="h-9 animate-pulse rounded-sm bg-background" />
+        <div className="h-9 animate-pulse rounded-sm bg-background" />
       </div>
       <div className="mt-4 space-y-4">
         <div>
           <div className="h-4 w-12 animate-pulse rounded bg-muted" />
-          <div className="mt-1.5 h-10 w-full animate-pulse rounded-radius-md bg-muted" />
+          <div className="mt-1.5 h-10 w-full animate-pulse rounded-md bg-muted" />
         </div>
         <div>
           <div className="h-4 w-24 animate-pulse rounded bg-muted" />
-          <div className="mt-1.5 h-10 w-full animate-pulse rounded-radius-md bg-muted" />
+          <div className="mt-1.5 h-10 w-full animate-pulse rounded-md bg-muted" />
         </div>
-        <div className="rounded-radius-md bg-muted p-3">
+        <div className="rounded-md bg-muted p-3">
           <div className="flex items-center justify-between">
             <div className="h-4 w-28 animate-pulse rounded bg-background" />
             <div className="h-4 w-20 animate-pulse rounded bg-background" />
@@ -629,7 +629,7 @@ function OrderCardSkeleton() {
             <div className="h-4 w-24 animate-pulse rounded bg-background" />
           </div>
         </div>
-        <div className="h-12 w-full animate-pulse rounded-radius-md bg-muted" />
+        <div className="h-12 w-full animate-pulse rounded-md bg-muted" />
       </div>
     </div>
   );
@@ -637,10 +637,10 @@ function OrderCardSkeleton() {
 
 function HoldingsCardSkeleton() {
   return (
-    <div className="rounded-radius-lg border border-muted/60 bg-surface p-4 shadow-sm">
+    <div className="rounded-lg border border-muted/60 bg-surface p-4 shadow-sm">
       <div className="h-3 w-20 animate-pulse rounded bg-muted" />
       <div className="mt-3 space-y-3">
-        <div className="flex items-center justify-between rounded-radius-md border border-muted/40 bg-background p-3">
+        <div className="flex items-center justify-between rounded-md border border-muted/40 bg-background p-3">
           <div>
             <div className="h-5 w-16 animate-pulse rounded bg-muted" />
             <div className="mt-1 h-3 w-32 animate-pulse rounded bg-muted" />
@@ -657,12 +657,12 @@ function HoldingsCardSkeleton() {
 
 function TradesCardSkeleton() {
   return (
-    <div className="rounded-radius-lg border border-muted/60 bg-surface p-4 shadow-sm">
+    <div className="rounded-lg border border-muted/60 bg-surface p-4 shadow-sm">
       <div className="h-3 w-24 animate-pulse rounded bg-muted" />
       <div className="mt-3 space-y-2">
-        <div className="flex items-center justify-between rounded-radius-md border border-muted/40 bg-background p-3">
+        <div className="flex items-center justify-between rounded-md border border-muted/40 bg-background p-3">
           <div className="flex items-center gap-3">
-            <div className="h-5 w-12 animate-pulse rounded-radius-sm bg-muted" />
+            <div className="h-5 w-12 animate-pulse rounded-sm bg-muted" />
             <div>
               <div className="h-4 w-12 animate-pulse rounded bg-muted" />
               <div className="mt-1 h-3 w-28 animate-pulse rounded bg-muted" />

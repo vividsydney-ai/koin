@@ -146,7 +146,7 @@ export default function SignupPage() {
         )}
 
         {info && (
-          <p className="mb-4 rounded-radius-md bg-success/10 p-3 text-sm text-success">
+          <p className="mb-4 rounded-md bg-success/10 p-3 text-sm text-success">
             {info}
           </p>
         )}

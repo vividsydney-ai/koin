@@ -49,12 +49,12 @@ function AppShell({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-screen flex-col bg-background">
       <header className="sticky top-0 z-30 border-b border-border bg-background/95 px-4 py-3 backdrop-blur-md">
         <div className="mx-auto flex max-w-md items-center justify-between">
-          <span className="text-xl font-bold tracking-tight text-foreground">Koin</span>
+          <span className="font-display text-xl font-bold tracking-tight text-foreground">Koinaku</span>
           {user && <NotificationBell userId={user.id} />}
         </div>
       </header>
 
-      <main className="flex-1 pb-24">{children}</main>
+      <main className="mx-auto max-w-md flex-1 pb-24">{children}</main>
 
       <nav className="fixed bottom-0 left-0 right-0 border-t border-border bg-surface">
         <ul className="mx-auto flex max-w-md justify-around">
@@ -69,7 +69,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
                   href={item.href}
                   className={`flex min-h-[44px] min-w-[44px] flex-col items-center justify-center px-2 py-1 text-xs transition-colors ${
                     isActive
-                      ? "font-semibold text-primary"
+                      ? "font-bold text-primary"
                       : "font-normal text-muted-foreground"
                   }`}
                   aria-current={isActive ? "page" : undefined}

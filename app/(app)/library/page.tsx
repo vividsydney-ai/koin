@@ -108,7 +108,7 @@ export default function LibraryPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by title, local title, or organization"
-          className="w-full rounded-radius-md border border-muted bg-background px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary"
+          className="w-full rounded-md border border-muted bg-background px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary"
         />
       </div>
 
@@ -168,7 +168,7 @@ export default function LibraryPage() {
           <SourceCardSkeleton />
         </div>
       ) : filtered.length === 0 ? (
-        <div className="rounded-radius-lg border border-dashed border-muted bg-surface p-6 text-center">
+        <div className="rounded-lg border border-dashed border-muted bg-surface p-6 text-center">
           <p className="text-sm text-muted-foreground">No sources match your filters.</p>
           {activeFilterCount > 0 && (
             <button
@@ -198,63 +198,140 @@ function SourceCard({ source }: { source: Source }) {
   const activeSynopsis = locale === "id" ? (source.synopsisId ?? source.synopsis) : source.synopsis;
   const activeRelevance = locale === "id" ? (source.relevanceBlurbId ?? source.relevanceBlurb) : source.relevanceBlurb;
   const hasDetails = Boolean(activeSynopsis || activeRelevance);
+  const blurb = activeSynopsis || activeRelevance;
+  const isTier1 = source.sourceTier === 1;
 
-  const titleContent = (
-    <>
-      <div className="mb-2 flex flex-wrap items-center gap-2">
-        <span
-          className={`rounded-radius-sm border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${TIER_CLASSES[source.sourceTier]}`}
-        >
-          {TIER_LABELS[source.sourceTier]}
-        </span>
-        <span className="rounded-radius-sm bg-muted px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-          {source.sourceType}
-        </span>
-        <span className="rounded-radius-sm bg-muted px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-          {STATUS_LABELS[source.status]}
-        </span>
-      </div>
-      <h2 className="text-base font-semibold text-foreground">{source.title}</h2>
-      {source.localTitle && source.localTitle !== source.title && (
-        <p className="text-sm text-muted-foreground">{source.localTitle}</p>
-      )}
-      <p className="mt-1 text-xs text-muted-foreground">
-        {source.organization}
-        {source.publicationYear ? ` · ${source.publicationYear}` : ""}
-        {source.language ? ` · ${source.language.toUpperCase()}` : ""}
-      </p>
-    </>
-  );
+  if (isTier1) {
+    return (
+      <article className="rounded-card border border-primary/30 bg-gradient-to-br from-[var(--rup-orbit-900)] to-[#0b0916] p-5 text-white transition-colors hover:border-primary/50">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-white">
+            <FileTextIcon size={14} />
+            {TIER_LABELS[source.sourceTier]}
+          </span>
+          <span className="rounded-md bg-white/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white/90">
+            {source.sourceType}
+          </span>
+          <StatusPill status={source.status} variant="dark" />
+        </div>
+        <h2 className="mt-3 font-display text-lg font-bold text-white">{source.title}</h2>
+        {source.localTitle && source.localTitle !== source.title && (
+          <p className="mt-1 text-sm text-white/70">{source.localTitle}</p>
+        )}
+        <p className="mt-1 text-sm text-white/70">
+          {source.organization}
+          {source.publicationYear ? ` · ${source.publicationYear}` : ""}
+          {source.language ? ` · ${source.language.toUpperCase()}` : ""}
+        </p>
+        {blurb && (
+          <p className={`mt-3 text-sm leading-relaxed text-white/80 ${expanded ? "" : "line-clamp-3"}`}>
+            {blurb}
+          </p>
+        )}
+        <div className="mt-3 flex flex-wrap items-center gap-4">
+          {source.url && (
+            <a
+              href={source.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-sm font-bold text-white/90 hover:text-white"
+            >
+              {t("lesson.readSource")}
+              <ArrowRightIcon />
+            </a>
+          )}
+          {hasDetails && (
+            <button
+              type="button"
+              onClick={() => setExpanded((e) => !e)}
+              aria-expanded={expanded}
+              className="inline-flex items-center gap-1 text-sm font-bold text-white/90 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 rounded-md"
+            >
+              {expanded ? t("library.showLess") : t("library.readMore")}
+              <ChevronIcon expanded={expanded} />
+            </button>
+          )}
+        </div>
+        {expanded && (
+          <div className="mt-4 space-y-3 border-t border-white/10 pt-3">
+            {activeSynopsis && (
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/60">
+                  {t("library.synopsis")}
+                </p>
+                <p className="mt-1 text-sm leading-relaxed text-white/80">{activeSynopsis}</p>
+              </div>
+            )}
+            {activeRelevance && (
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/60">
+                  {t("library.relevance")}
+                </p>
+                <p className="mt-1 text-sm leading-relaxed text-white/80">{activeRelevance}</p>
+              </div>
+            )}
+          </div>
+        )}
+      </article>
+    );
+  }
 
   return (
-    <div className="rounded-radius-lg border border-muted/60 bg-surface p-4 shadow-sm transition-colors hover:border-primary/30">
-      {source.url ? (
-        <a
-          href={source.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-radius-md"
-        >
-          {titleContent}
-        </a>
-      ) : (
-        titleContent
-      )}
-
-      {hasDetails && (
-        <button
-          type="button"
-          onClick={() => setExpanded((e) => !e)}
-          aria-expanded={expanded}
-          className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-radius-sm"
-        >
-          {expanded ? t("library.showLess") : t("library.readMore")}
-          <ChevronIcon expanded={expanded} />
-        </button>
-      )}
-
+    <article className="rounded-card border border-muted bg-surface p-4 grid grid-cols-[80px_minmax(0,1fr)] gap-4 transition-colors hover:border-primary/30">
+      <div className="flex h-20 w-full items-center justify-center rounded-md bg-gradient-to-br from-primary/10 to-surface-raised text-primary">
+        {source.sourceType.toLowerCase().includes("news") || source.sourceType.toLowerCase().includes("article") ? (
+          <NewspaperIcon size={26} />
+        ) : (
+          <FileTextIcon size={26} />
+        )}
+      </div>
+      <div className="grid min-w-0 content-start gap-1.5">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className={`rounded-md border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${TIER_CLASSES[source.sourceTier]}`}>
+            {TIER_LABELS[source.sourceTier]}
+          </span>
+          <span className="rounded-md bg-muted px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+            {source.sourceType}
+          </span>
+          <StatusPill status={source.status} variant="light" />
+        </div>
+        <h2 className="font-display text-base font-bold text-foreground">{source.title}</h2>
+        {source.localTitle && source.localTitle !== source.title && (
+          <p className="text-sm text-muted-foreground">{source.localTitle}</p>
+        )}
+        <p className="text-xs text-muted-foreground">
+          {source.organization}
+          {source.publicationYear ? ` · ${source.publicationYear}` : ""}
+          {source.language ? ` · ${source.language.toUpperCase()}` : ""}
+        </p>
+        {blurb && <p className="text-sm text-muted-foreground line-clamp-2">{blurb}</p>}
+        <div className="mt-1 flex flex-wrap items-center gap-4">
+          {source.url && (
+            <a
+              href={source.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline"
+            >
+              {t("lesson.readSource")}
+              <ExternalLinkIcon />
+            </a>
+          )}
+          {hasDetails && (
+            <button
+              type="button"
+              onClick={() => setExpanded((e) => !e)}
+              aria-expanded={expanded}
+              className="inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-md"
+            >
+              {expanded ? t("library.showLess") : t("library.readMore")}
+              <ChevronIcon expanded={expanded} />
+            </button>
+          )}
+        </div>
+      </div>
       {expanded && (
-        <div className="mt-3 space-y-3 border-t border-muted pt-3">
+        <div className="col-span-2 mt-2 space-y-3 border-t border-muted pt-3">
           {activeSynopsis && (
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
@@ -273,8 +350,29 @@ function SourceCard({ source }: { source: Source }) {
           )}
         </div>
       )}
-    </div>
+    </article>
   );
+}
+
+function StatusPill({ status, variant }: { status: Source["status"]; variant: "dark" | "light" }) {
+  const label = STATUS_LABELS[status];
+  const base = variant === "dark"
+    ? "rounded-md bg-white/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide"
+    : "rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide";
+  const tone = variant === "dark"
+    ? status === "verified"
+      ? "text-success"
+      : status === "needs_review"
+      ? "text-warning"
+      : "text-white/70"
+    : status === "verified"
+    ? "bg-success/10 text-success"
+    : status === "needs_review"
+    ? "bg-warning/10 text-warning"
+    : status === "use_carefully"
+    ? "bg-info/10 text-info"
+    : "bg-muted text-muted-foreground";
+  return <span className={`${base} ${tone}`}>{label}</span>;
 }
 
 function ChevronIcon({ expanded }: { expanded: boolean }) {
@@ -293,15 +391,61 @@ function ChevronIcon({ expanded }: { expanded: boolean }) {
   );
 }
 
+function FileTextIcon({ size = 24 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+      <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+      <path d="M10 9H8" />
+      <path d="M16 13H8" />
+      <path d="M16 17H8" />
+    </svg>
+  );
+}
+
+function NewspaperIcon({ size = 24 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-4 0v-9a2 2 0 0 1 2-2h2" />
+      <path d="M10 6h8" />
+      <path d="M10 10h8" />
+      <path d="M10 14h5" />
+    </svg>
+  );
+}
+
+function ExternalLinkIcon() {
+  return (
+    <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M15 3h6v6" />
+      <path d="M10 14 21 3" />
+      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+    </svg>
+  );
+}
+
+function ArrowRightIcon() {
+  return (
+    <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 12h14" />
+      <path d="m12 5 7 7-7 7" />
+    </svg>
+  );
+}
+
 function SourceCardSkeleton() {
   return (
-    <div className="rounded-radius-lg border border-muted/60 bg-surface p-4 shadow-sm">
-      <div className="mb-2 flex gap-2">
-        <div className="h-5 w-24 animate-pulse rounded-radius-sm bg-muted" />
-        <div className="h-5 w-16 animate-pulse rounded-radius-sm bg-muted" />
+    <div className="rounded-card border border-muted bg-surface p-4 grid grid-cols-[80px_minmax(0,1fr)] gap-4">
+      <div className="h-20 w-full animate-pulse rounded-md bg-muted" />
+      <div className="grid content-start gap-1.5">
+        <div className="flex gap-2">
+          <div className="h-5 w-20 animate-pulse rounded-md bg-muted" />
+          <div className="h-5 w-16 animate-pulse rounded-md bg-muted" />
+        </div>
+        <div className="h-5 w-3/4 animate-pulse rounded bg-muted" />
+        <div className="h-4 w-1/2 animate-pulse rounded bg-muted" />
+        <div className="mt-1 h-4 w-full animate-pulse rounded bg-muted" />
       </div>
-      <div className="h-5 w-3/4 animate-pulse rounded bg-muted" />
-      <div className="mt-1 h-4 w-1/2 animate-pulse rounded bg-muted" />
     </div>
   );
 }
