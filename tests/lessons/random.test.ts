@@ -22,6 +22,16 @@ describe("random", () => {
     expect(a).not.toBe(b);
   });
 
+  it("seededIndex returns a valid integer index", () => {
+    const length = 10;
+    for (let i = 0; i < 200; i++) {
+      const value = seededIndex(`seed-${i}`, length);
+      expect(Number.isInteger(value)).toBe(true);
+      expect(value).toBeGreaterThanOrEqual(0);
+      expect(value).toBeLessThan(length);
+    }
+  });
+
   it("seededShuffle produces different orders for different seeds", () => {
     const array = ["a", "b", "c", "d", "e"];
     const shuffledA = seededShuffle("seed-a", array);

@@ -79,7 +79,7 @@ export default function FriendsPage() {
   const pendingFriends = friends.filter((f) => f.status === "pending");
 
   return (
-    <main className="min-h-screen bg-background p-5 pb-28">
+    <main className="min-h-screen bg-background p-5 pb-32">
       <header className="mb-6">
         <p className="text-sm text-muted-foreground">{t("friends.inviteBody")}</p>
         <h1 className="text-2xl font-bold tracking-tight text-foreground">{t("friends.inviteTitle")}</h1>
@@ -91,7 +91,7 @@ export default function FriendsPage() {
           <div className="h-24 animate-pulse rounded-card bg-muted" />
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
           <div className="space-y-5">
             <InviteCard
               userId={user?.id ?? ""}
@@ -539,7 +539,7 @@ function CohortSection({
               <button
                 onClick={() => setCreateOpen(true)}
                 disabled={!canCreateMore}
-                className="rounded-md bg-foreground px-3 py-1.5 text-xs font-semibold text-background transition-opacity hover:opacity-90 active:opacity-80 disabled:opacity-50"
+                className="rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground transition-opacity hover:opacity-90 active:opacity-80 disabled:opacity-50"
               >
                 {t("friends.createCohort")}
               </button>

@@ -20,7 +20,7 @@ export function mulberry32(seed: string) {
 
 export function seededIndex(seed: string, length: number): number {
   if (length <= 1) return 0;
-  return Math.abs(mulberry32(seed)()) % length;
+  return Math.floor(mulberry32(seed)() * length);
 }
 
 export function seededShuffle<T>(seed: string, array: T[]): T[] {

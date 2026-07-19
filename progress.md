@@ -2,6 +2,33 @@
 # Loop reads and writes this. Human can also read to understand where we are.
 # v2: MVP reshaped around paper trading. Original v1 loop files archived in /_archived.
 
+## 2026-07-19 — KO-RESP-001: responsive /learn, lesson content polish, quiz variety, friends/cohort polish
+
+- **Goal:** Make Koinaku fully responsive and polish lesson/library/friends/cohort per the v4 design system.
+- **Swarm execution:** Conductor (kimi-code) → Maker A (responsive /learn grid) → Maker B (LessonPlayer quiz robustness + content formatting) → Maker C (friends/cohort UI polish) → Verifier (browse smoke tests).
+- **Root cause found:** `lib/lessons/random.ts` `seededIndex` returned a floating-point index (`Math.abs(rng() % length)`) instead of an integer, causing `pool[index]` to be `undefined` and falling back to the generic true/false quiz. Fixed to `Math.floor(rng() * length)` and added a regression test.
+- **Changes landed:**
+  - `app/(app)/layout.tsx`: widened app shell to `xl:max-w-7xl` / `2xl:max-w-[1440px]` so desktop pages use full width.
+  - `app/(app)/learn/page.tsx`: responsive chapter grid (`grid-cols-1 md:grid-cols-2 lg:grid-cols-3`).
+  - `app/learn/[slug]/LessonPlayer.tsx`: section kickers with icons, shorter paragraphs, robust quiz selection fallback, removed generic i18n fallback, added `console.error` logging for variant selection failures.
+  - `lib/lessons/question.ts`: normalize legacy `yes_no` to `swipe_yes_no` so yes/no variants render.
+  - `lib/lessons/random.ts`: fixed `seededIndex` to return a valid integer index.
+  - `lib/i18n/dictionaries.ts`: added `lesson.tryThis` and `lesson.noQuestionAvailable`; removed generic `quiz.fallbackStatement` / `quiz.fallbackExplanation` keys.
+  - `app/(app)/friends/page.tsx`: primary-brand "Create a cohort" button, increased bottom padding so empty state clears bottom nav, 2-column responsive layout on `md`+.
+  - `tests/lessons/random.test.ts`: added regression test asserting `seededIndex` returns an integer in `[0, length)`.
+- **Deploy:** Vercel project `koin-web-koinaku` aliased to `https://web.koinaku.com`.
+- **Verification:**
+  - `npm run loop:gates` ✅ all gates passed (tsc, tests 376/5 skipped, diff scan, design-token drift, secret scan).
+  - gstack browse authenticated smoke test at 375/768/1280/1440:
+    - `/learn` responsive 1/2/3-column grid confirmed.
+    - Lesson content shows section kickers + icons + shorter paragraphs.
+    - Quiz step cycles through multiple_choice, true_false, fill_blank (no generic fallback).
+    - Lesson completion succeeds (+35 XP, badge earned) with no "save progress" error.
+    - `/library` responsive 3-column light-themed source cards.
+    - `/friends` 2-column layout, cohort creation works, invite code/link generated.
+  - Test cohort and QA lesson progress cleaned up after smoke test.
+- **Linear:** KO-REPLAY-002 resolved; create/update issues for responsive polish and quiz variety as needed.
+
 ## 2026-07-19 — KO-BATCH-007: cache purge, ID content translation, friends invite, cohort creation, docs, identity
 
 - **Goal:** Polish after KO-LESSON-004: purge stale Vercel cache; finish Indonesian content parity; redesign friends invite with deep-link user card; add cohort creation with free/Pro gating; update deployment docs; create identity.md.
@@ -547,3 +574,44 @@ Apply Koinaku Design System v4 card patterns to lesson player, quiz cards, sourc
 **Follow-ups**
 - Manual QA of authenticated lesson player, quiz cards, and source cards with a real account.
 - Continue with recommended resources per lesson (TASKS.md next item).
+
+
+## 2026-07-19b — KO-RESP-001: responsive desktop/iPad, lesson content, quiz variety, cohort invites
+
+**Scope**
+Make Koinaku responsive on desktop/iPad/mobile, break lesson wall-of-text, ensure varied quiz questions, add cohort friend invites, and set Pro cohort limit to 10.
+
+**Changes**
+- `app/(app)/layout.tsx` — responsive app shell width.
+- `app/learn/[slug]/LessonPlayer.tsx` — widened player, structured lesson sections with icons/kickers, shorter paragraphs, responsive source cards.
+- `app/(app)/library/page.tsx` — 1/2/3-column responsive grid, light-theme source cards.
+- `components/lesson/QuizEngine.tsx` + `app/learn/[slug]/LessonPlayer.tsx` + `lib/lessons/client.ts` — Yes/No UI, question type rotation, avoid recent repeats.
+- `app/(app)/friends/page.tsx` — responsive 2-column layout, cohort cards grid, invite accepted friends UI.
+- `lib/cohorts/client.ts` + `supabase/migrations/20260719095526_cohort_pro_limit_and_friend_invite.sql` — `invite_friend_to_cohort` RPC, Pro limit = 10.
+- `lib/i18n/dictionaries.ts` — new lesson, quiz, cohort strings.
+- Updated tests for new shapes.
+
+**Gate results**
+- `npm run type-check`: clean
+- `npm run lint`: 0 errors, 24 pre-existing warnings
+- `npm run test`: 375 passed / 5 skipped
+- `npm run build`: clean
+- `npm run loop:design-drift`: clean
+
+**Supabase**
+- Pushed migration `20260719095526_cohort_pro_limit_and_friend_invite.sql`.
+- `create_cohort` Pro limit = 10, `invite_friend_to_cohort` RPC live.
+
+**Deploy**
+- Vercel production deploy: `https://koin-web-koinaku-27fbpa7u7-vividsydney.vercel.app` aliased to `https://web.koinaku.com`
+
+**QA**
+- Browse responsive screenshots confirm `/library` skeleton grid: 1 col mobile, 2 cols tablet, 3 cols desktop.
+- `/login` loads; app shell wider on desktop.
+- Authenticated pages (`/learn`, `/friends`, lesson player) could not be verified headless due to Turnstile blocking automated login.
+
+**Linear**
+- Created/adopted KO-RESP-001 and moved to Done.
+
+**Follow-ups**
+- Manual QA with real account: lesson content formatting, quiz variety, source card light theme, friends/cohort layout and invites.

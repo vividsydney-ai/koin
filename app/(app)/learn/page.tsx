@@ -250,13 +250,13 @@ export default function LearnPage() {
       )}
 
       {loading ? (
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="h-16 animate-pulse rounded-lg bg-muted" />
           ))}
         </div>
       ) : (
-        <div className="space-y-4" role="list" aria-label="Chapters">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3" role="list" aria-label="Chapters">
           {chapters.map((chapter) => (
             <ChapterCard
               key={chapter.title}

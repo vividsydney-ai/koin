@@ -61,6 +61,12 @@ function pickRotatedQuestionVariant(
     if (differentType.length > 0) pool = differentType;
   }
 
+  // Defensive fallback: if rotation constraints eliminated every variant,
+  // still return a valid question rather than falling back to a generic.
+  if (pool.length === 0) {
+    pool = infos;
+  }
+
   const index = seededIndex(seed, pool.length);
   return pool[index]?.variant ?? null;
 }
@@ -97,7 +103,6 @@ export default function LessonPlayer({
   const [completing, setCompleting] = useState(false);
   const [completionError, setCompletionError] = useState<string | null>(null);
   const [showSummary, setShowSummary] = useState(false);
-  const [literacyLevel, setLiteracyLevel] = useState<string | null>(null);
   const [shownVariantIds, setShownVariantIds] = useState<Set<string>>(new Set());
   const [shownQuestionVariantIds, setShownQuestionVariantIds] = useState<Set<string>>(new Set());
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -195,6 +200,15 @@ export default function LessonPlayer({
           }
         }
 
+        if (!processedQuestion) {
+          console.error("LessonPlayer: no valid question variant could be selected", {
+            lessonId: data.id,
+            slug: data.slug,
+            variantCount: fetchedQuestionVariants.length,
+            validVariantCount: questionInfos.length,
+          });
+        }
+
         setLesson(data);
         setExampleVariant(example);
         setExampleVariants(exampleVariants);
@@ -202,7 +216,6 @@ export default function LessonPlayer({
         setQuestionVariants(questionVariants);
         setActiveQuestion(processedQuestion);
         setSources(sourceData);
-        setLiteracyLevel(level);
         setAlreadyCompleted(lessonStatus === "completed");
         setShownVariantIds(new Set(example ? [example.id] : []));
         setShownQuestionVariantIds(new Set(processedQuestion?.variantId ? [processedQuestion.variantId] : []));
@@ -232,6 +245,9 @@ export default function LessonPlayer({
     return () => {
       mounted = false;
     };
+    // `t` is a stable i18n function from LocaleProvider; including it would
+    // force unnecessary reloads in tests that mock the hook per-render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug, user, retryCounter, locale]);
 
 
@@ -478,9 +494,7 @@ export default function LessonPlayer({
               )}
               {step === 3 && (
                 <QuizStep
-                  lesson={lesson}
                   question={activeQuestion}
-                  onNext={nextStep}
                   onComplete={(correct) => {
                     setQuizDone(true);
                     setQuizCorrect(correct);
@@ -562,12 +576,26 @@ function IntroStep({ lesson }: { lesson: Lesson }) {
 
 function splitSentences(text: string): string[] {
   if (!text) return [];
-  if (text.length <= 200) return [text];
   const sentences = text
     .split(/(?<=[.!?])(?:\s+|$)/)
     .map((s) => s.trim())
     .filter((s) => s.length > 0);
-  return sentences.length > 0 ? sentences : [text];
+  if (sentences.length === 0) return [text];
+
+  // Keep paragraphs bite-sized: break very long sentences at natural pause markers.
+  const chunks: string[] = [];
+  for (const sentence of sentences) {
+    if (sentence.length <= 160) {
+      chunks.push(sentence);
+      continue;
+    }
+    const parts = sentence
+      .split(/(?<=[:;])(?:\s+|$)/)
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
+    chunks.push(...(parts.length > 1 ? parts : [sentence]));
+  }
+  return chunks;
 }
 
 function SplitParagraphs({
@@ -640,9 +668,7 @@ function ConceptStep({
 
   return (
     <article className="rounded-card border border-muted bg-surface p-5 shadow-sm">
-      <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-primary">
-        {t("lesson.theConcept")}
-      </span>
+      <SectionKicker icon={<BookIcon className="h-3.5 w-3.5" />} label={t("lesson.theConcept")} tone="primary" />
       <h2 className="mt-2 font-display text-lg font-bold text-foreground">
         {title}
       </h2>
@@ -736,9 +762,7 @@ function ExampleStep({
 
   return (
     <article className="rounded-card border border-muted bg-surface p-5 shadow-sm">
-      <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-primary">
-        {t("lesson.indonesianExample")}
-      </span>
+      <SectionKicker icon={<TargetIcon />} label={t("lesson.tryThis")} tone="primary" />
       <h2 className="mt-2 font-display text-lg font-bold text-foreground">
         {t("lesson.exampleHeading")}
       </h2>
@@ -779,31 +803,18 @@ function ExampleStep({
 }
 
 function QuizStep({
-  lesson,
   question,
-  onNext,
   onComplete,
   onAnotherQuestion,
   canShowAnotherQuestion,
 }: {
-  lesson: Lesson;
   question: ProcessedQuestion | null;
-  onNext: () => void;
   onComplete: (correct: boolean) => void;
   onAnotherQuestion?: () => ProcessedQuestion | null;
   canShowAnotherQuestion?: boolean;
 }) {
   const { t } = useLocale();
   if (!question) {
-    const fallbackQuestion: ProcessedQuestion = {
-      type: "true_false",
-      question: t("quiz.fallbackStatement"),
-      answer: true,
-      explanation: t("quiz.fallbackExplanation"),
-      parameters: {},
-      variantId: "fallback",
-    };
-
     return (
       <div className="space-y-5">
         <div>
@@ -812,15 +823,9 @@ function QuizStep({
             {t("lesson.quizHeading")}
           </h2>
         </div>
-        <QuizEngine
-          key="fallback"
-          question={fallbackQuestion}
-          seed="fallback"
-          onComplete={(correct) => {
-            onComplete(correct);
-            onNext();
-          }}
-        />
+        <div className="rounded-md border border-warning/30 bg-warning/5 px-4 py-3 text-sm text-warning">
+          {t("lesson.noQuestionAvailable")}
+        </div>
       </div>
     );
   }
@@ -1347,6 +1352,16 @@ function AlertIcon() {
       <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
       <path d="M12 9v4" />
       <path d="M12 17h.01" />
+    </svg>
+  );
+}
+
+function TargetIcon() {
+  return (
+    <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <circle cx="12" cy="12" r="6" />
+      <circle cx="12" cy="12" r="2" />
     </svg>
   );
 }

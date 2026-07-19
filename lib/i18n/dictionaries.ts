@@ -41,9 +41,11 @@ export interface Dictionary {
   "lesson.backToMainExample": string;
   "lesson.commonMistake": string;
   "lesson.whyItMatters": string;
+  "lesson.tryThis": string;
   "lesson.quickCheck": string;
   "lesson.quizHeading": string;
   "lesson.tryAnotherQuestion": string;
+  "lesson.noQuestionAvailable": string;
   "lesson.sourceTrust": string;
   "lesson.sourceHeading": string;
   "lesson.sourceBody": string;
@@ -70,8 +72,6 @@ export interface Dictionary {
 
   // Quiz engine
   "quiz.correctAnswer": string;
-  "quiz.fallbackStatement": string;
-  "quiz.fallbackExplanation": string;
   "quiz.true": string;
   "quiz.false": string;
   "quiz.yes": string;
@@ -279,9 +279,11 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "lesson.backToMainExample": "Back to main example",
     "lesson.commonMistake": "Common mistake",
     "lesson.whyItMatters": "Why it matters",
+    "lesson.tryThis": "Try this",
     "lesson.quickCheck": "Quick check",
     "lesson.quizHeading": "Test your understanding",
     "lesson.tryAnotherQuestion": "Try another question",
+    "lesson.noQuestionAvailable": "No question is available for this lesson.",
     "lesson.sourceTrust": "Source trust",
     "lesson.sourceHeading": "Where this comes from",
     "lesson.sourceBody":
@@ -309,8 +311,6 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "lesson.chapterLabel": "Chapter {chapterNumber} · Lesson {lessonNumber} of {total}",
 
     "quiz.correctAnswer": "Correct answer:",
-    "quiz.fallbackStatement": "Understanding this concept is important for managing money well.",
-    "quiz.fallbackExplanation": "Grasping the basics helps you make smarter everyday money choices.",
     "quiz.true": "True",
     "quiz.false": "False",
     "quiz.yes": "Yes",
@@ -510,9 +510,11 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "lesson.backToMainExample": "Kembali ke contoh utama",
     "lesson.commonMistake": "Kesalahan umum",
     "lesson.whyItMatters": "Mengapa penting",
+    "lesson.tryThis": "Coba ini",
     "lesson.quickCheck": "Cek cepat",
     "lesson.quizHeading": "Uji pemahamanmu",
     "lesson.tryAnotherQuestion": "Coba soal lain",
+    "lesson.noQuestionAvailable": "Belum ada soal untuk pelajaran ini.",
     "lesson.sourceTrust": "Kepercayaan sumber",
     "lesson.sourceHeading": "Dari mana asalnya",
     "lesson.sourceBody":
@@ -540,8 +542,6 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "lesson.chapterLabel": "Bab {chapterNumber} · Pelajaran {lessonNumber} dari {total}",
 
     "quiz.correctAnswer": "Jawaban benar:",
-    "quiz.fallbackStatement": "Memahami konsep ini penting untuk mengelola uang dengan baik.",
-    "quiz.fallbackExplanation": "Memahami dasar-dasar ini membantu kamu membuat keputusan uang yang lebih cerdas setiap hari.",
     "quiz.true": "Benar",
     "quiz.false": "Salah",
     "quiz.yes": "Ya",

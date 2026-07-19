@@ -114,7 +114,12 @@ export type CaseStudyQuestion = z.infer<typeof caseStudySchema>;
 export type ProcessedQuestion = QuizQuestion & { variantId?: string };
 
 export function validateQuestion(body: unknown): QuizQuestion | null {
-  const parsed = quizQuestionSchema.safeParse(body);
+  // Normalize legacy/alias types so the engine can render every valid variant.
+  const normalized =
+    body && typeof body === "object" && (body as Record<string, unknown>).type === "yes_no"
+      ? { ...(body as Record<string, unknown>), type: "swipe_yes_no" }
+      : body;
+  const parsed = quizQuestionSchema.safeParse(normalized);
   if (!parsed.success) {
     console.error("validateQuestion error:", parsed.error.flatten());
     return null;
