@@ -3,7 +3,7 @@
 > You are Kimi, acting as the coding agent. This document is self-contained.
 > Read it top to bottom before touching anything. Do not skip the "Rules you
 > must not break" section.
-> **Last updated:** 2026-07-19
+> **Last updated:** 2026-07-21
 
 ---
 
@@ -14,7 +14,7 @@
 - **Stack:** Next.js + TypeScript (strict) + Supabase (Postgres, RLS) + Vitest + Tailwind
 - **Prod:** https://web.koinaku.com (Vercel project `koin-web-koinaku`)
 - **Deploy target:** Vercel only. Netlify is a paused fallback; do not rely on it for production deploys.
-- **Current state:** Responsive /learn grid (1/2/3-column), LessonPlayer content polish with icons/subheaders, and quiz variety fix landed on `web-koinaku` and deployed to `https://web.koinaku.com`. Root cause was `seededIndex` returning a floating-point index; fixed and regression-tested. Friends/cohort UI polished (primary-brand create button, bottom-nav clearance, responsive 2-column layout). Production smoke verified at 375/768/1280/1440: lesson completion works, quizzes cycle through MCQ/T/F/fill_blank, library/friends responsive. Previous work: KO-DEDUP-001 deactivated duplicate Foundation 0 variants; SEC-001 added CI, Zod validation, typed service layer, RLS smoke tests, security docs, pre-commit hooks. `npx vitest run` → 376 passed / 5 skipped; `npm run type-check` clean; `npm run lint` 0 errors.
+- **Current state:** Responsive /learn grid (1/2/3-column), LessonPlayer content polish with icons/subheaders, and quiz variety fix landed on `web-koinaku` and deployed to `https://web.koinaku.com`. Root cause was `seededIndex` returning a floating-point index; fixed and regression-tested. Friends/cohort UI polished (primary-brand create button, bottom-nav clearance, responsive 2-column layout). Production smoke verified at 375/768/1280/1440: lesson completion works, quizzes cycle through MCQ/T/F/fill_blank, library/friends responsive. Previous work: KO-DEDUP-001 deactivated duplicate Foundation 0 variants; SEC-001 added CI, Zod validation, typed service layer, RLS smoke tests, security docs, pre-commit hooks. KO-SEC-002 added production browser security headers, root Next.js `proxy.ts` auth redirects, HTTPS-only `Secure` auth cookie attributes, `security.txt`, `robots.txt`, and corrected stale `httpOnly` docs. Latest gates: `npx tsc --noEmit` clean; `npm run lint` 0 errors / 20 warnings; `npx vitest run` 388 passed / 5 skipped; `npm run build` passed; `npm run loop:gates` passed with Lighthouse skipped because it is not installed.
 
 **First actions (in this order, no exceptions):**
 1. Read `loop-state.md`. If it exists and state is not `DONE`, resume from there.
@@ -173,6 +173,7 @@ Initialize each task with `npm run loop:init <ID> "<title>"`.
 - [x] KO-DEDUP-001 — Deactivated 24 duplicate content variants (9 examples + 15 questions) across first 3 Foundation 0 lessons; "Lihat contoh lain" now cycles unique examples and hides when exhausted
 - [x] KO-DESIGN-001 — Koinaku Design System v4 polish pass: lesson player step cards, quiz cards, source cards, app chrome, home/friends cards; fixed repo-wide `rounded-radius-*` tokens; gates green; deployed to `https://web.koinaku.com`
 - [x] KO-RESP-001 — Responsive desktop/iPad pass: widened app shell and LessonPlayer, library 1/2/3-column grid, light-theme source cards, friends 2-column layout, lesson content structure with icons, quiz type rotation (MCQ/T-F/Yes-No), cohort friend invites, Pro cohort limit = 10; Supabase migration pushed; deployed to `https://web.koinaku.com`
+- [x] KO-SEC-002 — Security audit must-haves implemented in code: headers, auth redirect proxy, Secure cookie attribute, security.txt, robots.txt, and corrected session docs. Detailed handoff: `docs/KO-SEC-002-kimi-security-handoff-20260721.md` (local session copy also exists in `_sessions/`). Still needs admin/platform follow-up for live two-user RLS audit, Supabase Storage policies, Supabase Auth dashboard checks, edge rate limits, and alerting.
 
 **Suggested first move:** C1 — Recommended resources per lesson on `web-koinaku`.
 

@@ -111,7 +111,7 @@ export default function PrivacyPage() {
 
       <LegalSection title="6. Cookies and similar technologies">
         <p>
-          We use only strictly necessary cookies: secure, httpOnly session cookies that keep you
+          We use only strictly necessary cookies, including secure session cookies that keep you
           signed in. We do not use advertising cookies, cross-site trackers or third-party analytics
           cookies.
         </p>

@@ -10,6 +10,11 @@ function decode(value: string): string {
   return decodeURIComponent(value);
 }
 
+function secureCookieAttribute(): string {
+  if (!isBrowser()) return "";
+  return window.location.protocol === "https:" ? ";Secure" : "";
+}
+
 // Keep each chunk under 4KB so browsers don't drop oversized cookies.
 // Supabase sessions can exceed 4KB when provider tokens are included,
 // so we split the value across numbered cookies.
@@ -52,29 +57,31 @@ export const cookieStorage = {
 
   setItem: async (key: string, value: string): Promise<void> => {
     if (!isBrowser()) return;
+    const secure = secureCookieAttribute();
 
     // Clear any existing chunks first to avoid stale data.
     const existingKeys = listChunkKeys(key);
     for (const existingKey of existingKeys) {
-      document.cookie = `${existingKey}=;path=/;max-age=0;SameSite=Lax`;
+      document.cookie = `${existingKey}=;path=/;max-age=0;SameSite=Lax${secure}`;
     }
-    document.cookie = `${encode(key)}=;path=/;max-age=0;SameSite=Lax`;
+    document.cookie = `${encode(key)}=;path=/;max-age=0;SameSite=Lax${secure}`;
 
     const encoded = encode(value);
     const totalChunks = Math.ceil(encoded.length / CHUNK_SIZE);
     for (let i = 0; i < totalChunks; i++) {
       const chunk = encoded.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE);
-      document.cookie = `${CHUNK_KEY(key, i)}=${chunk};path=/;max-age=34560000;SameSite=Lax`;
+      document.cookie = `${CHUNK_KEY(key, i)}=${chunk};path=/;max-age=34560000;SameSite=Lax${secure}`;
     }
   },
 
   removeItem: async (key: string): Promise<void> => {
     if (!isBrowser()) return;
+    const secure = secureCookieAttribute();
 
     const existingKeys = listChunkKeys(key);
     for (const existingKey of existingKeys) {
-      document.cookie = `${existingKey}=;path=/;max-age=0;SameSite=Lax`;
+      document.cookie = `${existingKey}=;path=/;max-age=0;SameSite=Lax${secure}`;
     }
-    document.cookie = `${encode(key)}=;path=/;max-age=0;SameSite=Lax`;
+    document.cookie = `${encode(key)}=;path=/;max-age=0;SameSite=Lax${secure}`;
   },
 };

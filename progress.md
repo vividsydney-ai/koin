@@ -2,6 +2,30 @@
 # Loop reads and writes this. Human can also read to understand where we are.
 # v2: MVP reshaped around paper trading. Original v1 loop files archived in /_archived.
 
+## 2026-07-21 — KO-SEC-002: production security must-haves from audit
+
+- **Goal:** Implement the code-side must-have security controls from `GH-comparison/koinaku-security-check-2026-07-21.md` and write a Kimi-readable handoff.
+- **Swarm execution:** Conductor (Codex) → Planner (read-only subagent) → Maker (Codex) → Verifier (read-only subagent).
+- **Changes landed locally:**
+  - `next.config.ts`: baseline browser security headers for every route: CSP, referrer policy, MIME sniffing protection, frame denial, permissions policy, and HSTS with `includeSubDomains`.
+  - `proxy.ts`: root Next.js auth proxy that refreshes Supabase sessions and redirects unauthenticated private routes to `/login?next=...`.
+  - `lib/supabase/middleware.ts`: returns refreshed `user` state with the response so the proxy can make server-side access decisions.
+  - `lib/supabase/middleware.ts`: keeps Supabase SSR cookie encoding as `raw` to match the browser cookie storage and preserves Supabase's no-store refresh headers on the response.
+  - `lib/auth/storage.ts`: browser auth cookies now add `Secure` automatically on HTTPS while preserving HTTP local dev.
+  - `SECURITY.md`, `docs/security.md`, `app/privacy/page.tsx`, `app/privacy/id/page.tsx`: removed stale `HttpOnly` claims and documented the actual browser-cookie posture.
+  - `public/.well-known/security.txt` and `public/robots.txt`: published live disclosure/crawler files.
+  - `_sessions/KO-SEC-002-kimi-security-handoff-20260721.md`: detailed handoff for Kimi.
+- **Verification:**
+  - `npx tsc --noEmit` ✅ clean
+  - `npm run lint` ✅ 0 errors / 20 warnings
+  - `npx vitest run` ✅ 63 files passed; 388 passed / 5 skipped
+  - `npm run build` ✅ production build passed
+  - `npm run loop:gates` ✅ all configured gates passed; Lighthouse skipped because it is not installed
+  - Diff scans ✅ no `localStorage`/`sessionStorage`, no publish-flag changes, no migrations, no secret-looking literals
+  - Local smoke ✅ `/learn` redirects anonymous users to `/login?next=%2Flearn`; `/login`, `/.well-known/security.txt`, and `/robots.txt` return 200 with security headers; `/api/cron/market-data-update` remains 401 without cron secret
+- **Verifier corrections:** Read-only verifier found the first middleware version could write `base64url` cookies that the browser storage could not decode and could drop Supabase refresh no-store headers. Fixed with `cookieEncoding: "raw"` plus header forwarding. A later verifier found the redirect path also needed to copy those no-store headers when carrying refreshed cookies; fixed by forwarding refreshed response headers onto `NextResponse.redirect()`.
+- **Remaining admin/platform follow-up:** live two-user RLS audit, Supabase Storage policy audit, Supabase Auth dashboard abuse settings, managed edge rate limits, and production alerting still require platform/admin access.
+
 ## 2026-07-19 — KO-RESP-001: responsive /learn, lesson content polish, quiz variety, friends/cohort polish
 
 - **Goal:** Make Koinaku fully responsive and polish lesson/library/friends/cohort per the v4 design system.

@@ -29,7 +29,9 @@ Each authenticated user gets exactly one row in `profiles` and one row in `user_
 ## Authentication
 
 - Supabase Auth manages identity, password hashing, and session tokens.
-- The client uses `@supabase/ssr` with cookie storage; `localStorage` is not used for sessions.
+- The web client uses cookie storage for Supabase sessions; `localStorage` and `sessionStorage` are not used for auth sessions.
+- Browser-written web auth cookies are marked `Secure` on HTTPS and `SameSite=Lax`, but are not `HttpOnly` until the web auth flow is moved fully behind server-managed session cookies.
+- Root Next.js middleware refreshes Supabase sessions and redirects unauthenticated requests away from protected app routes before the app shell renders.
 - Email confirmation is required before a user can sign in.
 - Auth errors are normalized into a typed `AuthError` union so the UI never exposes raw Supabase internals.
 
@@ -55,6 +57,28 @@ Required environment variables:
 - `SMTP_*` or Supabase-managed email provider credentials
 
 Never commit `.env.local` or service-role keys.
+
+## Browser and disclosure hardening
+
+Production responses set a baseline browser security header policy:
+
+- `Content-Security-Policy` with `frame-ancestors 'none'`
+- `X-Content-Type-Options: nosniff`
+- `X-Frame-Options: DENY`
+- `Referrer-Policy: strict-origin-when-cross-origin`
+- `Permissions-Policy` disabling unused browser capabilities
+- `Strict-Transport-Security: max-age=63072000; includeSubDomains`
+
+The live site publishes `/.well-known/security.txt` so vulnerability reporters can find the supported contact path.
+
+## Remaining operational checks
+
+Some security checks require Supabase or hosting-platform admin access and must be verified during release operations:
+
+- Live two-user RLS checks across all tenant tables and `SECURITY DEFINER` RPCs.
+- Supabase Storage bucket listing, object-path, and signed URL policies.
+- Supabase Auth CAPTCHA enforcement, email caps, and abuse protection.
+- Managed edge rate limits and alerts for login, signup, password reset, resend verification, cron, friend/cohort, lesson completion, and trade execution paths.
 
 ## CI security checks
 

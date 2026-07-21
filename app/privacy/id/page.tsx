@@ -113,7 +113,7 @@ export default function PrivacyIdPage() {
 
       <LegalSection title="6. Cookie dan teknologi serupa">
         <p>
-          Kami hanya menggunakan cookie yang sangat diperlukan: cookie sesi yang aman dan httpOnly
+          Kami hanya menggunakan cookie yang sangat diperlukan, termasuk cookie sesi yang aman
           untuk menjaga kamu tetap masuk. Kami tidak menggunakan cookie iklan, pelacak lintas situs,
           atau cookie analitik pihak ketiga.
         </p>
