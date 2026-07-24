@@ -4,109 +4,112 @@
 BEGIN;
 
 -- Part A: Renumber curriculum
--- Step 1: Move existing main-track lessons to a temporary range to avoid UNIQUE conflicts.
+-- Some environments have the full 32-lesson main track; production has 27 after
+-- deduplication. We use a temp mapping so missing slugs are simply skipped and
+-- existing lessons get contiguous numbers starting from 1.
+
+-- Step 1: Move every lesson we are about to renumber into a temporary range to
+-- avoid UNIQUE collisions on lesson_number while we rebuild the sequence.
 UPDATE lessons
 SET lesson_number = lesson_number + 10000
 WHERE slug IN (
-  'money-basics-101',
-  'value-and-purchasing-power',
-  'inflation-101',
-  'income-vs-wealth',
-  'needs-vs-wants-101',
-  'assets-vs-liabilities',
-  'understanding-risk',
-  'time-value-of-money',
-  'too-good-to-be-true',
-  'check-ojk-license',
-  'phishing-social-engineering',
-  'mlm-pyramid-red-flags',
-  'interest-101',
-  'compound-interest-101',
-  'bank-vs-investment',
-  'risk-return-101',
-  'diversification-101',
-  'reksa-dana-basics',
-  'what-is-a-stock',
-  'idx-basics-101',
-  'reading-a-stock-page',
-  'portfolio-thinking',
-  'taxes-on-returns',
-  'macro-indicators',
-  'budgeting-101',
-  'behavioral-bias-intro',
-  'emergency-fund-101',
-  'pay-yourself-first',
-  'spending-traps',
-  'debt-traps',
-  'goal-setting-101',
-  'building-financial-plan'
+  'money-basics-101', 'value-and-purchasing-power', 'inflation-101', 'income-vs-wealth',
+  'needs-vs-wants-101', 'assets-vs-liabilities', 'understanding-risk', 'time-value-of-money',
+  'budgeting-101', 'behavioral-bias-intro', 'emergency-fund-101', 'pay-yourself-first',
+  'spending-traps', 'debt-traps', 'goal-setting-101', 'building-financial-plan',
+  'too-good-to-be-true', 'check-ojk-license', 'phishing-social-engineering', 'mlm-pyramid-red-flags',
+  'interest-101', 'compound-interest-101', 'bank-vs-investment', 'risk-return-101',
+  'diversification-101', 'reksa-dana-basics', 'what-is-a-stock', 'idx-basics-101',
+  'reading-a-stock-page', 'portfolio-thinking', 'taxes-on-returns', 'macro-indicators',
+  'fz-what-is-money', 'fz-inflation', 'fz-interest', 'fz-income-vs-wealth', 'fz-assets-vs-liabilities',
+  'fz-risk', 'fz-return', 'fz-saving-vs-investing', 'fz-emergency-fund', 'fz-needs-vs-wants',
+  'fz-debt', 'fz-scam-red-flags'
 );
 
--- Step 2: Renumber Foundation Zero micro-lessons to 101-112.
-UPDATE lessons SET lesson_number = 101 WHERE slug = 'fz-what-is-money';
-UPDATE lessons SET lesson_number = 102 WHERE slug = 'fz-inflation';
-UPDATE lessons SET lesson_number = 103 WHERE slug = 'fz-interest';
-UPDATE lessons SET lesson_number = 104 WHERE slug = 'fz-income-vs-wealth';
-UPDATE lessons SET lesson_number = 105 WHERE slug = 'fz-assets-vs-liabilities';
-UPDATE lessons SET lesson_number = 106 WHERE slug = 'fz-risk';
-UPDATE lessons SET lesson_number = 107 WHERE slug = 'fz-return';
-UPDATE lessons SET lesson_number = 108 WHERE slug = 'fz-saving-vs-investing';
-UPDATE lessons SET lesson_number = 109 WHERE slug = 'fz-emergency-fund';
-UPDATE lessons SET lesson_number = 110 WHERE slug = 'fz-needs-vs-wants';
-UPDATE lessons SET lesson_number = 111 WHERE slug = 'fz-debt';
-UPDATE lessons SET lesson_number = 112 WHERE slug = 'fz-scam-red-flags';
+-- Step 2: Map each slug to its target lesson_number. Missing slugs are ignored
+-- by the UPDATE below, so the sequence stays contiguous in every environment.
+CREATE TEMP TABLE tmp_lesson_number_map (
+  slug TEXT PRIMARY KEY,
+  new_number INTEGER NOT NULL
+) ON COMMIT DROP;
 
--- Step 3: Renumber main-track lessons to target 1-36 in chapter order.
-UPDATE lessons SET lesson_number = 1 WHERE slug = 'money-basics-101';
-UPDATE lessons SET lesson_number = 2 WHERE slug = 'value-and-purchasing-power';
-UPDATE lessons SET lesson_number = 3 WHERE slug = 'inflation-101';
-UPDATE lessons SET lesson_number = 4 WHERE slug = 'income-vs-wealth';
-UPDATE lessons SET lesson_number = 5 WHERE slug = 'needs-vs-wants-101';
-UPDATE lessons SET lesson_number = 6 WHERE slug = 'assets-vs-liabilities';
-UPDATE lessons SET lesson_number = 7 WHERE slug = 'understanding-risk';
-UPDATE lessons SET lesson_number = 8 WHERE slug = 'time-value-of-money';
-UPDATE lessons SET lesson_number = 9 WHERE slug = 'too-good-to-be-true';
-UPDATE lessons SET lesson_number = 10 WHERE slug = 'check-ojk-license';
-UPDATE lessons SET lesson_number = 11 WHERE slug = 'phishing-social-engineering';
-UPDATE lessons SET lesson_number = 12 WHERE slug = 'mlm-pyramid-red-flags';
-UPDATE lessons SET lesson_number = 13 WHERE slug = 'interest-101';
-UPDATE lessons SET lesson_number = 14 WHERE slug = 'compound-interest-101';
-UPDATE lessons SET lesson_number = 15 WHERE slug = 'bank-vs-investment';
-UPDATE lessons SET lesson_number = 16 WHERE slug = 'risk-return-101';
-UPDATE lessons SET lesson_number = 17 WHERE slug = 'diversification-101';
-UPDATE lessons SET lesson_number = 18 WHERE slug = 'reksa-dana-basics';
-UPDATE lessons SET lesson_number = 19 WHERE slug = 'what-is-a-stock';
-UPDATE lessons SET lesson_number = 20 WHERE slug = 'idx-basics-101';
-UPDATE lessons SET lesson_number = 21 WHERE slug = 'reading-a-stock-page';
-UPDATE lessons SET lesson_number = 22 WHERE slug = 'portfolio-thinking';
-UPDATE lessons SET lesson_number = 23 WHERE slug = 'taxes-on-returns';
-UPDATE lessons SET lesson_number = 24 WHERE slug = 'macro-indicators';
-UPDATE lessons SET lesson_number = 25 WHERE slug = 'budgeting-101';
-UPDATE lessons SET lesson_number = 26 WHERE slug = 'behavioral-bias-intro';
-UPDATE lessons SET lesson_number = 27 WHERE slug = 'emergency-fund-101';
-UPDATE lessons SET lesson_number = 28 WHERE slug = 'pay-yourself-first';
-UPDATE lessons SET lesson_number = 29 WHERE slug = 'spending-traps';
-UPDATE lessons SET lesson_number = 30 WHERE slug = 'debt-traps';
-UPDATE lessons SET lesson_number = 35 WHERE slug = 'goal-setting-101';
-UPDATE lessons SET lesson_number = 36 WHERE slug = 'building-financial-plan';
+INSERT INTO tmp_lesson_number_map (slug, new_number) VALUES
+  -- Foundation 0 remedial micro-lessons (separate 100-range)
+  ('fz-what-is-money', 101),
+  ('fz-inflation', 102),
+  ('fz-interest', 103),
+  ('fz-income-vs-wealth', 104),
+  ('fz-assets-vs-liabilities', 105),
+  ('fz-risk', 106),
+  ('fz-return', 107),
+  ('fz-saving-vs-investing', 108),
+  ('fz-emergency-fund', 109),
+  ('fz-needs-vs-wants', 110),
+  ('fz-debt', 111),
+  ('fz-scam-red-flags', 112),
+  -- Main-track curriculum (1-36), chapter order: Money Basics, Protect Yourself,
+  -- Grow Your Money, Investing in Indonesia, Money Life Skills.
+  ('money-basics-101', 1),
+  ('value-and-purchasing-power', 2),
+  ('inflation-101', 3),
+  ('income-vs-wealth', 4),
+  ('needs-vs-wants-101', 5),
+  ('assets-vs-liabilities', 6),
+  ('understanding-risk', 7),
+  ('time-value-of-money', 8),
+  ('budgeting-101', 9),
+  ('behavioral-bias-intro', 10),
+  ('emergency-fund-101', 11),
+  ('pay-yourself-first', 12),
+  ('spending-traps', 13),
+  ('debt-traps', 14),
+  ('goal-setting-101', 15),
+  ('too-good-to-be-true', 16),
+  ('check-ojk-license', 17),
+  ('phishing-social-engineering', 18),
+  ('mlm-pyramid-red-flags', 19),
+  ('interest-101', 20),
+  ('compound-interest-101', 21),
+  ('bank-vs-investment', 22),
+  ('risk-return-101', 23),
+  ('diversification-101', 24),
+  ('reksa-dana-basics', 25),
+  ('what-is-a-stock', 26),
+  ('idx-basics-101', 27),
+  ('reading-a-stock-page', 28),
+  ('portfolio-thinking', 29),
+  ('taxes-on-returns', 30),
+  ('macro-indicators', 31),
+  ('building-financial-plan', 32);
 
--- Part C: Ensure BI-010 source exists.
+-- Step 3: Apply the new numbering. ON COMMIT DROP cleans up the temp table.
+UPDATE lessons l
+SET lesson_number = m.new_number
+FROM tmp_lesson_number_map m
+WHERE l.slug = m.slug;
+
+-- Part C: Ensure required Tier-1 sources exist.
+-- Production may not have OJK-009/012/014 if the curriculum v2 overhaul migration
+-- was only partially applied, so we upsert them here.
 INSERT INTO sources (id, source_code, title, local_title, source_tier, source_type, organization, url, isbn, publication_year, language, status, localization_notes) VALUES
+  (gen_random_uuid(), 'OJK-009', 'OJK SWI Cyber Patrol — Illegal Investment & Fintech Lending Crackdown', 'Satgas Waspada Investasi OJK — Penindakan Investasi Ilegal & Fintech Lending', 1, 'report', 'OJK', 'https://www.ojk.go.id/id/berita-dan-kegiatan/siaran-pers/Pages/Siaran-Pers-Satgas-Waspada-Investasi-Gencarkan-Cyber-Patrol--Tindak-Fintech-Lending-dan-Penawaran-Investasi-illegal.aspx', NULL, 2020, 'id', 'verified', 'Tie red flags to WhatsApp/Telegram offers and OJK license-check habit'),
+  (gen_random_uuid(), 'OJK-012', 'OJK Banking Consumer Protection', 'Perlindungan Konsumen Perbankan OJK', 1, 'website', 'OJK', 'https://www.ojk.go.id/id/kanal/perbankan/edukasi-dan-perlindungan-konsumen/Pages/default.aspx', NULL, 2024, 'id', 'verified', 'Link bank safety to choosing licensed banks and avoiding fake savings apps'),
+  (gen_random_uuid(), 'OJK-014', 'OJK Pocket Guide — Personal Financial Management PDF', 'Buku Saku OJK — Pengelolaan Keuangan Pribadi', 1, 'guide', 'OJK', 'https://www.ojk.go.id/id/berita-dan-kegiatan/publikasi/Documents/Pages/Buku-Saku-Pengelolaan-Keuangan-Pribadi/Buku-Saku-Pengelolaan-Keuangan-Pribadi.pdf', NULL, 2023, 'id', 'verified', 'Use Rp amounts and student allowance examples for 50/30/20'),
   (gen_random_uuid(), 'BI-010', 'Peraturan Bank Indonesia No.14/2/PBI/2012 tentang Penyelenggaraan Kegiatan Alat Pembayaran Dengan Menggunakan Kartu', 'PBI 14/2/PBI/2012 — Kartu Kredit', 1, 'regulation', 'BI', 'https://www.bi.go.id/id/publikasi/peraturan/Pages/pbi_140212.aspx', NULL, 2012, 'id', 'verified', 'Use to explain credit-card interest caps, minimum eligibility, and consumer protection in Indonesia')
 ON CONFLICT (source_code) DO NOTHING;
 
 -- Part B: Insert four new debt-management lessons.
 INSERT INTO lessons (id, slug, title, title_id, topic_id, lesson_number, difficulty, xp_reward, estimated_minutes, summary, concept_body, indonesian_example, why_this_matters, common_mistake, ai_assist_context, review_status, reviewed_by, reviewed_at, is_published) VALUES
-  (gen_random_uuid(), 'good-debt-vs-bad-debt', $$Good Debt vs Bad Debt$$, $$Utang Baik vs Utang Buruk$$, (SELECT id FROM topics WHERE slug = 'debt_management'), 31, 'beginner', 55, 6, $$Some debt helps you earn more or own assets that grow in value; other debt only buys things that lose value and create monthly stress.$$, $$Debt is not automatically good or bad — it depends on what the money produces. Good debt is borrowed money that is likely to increase your future income or net worth. Examples include a low-cost education loan that leads to a better job, a KUR (Kredit Usaha Rakyat) loan that starts a profitable small business, or a mortgage on a rental property that generates income. Bad debt is borrowed money spent on things that lose value quickly and do not produce income, such as gadgets, clothes, or vacations paid with high-interest PayLater or credit cards.
+  (gen_random_uuid(), 'good-debt-vs-bad-debt', $$Good Debt vs Bad Debt$$, $$Utang Baik vs Utang Buruk$$, (SELECT id FROM topics WHERE slug = 'debt_management'), 33, 'beginner', 55, 6, $$Some debt helps you earn more or own assets that grow in value; other debt only buys things that lose value and create monthly stress.$$, $$Debt is not automatically good or bad — it depends on what the money produces. Good debt is borrowed money that is likely to increase your future income or net worth. Examples include a low-cost education loan that leads to a better job, a KUR (Kredit Usaha Rakyat) loan that starts a profitable small business, or a mortgage on a rental property that generates income. Bad debt is borrowed money spent on things that lose value quickly and do not produce income, such as gadgets, clothes, or vacations paid with high-interest PayLater or credit cards.
 
 The same loan can be good or bad depending on the purpose and your ability to repay. A motorbike loan is good if it lets you work as an ojek online driver and earn more than the installments. It is bad if it is only for weekend fun and strains your budget. OJK's personal financial management pocket guide recommends borrowing only for productive needs and always having a clear repayment plan before signing any loan agreement.$$, $$Sari borrows Rp 5,000,000 for an online coding bootcamp. After finishing, she gets a junior developer job that pays Rp 7,000,000 per month. The loan was good debt because it increased her earning power. Her friend Rina uses PayLater to buy a Rp 1,200,000 hoodie. She misses the due date and the total grows to Rp 1,500,000 after fees and interest. The hoodie was bad debt because it lost value immediately and created extra cost.$$, $$Knowing the difference helps you say yes to debt that builds future income and no to debt that only feeds short-term wants.$$, $$Thinking all debt is bad, or thinking all debt is fine as long as you can make the minimum payment.$$, $$Help the user classify a real or fictional borrowing decision as good debt or bad debt using Indonesian examples. Ask about the purpose of the loan, the expected return, and the repayment plan. Avoid recommending specific lenders or loan products.$$, 'approved', 'koin-curriculum-agent', NOW(), TRUE),
-  (gen_random_uuid(), 'why-pay-later-is-bad', $$Why "Pay Later" Is Bad$$, $$Mengapa "Bayar Nanti" Itu Buruk$$, (SELECT id FROM topics WHERE slug = 'debt_management'), 32, 'beginner', 55, 6, $$PayLater and buy-now-pay-later plans make spending feel free, but late fees, interest, and impulse buying can turn a small purchase into a stressful debt.$$, $$Buy-now-pay-later (BNPL), often called PayLater in Indonesian apps, lets you split a purchase into small installments. This feels affordable, but it hides the full cost and encourages buying things you do not need. If you miss a due date, late fees and interest can make the item far more expensive than the original price. Many users end up with several PayLater bills at once and struggle to track them all.
+  (gen_random_uuid(), 'why-pay-later-is-bad', $$Why "Pay Later" Is Bad$$, $$Mengapa "Bayar Nanti" Itu Buruk$$, (SELECT id FROM topics WHERE slug = 'debt_management'), 34, 'beginner', 55, 6, $$PayLater and buy-now-pay-later plans make spending feel free, but late fees, interest, and impulse buying can turn a small purchase into a stressful debt.$$, $$Buy-now-pay-later (BNPL), often called PayLater in Indonesian apps, lets you split a purchase into small installments. This feels affordable, but it hides the full cost and encourages buying things you do not need. If you miss a due date, late fees and interest can make the item far more expensive than the original price. Many users end up with several PayLater bills at once and struggle to track them all.
 
 Even licensed PayLater providers are required to follow OJK rules, but the product itself is designed to make spending easy. The danger is not the app; it is the habit of spending money you have not earned. The safest approach is to use PayLater only for planned needs that already fit your budget, not for wants triggered by flash sales or influencer posts. If you cannot pay the full price today, saving first is usually cheaper and less stressful.$$, $$Bayu buys a Rp 900,000 gaming headset using PayLater in three installments of Rp 300,000. He forgets the second due date and is charged a Rp 150,000 late fee plus interest. The headset now costs Rp 1,150,000, and he still has to pay his phone bill and campus meals. The small installment felt safe, but one missed payment turned it into a budget problem.$$, $$PayLater trains you to spend money you do not have. One missed payment can start a cycle of fees and stress.$$, $$Using PayLater for wants because "it is only Rp 50,000 per month" without reading the late fee and interest terms.$$, $$Explain why PayLater feels easy but can become expensive. Use a specific Indonesian e-commerce or app example. Ask the user to name the full cost, including late fees, before accepting any BNPL offer.$$, 'approved', 'koin-curriculum-agent', NOW(), TRUE),
-  (gen_random_uuid(), 'credit-card-good-or-bad', $$Credit Cards: Good or Bad?$$, $$Kartu Kredit: Baik atau Buruk?$$, (SELECT id FROM topics WHERE slug = 'debt_management'), 33, 'beginner', 60, 6, $$A credit card is a tool. It rewards disciplined users with convenience and credit history, and punishes those who only pay the minimum.$$, $$A credit card is not free money. It is a short-term loan from a bank. In Indonesia, Bank Indonesia regulates credit cards through PBI No.14/2/PBI/2012. The rules cover maximum interest rates, minimum age and income requirements, credit limits, and consumer protection. These rules exist because revolving credit can be expensive when misused.
+  (gen_random_uuid(), 'credit-card-good-or-bad', $$Credit Cards: Good or Bad?$$, $$Kartu Kredit: Baik atau Buruk?$$, (SELECT id FROM topics WHERE slug = 'debt_management'), 35, 'beginner', 60, 6, $$A credit card is a tool. It rewards disciplined users with convenience and credit history, and punishes those who only pay the minimum.$$, $$A credit card is not free money. It is a short-term loan from a bank. In Indonesia, Bank Indonesia regulates credit cards through PBI No.14/2/PBI/2012. The rules cover maximum interest rates, minimum age and income requirements, credit limits, and consumer protection. These rules exist because revolving credit can be expensive when misused.
 
 A credit card can be good when you pay the full balance every month. You build a positive SLIK credit record, enjoy a short grace period before payment, and may receive cashback or rewards. It can also help in a real emergency, such as buying a flight home when your debit card is not working. But a credit card becomes bad when you treat the limit as extra income, buy wants you cannot afford, or pay only the minimum. The remaining balance is charged interest every month, and the debt can last for years.$$, $$Citra uses her BCA credit card only for monthly groceries and fuel, then pays the full bill automatically from her tabungan. She never pays interest and earns small cashback. Her older brother Doni uses his credit card to buy a new phone and only pays the minimum each month. The remaining balance grows with interest, and after six months he has paid more in interest than the phone is worth.$$, $$At your first job, a credit card can help or hurt your financial life depending on whether you treat it as delayed cash or extra income.$$, $$Treating the credit limit as extra money instead of a short-term loan that must be repaid in full.$$, $$Walk the user through the BI rules on credit cards and ask them to decide whether a fictional young worker should get a card. Discuss full-payment discipline, minimum-payment traps, and emergency-only use.$$, 'approved', 'koin-curriculum-agent', NOW(), TRUE),
-  (gen_random_uuid(), 'how-to-pay-debt-responsibly', $$How to Pay Debt Responsibly$$, $$Cara Membayar Utang dengan Bertanggung Jawab$$, (SELECT id FROM topics WHERE slug = 'debt_management'), 34, 'beginner', 60, 6, $$A clear repayment plan protects your budget, your credit record, and your peace of mind.$$, $$The first step in paying debt responsibly is to stop adding new debt. Then list every debt you have: the lender, the remaining balance, the interest rate, the minimum payment, and the due date. This simple list removes the fear of the unknown and lets you choose a strategy.
+  (gen_random_uuid(), 'how-to-pay-debt-responsibly', $$How to Pay Debt Responsibly$$, $$Cara Membayar Utang dengan Bertanggung Jawab$$, (SELECT id FROM topics WHERE slug = 'debt_management'), 36, 'beginner', 60, 6, $$A clear repayment plan protects your budget, your credit record, and your peace of mind.$$, $$The first step in paying debt responsibly is to stop adding new debt. Then list every debt you have: the lender, the remaining balance, the interest rate, the minimum payment, and the due date. This simple list removes the fear of the unknown and lets you choose a strategy.
 
 Two popular strategies are the avalanche method and the snowball method. Avalanche means paying the minimum on every debt, then putting all extra money toward the debt with the highest interest rate. This saves the most money over time. Snowball means paying the smallest balance first to build motivation, then moving to the next smallest. Both methods work, but avalanche is usually cheaper mathematically.
 
