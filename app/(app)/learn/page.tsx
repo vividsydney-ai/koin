@@ -24,10 +24,13 @@ import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 const CHAPTER_TITLE_KEY: Record<string, string> = {
   "Money Basics": "chapter.moneyBasics",
+  "Money Life Skills": "chapter.moneyLifeSkills",
   "Protect Yourself": "chapter.protectYourself",
+  "Let's Talk About Debt": "chapter.letsTalkAboutDebt",
+  "Plan Your Money": "chapter.planYourMoney",
   "Grow Your Money": "chapter.growYourMoney",
   "Investing in Indonesia": "chapter.investingInIndonesia",
-  "Money Life Skills": "chapter.moneyLifeSkills",
+  "Cryptocurrency 101": "chapter.cryptocurrency101",
 };
 
 function localizedChapterTitle(title: string, t: (key: string) => string): string {
@@ -304,7 +307,9 @@ function ChapterCard({
       >
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <h2 className="font-semibold text-foreground">{localizedChapterTitle(chapter.title, t)}</h2>
+            <h2 className="font-semibold text-foreground">
+              {String(chapter.displayOrder + 1).padStart(2, "0")} {localizedChapterTitle(chapter.title, t)}
+            </h2>
             {isComplete && <CheckIconMini className="h-4 w-4 text-success" />}
           </div>
           <p className="mt-0.5 text-xs text-muted-foreground">

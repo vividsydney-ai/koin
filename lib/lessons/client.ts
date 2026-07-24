@@ -18,10 +18,21 @@ const TOPIC_SLUG_TO_CHAPTER: Record<string, string> = {
   risk_basics: "Money Basics",
   time_value_money: "Money Basics",
 
+  budgeting: "Money Life Skills",
+  saving_habits: "Money Life Skills",
+  spending_behavior: "Money Life Skills",
+  behavioral_finance: "Money Life Skills",
+
   scam_defense: "Protect Yourself",
   ojk_license_check: "Protect Yourself",
   phishing_social_engineering: "Protect Yourself",
   mlm_pyramid: "Protect Yourself",
+
+  debt_management: "Let's Talk About Debt",
+
+  emergency_fund: "Plan Your Money",
+  goal_setting: "Plan Your Money",
+  financial_planning: "Plan Your Money",
 
   interest: "Grow Your Money",
   compound_interest: "Grow Your Money",
@@ -37,14 +48,7 @@ const TOPIC_SLUG_TO_CHAPTER: Record<string, string> = {
   taxes: "Investing in Indonesia",
   macro_indicators: "Investing in Indonesia",
 
-  emergency_fund: "Money Life Skills",
-  saving_habits: "Money Life Skills",
-  budgeting: "Money Life Skills",
-  spending_behavior: "Money Life Skills",
-  debt_management: "Money Life Skills",
-  goal_setting: "Money Life Skills",
-  behavioral_finance: "Money Life Skills",
-  financial_planning: "Money Life Skills",
+  cryptocurrency: "Cryptocurrency 101",
 };
 
 export interface Lesson {
@@ -450,10 +454,13 @@ export interface Chapter {
 
 const CHAPTER_ORDER = [
   "Money Basics",
+  "Money Life Skills",
   "Protect Yourself",
+  "Let's Talk About Debt",
+  "Plan Your Money",
   "Grow Your Money",
   "Investing in Indonesia",
-  "Money Life Skills",
+  "Cryptocurrency 101",
 ];
 
 function chapterDisplayOrder(title: string): number {

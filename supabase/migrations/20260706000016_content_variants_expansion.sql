@@ -1,6 +1,22 @@
 -- Migration 016: Expand content_variants pool
 -- Adds 10+ examples and 10+ questions per launch lesson for per-session variety.
 
+DO $$
+BEGIN
+  -- Skip if launch lessons have not been inserted yet (migration order safety)
+  IF NOT EXISTS (
+    SELECT 1 FROM lessons
+    WHERE slug IN (
+      'money-basics-101',
+      'budgeting-101',
+      'inflation-101',
+      'risk-return-101',
+      'idx-basics-101'
+    )
+  ) THEN
+    RETURN;
+  END IF;
+
 -- Lesson IDs
 -- money-basics-101: 0fa42c9f-66b9-42c1-b622-9f194a505a06
 -- budgeting-101:   fb9f7f07-c324-4054-8fb7-e38bec2f847c
@@ -154,3 +170,4 @@ INSERT INTO content_variants (lesson_id, variant_type, body, difficulty, is_acti
 ('b4a1a53f-efd6-4e2a-b3a4-58bb7afd9311', 'question', '{"type": "word_bank", "question": "Manfaat ETF dibanding saham individual: ____", "options": ["Diversifikasi instan", "Biaya lebih rendah", "Tidak ada risiko", "Likuid di bursa"], "answer": ["Diversifikasi instan", "Likuid di bursa"], "explanation": "ETF memberikan diversifikasi instan dan diperdagangkan di bursa.", "difficulty": "intermediate", "parameters": {}}', 'intermediate', true),
 ('b4a1a53f-efd6-4e2a-b3a4-58bb7afd9311', 'question', '{"type": "multiple_choice", "question": "Jika harga saham TLKM Rp 3.500 per lembar, berapa biaya membeli 2 lot?", "options": ["Rp 350.000", "Rp 700.000", "Rp 3.500.000", "Rp 7.000.000"], "answer": "Rp 700.000", "explanation": "2 lot = 200 lembar. 200 × Rp 3.500 = Rp 700.000.", "difficulty": "beginner", "parameters": {}}', 'beginner', true),
 ('b4a1a53f-efd6-4e2a-b3a4-58bb7afd9311', 'question', '{"type": "multiple_choice", "question": "Jam perdagangan saham di IDX adalah?", "options": ["08.00–14.00 WIB", "09.00–15.00 WIB", "10.00–16.00 WIB", "24 jam"], "answer": "09.00–15.00 WIB", "explanation": "Jam bursa IDX adalah 09.00–15.00 WIB.", "difficulty": "beginner", "parameters": {}}', 'beginner', true);
+END $$;

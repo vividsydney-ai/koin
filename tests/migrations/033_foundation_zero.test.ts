@@ -29,7 +29,7 @@ describe.runIf(!skipReason)("Foundation 0 mini-track (KO-FOUND-001)", () => {
     expect(data!.display_order).toBe(1);
   });
 
-  it("has 12 Foundation 0 lessons with lesson_number 1-12", async () => {
+  it("has 12 Foundation 0 lessons with lesson_number 101-112", async () => {
     const { data, error } = await supabase
       .from("lessons")
       .select("slug, lesson_number, topic_id")
@@ -40,7 +40,7 @@ describe.runIf(!skipReason)("Foundation 0 mini-track (KO-FOUND-001)", () => {
     expect(data).toHaveLength(12);
 
     const numbers = data!.map((l) => l.lesson_number);
-    expect(numbers).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+    expect(numbers).toEqual([101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112]);
   });
 
   it("every Foundation 0 lesson has a primary Tier 1 source", async () => {
@@ -88,20 +88,20 @@ describe.runIf(!skipReason)("Foundation 0 mini-track (KO-FOUND-001)", () => {
     }
   });
 
-  it("renumbered main track lessons to 14-45 to make room for Foundation 0", async () => {
+  it("renumbered main track lessons to contiguous 1-40 with Foundation 0 in 101-112 range", async () => {
     const { data, error } = await supabase
       .from("lessons")
       .select("lesson_number, slug")
       .not("slug", "like", "fz-%")
-      .gte("lesson_number", 14)
-      .lte("lesson_number", 45)
+      .gte("lesson_number", 1)
+      .lte("lesson_number", 40)
       .order("lesson_number");
 
     expect(error).toBeNull();
-    expect(data).toHaveLength(32);
+    expect(data).toHaveLength(40);
 
     const numbers = data!.map((l) => l.lesson_number);
-    expect(numbers).toEqual(Array.from({ length: 32 }, (_, i) => i + 14));
+    expect(numbers).toEqual(Array.from({ length: 40 }, (_, i) => i + 1));
   });
 });
 

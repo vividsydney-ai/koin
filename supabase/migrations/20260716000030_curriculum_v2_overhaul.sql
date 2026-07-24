@@ -283,71 +283,459 @@ ON CONFLICT (slug) DO UPDATE SET
   updated_at = NOW();
 
 -- 7. Link lessons to sources
-INSERT INTO lesson_sources (id, lesson_id, source_id, relevance_type, is_primary) VALUES
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'money-basics-101'), (SELECT id FROM sources WHERE source_code = 'OJK-002'), 'primary', True),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'money-basics-101'), (SELECT id FROM sources WHERE source_code = 'GLB-004'), 'supporting', False),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'value-and-purchasing-power'), (SELECT id FROM sources WHERE source_code = 'BI-001'), 'primary', True),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'value-and-purchasing-power'), (SELECT id FROM sources WHERE source_code = 'GLB-004'), 'supporting', False),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'inflation-101'), (SELECT id FROM sources WHERE source_code = 'BI-001'), 'primary', True),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'inflation-101'), (SELECT id FROM sources WHERE source_code = 'GLB-004'), 'supporting', False),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'income-vs-wealth'), (SELECT id FROM sources WHERE source_code = 'OJK-002'), 'primary', True),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'income-vs-wealth'), (SELECT id FROM sources WHERE source_code = 'GLB-004'), 'supporting', False),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'needs-vs-wants-101'), (SELECT id FROM sources WHERE source_code = 'OJK-003'), 'primary', True),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'needs-vs-wants-101'), (SELECT id FROM sources WHERE source_code = 'GLB-005'), 'supporting', False),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'assets-vs-liabilities'), (SELECT id FROM sources WHERE source_code = 'OJK-003'), 'primary', True),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'assets-vs-liabilities'), (SELECT id FROM sources WHERE source_code = 'GLB-006'), 'supporting', False),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'understanding-risk'), (SELECT id FROM sources WHERE source_code = 'OJK-007'), 'primary', True),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'understanding-risk'), (SELECT id FROM sources WHERE source_code = 'GLB-004'), 'supporting', False),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'time-value-of-money'), (SELECT id FROM sources WHERE source_code = 'OJK-003'), 'primary', True),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'time-value-of-money'), (SELECT id FROM sources WHERE source_code = 'GLB-004'), 'supporting', False),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'budgeting-101'), (SELECT id FROM sources WHERE source_code = 'OJK-014'), 'primary', True),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'budgeting-101'), (SELECT id FROM sources WHERE source_code = 'GLB-005'), 'supporting', False),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'emergency-fund-101'), (SELECT id FROM sources WHERE source_code = 'OJK-003'), 'primary', True),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'emergency-fund-101'), (SELECT id FROM sources WHERE source_code = 'GLB-004'), 'supporting', False),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'pay-yourself-first'), (SELECT id FROM sources WHERE source_code = 'OJK-003'), 'primary', True),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'pay-yourself-first'), (SELECT id FROM sources WHERE source_code = 'GLB-005'), 'supporting', False),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'spending-traps'), (SELECT id FROM sources WHERE source_code = 'OJK-007'), 'primary', True),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'spending-traps'), (SELECT id FROM sources WHERE source_code = 'GLB-004'), 'supporting', False),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'debt-traps'), (SELECT id FROM sources WHERE source_code = 'OJK-012'), 'primary', True),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'debt-traps'), (SELECT id FROM sources WHERE source_code = 'GLB-005'), 'supporting', False),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'goal-setting-101'), (SELECT id FROM sources WHERE source_code = 'OJK-002'), 'primary', True),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'goal-setting-101'), (SELECT id FROM sources WHERE source_code = 'GLB-008'), 'supporting', False),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'too-good-to-be-true'), (SELECT id FROM sources WHERE source_code = 'OJK-007'), 'primary', True),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'too-good-to-be-true'), (SELECT id FROM sources WHERE source_code = 'GLB-004'), 'supporting', False),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'check-ojk-license'), (SELECT id FROM sources WHERE source_code = 'OJK-015'), 'primary', True),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'check-ojk-license'), (SELECT id FROM sources WHERE source_code = 'GLB-005'), 'supporting', False),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'phishing-social-engineering'), (SELECT id FROM sources WHERE source_code = 'OJK-009'), 'primary', True),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'phishing-social-engineering'), (SELECT id FROM sources WHERE source_code = 'GLB-004'), 'supporting', False),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'mlm-pyramid-red-flags'), (SELECT id FROM sources WHERE source_code = 'OJK-007'), 'primary', True),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'mlm-pyramid-red-flags'), (SELECT id FROM sources WHERE source_code = 'GLB-004'), 'supporting', False),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'interest-101'), (SELECT id FROM sources WHERE source_code = 'BI-002'), 'primary', True),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'interest-101'), (SELECT id FROM sources WHERE source_code = 'GLB-004'), 'supporting', False),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'compound-interest-101'), (SELECT id FROM sources WHERE source_code = 'OJK-006'), 'primary', True),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'compound-interest-101'), (SELECT id FROM sources WHERE source_code = 'GLB-004'), 'supporting', False),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'bank-vs-investment'), (SELECT id FROM sources WHERE source_code = 'OJK-006'), 'primary', True),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'bank-vs-investment'), (SELECT id FROM sources WHERE source_code = 'GLB-007'), 'supporting', False),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'risk-return-101'), (SELECT id FROM sources WHERE source_code = 'OJK-006'), 'primary', True),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'risk-return-101'), (SELECT id FROM sources WHERE source_code = 'GLB-007'), 'supporting', False),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'diversification-101'), (SELECT id FROM sources WHERE source_code = 'IDX-001'), 'primary', True),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'diversification-101'), (SELECT id FROM sources WHERE source_code = 'GLB-007'), 'supporting', False),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'reksa-dana-basics'), (SELECT id FROM sources WHERE source_code = 'OJK-021'), 'primary', True),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'reksa-dana-basics'), (SELECT id FROM sources WHERE source_code = 'GLB-007'), 'supporting', False),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'what-is-a-stock'), (SELECT id FROM sources WHERE source_code = 'IDX-001'), 'primary', True),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'what-is-a-stock'), (SELECT id FROM sources WHERE source_code = 'GLB-007'), 'supporting', False),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'idx-basics-101'), (SELECT id FROM sources WHERE source_code = 'IDX-001'), 'primary', True),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'idx-basics-101'), (SELECT id FROM sources WHERE source_code = 'GLB-007'), 'supporting', False),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'reading-a-stock-page'), (SELECT id FROM sources WHERE source_code = 'IDX-003'), 'primary', True),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'reading-a-stock-page'), (SELECT id FROM sources WHERE source_code = 'GLB-007'), 'supporting', False),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'portfolio-thinking'), (SELECT id FROM sources WHERE source_code = 'IDX-001'), 'primary', True),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'portfolio-thinking'), (SELECT id FROM sources WHERE source_code = 'GLB-007'), 'supporting', False),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'taxes-on-returns'), (SELECT id FROM sources WHERE source_code = 'OJK-004'), 'primary', True),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'taxes-on-returns'), (SELECT id FROM sources WHERE source_code = 'GLB-005'), 'supporting', False),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'macro-indicators'), (SELECT id FROM sources WHERE source_code = 'BI-002'), 'primary', True),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'macro-indicators'), (SELECT id FROM sources WHERE source_code = 'GLB-007'), 'supporting', False),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'behavioral-bias-intro'), (SELECT id FROM sources WHERE source_code = 'OJK-004'), 'primary', True),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'behavioral-bias-intro'), (SELECT id FROM sources WHERE source_code = 'GLB-016'), 'supporting', False),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'building-financial-plan'), (SELECT id FROM sources WHERE source_code = 'OJK-002'), 'primary', True),
-  (gen_random_uuid(), (SELECT id FROM lessons WHERE slug = 'building-financial-plan'), (SELECT id FROM sources WHERE source_code = 'GLB-005'), 'supporting', False)
+WITH lesson_source_links AS (
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'money-basics-101') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'OJK-002') AS source_id,
+    'primary'::text AS relevance_type,
+    True::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'money-basics-101') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'GLB-004') AS source_id,
+    'supporting'::text AS relevance_type,
+    False::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'value-and-purchasing-power') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'BI-001') AS source_id,
+    'primary'::text AS relevance_type,
+    True::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'value-and-purchasing-power') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'GLB-004') AS source_id,
+    'supporting'::text AS relevance_type,
+    False::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'inflation-101') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'BI-001') AS source_id,
+    'primary'::text AS relevance_type,
+    True::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'inflation-101') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'GLB-004') AS source_id,
+    'supporting'::text AS relevance_type,
+    False::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'income-vs-wealth') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'OJK-002') AS source_id,
+    'primary'::text AS relevance_type,
+    True::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'income-vs-wealth') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'GLB-004') AS source_id,
+    'supporting'::text AS relevance_type,
+    False::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'needs-vs-wants-101') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'OJK-003') AS source_id,
+    'primary'::text AS relevance_type,
+    True::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'needs-vs-wants-101') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'GLB-005') AS source_id,
+    'supporting'::text AS relevance_type,
+    False::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'assets-vs-liabilities') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'OJK-003') AS source_id,
+    'primary'::text AS relevance_type,
+    True::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'assets-vs-liabilities') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'GLB-006') AS source_id,
+    'supporting'::text AS relevance_type,
+    False::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'understanding-risk') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'OJK-007') AS source_id,
+    'primary'::text AS relevance_type,
+    True::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'understanding-risk') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'GLB-004') AS source_id,
+    'supporting'::text AS relevance_type,
+    False::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'time-value-of-money') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'OJK-003') AS source_id,
+    'primary'::text AS relevance_type,
+    True::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'time-value-of-money') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'GLB-004') AS source_id,
+    'supporting'::text AS relevance_type,
+    False::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'budgeting-101') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'OJK-014') AS source_id,
+    'primary'::text AS relevance_type,
+    True::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'budgeting-101') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'GLB-005') AS source_id,
+    'supporting'::text AS relevance_type,
+    False::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'emergency-fund-101') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'OJK-003') AS source_id,
+    'primary'::text AS relevance_type,
+    True::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'emergency-fund-101') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'GLB-004') AS source_id,
+    'supporting'::text AS relevance_type,
+    False::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'pay-yourself-first') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'OJK-003') AS source_id,
+    'primary'::text AS relevance_type,
+    True::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'pay-yourself-first') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'GLB-005') AS source_id,
+    'supporting'::text AS relevance_type,
+    False::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'spending-traps') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'OJK-007') AS source_id,
+    'primary'::text AS relevance_type,
+    True::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'spending-traps') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'GLB-004') AS source_id,
+    'supporting'::text AS relevance_type,
+    False::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'debt-traps') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'OJK-012') AS source_id,
+    'primary'::text AS relevance_type,
+    True::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'debt-traps') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'GLB-005') AS source_id,
+    'supporting'::text AS relevance_type,
+    False::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'goal-setting-101') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'OJK-002') AS source_id,
+    'primary'::text AS relevance_type,
+    True::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'goal-setting-101') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'GLB-008') AS source_id,
+    'supporting'::text AS relevance_type,
+    False::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'too-good-to-be-true') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'OJK-007') AS source_id,
+    'primary'::text AS relevance_type,
+    True::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'too-good-to-be-true') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'GLB-004') AS source_id,
+    'supporting'::text AS relevance_type,
+    False::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'check-ojk-license') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'OJK-015') AS source_id,
+    'primary'::text AS relevance_type,
+    True::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'check-ojk-license') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'GLB-005') AS source_id,
+    'supporting'::text AS relevance_type,
+    False::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'phishing-social-engineering') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'OJK-009') AS source_id,
+    'primary'::text AS relevance_type,
+    True::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'phishing-social-engineering') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'GLB-004') AS source_id,
+    'supporting'::text AS relevance_type,
+    False::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'mlm-pyramid-red-flags') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'OJK-007') AS source_id,
+    'primary'::text AS relevance_type,
+    True::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'mlm-pyramid-red-flags') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'GLB-004') AS source_id,
+    'supporting'::text AS relevance_type,
+    False::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'interest-101') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'BI-002') AS source_id,
+    'primary'::text AS relevance_type,
+    True::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'interest-101') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'GLB-004') AS source_id,
+    'supporting'::text AS relevance_type,
+    False::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'compound-interest-101') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'OJK-006') AS source_id,
+    'primary'::text AS relevance_type,
+    True::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'compound-interest-101') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'GLB-004') AS source_id,
+    'supporting'::text AS relevance_type,
+    False::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'bank-vs-investment') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'OJK-006') AS source_id,
+    'primary'::text AS relevance_type,
+    True::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'bank-vs-investment') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'GLB-007') AS source_id,
+    'supporting'::text AS relevance_type,
+    False::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'risk-return-101') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'OJK-006') AS source_id,
+    'primary'::text AS relevance_type,
+    True::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'risk-return-101') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'GLB-007') AS source_id,
+    'supporting'::text AS relevance_type,
+    False::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'diversification-101') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'IDX-001') AS source_id,
+    'primary'::text AS relevance_type,
+    True::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'diversification-101') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'GLB-007') AS source_id,
+    'supporting'::text AS relevance_type,
+    False::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'reksa-dana-basics') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'OJK-021') AS source_id,
+    'primary'::text AS relevance_type,
+    True::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'reksa-dana-basics') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'GLB-007') AS source_id,
+    'supporting'::text AS relevance_type,
+    False::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'what-is-a-stock') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'IDX-001') AS source_id,
+    'primary'::text AS relevance_type,
+    True::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'what-is-a-stock') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'GLB-007') AS source_id,
+    'supporting'::text AS relevance_type,
+    False::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'idx-basics-101') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'IDX-001') AS source_id,
+    'primary'::text AS relevance_type,
+    True::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'idx-basics-101') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'GLB-007') AS source_id,
+    'supporting'::text AS relevance_type,
+    False::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'reading-a-stock-page') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'IDX-003') AS source_id,
+    'primary'::text AS relevance_type,
+    True::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'reading-a-stock-page') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'GLB-007') AS source_id,
+    'supporting'::text AS relevance_type,
+    False::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'portfolio-thinking') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'IDX-001') AS source_id,
+    'primary'::text AS relevance_type,
+    True::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'portfolio-thinking') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'GLB-007') AS source_id,
+    'supporting'::text AS relevance_type,
+    False::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'taxes-on-returns') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'OJK-004') AS source_id,
+    'primary'::text AS relevance_type,
+    True::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'taxes-on-returns') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'GLB-005') AS source_id,
+    'supporting'::text AS relevance_type,
+    False::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'macro-indicators') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'BI-002') AS source_id,
+    'primary'::text AS relevance_type,
+    True::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'macro-indicators') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'GLB-007') AS source_id,
+    'supporting'::text AS relevance_type,
+    False::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'behavioral-bias-intro') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'OJK-004') AS source_id,
+    'primary'::text AS relevance_type,
+    True::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'behavioral-bias-intro') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'GLB-016') AS source_id,
+    'supporting'::text AS relevance_type,
+    False::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'building-financial-plan') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'OJK-002') AS source_id,
+    'primary'::text AS relevance_type,
+    True::boolean AS is_primary
+  UNION ALL
+  SELECT
+    gen_random_uuid() AS id,
+    (SELECT id FROM lessons WHERE slug = 'building-financial-plan') AS lesson_id,
+    (SELECT id FROM sources WHERE source_code = 'GLB-005') AS source_id,
+    'supporting'::text AS relevance_type,
+    False::boolean AS is_primary
+)
+INSERT INTO lesson_sources (id, lesson_id, source_id, relevance_type, is_primary)
+SELECT id, lesson_id, source_id, relevance_type, is_primary
+FROM lesson_source_links
+WHERE lesson_id IS NOT NULL AND source_id IS NOT NULL
 ON CONFLICT (lesson_id, source_id) DO UPDATE SET
   relevance_type = EXCLUDED.relevance_type,
   is_primary = EXCLUDED.is_primary;

@@ -141,10 +141,13 @@ export interface Dictionary {
 
   // Chapter titles (mapped from DB English titles)
   "chapter.moneyBasics": string;
+  "chapter.moneyLifeSkills": string;
   "chapter.protectYourself": string;
+  "chapter.letsTalkAboutDebt": string;
+  "chapter.planYourMoney": string;
   "chapter.growYourMoney": string;
   "chapter.investingInIndonesia": string;
-  "chapter.moneyLifeSkills": string;
+  "chapter.cryptocurrency101": string;
   "chapter.uncategorized": string;
 
   // Profile page
@@ -391,10 +394,13 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "learn.minutesShort": "min",
 
     "chapter.moneyBasics": "Money Basics",
+    "chapter.moneyLifeSkills": "Money Life Skills",
     "chapter.protectYourself": "Protect Yourself",
+    "chapter.letsTalkAboutDebt": "Let's Talk About Debt",
+    "chapter.planYourMoney": "Plan Your Money",
     "chapter.growYourMoney": "Grow Your Money",
     "chapter.investingInIndonesia": "Investing in Indonesia",
-    "chapter.moneyLifeSkills": "Money Life Skills",
+    "chapter.cryptocurrency101": "Cryptocurrency 101",
     "chapter.uncategorized": "Uncategorized",
 
     "profile.loading": "Loading profile…",
@@ -629,10 +635,13 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "learn.minutesShort": "mnt",
 
     "chapter.moneyBasics": "Dasar Uang",
+    "chapter.moneyLifeSkills": "Keterampilan Keuangan",
     "chapter.protectYourself": "Lindungi Diri",
+    "chapter.letsTalkAboutDebt": "Mari Bicara tentang Utang",
+    "chapter.planYourMoney": "Rencanakan Uangmu",
     "chapter.growYourMoney": "Kembangkan Uangmu",
     "chapter.investingInIndonesia": "Berinvestasi di Indonesia",
-    "chapter.moneyLifeSkills": "Keterampilan Keuangan",
+    "chapter.cryptocurrency101": "Dasar-Dasar Kripto",
     "chapter.uncategorized": "Tidak Berkategori",
 
     "profile.loading": "Memuat profil…",
