@@ -742,3 +742,44 @@ Make Koinaku responsive on desktop/iPad/mobile, break lesson wall-of-text, ensur
   - `npm run build` ✅ production build passed
   - `npm run loop:gates` ✅ all gates passed (Lighthouse skipped)
 - **Next step:** Run Lighthouse in an environment with Chrome, or use the browse skill to do a visual/keyboard QA pass.
+
+## 2026-07-24 — KO-CURR-002: Streak audit, source CSV, debt lessons, curriculum renumbering
+
+**Goal:** Answer the streak cap question, audit source links, draft debt lessons, fix lesson numbering/order, and land the changes.
+
+**Execution:** Conductor (Kimi) dispatched parallel explore/coder agents for read-only audits and content drafting, then implemented the migration and ReachableLink fix on `web-koinaku`.
+
+**Findings**
+- **Streak cap:** No hard cap exists. `complete_lesson` / `check_in_streak` (`supabase/migrations/20260724170000_streak_timezone_jakarta.sql`) increment `current_streak_days` once per WIB day. The `hamptonvivid@gmail.com` account is almost certainly already checked in for today; additional lessons on the same day do not raise the streak until the next WIB day.
+- **OJK "original link unavailable":** OJK URLs are reachable (HTTP 200) but CORS-blocked in the browser. `ReachableLink` was treating the blocked `fetch()` as unreachable and falling back to Wikipedia.
+- **Source CSV:** `_outputs/source_links_2026-07-24.csv` lists 97 source-lesson links; 32 unreachable rows are all `GLB-*` global sources with empty URLs.
+- **Production DB state:** Curriculum v2 overhaul was partially applied; 5 main-track lessons were deduplicated into Foundation Zero and 3 OJK sources (OJK-009/012/014) were missing.
+
+**Changes landed**
+- `components/sources/ReachableLink.tsx`: added `skipCheck` prop to bypass browser reachability for trusted Tier-1 sources.
+- `app/learn/[slug]/LessonPlayer.tsx` + `app/(app)/library/page.tsx`: pass `skipCheck={source.sourceTier === 1}` so OJK/BI/IDX links render directly.
+- `tests/sources/ReachableLink.test.tsx`: added test for `skipCheck`.
+- `scripts/audit-source-links.mjs`: reusable source-link verifier that produced the CSV.
+- `supabase/migrations/20260724170000_renumber_curriculum_and_add_debt_lessons.sql`:
+  - Renumbers Foundation Zero to 101-112.
+  - Renumbers main-track lessons to a contiguous 1-32 sequence using a temp mapping (missing deduplicated slugs are skipped).
+  - Inserts 4 new debt lessons (`good-debt-vs-bad-debt`, `why-pay-later-is-bad`, `credit-card-good-or-bad`, `how-to-pay-debt-responsibly`) at 33-36.
+  - Upserts missing Tier-1 sources OJK-009, OJK-012, OJK-014, BI-010.
+  - Adds approved `lesson_reviews` and `lesson_sources` links.
+  - Seeds 52 content variants (3 examples + 10 questions per new lesson).
+
+**Verification**
+- `npx tsc --noEmit` ✅ clean
+- `npm run lint` ✅ 0 errors / 21 warnings (pre-existing)
+- `npx vitest run` ✅ 450 passed / 5 skipped
+- `npm run loop:gates` ✅ all gates passed (Lighthouse skipped)
+- Diff scan: no `localStorage`/`sessionStorage`, no unauthorized `is_published=true` ✅
+
+**Deploy**
+- Pushed to `origin/web-koinaku`.
+- `npx supabase db push --include-all` applied to production (Docker cache warning only).
+- Smoke check `https://web.koinaku.com` → 200 OK.
+
+**Follow-ups**
+- `tests/migrations/033_foundation_zero.test.ts` still expects Foundation Zero 1-12 and main track 14-45. After this migration they are 101-112 and 1-32 (local) / 1-27 (prod). The test passes today because the local DB under test has not been reset; it will need a human-approved update after the next `supabase db reset`.
+- Run the streak verification query for `hamptonvivid@gmail.com` when convenient to confirm the "stuck at 6" explanation.
