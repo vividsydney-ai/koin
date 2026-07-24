@@ -3,6 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { changePassword } from "@/lib/auth/client";
+import { signupPasswordSchema } from "@/lib/auth/schemas";
+import { PasswordRequirements } from "@/components/auth/PasswordRequirements";
 
 function EyeIcon({ className }: { className?: string }) {
   return (
@@ -50,12 +52,14 @@ function PasswordField({
   value,
   onChange,
   placeholder,
+  minLength,
 }: {
   id: string;
   label: string;
   value: string;
   onChange: (value: string) => void;
   placeholder: string;
+  minLength?: number;
 }) {
   const [show, setShow] = useState(false);
   return (
@@ -70,7 +74,7 @@ function PasswordField({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           required
-          minLength={6}
+          minLength={minLength}
           placeholder={placeholder}
           className="h-12 w-full rounded-lg border-[1.5px] border-border bg-surface px-4 pr-12 text-base text-foreground outline-none transition-all placeholder:text-muted-foreground hover:border-border-strong focus:border-primary focus:shadow-focus-ring"
         />
@@ -106,8 +110,9 @@ export default function AccountPasswordPage() {
       return;
     }
 
-    if (newPassword.length < 6) {
-      setError("Password must be at least 6 characters.");
+    const passwordCheck = signupPasswordSchema.safeParse(newPassword);
+    if (!passwordCheck.success) {
+      setError(passwordCheck.error.issues[0]?.message ?? "Password does not meet the requirements.");
       return;
     }
 
@@ -155,8 +160,12 @@ export default function AccountPasswordPage() {
           label="New password"
           value={newPassword}
           onChange={setNewPassword}
-          placeholder="At least 6 characters"
+          placeholder="At least 8 characters with a number and special character"
+          minLength={8}
         />
+        <div className="-mt-2">
+          <PasswordRequirements password={newPassword} />
+        </div>
 
         <PasswordField
           id="confirmPassword"
@@ -164,6 +173,7 @@ export default function AccountPasswordPage() {
           value={confirmPassword}
           onChange={setConfirmPassword}
           placeholder="Re-enter your new password"
+          minLength={8}
         />
 
         <button

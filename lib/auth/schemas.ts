@@ -13,6 +13,12 @@ export const passwordSchema = z
   .string({ message: "Password is required" })
   .min(6, "Password must be at least 6 characters");
 
+export const signupPasswordSchema = z
+  .string({ message: "Password is required" })
+  .min(8, "Password must be at least 8 characters")
+  .regex(/\d/, "Password must contain at least one number")
+  .regex(/[^A-Za-z0-9\s]/, "Password must contain at least one special character");
+
 export const displayNameSchema = z
   .string({ message: "Full name is required" })
   .min(1, "Full name is required")
@@ -48,8 +54,8 @@ export const acceptedTermsSchema = z.object({
 export const signupFormSchema = z
   .object({
     email: emailSchema,
-    password: passwordSchema,
-    confirmPassword: passwordSchema,
+    password: signupPasswordSchema,
+    confirmPassword: signupPasswordSchema,
     displayName: displayNameSchema,
     acceptedTerms: z.boolean(),
   })

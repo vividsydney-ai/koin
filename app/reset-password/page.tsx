@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase, updatePassword } from "@/lib/auth/client";
+import { signupPasswordSchema } from "@/lib/auth/schemas";
+import { PasswordRequirements } from "@/components/auth/PasswordRequirements";
 
 function EyeIcon({ className }: { className?: string }) {
   return (
@@ -93,8 +95,9 @@ export default function ResetPasswordPage() {
       return;
     }
 
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters.");
+    const passwordCheck = signupPasswordSchema.safeParse(password);
+    if (!passwordCheck.success) {
+      setError(passwordCheck.error.issues[0]?.message ?? "Password does not meet the requirements.");
       setLoading(false);
       return;
     }
@@ -158,8 +161,8 @@ export default function ResetPasswordPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  minLength={6}
-                  placeholder="At least 6 characters"
+                  minLength={8}
+                  placeholder="At least 8 characters with a number and special character"
                   className="h-12 w-full rounded-lg border-[1.5px] border-border bg-surface px-4 pr-12 text-base text-foreground outline-none transition-all placeholder:text-muted-foreground hover:border-border-strong focus:border-primary focus:shadow-focus-ring"
                 />
                 <button
@@ -176,6 +179,9 @@ export default function ResetPasswordPage() {
                   )}
                 </button>
               </div>
+              <div className="mt-2">
+                <PasswordRequirements password={password} />
+              </div>
             </div>
 
             <div>
@@ -189,7 +195,7 @@ export default function ResetPasswordPage() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
-                  minLength={6}
+                  minLength={8}
                   placeholder="Re-enter your password"
                   className="h-12 w-full rounded-lg border-[1.5px] border-border bg-surface px-4 pr-12 text-base text-foreground outline-none transition-all placeholder:text-muted-foreground hover:border-border-strong focus:border-primary focus:shadow-focus-ring"
                 />

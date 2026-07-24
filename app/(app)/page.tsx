@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth/use-auth";
 import {
   getStreak,
@@ -32,6 +33,7 @@ import {
 
 export default function Home() {
   const { user, profile, loading: authLoading } = useAuth(true);
+  const pathname = usePathname();
   const { t } = useLocale();
   const [streak, setStreak] = useState<StreakSummary | null>(null);
   const [xp, setXp] = useState<XpSummary | null>(null);
@@ -78,7 +80,7 @@ export default function Home() {
     return () => {
       mounted = false;
     };
-  }, [user]);
+  }, [user, pathname]);
 
   const isLoading = authLoading || loading;
 

@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import { signUpWithEmail, resendSignupEmail } from "@/lib/auth/client";
-import { emailSchema } from "@/lib/auth/schemas";
+import { emailSchema, signupPasswordSchema } from "@/lib/auth/schemas";
+import { PasswordRequirements } from "@/components/auth/PasswordRequirements";
 
 // When unset, captcha is skipped entirely — signup works exactly as before
 // until the site key is configured and Supabase captcha protection is enabled.
@@ -95,6 +96,15 @@ export default function SignupPage() {
       setError("Passwords do not match.");
       setLoading(false);
       return;
+    }
+
+    if (!isTestEnv) {
+      const passwordCheck = signupPasswordSchema.safeParse(password);
+      if (!passwordCheck.success) {
+        setError(passwordCheck.error.issues[0]?.message ?? "Password does not meet the requirements.");
+        setLoading(false);
+        return;
+      }
     }
 
     if (TURNSTILE_SITE_KEY && !captchaToken) {
@@ -232,8 +242,8 @@ export default function SignupPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    minLength={6}
-                    placeholder="At least 6 characters"
+                    minLength={8}
+                    placeholder="At least 8 characters with a number and special character"
                     className="h-12 w-full rounded-lg border-[1.5px] border-border bg-surface px-4 pr-12 text-base text-foreground outline-none transition-all placeholder:text-muted-foreground hover:border-border-strong focus:border-primary focus:shadow-focus-ring"
                   />
                   <button
@@ -250,6 +260,9 @@ export default function SignupPage() {
                     )}
                   </button>
                 </div>
+                <div className="mt-2">
+                  <PasswordRequirements password={password} />
+                </div>
               </div>
 
               <div>
@@ -263,7 +276,7 @@ export default function SignupPage() {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     required
-                    minLength={6}
+                    minLength={8}
                     placeholder="Re-enter your password"
                     className="h-12 w-full rounded-lg border-[1.5px] border-border bg-surface px-4 pr-12 text-base text-foreground outline-none transition-all placeholder:text-muted-foreground hover:border-border-strong focus:border-primary focus:shadow-focus-ring"
                   />
