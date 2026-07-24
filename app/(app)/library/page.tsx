@@ -237,6 +237,7 @@ function SourceCard({ source }: { source: Source }) {
               title={source.title}
               ariaLabel={`${t("lesson.readSource")}: ${source.title}`}
               linkClassName="inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline"
+              skipCheck={source.sourceTier === 1}
             >
               {t("lesson.readSource")}
               <ArrowRightIcon />
@@ -315,6 +316,7 @@ function SourceCard({ source }: { source: Source }) {
               title={source.title}
               ariaLabel={`${t("lesson.readSource")}: ${source.title}`}
               linkClassName="inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline"
+              skipCheck={source.sourceTier === 1}
             >
               {t("lesson.readSource")}
               <ExternalLinkIcon />

@@ -15,6 +15,10 @@ interface ReachableLinkProps {
   linkClassName?: string;
   children?: React.ReactNode;
   ariaLabel?: string;
+  /** When true, skip the browser reachability check and render the original link.
+   *  Use for Tier-1 regulator domains (OJK, BI, IDX) that block CORS preflight
+   *  requests but are trusted by editorial review. */
+  skipCheck?: boolean;
 }
 
 export function ReachableLink({
@@ -26,6 +30,7 @@ export function ReachableLink({
   linkClassName = "inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline",
   children,
   ariaLabel,
+  skipCheck = false,
 }: ReachableLinkProps) {
   const { t, locale: contextLocale } = useLocale();
   const locale = localeProp ?? contextLocale;
@@ -38,6 +43,14 @@ export function ReachableLink({
 
     async function check() {
       setLoading(true);
+
+      if (skipCheck) {
+        if (cancelled) return;
+        setResult({ ok: true });
+        setLoading(false);
+        return;
+      }
+
       const reachability = await checkUrlReachability(url);
       if (cancelled) return;
       setResult(reachability);
@@ -56,7 +69,7 @@ export function ReachableLink({
     return () => {
       cancelled = true;
     };
-  }, [url, title, locale, fallbackType]);
+  }, [url, title, locale, fallbackType, skipCheck]);
 
   if (loading) {
     return (

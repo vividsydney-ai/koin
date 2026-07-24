@@ -86,4 +86,19 @@ describe("ReachableLink", () => {
       expect(screen.getByText("Custom text")).toBeInTheDocument();
     });
   });
+
+  it("renders the original link without calling reachability when skipCheck is true", async () => {
+    render(
+      <ReachableLink url="https://ojk.go.id" title="OJK Home" skipCheck>
+        Read source
+      </ReachableLink>
+    );
+
+    await waitFor(() => {
+      const link = screen.getByRole("link", { name: /read source: ojk home/i });
+      expect(link).toHaveAttribute("href", "https://ojk.go.id");
+    });
+
+    expect(mocks.checkUrlReachability).not.toHaveBeenCalled();
+  });
 });
