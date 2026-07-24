@@ -28,6 +28,7 @@ import { getFinancialLiteracyLevel } from "@/lib/profile/client";
 import { trackEvent } from "@/lib/analytics/client";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { StatCard } from "@/components/StatCard";
+import { ReachableLink } from "@/components/sources/ReachableLink";
 
 const STEP_IDS = ["intro", "concept", "example", "quiz", "source"] as const;
 
@@ -981,16 +982,15 @@ function SourceCard({ source, highlighted = false }: { source: LessonSource; hig
         )}
         <div className="mt-3 flex flex-wrap items-center gap-4">
           {source.url && (
-            <a
-              href={source.url}
-              target="_blank"
-              rel="noreferrer"
-              aria-label={`${t("lesson.readSource")}: ${displayTitle}`}
-              className="inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline"
+            <ReachableLink
+              url={source.url}
+              title={displayTitle}
+              ariaLabel={`${t("lesson.readSource")}: ${displayTitle}`}
+              linkClassName="inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline"
             >
               {t("lesson.readSource")}
               <ArrowRightMiniIcon />
-            </a>
+            </ReachableLink>
           )}
           {hasDetails && (
             <button
@@ -1059,16 +1059,15 @@ function SourceCard({ source, highlighted = false }: { source: LessonSource; hig
         {blurb && <p className="text-sm text-muted-foreground line-clamp-2">{blurb}</p>}
         <div className="mt-1 flex flex-wrap items-center gap-4">
           {source.url && (
-            <a
-              href={source.url}
-              target="_blank"
-              rel="noreferrer"
-              aria-label={`${t("lesson.readSource")}: ${displayTitle}`}
-              className="inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline"
+            <ReachableLink
+              url={source.url}
+              title={displayTitle}
+              ariaLabel={`${t("lesson.readSource")}: ${displayTitle}`}
+              linkClassName="inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline"
             >
               {t("lesson.readSource")}
               <ExternalLinkIcon />
-            </a>
+            </ReachableLink>
           )}
           {hasDetails && (
             <button

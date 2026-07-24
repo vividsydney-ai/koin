@@ -665,3 +665,22 @@ Make Koinaku responsive on desktop/iPad/mobile, break lesson wall-of-text, ensur
   - `npm run build` ✅ production build passed
   - `npm run loop:gates` ✅ all gates passed
 - **Linear issues:** Created under team KO and marked Done: KO-87 (invalid email), KO-88 (footer legal links), KO-89 (account password flow), KO-90 (terms acceptance). Drafts kept in `docs/KO-ACCT-001-linear-drafts.md`.
+
+## 2026-07-24 — KO-SOURCE-001: Source URL verification with Wikipedia fallback for dead links
+
+- **Goal:** Add runtime URL verification for quoted source links and swap dead links (404/503) with a Wikipedia fallback so users never hit a broken source.
+- **Execution:** Conductor (Kimi) ran solo on `web-koinaku`; no migration needed.
+- **Changes landed locally:**
+  - `lib/sources/reachability.ts`: shared `checkUrlReachability()` helper with timeout, retry, and 403-as-reachable handling.
+  - `lib/sources/wikipedia.ts`: `fetchWikipediaSummary()` using the Wikipedia REST API with Indonesian/English locale support; falls back to a search link on failure.
+  - `components/sources/ReachableLink.tsx`: display-time component that checks the source URL and renders either the original link or a Wikipedia fallback with an "Original link unavailable" notice.
+  - `app/(app)/library/page.tsx` and `app/learn/[slug]/LessonPlayer.tsx`: source "Read source" links now use `ReachableLink`.
+  - `lib/i18n/dictionaries.ts`: added `sources.readOnWikipedia` and `sources.originalUnavailable` in English and Indonesian.
+  - `tests/sources/reachability.test.ts`, `tests/sources/wikipedia.test.ts`, `tests/sources/ReachableLink.test.tsx`: unit tests for the new helpers and component.
+- **Verification:**
+  - `npx tsc --noEmit` ✅ clean
+  - `npm run lint` ✅ 0 errors / 20 warnings
+  - `npx vitest run` ✅ 66 files; 404 passed / 5 skipped
+  - `npm run build` ✅ production build passed
+  - `npm run loop:gates` ✅ all gates passed
+- **Trust guard:** Wikipedia fallback is UI-only; the original source record remains in the database so every published lesson keeps its Tier-1 source citation intact.

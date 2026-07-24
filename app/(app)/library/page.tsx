@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { getSources, type Source } from "@/lib/sources/client";
 import { FilterChips } from "@/components/FilterChips";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
+import { ReachableLink } from "@/components/sources/ReachableLink";
 
 const TIER_LABELS: Record<number, string> = {
   1: "Tier 1 — Regulator",
@@ -231,16 +232,15 @@ function SourceCard({ source }: { source: Source }) {
         )}
         <div className="mt-3 flex flex-wrap items-center gap-4">
           {source.url && (
-            <a
-              href={source.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={`${t("lesson.readSource")}: ${source.title}`}
-              className="inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline"
+            <ReachableLink
+              url={source.url}
+              title={source.title}
+              ariaLabel={`${t("lesson.readSource")}: ${source.title}`}
+              linkClassName="inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline"
             >
               {t("lesson.readSource")}
               <ArrowRightIcon />
-            </a>
+            </ReachableLink>
           )}
           {hasDetails && (
             <button
@@ -310,16 +310,15 @@ function SourceCard({ source }: { source: Source }) {
         {blurb && <p className="text-sm text-muted-foreground line-clamp-2">{blurb}</p>}
         <div className="mt-1 flex flex-wrap items-center gap-4">
           {source.url && (
-            <a
-              href={source.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={`${t("lesson.readSource")}: ${source.title}`}
-              className="inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline"
+            <ReachableLink
+              url={source.url}
+              title={source.title}
+              ariaLabel={`${t("lesson.readSource")}: ${source.title}`}
+              linkClassName="inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline"
             >
               {t("lesson.readSource")}
               <ExternalLinkIcon />
-            </a>
+            </ReachableLink>
           )}
           {hasDetails && (
             <button

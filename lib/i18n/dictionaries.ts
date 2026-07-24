@@ -64,6 +64,8 @@ export interface Dictionary {
   "lesson.verified": string;
   "lesson.needsReview": string;
   "lesson.readSource": string;
+  "sources.readOnWikipedia": string;
+  "sources.originalUnavailable": string;
   "lesson.quizBonus": string;
   "lesson.streak": string;
   "lesson.baseXp": string;
@@ -308,6 +310,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "lesson.verified": "Verified",
     "lesson.needsReview": "Needs review",
     "lesson.readSource": "Read source",
+    "sources.readOnWikipedia": "Read on Wikipedia",
+    "sources.originalUnavailable": "Original link unavailable",
     "lesson.quizBonus": "Includes +{bonus} quiz bonus",
     "lesson.streak": "Streak",
     "lesson.baseXp": "Base XP",
@@ -544,6 +548,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "lesson.verified": "Terverifikasi",
     "lesson.needsReview": "Perlu ditinjau",
     "lesson.readSource": "Baca sumber",
+    "sources.readOnWikipedia": "Baca di Wikipedia",
+    "sources.originalUnavailable": "Tautan asli tidak tersedia",
     "lesson.quizBonus": "Termasuk +{bonus} bonus kuis",
     "lesson.streak": "Rentetan",
     "lesson.baseXp": "XP dasar",
