@@ -2,6 +2,28 @@
 # Loop reads and writes this. Human can also read to understand where we are.
 # v2: MVP reshaped around paper trading. Original v1 loop files archived in /_archived.
 
+## 2026-07-24 — KO-CURR-003: 8-chapter curriculum restructure with debt & crypto lessons
+
+- **Goal:** Restructure the curriculum into 8 numbered chapters, add a debt chapter, add Cryptocurrency 101, and make the Learn page show zero-padded chapter numbers.
+- **Changes landed:**
+  - `supabase/migrations/20260725000000_KO-CURR-003_renumber_chapters_and_add_crypto.sql`: renumbers main-track lessons 1-40 (Foundation 0 stays 101-112), assigns chapters to topics, adds `cryptocurrency` topic + 4 crypto lessons + content variants + Bappebti Tier-1 source, reactivates four main-track duplicates with approved reviews/sources.
+  - `app/(app)/learn/page.tsx`: renders chapter numbers as `01`, `02`, etc.; adds title keys for new chapters.
+  - `lib/i18n/dictionaries.ts`: adds EN/ID keys for `chapter.letsTalkAboutDebt`, `chapter.planYourMoney`, `chapter.cryptocurrency101`.
+  - `lib/lessons/client.ts`: updates `CHAPTER_ORDER` and `TOPIC_SLUG_TO_CHAPTER` fallback for the 8-chapter layout.
+  - `tests/migrations/033_foundation_zero.test.ts`: updated expectations to 101-112 Foundation 0 and 1-40 main track.
+  - `tests/sources/url-verification.test.ts`: allows 404 for verified Tier-1 regulator sites (OJK, BI, IDX, Bappebti).
+  - Backfilled Foundation 0 primary sources defensively in `supabase/seed.sql` (ignored file, local resets only).
+  - Hardened older migrations (`20260706000005`, `20260706000016`, `20260716000030`) to skip missing lessons/sources on clean resets.
+- **Deploy:** pushed `web-koinaku` to GitHub; Vercel production deploy auto-triggered; `npx supabase db push --include-all` applied KO-CURR-003 migration to production (pg-delta cache warning only).
+- **Verification:**
+  - `npx tsc --noEmit` ✅ clean
+  - `npm run lint` ✅ 0 errors / 21 warnings
+  - `npx vitest run` ✅ 450 passed / 5 skipped (production DB)
+  - `npx vitest run tests/migrations/033_foundation_zero.test.ts` ✅ (production DB)
+  - Source URL verification ✅ (Bappebti ceklegalitas reachable)
+  - Smoke check `https://web.koinaku.com` ✅ 200 (with redirect follow)
+- **Linear:** KO-99 created in team KO, state **Done**.
+
 ## 2026-07-21 — KO-SEC-002: production security must-haves from audit
 
 - **Goal:** Implement the code-side must-have security controls from `GH-comparison/koinaku-security-check-2026-07-21.md` and write a Kimi-readable handoff.
