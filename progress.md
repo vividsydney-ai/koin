@@ -685,3 +685,21 @@ Make Koinaku responsive on desktop/iPad/mobile, break lesson wall-of-text, ensur
   - `npm run loop:gates` ✅ all gates passed
 - **Trust guard:** Wikipedia fallback is UI-only; the original source record remains in the database so every published lesson keeps its Tier-1 source citation intact.
 - **Linear:** KO-91 created and moved to Done.
+
+## 2026-07-24 — KO-SEC-003: Security must-haves (rate-limiting middleware + RLS audit)
+
+- **Goal:** Implement the remaining actionable must-haves from the 2026-07-21 security audit: edge abuse controls and a broader RLS audit.
+- **Execution:** Conductor (Kimi) ran solo on `web-koinaku`; no migration needed.
+- **Changes landed locally:**
+  - `lib/rate-limit.ts`: in-memory sliding-window rate limiter with per-IP and per-suffix buckets.
+  - `proxy.ts`: applies rate limits to `/login`, `/signup`, `/forgot-password`, `/reset-password` (10 req/min) and `/api/cron/*` (30 req/min); returns `429 Too Many Requests` with `X-RateLimit-*` headers when exceeded.
+  - `tests/security/rate-limit.test.ts`: unit tests for the rate limiter.
+  - `tests/security/rls-live.test.ts`: comprehensive static audit that verifies every user-sensitive table has RLS enabled and at least one `auth.uid()`-scoped policy across all migrations.
+- **Verification:**
+  - `npx tsc --noEmit` ✅ clean
+  - `npm run lint` ✅ 0 errors / 20 warnings
+  - `npx vitest run` ✅ 68 files; 449 passed / 5 skipped
+  - `npm run build` ✅ production build passed
+  - `npm run loop:gates` ✅ all gates passed
+- **Notes:** The in-memory rate limiter is a pragmatic single-instance solution. A future hardening step should swap the Map backend for Redis/Upstash KV in multi-instance deployments.
+- **Linear:** KO-92 created and moved to Done.
