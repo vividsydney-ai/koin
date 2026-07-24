@@ -664,4 +664,4 @@ Make Koinaku responsive on desktop/iPad/mobile, break lesson wall-of-text, ensur
   - `npx vitest run` ✅ 63 files; 388 passed / 5 skipped
   - `npm run build` ✅ production build passed
   - `npm run loop:gates` ✅ all gates passed
-- **Blockers:** `LINEAR_API_KEY` not set; issue drafts captured in `docs/KO-ACCT-001-linear-drafts.md`.
+- **Linear issues:** Created under team KO: KO-87 (invalid email), KO-88 (footer legal links), KO-89 (account password flow), KO-90 (terms acceptance). Drafts kept in `docs/KO-ACCT-001-linear-drafts.md`.
