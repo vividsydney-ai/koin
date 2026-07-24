@@ -85,7 +85,8 @@ export async function signUpWithEmail(
   password: string,
   confirmPassword: string,
   displayName: string,
-  captchaToken?: string
+  captchaToken?: string,
+  acceptedTerms?: boolean
 ): Promise<Result<{ user: User | null; session: Session | null }, AuthError>> {
   const parsed = signUpSchema.safeParse({ email, password, confirmPassword, displayName });
   if (!parsed.success) {
@@ -96,7 +97,10 @@ export async function signUpWithEmail(
     email: parsed.data.email,
     password: parsed.data.password,
     options: {
-      data: { display_name: parsed.data.displayName },
+      data: {
+        display_name: parsed.data.displayName,
+        ...(acceptedTerms ? { terms_accepted: true, terms_version: "2026-07-24", privacy_version: "2026-07-24" } : {}),
+      },
       emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
       // Only sent when the signup page rendered a captcha widget; Supabase
       // verifies it when captcha protection is enabled in Auth settings.
@@ -139,6 +143,29 @@ export async function sendPasswordResetEmail(email: string): Promise<Result<null
 
 export async function updatePassword(password: string): Promise<Result<User, AuthError>> {
   const { data, error } = await supabase.auth.updateUser({ password });
+  if (error) return err(normalizeAuthError(error));
+  if (!data.user) return err({ code: "unknown", message: "Password updated but no user returned." });
+  return ok(data.user);
+}
+
+export async function changePassword(
+  currentPassword: string,
+  newPassword: string
+): Promise<Result<User, AuthError>> {
+  const userResult = await getCurrentUser();
+  if (!userResult.ok) {
+    return err(userResult.error);
+  }
+
+  const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+    email: userResult.data.email ?? "",
+    password: currentPassword,
+  });
+  if (signInError || !signInData.user) {
+    return err(normalizeAuthError(signInError ?? { message: "Current password is incorrect.", status: 400 }));
+  }
+
+  const { data, error } = await supabase.auth.updateUser({ password: newPassword });
   if (error) return err(normalizeAuthError(error));
   if (!data.user) return err({ code: "unknown", message: "Password updated but no user returned." });
   return ok(data.user);

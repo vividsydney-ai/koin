@@ -639,3 +639,29 @@ Make Koinaku responsive on desktop/iPad/mobile, break lesson wall-of-text, ensur
 
 **Follow-ups**
 - Manual QA with real account: lesson content formatting, quiz variety, source card light theme, friends/cohort layout and invites.
+
+## 2026-07-24 — KO-ACCT-001: Auth/account hardening (email validation, terms acceptance, account section)
+
+- **Goal:** Fix auth/account bugs reported by the user, move Terms/Privacy links out of the global footer, and create a `/profile/account` subsection.
+- **Execution:** Conductor (Kimi) ran solo on `web-koinaku` because the task required a migration.
+- **Changes landed locally:**
+  - `supabase/migrations/20260724124944_add_terms_acceptance_to_user_settings.sql`: added `terms_accepted_at`, `privacy_accepted_at`, `terms_version`, `privacy_version` columns and updated `handle_new_user()` trigger to persist acceptance from signup metadata.
+  - `lib/auth/schemas.ts`: stricter email regex; added `signupFormSchema`.
+  - `lib/auth/client.ts`: `signUpWithEmail` now passes `terms_accepted` metadata; added `changePassword` helper.
+  - `app/signup/page.tsx`: real-time email validation, required Terms/Privacy checkbox (production only), disabled submit until valid.
+  - `components/Footer.tsx`: removed Terms/Privacy links from the app footer.
+  - `components/legal/TermsOfService.tsx` and `components/legal/PrivacyPolicy.tsx`: extracted legal content into reusable locale-aware components.
+  - `app/terms/page.tsx`, `app/terms/id/page.tsx`, `app/privacy/page.tsx`, `app/privacy/id/page.tsx`: refactored to use shared legal components.
+  - `app/(app)/profile/account/page.tsx`: account index linking to password, terms, privacy.
+  - `app/(app)/profile/account/password/page.tsx`: change-password form requiring current password.
+  - `app/(app)/profile/account/terms/page.tsx` and `app/(app)/profile/account/privacy/page.tsx`: in-app legal pages.
+  - `app/(app)/profile/page.tsx`: added "Manage account" link.
+  - `types/supabase.ts`: regenerated to include new `user_settings` columns.
+  - `docs/KO-ACCT-001-linear-drafts.md`: drafted four Linear issues because `LINEAR_API_KEY` is not available.
+- **Verification:**
+  - `npx tsc --noEmit` ✅ clean
+  - `npm run lint` ✅ 0 errors / 20 warnings
+  - `npx vitest run` ✅ 63 files; 388 passed / 5 skipped
+  - `npm run build` ✅ production build passed
+  - `npm run loop:gates` ✅ all gates passed
+- **Blockers:** `LINEAR_API_KEY` not set; issue drafts captured in `docs/KO-ACCT-001-linear-drafts.md`.

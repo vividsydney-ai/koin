@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useAuth } from "@/lib/auth/use-auth";
 import { signOut } from "@/lib/auth/client";
 import { getUserStats, type UserStats } from "@/lib/gamification/client";
@@ -179,6 +180,19 @@ export default function ProfilePage() {
                 ))}
               </div>
             </div>
+          </section>
+
+          <section className="rounded-lg border border-muted bg-surface p-5">
+            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+              Account
+            </h2>
+            <Link
+              href="/profile/account"
+              className="flex items-center justify-between rounded-md border border-border bg-background px-4 py-3 text-foreground transition-colors hover:bg-surface-raised"
+            >
+              <span className="text-sm font-medium">Manage account</span>
+              <span aria-hidden="true" className="text-muted-foreground">→</span>
+            </Link>
           </section>
 
           <button

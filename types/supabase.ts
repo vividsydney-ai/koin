@@ -2398,6 +2398,10 @@ export type Database = {
         Args: { p_scope: string; p_user_id: string }
         Returns: Json
       }
+      invite_friend_to_cohort: {
+        Args: { p_cohort_id: string; p_friend_id: string; p_user_id: string }
+        Returns: Json
+      }
       join_cohort_by_code: {
         Args: { p_invite_code: string; p_user_id: string }
         Returns: Json

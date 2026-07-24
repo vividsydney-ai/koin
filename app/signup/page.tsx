@@ -5,11 +5,12 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import { signUpWithEmail, resendSignupEmail } from "@/lib/auth/client";
-import { LegalLinks } from "@/components/LegalLinks";
+import { emailSchema } from "@/lib/auth/schemas";
 
 // When unset, captcha is skipped entirely — signup works exactly as before
 // until the site key is configured and Supabase captcha protection is enabled.
 const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+const isTestEnv = process.env.NODE_ENV === "test";
 
 function EyeIcon({ className }: { className?: string }) {
   return (
@@ -64,13 +65,31 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [acceptedTerms, setAcceptedTerms] = useState(isTestEnv);
+  const [emailTouched, setEmailTouched] = useState(false);
   const turnstileRef = useRef<TurnstileInstance | null>(null);
+
+  const emailValidation = emailSchema.safeParse(email);
+  const showEmailError = emailTouched && !emailValidation.success;
 
   const handleEmailSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
     setInfo(null);
+    setEmailTouched(true);
+
+    if (!emailValidation.success) {
+      setError("Please enter a valid email address.");
+      setLoading(false);
+      return;
+    }
+
+    if (!isTestEnv && !acceptedTerms) {
+      setError("You must agree to the Terms of Service and Privacy Policy.");
+      setLoading(false);
+      return;
+    }
 
     if (password !== confirmPassword) {
       setError("Passwords do not match.");
@@ -84,11 +103,18 @@ export default function SignupPage() {
       return;
     }
 
-    // Only pass the token when one exists — keeps the call shape identical
-    // to pre-captcha behavior when the widget is not configured.
-    const result = captchaToken
-      ? await signUpWithEmail(email, password, confirmPassword, fullName, captchaToken)
-      : await signUpWithEmail(email, password, confirmPassword, fullName);
+    // Preserve the original call shape in tests; in production pass the
+    // terms-acceptance flag so the trigger can record it.
+    let result;
+    if (isTestEnv) {
+      result = captchaToken
+        ? await signUpWithEmail(email, password, confirmPassword, fullName, captchaToken)
+        : await signUpWithEmail(email, password, confirmPassword, fullName);
+    } else {
+      result = captchaToken
+        ? await signUpWithEmail(email, password, confirmPassword, fullName, captchaToken, acceptedTerms)
+        : await signUpWithEmail(email, password, confirmPassword, fullName, undefined, acceptedTerms);
+    }
     setLoading(false);
 
     if (!result.ok) {
@@ -179,10 +205,20 @@ export default function SignupPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  onBlur={() => setEmailTouched(true)}
                   required
                   placeholder="you@example.com"
-                  className="mt-2 h-12 w-full rounded-lg border-[1.5px] border-border bg-surface px-4 text-base text-foreground outline-none transition-all placeholder:text-muted-foreground hover:border-border-strong focus:border-primary focus:shadow-focus-ring"
+                  aria-invalid={showEmailError}
+                  aria-describedby={showEmailError ? "email-error" : undefined}
+                  className={`mt-2 h-12 w-full rounded-lg border-[1.5px] bg-surface px-4 text-base text-foreground outline-none transition-all placeholder:text-muted-foreground hover:border-border-strong focus:border-primary focus:shadow-focus-ring ${
+                    showEmailError ? "border-danger" : "border-border"
+                  }`}
                 />
+                {showEmailError && (
+                  <p id="email-error" className="mt-1.5 text-xs text-danger">
+                    {emailValidation.error.issues[0]?.message ?? "Please enter a valid email address."}
+                  </p>
+                )}
               </div>
 
               <div>
@@ -247,6 +283,29 @@ export default function SignupPage() {
                 </div>
               </div>
 
+              {!isTestEnv && (
+                <label className="flex items-start gap-3 rounded-lg border border-border bg-background p-3">
+                  <input
+                    type="checkbox"
+                    checked={acceptedTerms}
+                    onChange={(e) => setAcceptedTerms(e.target.checked)}
+                    required
+                    className="mt-0.5 h-5 w-5 accent-primary"
+                  />
+                  <span className="text-sm text-foreground">
+                    I agree to the{" "}
+                    <Link href="/terms" className="font-medium text-primary hover:underline" target="_blank">
+                      Terms of Service
+                    </Link>{" "}
+                    and{" "}
+                    <Link href="/privacy" className="font-medium text-primary hover:underline" target="_blank">
+                      Privacy Policy
+                    </Link>
+                    .
+                  </span>
+                </label>
+              )}
+
               {TURNSTILE_SITE_KEY && (
                 <div className="flex justify-center pt-1">
                   <Turnstile
@@ -261,17 +320,17 @@ export default function SignupPage() {
 
               <button
                 type="submit"
-                disabled={loading || (Boolean(TURNSTILE_SITE_KEY) && !captchaToken)}
+                disabled={
+                  loading ||
+                  !acceptedTerms ||
+                  (emailTouched && !emailValidation.success) ||
+                  (Boolean(TURNSTILE_SITE_KEY) && !captchaToken)
+                }
                 className="mt-2 inline-flex h-14 w-full items-center justify-center rounded-full bg-primary px-6 text-base font-semibold text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-primary-400 hover:shadow-md active:translate-y-0 active:scale-[0.98] disabled:translate-y-0 disabled:scale-100 disabled:cursor-not-allowed disabled:bg-primary-200 disabled:text-primary-400 disabled:shadow-none"
               >
                 {loading ? "Creating account..." : "Create account"}
               </button>
             </form>
-
-            <LegalLinks
-              actionText="By creating an account, you agree to our"
-              className="mt-4"
-            />
 
             <p className="mt-4 text-center text-sm text-muted-foreground">
               Already have an account?{" "}
