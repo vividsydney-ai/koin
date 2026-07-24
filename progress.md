@@ -729,3 +729,16 @@ Make Koinaku responsive on desktop/iPad/mobile, break lesson wall-of-text, ensur
   - `lib/email/server.ts`: SMTP transport defaulting to `hello@koinaku.com`.
 - **Remaining in this slice:** additional notification types (lesson nudge, streak freeze warning, trade onboarding nudge), bounce/complaint monitoring docs, broader delivery tests.
 - **Linear:** KO-94 created and moved to Done for the core infrastructure.
+
+## 2026-07-24 — KO-QA-001: Final QA audit (blocked on local Lighthouse)
+
+- **Goal:** Run the Final QA slice from TASKS.md.
+- **Execution:** Conductor (Kimi) attempted a Lighthouse mobile audit.
+- **Blocker:** No Chrome/Chromium installation is available in this environment, so Lighthouse cannot run locally. The production build and full test suite are green.
+- **Verification available:**
+  - `npx tsc --noEmit` ✅ clean
+  - `npm run lint` ✅ 0 errors / 20 warnings
+  - `npx vitest run` ✅ 68 files; 449 passed / 5 skipped
+  - `npm run build` ✅ production build passed
+  - `npm run loop:gates` ✅ all gates passed (Lighthouse skipped)
+- **Next step:** Run Lighthouse in an environment with Chrome, or use the browse skill to do a visual/keyboard QA pass.
