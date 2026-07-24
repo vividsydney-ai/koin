@@ -684,3 +684,4 @@ Make Koinaku responsive on desktop/iPad/mobile, break lesson wall-of-text, ensur
   - `npm run build` ✅ production build passed
   - `npm run loop:gates` ✅ all gates passed
 - **Trust guard:** Wikipedia fallback is UI-only; the original source record remains in the database so every published lesson keeps its Tier-1 source citation intact.
+- **Linear:** KO-91 created and moved to Done.
