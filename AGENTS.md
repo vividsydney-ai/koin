@@ -6,7 +6,7 @@ Every agent starts by reading `loop-state.md`. If it exists and state is not `DO
 
 ## Default operating mode (auto-loop)
 
-Every task request in this repo runs Loop Engineering v2 with the session agent as **Conductor** — no special invocation needed. If the user gives no task, pick the first `[ ]` in `TASKS.md` and start the loop. The `/loop` skill (`.agents/skills/loop/SKILL.md`, also installed at `~/.agents/skills/loop/`) is a shortcut to the same protocol; invoke it whenever the user says "loop", "use loop eng", or "act as conductor".
+Every task request in this repo runs Loop Engineering v2 with the session agent as **Conductor** — no special invocation needed. If the user gives no task, pick the first `[ ]` in `TASKS.md` and start the loop. The `/loop` skill (`.agents/skills/loop/SKILL.md`, also installed at `~/.agents/skills/loop/`) is a shortcut to the same protocol; invoke it whenever the user says "loop", "use loop eng", or "act as conductor". Claude Code specifically discovers `/loop` via `.claude/skills/loop/SKILL.md`, a thin delegate that reads and follows this file — edit protocol logic here, not there.
 
 Production deployment is **Vercel only** for `https://web.koinaku.com`. Treat Netlify deployment references as stale history unless the human explicitly asks about the paused fallback.
 

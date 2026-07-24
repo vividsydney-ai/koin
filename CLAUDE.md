@@ -72,6 +72,7 @@ Canonical, actually-implemented loop is `docs/agents/LOOP_ENGINEERING.md` + `.lo
 | openwiki/quickstart.md | Generated OpenWiki entry point. Read during loop pre-flight if present |
 | docs/agents/LOOP_ENGINEERING.md | Canonical closed-loop setup for Claude/Codex/Kimi |
 | .loop/state.md | Durable loop memory and stop-token conventions |
+| .agents/skills/loop/SKILL.md | Cross-agent `/loop` Conductor protocol. Claude Code entry point is `.claude/skills/loop/SKILL.md`, which delegates here |
 | ../LOOP_ENGINEERING.md (Koin root) | Full expanded rationale behind docs/agents/LOOP_ENGINEERING.md — background only |
 | ../SWARM_KARPATHY.md, ../SWARM_ORCHESTRATION.md (Koin root) | Draft 7-role swarm + metrics loop design. Reference only — not implemented |
 | docs/BUG_TRACKER.md | Google Sheets ↔ Linear bug sync setup |
