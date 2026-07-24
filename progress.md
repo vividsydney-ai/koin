@@ -714,3 +714,18 @@ Make Koinaku responsive on desktop/iPad/mobile, break lesson wall-of-text, ensur
   - Full suite: `npx vitest run` ✅ 449 passed / 5 skipped.
 - **Remaining:** `docs/ANALYTICS_PLAYBOOK.md` is still TODO (docs slice).
 - **Linear:** KO-93 created and moved to Done.
+
+## 2026-07-24 — KO-NOTIF-001: Email notifications + in-app notification center (core shipped)
+
+- **Goal:** Verify and document the notification infrastructure slice from TASKS.md.
+- **Execution:** Conductor (Kimi) audited existing code; no new migration needed for the core pieces.
+- **Already shipped:**
+  - `supabase/migrations/20260629054918_create_analytics_ops_tables.sql`: `notifications_queue` table with RLS.
+  - `supabase/migrations/20260717000038_streak_reminders.sql`: `get_streak_reminder_candidates()` RPC and update policy.
+  - `lib/notifications/server.ts`: streak reminder email + in-app queue insertion.
+  - `lib/notifications/client.ts`: `getNotifications()` and `markNotificationRead()`.
+  - `components/NotificationsSheet.tsx`: bell icon + slide-over notification list.
+  - `app/api/cron/streak-reminders/route.ts`: cron endpoint guarded by `CRON_SECRET`.
+  - `lib/email/server.ts`: SMTP transport defaulting to `hello@koinaku.com`.
+- **Remaining in this slice:** additional notification types (lesson nudge, streak freeze warning, trade onboarding nudge), bounce/complaint monitoring docs, broader delivery tests.
+- **Linear:** KO-94 created and moved to Done for the core infrastructure.
