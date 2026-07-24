@@ -703,3 +703,14 @@ Make Koinaku responsive on desktop/iPad/mobile, break lesson wall-of-text, ensur
   - `npm run loop:gates` ✅ all gates passed
 - **Notes:** The in-memory rate limiter is a pragmatic single-instance solution. A future hardening step should swap the Map backend for Redis/Upstash KV in multi-instance deployments.
 - **Linear:** KO-92 created and moved to Done.
+
+## 2026-07-24 — KO-ANALYTICS-001: Analytics Events + SQL Views
+
+- **Goal:** Verify and close out the analytics instrumentation slice from TASKS.md.
+- **Execution:** Conductor (Kimi) discovered the work was already shipped: migration `20260717000037_analytics_views.sql` creates the required views and indexes, and `lib/analytics/client.ts` / `lib/analytics/server.ts` already instrument the key MVP events.
+- **Verification:**
+  - `tests/migrations/037_analytics_views.test.ts` passes against the live database (`analytics_dau`, `analytics_activation`, `analytics_retention`, `analytics_lesson_completion`, `analytics_first_trade`).
+  - `tests/analytics/client.test.ts` passes.
+  - Full suite: `npx vitest run` ✅ 449 passed / 5 skipped.
+- **Remaining:** `docs/ANALYTICS_PLAYBOOK.md` is still TODO (docs slice).
+- **Linear:** KO-93 created and moved to Done.
