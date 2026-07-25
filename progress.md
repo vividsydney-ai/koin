@@ -2,6 +2,15 @@
 # Loop reads and writes this. Human can also read to understand where we are.
 # v2: MVP reshaped around paper trading. Original v1 loop files archived in /_archived.
 
+## 2026-07-25 — KO-148 / KO-149 follow-up: cohort invite and QR scanner
+
+- **KO-148 — Unable to add friend to group:** This is the cohort invite flow. Verified end-to-end on production:
+  - `create_cohort` + `invite_friend_to_cohort` RPCs work.
+  - Two temp users created an accepted friendship, user A created a cohort, and user A invited user B; the `cohort_memberships` table showed both users in the cohort.
+  - No code change needed; moved Linear **KO-148** to **Done**.
+- **KO-149 — Can't use camera to scan friend QR Code:** The friends page already uses `navigator.mediaDevices.getUserMedia` + `jsQR` with a `<video>` element and camera-error handling. The user confirmed it works for them. Moved Linear **KO-149** to **Done**.
+- **Note:** One temp production test user (`9819faf2-ab23-4360-8e30-65e576985307`) could not be deleted due to a Supabase Auth 500 error; the other test user was removed.
+
 ## 2026-07-25 — Bug sheet & Linear reconciliation
 
 - **Goal:** Cross-check the Google Sheet bug tracker against current code, mark fixed bugs as Done in Linear, and create Linear issues for any untracked bugs.
