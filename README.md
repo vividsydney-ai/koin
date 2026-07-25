@@ -64,22 +64,6 @@ See `.env.example` for the full list. The app will not build or send email witho
 
 ---
 
-## Branch & deploy notes
+## Public project note
 
-- Active development happens on `web-koinaku`.
-- Production is deployed on Vercel and served at `https://web.koinaku.com`.
-- Supabase migrations are applied with `npx supabase db push` before pushing/deploying code that depends on schema changes.
-- Cron jobs are Vercel crons defined in `vercel.json` and handled by `app/api/cron/*` route handlers.
-- Netlify references are stale history or paused fallback only; do not use Netlify as the production deploy target.
-
----
-
-## Docs
-
-- [`docs/CONTEXT.md`](docs/CONTEXT.md) — domain model and ubiquitous language
-- [`ADL.md`](ADL.md) — architecture decision log
-- [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) — Vercel + Supabase deploy flow
-- [`docs/KNOWN_GAPS.md`](docs/KNOWN_GAPS.md) — what is intentionally out of scope
-- [`docs/QA_REPORT.md`](docs/QA_REPORT.md) — QA gate results
-- [`docs/ANALYTICS_PLAYBOOK.md`](docs/ANALYTICS_PLAYBOOK.md) — how to run MVP metrics
-- [`PRD.md`](PRD.md) — public soft-launch MVP requirements
+This repository is a product-facing code sample. Internal operating procedures, detailed architecture, curriculum, production runbooks, and AI-agent workflows are intentionally maintained outside the public source tree.
