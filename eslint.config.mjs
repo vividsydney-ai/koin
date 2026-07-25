@@ -14,6 +14,8 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Netlify build artifacts generated during deploy
     ".netlify/**",
+    // Local Understand Anything analysis output
+    ".ua/**",
   ]),
 ]);
 

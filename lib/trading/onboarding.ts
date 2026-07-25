@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/auth/client";
+import { ensurePortfolio } from "@/lib/trading/client";
 
 const REQUIRED_LESSON_SLUGS = ["money-basics-101", "budgeting-101", "inflation-101"];
 
@@ -72,6 +73,8 @@ export async function completeTradeOnboarding(userId: string): Promise<void> {
     console.error("completeTradeOnboarding error:", error.message);
     throw new Error(error.message);
   }
+
+  await ensurePortfolio(userId);
 }
 
 export async function saveRiskProfile(

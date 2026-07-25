@@ -2,6 +2,12 @@
 # Loop reads and writes this. Human can also read to understand where we are.
 # v2: MVP reshaped around paper trading. Original v1 loop files archived in /_archived.
 
+## 2026-07-25 — KO-156: defer Home portfolio until paper-trading unlock
+
+- Home now checks the existing `canTrade` onboarding gate before fetching a portfolio snapshot, so users who have not unlocked paper trading see no balance.
+- Completing paper-trading onboarding now ensures the default portfolio is created; after unlock, Home can display that balance as intended.
+- Added regression coverage for both states. Targeted Vitest: 9 passed; TypeScript clean; ESLint: 0 errors / 23 pre-existing warnings after excluding local `.ua/**` analysis artifacts from linting.
+
 ## 2026-07-25 — Follow-up: zero paper-trading cash for active portfolios
 
 - The initial reset restored active portfolios to their prior `starting_cash` (IDR 10m), but the intended fresh state is an actual zero balance.

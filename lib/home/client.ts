@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/auth/client";
 import { getPortfolio, getHoldings, getMarketData } from "@/lib/trading/client";
+import { getTradeOnboardingStatus } from "@/lib/trading/onboarding";
 
 export interface StreakSummary {
   currentStreakDays: number;
@@ -257,6 +258,9 @@ export async function getContinueLesson(userId: string): Promise<ContinueLesson 
 }
 
 export async function getPortfolioSnapshot(userId: string): Promise<PortfolioSnapshot | null> {
+  const tradeOnboarding = await getTradeOnboardingStatus(userId);
+  if (!tradeOnboarding.canTrade) return null;
+
   const [portfolio, holdings, marketData] = await Promise.all([
     getPortfolio(userId),
     getHoldings(userId),
