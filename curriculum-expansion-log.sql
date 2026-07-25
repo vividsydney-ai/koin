@@ -1,0 +1,28 @@
+-- Curriculum Expansion: 13 New Lessons
+-- Date: 2026-07-25
+-- This migration was executed via script, not SQL
+
+-- New topics:
+-- etf: ETFs
+-- banking_basics: Banking Basics
+-- digital_wallets: Digital Wallets & QRIS
+-- bonds: Bonds & SBN
+-- insurance: Insurance Basics
+-- retirement: Retirement Planning
+-- sharia: Sharia Investments
+-- gold: Gold Investment
+
+-- New lessons:
+-- #53: etfs-investing-with-one-click
+-- #54: banking-basics-choosing-the-right-account
+-- #55: digital-wallets-qris-safe-and-smart-usage
+-- #56: bonds-sbn-safe-investing-with-the-government
+-- #57: tax-basics-npwp-pph-21-and-filing-taxes
+-- #58: net-worth-know-your-financial-position
+-- #59: insurance-basics-bpjs-vs-private-insurance
+-- #60: retirement-planning-bpjs-dplk-and-starting-early
+-- #61: brokerage-account-setup-opening-your-rdn
+-- #62: sharia-investments-reksa-dana-syariah-and-sukuk
+-- #63: gold-investment-safe-haven-in-turbulent-times
+-- #64: stock-analysis-basics-fundamental-vs-technical
+-- #65: debt-consolidation-when-and-how-to-combine-debts
