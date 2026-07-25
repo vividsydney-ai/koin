@@ -25,6 +25,7 @@
   - Bug-sheet reconciliation: read the 19-row tracker, verified KO-37→KO-41 Done, created/closed KO-136→KO-144 for fixed bugs, and created KO-145→KO-149 for still-open items. KO-148 (cohort invite) and KO-149 (camera QR scan) were then verified working and moved to Done.
   - **KO-145 + KO-146 (Done, Deployed):** Dead BI/IDX source URLs replaced with verified Wikipedia equivalents via migration `20260725100000_KO145_146_fix_dead_source_urls.sql`. 13 broken sources updated (bi.go.id → Wikipedia ID/EN, idx.co.id → Wikipedia ID/EN). All marked `needs_review` with `trust_notes`. Updated `seed.sql` and `migration 030` to match. 13 tests added (all passing). **Migration applied to production Supabase** (commit 767ad2d). Verified live: BI-001/002, IDX-001/002 and 9 others confirmed showing Wikipedia URLs. Vercel auto-deployed to https://web.koinaku.com.
   - **KO-147 (Done):** Bahasa Indonesia grammar inconsistencies fixed. 8 changes across `lib/i18n/dictionaries.ts` and legal docs (TermsOfService.tsx, PrivacyPolicy.tsx): translated "side quest" → "misi tambahan", fixed "Kepercayaan sumber" → "Keandalan sumber", fixed pronoun shift, removed English glosses, translated English loanwords to proper Indonesian.
+  - **Tracker reconciliation (2026-07-25):** Foundation 0 is confirmed shipped and now has Linear Done parent KO-150 plus Done children KO-151→KO-155. Onboarding assessment gating and analytics are verified complete; do not re-implement them. Targeted regression run: 39 passed / 3 skipped, plus source URL verification passed.
   - **Remaining open bugs:** None from the bug-tracker sheet. All KO-136→KO-149 are Done.
   - Latest gates: `npx tsc --noEmit` clean; `npm run lint` 0 errors / 22 warnings; `npx vitest run` 466 passed / 5 skipped; latest `web-koinaku` pushed and deployed to `https://web.koinaku.com`.
 
@@ -153,21 +154,26 @@ Commit every logical sub-step with a clear message (project convention). Deploy 
 
 ---
 
-## 5. Your assignment — open Phase 6 tasks (from TASKS.md)
+## 5. Your assignment — active backlog (from Linear + `TASKS.md`)
 
-Take the **first `[ ]`** in `TASKS.md`, complete it, mark it `[x]`, stop — or batch by the groups below.
+Take one active child issue, complete it, update its matching local checklist item, then stop — or batch only within the groups below. Do not treat the ignored local `TASKS.md` as a replacement for Linear; Linear is the shared issue tracker.
 Initialize each task with `npm run loop:init <ID> "<title>"`.
 
 ### Group A — parallel-safe (no new migrations, mostly UI; separate worktrees OK)
-- [ ] **Analytics events** — instrument all 16 spec events + trade + graduation events. `TASKS.md` analytics slice.
-- [ ] **Final QA** — 375px mobile, 1280px desktop, keyboard nav, WCAG AA (run last). `TASKS.md` QA slice.
+- [ ] **KO-68 UI screenshot QA** — onboarding/login/signup/trade post-purple-flip + gradient K-tile swap.
+- [ ] **KO-111 Final QA** — 375px mobile, 1280px desktop, keyboard nav, WCAG AA, Lighthouse (run last).
 
 ### Group B — content, touches lessons/sources (SERIALIZE — overlapping files)
 - [x] **Curriculum overhaul** — 32-lesson foundation-first free track (KO-CURR-001). Done.
-- [ ] **Recommended resources** — books/videos per lesson.
+- [ ] **KO-116 Recommended resources** — verified books/videos per lesson.
 
 ### Group C — needs schema/architecture (SERIALIZE — one migration each, on web-koinaku directly)
-- [ ] **Notification queue** — stub delivery, architecture ready.
+- [ ] **KO-112→KO-115 Notifications** — implement the three remaining notification types, retry/failure coverage, and bounce/complaint runbook. Serialize any migration.
+
+### Group D — remaining product and documentation work
+- [ ] **KO-95 Passkeys** — WebAuthn sign-in and registration.
+- [ ] **KO-98 Live bug audit** — reconcile current user reports against deployed behaviour.
+- [ ] **KO-117 Handoff docs** — classify runtime versus internal-agent environment variables in `.env.example`; create `docs/ARCHITECTURE.md`.
 
 ### Done since last handoff
 - [x] Library tab

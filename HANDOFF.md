@@ -19,18 +19,23 @@
   - Bug-sheet reconciliation: 19-row Google Sheet audited; KO-37→KO-41 verified Done; fixed bugs tracked as KO-136→KO-144; open bugs tracked as KO-145→KO-149. KO-148 (cohort invite) and KO-149 (camera QR scan) were verified working and moved to Done.
   - **KO-145 + KO-146: Dead BI/IDX source URLs fixed.** Created migration `20260725100000_KO145_146_fix_dead_source_urls.sql` to replace unreachable `bi.go.id` and `idx.co.id` URLs with verified Wikipedia equivalents. Updated `seed.sql` and `migration 030` to match. Added 13 tests (all passing). All 13 broken sources now point to topic-equivalent Wikipedia articles (ID or EN) with `needs_review` status and `trust_notes` explaining the substitution. Working sources preserved: BI-006 (Instagram), IDX-004/008 (YouTube), IDX-006 (App Store). **Deployed to production Supabase** (commit 767ad2d, Vercel auto-deploy at https://web.koinaku.com). Verified in production: BI-001/002, IDX-001/002 and 9 others all show Wikipedia URLs.
   - **KO-147: Bahasa Indonesia grammar inconsistencies fixed.** 8 fixes across `lib/i18n/dictionaries.ts` and legal docs: "side quest" → "misi tambahan", "Kepercayaan sumber" → "Keandalan sumber", pronoun shift fix in `learn.foundationPath`, removed English gloss "(streak)", translated "endorsement" → "dukungan", "watchlist" → "daftar pantau", "opt-in" → "keikutsertaan", "stempel waktu" → "cap waktu".
+  - **Tracker reconciliation completed:** `TASKS.md` now maps genuine remaining work to Linear. Foundation 0 was already implemented and is now represented by Done parent KO-150 with Done children KO-151–KO-155; onboarding assessment gating and analytics are verified complete. Targeted verification: 39 passed / 3 skipped across Foundation 0, assessment, profile, Home, and analytics tests; source URL verification also passed.
 - **Remaining open bugs:** None from the bug-tracker sheet. All KO-136→KO-149 are Done.
 - Tests: `npx vitest run` → 466 passed / 5 skipped (13 new tests for KO-145/146 migration).
 - `npm run type-check` clean.
 - `npm run lint` → 0 errors, 22 warnings.
 
 ## Next: finish Phase 6
-- Remaining Phase 6 items from `TASKS.md`:
-  - C1: Recommended resources per lesson
-  - C2: Analytics events wrapper + 16 spec events
-  - C3: Notification queue stub delivery
-  - C5: Final QA: 375px mobile, 1280px desktop, keyboard nav, WCAG AA, Lighthouse mobile ≥85 / accessibility ≥95
-- Backlog (Linear): KO-111 (Final QA), KO-112→KO-115 (Notification types), KO-116 (Recommended resources), KO-117 (Handoff docs), KO-95 (Passkey sign-in), KO-98 (Bug-tracker audit)
+- Analytics is complete; do not duplicate it.
+- Remaining work mapped to active Linear backlog:
+  - **KO-112→KO-115:** lesson nudge, streak-freeze, and trade-onboarding notifications; delivery retry tests; bounce/complaint runbook.
+  - **KO-111:** final mobile/desktop, keyboard, WCAG, and Lighthouse QA.
+  - **KO-116:** verified recommended books and videos per lesson.
+  - **KO-117:** document runtime versus internal-agent credentials in `.env.example`, then create `docs/ARCHITECTURE.md`.
+  - **KO-95:** passkey (WebAuthn) sign-in and registration.
+  - **KO-98:** reconcile live bug reports against deployed behaviour.
+  - **KO-68:** screenshot QA and gradient K-tile follow-up.
+- KO-11 and KO-12 remain the Phase 6 and handoff umbrella issues; use the child issues above for implementation work.
 - Note: Google Sheet bug tracker is read-only with the current API key; updating the Status column requires OAuth2 or a service-account key.
 
 ## Loop v2 + swarm protocol
