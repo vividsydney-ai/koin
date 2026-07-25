@@ -38,6 +38,12 @@
 - KO-11 and KO-12 remain the Phase 6 and handoff umbrella issues; use the child issues above for implementation work.
 - Note: Google Sheet bug tracker is read-only with the current API key; updating the Status column requires OAuth2 or a service-account key.
 
+## Tracker contract — Claude, Codex, and Kimi
+- **Linear is canonical:** choose an active KO issue before work; update its state when work is actually complete.
+- **`TASKS.md` is a local checklist:** it is intentionally gitignored, but every active item must carry its exact Linear ID. It mirrors implementation scope and must not silently introduce work absent from Linear.
+- **`progress.md` is append-only evidence:** record goal, changes, verification, deploy state, and Linear outcome. Read its newest entry first; historical entries are not a live backlog.
+- **Current active issues:** KO-11, KO-12, KO-68, KO-95, KO-98, KO-111, KO-112, KO-113, KO-114, KO-115, KO-116, and KO-117. Foundation 0 (KO-150→KO-155), assessment gating, and analytics are complete—do not re-implement them without new evidence.
+
 ## Loop v2 + swarm protocol
 Use the loop engineering from `docs/agents/LOOP_ENGINEERING.md`:
 1. Start every session by reading `loop-state.md`. Resume if state != DONE.

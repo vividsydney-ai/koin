@@ -2,6 +2,14 @@
 # Loop reads and writes this. Human can also read to understand where we are.
 # v2: MVP reshaped around paper trading. Original v1 loop files archived in /_archived.
 
+## 2026-07-25 — Current tracker reconciliation (post-handoff update)
+
+- **Tracker roles:** Linear is the shared canonical backlog; ignored `TASKS.md` is the local implementation checklist; this file is an append-only evidence log, not a current task dashboard. Read the newest entry first; older entries remain historical records.
+- **Done since the earlier bug-sheet snapshot:** KO-145 and KO-146 source-link fixes were deployed; KO-147 Indonesian grammar fixes shipped; KO-148 and KO-149 were verified and moved to Done. The older "Still-open bugs" list below is historical, not current.
+- **Retroactive completion tracking:** Foundation 0 is now represented by Linear parent KO-150 and children KO-151→KO-155, all Done. Onboarding assessment gating and analytics are verified complete. Targeted tests: 39 passed / 3 skipped across Foundation 0, assessment, profile, Home, and analytics; source URL verification passed.
+- **Current active Linear backlog:** KO-11 (Phase 6 umbrella), KO-12 (handoff umbrella), KO-68 (UI screenshot QA), KO-95 (passkeys), KO-98 (live bug audit), KO-111 (final QA), KO-112 (lesson nudge), KO-113 (streak-freeze warning), KO-114 (trade nudge), KO-115 (delivery retry/failure tests plus bounce/complaint runbook), KO-116 (recommended resources), and KO-117 (environment-variable classification plus `docs/ARCHITECTURE.md`).
+- **Sync rule for every agent:** select and update the Linear issue first; align its exact ID in `TASKS.md`; append implementation and verification evidence here when the task changes state. Do not reopen completed analytics, Foundation 0, or assessment-gating work without new evidence.
+
 ## 2026-07-25 — KO-148 / KO-149 follow-up: cohort invite and QR scanner
 
 - **KO-148 — Unable to add friend to group:** This is the cohort invite flow. Verified end-to-end on production:
