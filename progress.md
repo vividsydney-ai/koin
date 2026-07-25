@@ -2,6 +2,20 @@
 # Loop reads and writes this. Human can also read to understand where we are.
 # v2: MVP reshaped around paper trading. Original v1 loop files archived in /_archived.
 
+## 2026-07-25 — KO-CURR-004: Display zero-padded chapter numbers on Learn page
+
+- **Goal:** Make the Learn page show the 8 chapters with zero-padded numbers and a hyphen separator, exactly as requested (`01 - Money Basics`, …, `08 - Cryptocurrency 101`), and unblock the Vercel production deploy.
+- **Changes landed:**
+  - `app/(app)/learn/page.tsx`: changed chapter title separator from space to ` - ` so titles render as `01 - Money Basics`.
+  - `app/onboarding/page.tsx`: wrapped `useSearchParams()` usage in a `Suspense` boundary to fix the Next.js prerender build failure that was blocking Vercel deploys.
+- **Deploy:** pushed `web-koinaku`; Vercel production build/deploy succeeded and aliased to `https://web.koinaku.com`.
+- **Verification:**
+  - `npx tsc --noEmit` ✅ clean
+  - `npm run lint` ✅ 0 errors / 22 warnings
+  - `npx vitest run` ✅ 453 passed / 5 skipped
+  - Production smoke via gstack browse: `https://web.koinaku.com/learn` renders all 8 chapters with `01 - … 08 -` prefixes ✅
+- **Linear:** KO-133 created and moved to **Done**.
+
 ## 2026-07-25 — KO-ACCT-002: Replay onboarding experience from profile/account
 
 - **Goal:** Let already-onboarded users replay the onboarding flow from `/profile/account` without mutating XP, progress, settings, or the `onboarding_completed` flag.
