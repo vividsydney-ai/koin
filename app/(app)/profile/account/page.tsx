@@ -40,7 +40,6 @@ export default function AccountPage() {
       </div>
 
       <div className="space-y-3">
-        <AccountRow href="/profile/settings" label="Notification settings" />
         <AccountRow href="/onboarding?replay=1" label={t("profile.replayOnboarding")} />
         <AccountRow href="/profile/account/password" label="Change password" />
         <AccountRow href="/profile/account/terms" label="Terms of Service" />

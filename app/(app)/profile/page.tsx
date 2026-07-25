@@ -180,6 +180,13 @@ export default function ProfilePage() {
                 ))}
               </div>
             </div>
+            <Link
+              href="/profile/settings"
+              className="mt-4 flex items-center justify-between rounded-md border border-border bg-background px-4 py-3 text-foreground transition-colors hover:bg-surface-raised"
+            >
+              <span className="text-sm font-medium">Notification settings</span>
+              <span aria-hidden="true" className="text-muted-foreground">→</span>
+            </Link>
           </section>
 
           <section className="rounded-lg border border-muted bg-surface p-5">
