@@ -2,6 +2,13 @@
 # Loop reads and writes this. Human can also read to understand where we are.
 # v2: MVP reshaped around paper trading. Original v1 loop files archived in /_archived.
 
+## 2026-07-25 — Production active-account XP, Koin Points, and paper-trading reset
+
+- Reset all 22 accounts that have signed in at least once. Preserved accounts, learning progress, streaks, badges, watchlists, friendships, cohorts, and cohort memberships.
+- Deleted 224 XP events and 114 Koin Point transactions; set every active user’s current and lifetime Koin Point balances to 0.
+- Cleared 24 paper trades and 4 holdings; restored every active portfolio’s cash and total value to its own `starting_cash`, cleared graduation state, and set status to `active`.
+- Set active-user leaderboard snapshots to zero scores with null ranks. Final global verification: 0 XP events, 0 Koin Point transactions, 0 nonzero leaderboard rows, 0 trades, 0 holdings, 0 non-fresh portfolios; friendships and cohort memberships remained intact.
+
 ## 2026-07-25 — Supabase Auth cleanup: unconfirmed accounts
 
 - The requested broader XP/Koin/trading reset was **not applied**; its database command was rejected before execution and the scope was then withdrawn.
