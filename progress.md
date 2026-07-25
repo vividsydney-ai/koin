@@ -2,6 +2,13 @@
 # Loop reads and writes this. Human can also read to understand where we are.
 # v2: MVP reshaped around paper trading. Original v1 loop files archived in /_archived.
 
+## 2026-07-25 — KO-157/KO-158 account safety and notification settings
+
+- **KO-157 Done and deployed:** added reversible account deletion with typed-email plus current-password confirmation, a seven-day recovery period, recovery email link, explicit reactivation after sign-in, and a protected daily purge cron.
+- **KO-158 Done and deployed:** added Profile → Settings in-app notification preferences for master, streak, friend, and cohort alerts. Routine product email remains intentionally disabled.
+- **Known follow-up:** friend and cohort preferences persist but their events are not yet written to `notifications_queue`; do not claim those alerts are delivered until that wiring is implemented.
+- **Separate Claude-owned migration:** the unrelated curriculum migration `20260725200000_reorganize_curriculum.sql` remains unapplied after failing on a missing `lessons.lesson_order` column. Account-deletion and notification-preference migrations applied successfully; leave the curriculum migration to Claude.
+
 ## 2026-07-25 — KO-156: defer Home portfolio until paper-trading unlock
 
 - Home now checks the existing `canTrade` onboarding gate before fetching a portfolio snapshot, so users who have not unlocked paper trading see no balance.
