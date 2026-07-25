@@ -46,6 +46,17 @@ export default function AccountPage() {
         <AccountRow href="/profile/account/privacy" label="Privacy Policy" />
       </div>
 
+      <section className="mt-8 rounded-lg border border-danger/40 bg-danger/5 p-4">
+        <div className="flex items-start gap-3">
+          <span aria-hidden="true" className="mt-0.5 text-lg text-danger">⚠</span>
+          <div>
+            <h2 className="font-semibold text-danger">Danger zone</h2>
+            <p className="mt-1 text-sm text-muted-foreground">Schedule permanent deletion of your account and data after a seven-day recovery period.</p>
+            <Link href="/profile/account/delete" className="mt-3 inline-flex rounded-md border border-danger/40 px-3 py-2 text-sm font-semibold text-danger hover:bg-danger/10">Delete my account</Link>
+          </div>
+        </div>
+      </section>
+
       <button
         type="button"
         onClick={handleSignOut}

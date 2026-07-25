@@ -101,6 +101,11 @@ export default function LoginPage() {
     }
 
     trackEvent({ userId: result.data.user.id, name: "login", properties: { method: "email" } });
+    const deletionStatus = await fetch("/api/account-deletion/status");
+    if (deletionStatus.ok && (await deletionStatus.json()).scheduledFor) {
+      router.push("/reactivate");
+      return;
+    }
     router.push("/");
   };
 
