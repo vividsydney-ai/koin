@@ -17,21 +17,20 @@
   - Friend list "unknown" names fixed; streak/XP increment verified; OJK/BI/IDX source-link handling verified.
   - KO-QUIZ-001: post-lesson "Next" button now skips already-completed lessons and lands on the next uncompleted lesson in curriculum order (new migration `20260725000001_KO-QUIZ-001_skip_completed_next_lesson.sql`).
   - Bug-sheet reconciliation: 19-row Google Sheet audited; KO-37→KO-41 verified Done; fixed bugs tracked as KO-136→KO-144; open bugs tracked as KO-145→KO-149. KO-148 (cohort invite) and KO-149 (camera QR scan) were verified working and moved to Done.
-- **Remaining open bugs:** KO-145 (BI Rates source 404), KO-146 (IDX education sources 503), KO-147 (Bahasa Indonesia grammar inconsistencies).
-- Tests: `npx vitest run` → 453 passed / 5 skipped.
+  - **KO-145 + KO-146: Dead BI/IDX source URLs fixed.** Created migration `20260725100000_KO145_146_fix_dead_source_urls.sql` to replace unreachable `bi.go.id` and `idx.co.id` URLs with verified Wikipedia equivalents. Updated `seed.sql` and `migration 030` to match. Added 13 tests (all passing). All 13 broken sources now point to topic-equivalent Wikipedia articles (ID or EN) with `needs_review` status and `trust_notes` explaining the substitution. Working sources preserved: BI-006 (Instagram), IDX-004/008 (YouTube), IDX-006 (App Store).
+  - **KO-147: Bahasa Indonesia grammar inconsistencies fixed.** 8 fixes across `lib/i18n/dictionaries.ts` and legal docs: "side quest" → "misi tambahan", "Kepercayaan sumber" → "Keandalan sumber", pronoun shift fix in `learn.foundationPath`, removed English gloss "(streak)", translated "endorsement" → "dukungan", "watchlist" → "daftar pantau", "opt-in" → "keikutsertaan", "stempel waktu" → "cap waktu".
+- **Remaining open bugs:** None from the bug-tracker sheet. All KO-136→KO-149 are Done.
+- Tests: `npx vitest run` → 466 passed / 5 skipped (13 new tests for KO-145/146 migration).
 - `npm run type-check` clean.
 - `npm run lint` → 0 errors, 22 warnings.
 
-## Next: finish Phase 6 + open bug tracker
-- Address remaining open bugs:
-  - KO-145 — Bank Indonesia BI Rates source returns 404
-  - KO-146 — IDX education sources return 503
-  - KO-147 — Bahasa Indonesia grammar inconsistencies
+## Next: finish Phase 6
 - Remaining Phase 6 items from `TASKS.md`:
   - C1: Recommended resources per lesson
   - C2: Analytics events wrapper + 16 spec events
   - C3: Notification queue stub delivery
   - C5: Final QA: 375px mobile, 1280px desktop, keyboard nav, WCAG AA, Lighthouse mobile ≥85 / accessibility ≥95
+- Backlog (Linear): KO-111 (Final QA), KO-112→KO-115 (Notification types), KO-116 (Recommended resources), KO-117 (Handoff docs), KO-95 (Passkey sign-in), KO-98 (Bug-tracker audit)
 - Note: Google Sheet bug tracker is read-only with the current API key; updating the Status column requires OAuth2 or a service-account key.
 
 ## Loop v2 + swarm protocol
