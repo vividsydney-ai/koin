@@ -28,6 +28,7 @@
   - **Tracker reconciliation (2026-07-25):** Foundation 0 is confirmed shipped and now has Linear Done parent KO-150 plus Done children KO-151→KO-155. Onboarding assessment gating and analytics are verified complete; do not re-implement them. Targeted regression run: 39 passed / 3 skipped, plus source URL verification passed.
   - **KO-156 (Done):** Home hides the portfolio balance until paper trading is unlocked (`canTrade`); completing the unlock flow creates the default paper portfolio. Do not show a pre-unlock IDR portfolio balance for new users.
   - **KO-157 (Done):** Account deletion is a seven-day reversible flow: typed email + current password, recovery email link, explicit reactivation, and protected daily purge. Do not replace it with client-only deletion.
+  - **KO-158 (Done):** Profile → Settings stores in-app master, streak, friend, and cohort alert preferences. Friend/cohort event generation is not yet wired into `notifications_queue`.
   - **Notification settings (Done):** In-app preferences live at `/profile/settings` for master, streak, friend, and cohort alerts. Do not add routine email notifications without human approval.
   - **Shared tracker contract:** Linear is canonical; ignored `TASKS.md` is the local checklist and must use exact Linear IDs; `progress.md` is append-only evidence, so read its newest entry first and never treat older snapshots as current. Active work is only KO-11, KO-12, KO-68, KO-95, KO-98, KO-111→KO-117.
   - **Remaining open bugs:** None from the bug-tracker sheet. All KO-136→KO-149 are Done.

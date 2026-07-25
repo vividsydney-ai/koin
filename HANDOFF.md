@@ -22,7 +22,7 @@
   - **Tracker reconciliation completed:** `TASKS.md` now maps genuine remaining work to Linear. Foundation 0 was already implemented and is now represented by Done parent KO-150 with Done children KO-151–KO-155; onboarding assessment gating and analytics are verified complete. Targeted verification: 39 passed / 3 skipped across Foundation 0, assessment, profile, Home, and analytics tests; source URL verification also passed.
   - **KO-156: Portfolio visibility follows paper-trading unlock.** Home hides the portfolio balance until the user has completed the existing unlock flow; completing that flow creates the default paper portfolio. New users should not see an IDR portfolio balance before unlocking trading.
   - **KO-157: Reversible account deletion shipped.** Danger Zone requires typed email plus current password, schedules permanent deletion after seven days, emails a recovery link, routes pending users to reactivation on sign-in, and runs a protected daily purge cron.
-  - **In-app notification settings shipped.** Profile → Account → Notification settings provides a master toggle plus streak, friend, and cohort preferences; keep product alerts in-app and reserve email for account/security events.
+  - **KO-158: In-app notification settings shipped.** Profile → Settings provides a master toggle plus streak, friend, and cohort preferences; keep product alerts in-app and reserve email for account/security events. Friend/cohort alert generation remains a separately tracked follow-up.
 - **Remaining open bugs:** None from the bug-tracker sheet. All KO-136→KO-149 are Done.
 - Tests: `npx vitest run` → 466 passed / 5 skipped (13 new tests for KO-145/146 migration).
 - `npm run type-check` clean.
