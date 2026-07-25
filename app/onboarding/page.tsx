@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/auth/client";
 import { getProfile, completeOnboarding } from "@/lib/profile/client";
@@ -60,7 +60,7 @@ const GOALS = [
 
 type OnboardingStep = "welcome" | "profile" | "assessment" | "goal" | "notifications" | "ready";
 
-export default function OnboardingPage() {
+function OnboardingContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isReplay = searchParams.get("replay") === "1";
@@ -686,5 +686,22 @@ function ChevronLeftIcon({ className }: { className?: string }) {
     >
       <path d="M15 18l-6-6 6-6" />
     </svg>
+  );
+}
+
+export default function OnboardingPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="flex min-h-screen items-center justify-center bg-background">
+          <div
+            className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent"
+            aria-label="Memuat"
+          />
+        </main>
+      }
+    >
+      <OnboardingContent />
+    </Suspense>
   );
 }

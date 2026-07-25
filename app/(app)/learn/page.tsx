@@ -308,7 +308,7 @@ function ChapterCard({
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <h2 className="font-semibold text-foreground">
-              {String(chapter.displayOrder + 1).padStart(2, "0")} {localizedChapterTitle(chapter.title, t)}
+              {String(chapter.displayOrder + 1).padStart(2, "0")} - {localizedChapterTitle(chapter.title, t)}
             </h2>
             {isComplete && <CheckIconMini className="h-4 w-4 text-success" />}
           </div>
