@@ -2,6 +2,32 @@
 # Loop reads and writes this. Human can also read to understand where we are.
 # v2: MVP reshaped around paper trading. Original v1 loop files archived in /_archived.
 
+## 2026-07-25 — KO-WORKFLOW-001: Enforce atomic Linear task tracking before implementation
+
+- **Goal:** Make Linear the source of truth for every implementation task; atomize multi-outcome tasks into linked child issues; add mechanical gates so unticketed work cannot start or land.
+- **Changes landed:**
+  - `scripts/linear-task-sync.mjs`: idempotent Linear sync helper that searches existing issues, creates missing parent/children, and stamps `loop-state.md`.
+  - `scripts/loop-init.sh`: accepts `--children <path>`, runs the sync helper, and fails closed if Linear tracking cannot be established.
+  - `scripts/gate-runner.sh`: added Gate 7 (Linear tracking) — requires `loop-state.md` parent link and blocks unticketed `TODO`/`FIXME`/`HACK`/`FOLLOW-UP`/`XXX` in source diff.
+  - `AGENTS.md`, `KIMI_HANDOFF.md`, `docs/agents/LOOP_ENGINEERING.md`, `docs/agents/issue-tracker.md`: documented the atomic task rule, children spec format, and enforcement gates.
+  - `.loop/tasks/KO-WORKFLOW-001-children.json`: canonical children spec example.
+  - `_sessions/KO-WORKFLOW-001-reconciliation-report.md`: full audit of issues created/reused/closed.
+- **Linear reconciliation:**
+  - Created parent KO-100 + children KO-101..KO-105 for this workflow task.
+  - Created retroactive parent KO-106 + children KO-107..KO-110 for already-shipped KO-CURR-003.
+  - Created backlog issues KO-111 (QA), KO-112..KO-115 (notifications), KO-116 (resources), KO-117 (docs).
+  - Closed KO-67 after confirming no `rounded-radius-*` drift remains.
+  - Archived accidental duplicates KO-118..KO-122 and test issues KO-123..KO-128 created during script validation.
+- **Verification:**
+  - `npx tsc --noEmit` ✅ clean
+  - `npm run lint` ✅ 0 errors
+  - `npx vitest run` ✅ 450 passed / 5 skipped
+  - `bash scripts/gate-runner.sh` ✅ all gates passed (Lighthouse skipped — not installed)
+  - `loop-init.sh` integration tested with a throwaway task; Linear sync succeeded and loop-state.md was stamped correctly.
+- **Remaining follow-up:**
+  - Run `openwiki code --update --print` after landing so workflow docs are reflected in repo memory.
+  - Monitor future `npx supabase db push` for migration-history warnings; repair if it repeats.
+
 ## 2026-07-24 — KO-CURR-003: 8-chapter curriculum restructure with debt & crypto lessons
 
 - **Goal:** Restructure the curriculum into 8 numbered chapters, add a debt chapter, add Cryptocurrency 101, and make the Learn page show zero-padded chapter numbers.

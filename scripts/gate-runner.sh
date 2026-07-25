@@ -80,6 +80,25 @@ run_gate "Gate 6: Secret scan" bash -c '
   exit 0
 '
 
+# Gate 7: Linear tracking gate
+run_gate "Gate 7: Linear tracking" bash -c '
+  # 7a: loop-state.md must reference a Linear parent
+  if [[ ! -f "loop-state.md" ]] || ! grep -qE "Linear parent: \[KO-[0-9]+\]" loop-state.md; then
+    echo "FAIL: loop-state.md missing Linear parent link (e.g. Linear parent: [KO-100](...))"
+    exit 1
+  fi
+
+  # 7b: unticketed follow-ups in source code diff are not allowed to land.
+  # Markdown docs are allowed to explain the rule; only code comments count.
+  VIOLATIONS=$(git diff -- "*.ts" "*.tsx" "*.js" "*.jsx" | grep -nE "(//|#|/\*|\*)\s*(TODO|FIXME|HACK|FOLLOW-UP|XXX)" | grep -vE "\[KO-[0-9]+\]" || true)
+  if [[ -n "$VIOLATIONS" ]]; then
+    echo "FAIL: unticketed follow-ups found in source diff (missing [KO-###] reference):"
+    echo "$VIOLATIONS"
+    exit 1
+  fi
+  exit 0
+'
+
 if [[ "$FAIL" -eq 0 ]]; then
   echo "=== ALL GATES PASSED ==="
   exit 0

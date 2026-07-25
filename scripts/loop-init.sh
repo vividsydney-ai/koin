@@ -1,15 +1,44 @@
 #!/usr/bin/env bash
-# Initialize loop-state.md for a new task.
-# Usage: scripts/loop-init.sh <TASK_ID> "<Task title>" [branch]
+# Initialize loop-state.md for a new task and enforce Linear tracking.
+# Usage: scripts/loop-init.sh <TASK_ID> "<Task title>" [branch] [--children <path>]
+#
+# Enforces Koinaku rule: every implementation task must have a Linear issue
+# before coding starts. Multi-outcome tasks must provide a --children spec
+# so the sync utility can atomize them into linked child issues.
 
 set -euo pipefail
 
-TASK_ID="${1:-}"
-TITLE="${2:-}"
-BRANCH="${3:-web-koinaku}"
+TASK_ID=""
+TITLE=""
+BRANCH="web-koinaku"
+CHILDREN_PATH=""
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --children)
+      CHILDREN_PATH="$2"
+      shift 2
+      ;;
+    -*)
+      echo "Unknown option: $1"
+      echo "Usage: $0 <TASK_ID> \"<Task title>\" [branch] [--children <path>]"
+      exit 1
+      ;;
+    *)
+      if [[ -z "$TASK_ID" ]]; then
+        TASK_ID="$1"
+      elif [[ -z "$TITLE" ]]; then
+        TITLE="$1"
+      elif [[ "$BRANCH" == "web-koinaku" ]]; then
+        BRANCH="$1"
+      fi
+      shift
+      ;;
+  esac
+done
 
 if [[ -z "$TASK_ID" || -z "$TITLE" ]]; then
-  echo "Usage: $0 <TASK_ID> \"<Task title>\" [branch]"
+  echo "Usage: $0 <TASK_ID> \"<Task title>\" [branch] [--children <path>]"
   exit 1
 fi
 
@@ -55,6 +84,7 @@ cat > loop-state.md <<EOF
 - [ ] Gate 4: Lighthouse mobile >=85 / accessibility >=95
 - [ ] Gate 5: Design-token drift check
 - [ ] Gate 6: Secret scan
+- [ ] Gate 7: Linear tracking gate
 
 ## Blockers
 None
@@ -90,5 +120,31 @@ cat > loop-budget.md <<EOF
 | # | Role | Started | Duration | Outcome |
 |---|------|---------|----------|---------|
 EOF
+
+# --- Linear tracking enforcement ---
+if [[ -n "$CHILDREN_PATH" && ! -f "$CHILDREN_PATH" ]]; then
+  echo "[loop-init] Children spec not found: $CHILDREN_PATH"
+  rm -f loop-state.md loop-budget.md
+  exit 1
+fi
+
+if command -v node &>/dev/null && [[ -f "scripts/linear-task-sync.mjs" ]]; then
+  if [[ -n "$CHILDREN_PATH" ]]; then
+    node scripts/linear-task-sync.mjs --task-id "$TASK_ID" --title "$TITLE" --children "$CHILDREN_PATH" || {
+      echo "[loop-init] Linear sync failed. Fix the issue or run with a manually created Linear parent."
+      rm -f loop-state.md loop-budget.md
+      exit 1
+    }
+  else
+    node scripts/linear-task-sync.mjs --task-id "$TASK_ID" --title "$TITLE" || {
+      echo "[loop-init] Linear sync failed. Every task needs a Linear parent before implementation."
+      echo "[loop-init] Create one manually or provide --children <path> to atomize the task."
+      rm -f loop-state.md loop-budget.md
+      exit 1
+    }
+  fi
+else
+  echo "[loop-init] WARNING: linear-task-sync.mjs not available; Linear tracking could not be enforced."
+fi
 
 echo "Initialized loop-state.md and loop-budget.md for $TASK_ID"

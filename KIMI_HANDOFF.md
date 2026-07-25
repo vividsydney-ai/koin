@@ -100,7 +100,12 @@ npx vitest run                        # must be ≥215 passed / 1 skipped, no re
 # Gate 2 — RULES.md scan (grep source diff only)
 git diff -- "*.ts" "*.tsx" "*.js" "*.jsx" | grep -nE "localStorage|sessionStorage" && echo "VIOLATION" || echo "clean"
 # also: no is_published=true without lesson_reviews; no migration without RLS in same file
+
+# Gate 7 — Linear tracking gate
+npm run loop:gates                    # includes Linear parent check + unticketed follow-up scan
 ```
+
+**Linear tracking:** every task must have a Linear parent before coding starts. Multi-outcome tasks must provide `--children <path>` to `loop:init` so they are atomized into linked child issues. No unticketed `TODO`/`FIXME`/`HACK`/`FOLLOW-UP` may land.
 
 **Phase 6 extra gates** (run when the task is in scope):
 - **Gate 15a — Adaptive lesson triggers:** panic-sell creates a loss-aversion recommendation; >50% concentration creates a diversification recommendation; N days inactivity creates a confidence recommendation; `lesson_triggers` maps ≥3 behaviors.
@@ -187,7 +192,8 @@ A task is done ONLY when:
 3. `TASKS.md` item flipped `[ ]` → `[x]`.
 4. `progress.md` updated with: what you did, gate results (paste the counts), and any follow-ups.
 5. A session log entry appended to `_sessions/session_YYYYMMDD.md`.
-6. If you changed architecture, workflows, schema contracts, security posture, or agent runbooks, run `openwiki code --update --print` after landing or log a follow-up if OpenWiki cannot run.
+6. Linear parent/child issues moved to Done, or follow-ups ticketed with `[KO-###]` references.
+7. If you changed architecture, workflows, schema contracts, security posture, or agent runbooks, run `openwiki code --update --print` after landing or log a follow-up if OpenWiki cannot run.
 
 If a gate fails and you can't fix it within budget: STOP, log the exact failure + command output to `progress.md`, hand back. A blocked-but-documented task beats a green-but-fake one.
 

@@ -54,7 +54,8 @@ The Conductor may run multiple tasks in parallel only when they are independent:
 2. Run the OpenWiki pre-flight above.
 3. Read `identity.md`, `HANDOFF.md`, `KIMI_HANDOFF.md`, `TASKS.md`, `RULES.md`, `CONTEXT.md`, `ADL.md`, `SCHEMA.md`.
 4. Identify the vertical slice: smallest end-to-end piece that can be built and verified independently.
-5. Initialize `loop-state.md` with `npm run loop:init <ID> "<title>"` if starting fresh.
+5. Initialize `loop-state.md` with `npm run loop:init <ID> "<title>"` if starting fresh.  
+   `loop:init` enforces Linear tracking: every task must have a Linear parent before coding starts; multi-outcome tasks must provide `--children <path>`.
 6. Search reflexion: `npm run loop:reflexion <tag>` before planning.
 7. Write or update tests before implementation code (TDD).
 
@@ -62,6 +63,14 @@ The Conductor may run multiple tasks in parallel only when they are independent:
 - `ESCALATED` — budget exhausted or human said STOP/HOLD. Halt immediately.
 - `BLOCKED` — external dependency missing. Log blocker and stop.
 - `DONE` — all gates passed, landed, metadata updated.
+
+## Linear tracking protocol
+Every implementation task must have a Linear parent issue before coding starts. Multi-outcome tasks must be atomized into linked child issues via `scripts/linear-task-sync.mjs`.
+
+- Initialize with tracking: `npm run loop:init <ID> "<title>" [--children .loop/tasks/<ID>-children.json]`.
+- The sync helper is idempotent: it reuses existing issues and creates missing ones.
+- Landing gate (Gate 7) blocks any `TODO`/`FIXME`/`HACK`/`FOLLOW-UP`/`XXX` in the diff that lacks a `[KO-###]` Linear reference.
+- See `docs/agents/issue-tracker.md` for the full convention and children spec format.
 
 ## Gate protocol
 Run `npm run loop:gates` in verification. Phase-specific thresholds:

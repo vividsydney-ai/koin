@@ -29,10 +29,24 @@ The referenced Substack argues for designing loops rather than one-off prompts: 
 
 ## Operating Model
 
+### Linear-first task tracking
+
+Every implementation task must have a Linear issue before coding starts.  
+Multi-outcome tasks must be atomized into linked child issues.
+
+- Use `scripts/linear-task-sync.mjs` (or `npm run loop:init --children <path>`) to create/reuse parent and child issues.
+- `loop-state.md` must contain a `## Linear Tracking` block with the parent link.
+- The landing gate (`scripts/gate-runner.sh` Gate 7) blocks:
+  - any land without a Linear parent in `loop-state.md`;
+  - any `TODO`/`FIXME`/`HACK`/`FOLLOW-UP`/`XXX` in the diff without a `[KO-###]` reference.
+
+See `docs/agents/issue-tracker.md` for the children spec format and API conventions.
+
 Koin uses a closed delivery loop:
 
 ```text
 SELECT TASK
+  -> ENSURE LINEAR TRACKING (parent + atomized children)
   -> READ OPENWIKI REPO MEMORY
   -> PLAN VERTICAL SLICE
   -> WRITE OR UPDATE TESTS
