@@ -161,6 +161,7 @@ export interface Dictionary {
   "profile.noPortfolio": string;
   "profile.badges": string;
   "profile.logout": string;
+  "profile.replayOnboarding": string;
   "profile.xp": string;
   "profile.koin": string;
   "profile.noBadgesYet": string;
@@ -413,6 +414,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "profile.noPortfolio": "No portfolio yet. Start paper trading from the Trade tab.",
     "profile.badges": "Badges",
     "profile.logout": "Log out",
+    "profile.replayOnboarding": "Replay onboarding",
     "profile.xp": "XP",
     "profile.koin": "Koin",
     "profile.noBadgesYet": "No badges yet",
@@ -654,6 +656,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "profile.noPortfolio": "Belum ada portofolio. Mulai trading simulasi dari tab Trading.",
     "profile.badges": "Lencana",
     "profile.logout": "Keluar",
+    "profile.replayOnboarding": "Ulangi pengenalan",
     "profile.xp": "XP",
     "profile.koin": "Koin",
     "profile.noBadgesYet": "Belum ada lencana",

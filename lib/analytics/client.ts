@@ -17,8 +17,10 @@ function setCookie(name: string, value: string, maxAgeSeconds: number): void {
 export type AnalyticsEventName =
   | "login"
   | "onboarding_started"
+  | "onboarding_replay_started"
   | "onboarding_assessment_completed"
   | "onboarding_completed"
+  | "onboarding_replay_completed"
   | "lesson_started"
   | "lesson_completed"
   | "lesson_completion_failed"

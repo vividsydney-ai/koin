@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState, useCallback } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/auth/client";
 import { getProfile, completeOnboarding } from "@/lib/profile/client";
 import { trackEvent } from "@/lib/analytics/client";
@@ -62,6 +62,9 @@ type OnboardingStep = "welcome" | "profile" | "assessment" | "goal" | "notificat
 
 export default function OnboardingPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isReplay = searchParams.get("replay") === "1";
+
   const [userId, setUserId] = useState<string | null>(null);
   const [step, setStep] = useState<OnboardingStep>("welcome");
   const [displayName, setDisplayName] = useState("");
@@ -75,6 +78,15 @@ export default function OnboardingPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [direction, setDirection] = useState<"forward" | "back">("forward");
+
+  const startEvent = useCallback(
+    (uid: string) =>
+      trackEvent({
+        userId: uid,
+        name: isReplay ? "onboarding_replay_started" : "onboarding_started",
+      }),
+    [isReplay]
+  );
 
   useEffect(() => {
     let mounted = true;
@@ -91,14 +103,15 @@ export default function OnboardingPage() {
       const profile = await getProfile(data.user.id);
       if (!mounted) return;
 
-      if (profile?.onboarding_completed) {
+      // In replay mode we allow already-onboarded users back into the flow.
+      if (profile?.onboarding_completed && !isReplay) {
         router.replace("/");
         return;
       }
 
       setUserId(data.user.id);
       setLoading(false);
-      trackEvent({ userId: data.user.id, name: "onboarding_started" });
+      startEvent(data.user.id);
     };
 
     checkUser();
@@ -106,7 +119,7 @@ export default function OnboardingPage() {
     return () => {
       mounted = false;
     };
-  }, [router]);
+  }, [router, isReplay, startEvent]);
 
   const navigate = (nextStep: OnboardingStep, dir: "forward" | "back" = "forward") => {
     setDirection(dir);
@@ -119,6 +132,22 @@ export default function OnboardingPage() {
 
     setSubmitting(true);
     setError(null);
+
+    if (isReplay) {
+      // Replay mode: do not persist anything or award XP/KP/badges.
+      setSubmitting(false);
+      trackEvent({
+        userId,
+        name: "onboarding_replay_completed",
+        properties: {
+          financial_goals: financialGoals,
+          literacy_level: literacyLevel,
+          assessment_completed: assessmentCompleted,
+        },
+      });
+      router.push("/profile");
+      return;
+    }
 
     const result = await completeOnboarding({
       userId,
@@ -195,6 +224,7 @@ export default function OnboardingPage() {
             onStart={handleSubmit}
             submitting={submitting}
             error={error}
+            isReplay={isReplay}
           />
         </div>
       </div>
@@ -225,6 +255,7 @@ interface StepContentProps {
   onStart: () => void;
   submitting: boolean;
   error: string | null;
+  isReplay?: boolean;
 }
 
 function StepContent({
@@ -248,6 +279,7 @@ function StepContent({
   onStart,
   submitting,
   error,
+  isReplay,
 }: StepContentProps) {
   const isForward = direction === "forward";
 
@@ -332,6 +364,7 @@ function StepContent({
           onStart={onStart}
           submitting={submitting}
           error={error}
+          isReplay={isReplay}
         />
       )}
     </div>
@@ -570,12 +603,14 @@ function ReadyStep({
   onStart,
   submitting,
   error,
+  isReplay,
 }: {
   displayName: string;
   financialGoals: string[];
   onStart: () => void;
   submitting: boolean;
   error: string | null;
+  isReplay?: boolean;
 }) {
   const goalLabels = financialGoals
     .map((value) => GOALS.find((g) => g.value === value)?.label)
@@ -588,10 +623,18 @@ function ReadyStep({
         🎉
       </div>
       <h2 className="font-display text-2xl font-bold tracking-tight text-foreground">
-        Kamu siap, {displayName || "Pembelajar"}!
+        {isReplay ? "Selesai, " : "Kamu siap, "}{displayName || "Pembelajar"}!
       </h2>
       <p className="mt-2 text-sm text-muted-foreground">
-        Fokusmu: <span className="font-semibold text-foreground">{goalLabels}</span>. Mari mulai perjalanan literasi keuanganmu.
+        {isReplay ? (
+          <>
+            Fokusmu saat ini: <span className="font-semibold text-foreground">{goalLabels}</span>. Ini hanya simulasi — profil dan XP-mu tidak berubah.
+          </>
+        ) : (
+          <>
+            Fokusmu: <span className="font-semibold text-foreground">{goalLabels}</span>. Mari mulai perjalanan literasi keuanganmu.
+          </>
+        )}
       </p>
 
       {error && (
@@ -605,7 +648,7 @@ function ReadyStep({
         disabled={submitting}
         className="mt-8 inline-flex h-14 w-full items-center justify-center rounded-full bg-primary px-6 text-base font-semibold text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-primary-400 hover:shadow-md active:translate-y-0 active:scale-[0.98] disabled:translate-y-0 disabled:scale-100 disabled:cursor-not-allowed disabled:bg-primary-200 disabled:text-primary-400 disabled:shadow-none"
       >
-        {submitting ? "Menyiapkan..." : "Mulai belajar"}
+        {submitting ? "Menyiapkan..." : isReplay ? "Kembali ke profil" : "Mulai belajar"}
       </button>
     </div>
   );

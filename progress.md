@@ -2,6 +2,28 @@
 # Loop reads and writes this. Human can also read to understand where we are.
 # v2: MVP reshaped around paper trading. Original v1 loop files archived in /_archived.
 
+## 2026-07-25 — KO-ACCT-002: Replay onboarding experience from profile/account
+
+- **Goal:** Let already-onboarded users replay the onboarding flow from `/profile/account` without mutating XP, progress, settings, or the `onboarding_completed` flag.
+- **Changes landed:**
+  - `app/(app)/profile/account/page.tsx`: added "Replay onboarding" row linking to `/onboarding?replay=1`.
+  - `app/onboarding/page.tsx`: added `replay=1` query-param detection; in replay mode:
+    - already-onboarded users are not redirected away;
+    - the final step shows read-only summary UI and "Kembali ke profil";
+    - `completeOnboarding` is never called;
+    - tracked as `onboarding_replay_started` / `onboarding_replay_completed`.
+  - `lib/analytics/client.ts`: added `onboarding_replay_started` and `onboarding_replay_completed` to `AnalyticsEventName`.
+  - `lib/i18n/dictionaries.ts`: added `profile.replayOnboarding` EN/ID labels.
+  - `tests/profile/account.test.tsx`: verifies the replay link.
+  - `tests/onboarding/page.test.tsx`: verifies replay mode does not redirect onboarded users and does not call `completeOnboarding`.
+- **Linear:** parent KO-129 + children KO-130..KO-132 created and moved to Done.
+- **Verification:**
+  - `npx tsc --noEmit` ✅ clean
+  - `npm run lint` ✅ 0 errors
+  - `npx vitest run` ✅ 453 passed / 5 skipped
+  - `bash scripts/gate-runner.sh` ✅ all gates passed
+  - `https://web.koinaku.com` smoke check ✅ 200
+
 ## 2026-07-25 — KO-WORKFLOW-001: Enforce atomic Linear task tracking before implementation
 
 - **Goal:** Make Linear the source of truth for every implementation task; atomize multi-outcome tasks into linked child issues; add mechanical gates so unticketed work cannot start or land.
@@ -25,7 +47,7 @@
   - `bash scripts/gate-runner.sh` ✅ all gates passed (Lighthouse skipped — not installed)
   - `loop-init.sh` integration tested with a throwaway task; Linear sync succeeded and loop-state.md was stamped correctly.
 - **Remaining follow-up:**
-  - Run `openwiki code --update --print` after landing so workflow docs are reflected in repo memory.
+  - ✅ `openwiki code --update --print` completed; wiki updated (`quickstart.md`, `delivery-workflow.md`, `architecture.md`).
   - Monitor future `npx supabase db push` for migration-history warnings; repair if it repeats.
 
 ## 2026-07-24 — KO-CURR-003: 8-chapter curriculum restructure with debt & crypto lessons
