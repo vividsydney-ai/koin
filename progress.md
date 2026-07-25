@@ -2,6 +2,12 @@
 # Loop reads and writes this. Human can also read to understand where we are.
 # v2: MVP reshaped around paper trading. Original v1 loop files archived in /_archived.
 
+## 2026-07-25 — Follow-up: zero paper-trading cash for active portfolios
+
+- The initial reset restored active portfolios to their prior `starting_cash` (IDR 10m), but the intended fresh state is an actual zero balance.
+- Set `starting_cash`, `cash_balance`, and `total_value` to 0 for every active-user portfolio; retained active status and cleared graduation state. Home derives its portfolio figure from `cash_balance`, so it now returns zero with no holdings.
+- Verified 6 active portfolios and 0 nonzero active balances. Both Arjuna accounts are included. `hamptonvivid@icloud.com` is not present in Supabase Auth after the unconfirmed-account cleanup.
+
 ## 2026-07-25 — Production active-account XP, Koin Points, and paper-trading reset
 
 - Reset all 22 accounts that have signed in at least once. Preserved accounts, learning progress, streaks, badges, watchlists, friendships, cohorts, and cohort memberships.
