@@ -2,6 +2,30 @@
 # Loop reads and writes this. Human can also read to understand where we are.
 # v2: MVP reshaped around paper trading. Original v1 loop files archived in /_archived.
 
+## 2026-07-25 — Bug sheet & Linear reconciliation
+
+- **Goal:** Cross-check the Google Sheet bug tracker against current code, mark fixed bugs as Done in Linear, and create Linear issues for any untracked bugs.
+- **Sheet:** `koin-bug-tracker-data` (19 bugs, rows 2–20).
+- **Fixed bugs moved to Done in Linear:**
+  - KO-37 → KO-41 already Done; verified.
+  - Created and closed: KO-136 (lesson progress persists), KO-137 (no “lesson not found” flash), KO-138 (paper trading RLS), KO-139 (invalid email rejected), KO-140 (password requirements visible), KO-141 (password reset captcha), KO-142 (signup captcha), KO-143 (fake sources → Wikipedia fallback), KO-144 (friend list names).
+- **Still-open bugs tracked in Linear:** KO-145 (BI Rates 404), KO-146 (IDX 503), KO-147 (ID grammar), KO-148 (add friend to group), KO-149 (camera QR scan).
+- **Sheet write limitation:** the provided `GOOGLE_SHEET_API` is an API key, which is read-only for Google Sheets. Updating the Status column requires OAuth2 or a service-account key. Read the sheet, but could not write status changes back.
+
+## 2026-07-25 — KO-QUIZ-001: Fix “Next lesson” skipping already-completed lessons
+
+- **Goal:** Stop the completion-screen “Next lesson” button from jumping over completed lessons to a much later one (e.g. Budgeting → Emergency Fund).
+- **Changes landed:**
+  - `supabase/migrations/20260725000001_KO-QUIZ-001_skip_completed_next_lesson.sql`: updated `complete_lesson` to return the first following lesson the user has **not** completed, with a fallback to the immediate next published lesson.
+  - Pushed `web-koinaku` and ran `npx supabase db push --include-all` to apply the migration to production.
+- **Deploy:** Vercel production deploy succeeded and aliased to `https://web.koinaku.com`.
+- **Verification:**
+  - `npx tsc --noEmit` ✅
+  - `npm run lint` ✅ 0 errors / 22 warnings
+  - `npx vitest run` ✅ 453 passed / 5 skipped
+  - Production RPC smoke: completing `budgeting-101` after marking `pay-yourself-first` and `spending-traps` completed returns `behavioral-bias-intro` ✅
+- **Linear:** KO-135 created and moved to **Done**.
+
 ## 2026-07-25 — KO-CURR-004: Display zero-padded chapter numbers on Learn page
 
 - **Goal:** Make the Learn page show the 8 chapters with zero-padded numbers and a hyphen separator, exactly as requested (`01 - Money Basics`, …, `08 - Cryptocurrency 101`), and unblock the Vercel production deploy.
