@@ -2,6 +2,12 @@
 # Loop reads and writes this. Human can also read to understand where we are.
 # v2: MVP reshaped around paper trading. Original v1 loop files archived in /_archived.
 
+## 2026-07-25 — Supabase Auth cleanup: unconfirmed accounts
+
+- The requested broader XP/Koin/trading reset was **not applied**; its database command was rejected before execution and the scope was then withdrawn.
+- Deleted the 3 Supabase Auth accounts with no confirmed email. All 3 had never signed in and had no friendships, cohorts, or cohort memberships, so no social data was affected.
+- Post-delete verification: 36 total accounts (22 signed in, 14 never signed in), 0 unconfirmed accounts, 3 friendships, 5 cohorts, and 8 cohort memberships preserved.
+
 ## 2026-07-25 — Current tracker reconciliation (post-handoff update)
 
 - **Tracker roles:** Linear is the shared canonical backlog; ignored `TASKS.md` is the local implementation checklist; this file is an append-only evidence log, not a current task dashboard. Read the newest entry first; older entries remain historical records.
