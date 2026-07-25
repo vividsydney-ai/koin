@@ -3,7 +3,7 @@
 > You are Kimi, acting as the coding agent. This document is self-contained.
 > Read it top to bottom before touching anything. Do not skip the "Rules you
 > must not break" section.
-> **Last updated:** 2026-07-21
+> **Last updated:** 2026-07-25
 
 ---
 
@@ -14,7 +14,17 @@
 - **Stack:** Next.js + TypeScript (strict) + Supabase (Postgres, RLS) + Vitest + Tailwind
 - **Prod:** https://web.koinaku.com (Vercel project `koin-web-koinaku`)
 - **Deploy target:** Vercel only. Netlify is a paused fallback; do not rely on it for production deploys.
-- **Current state:** Responsive /learn grid (1/2/3-column), LessonPlayer content polish with icons/subheaders, and quiz variety fix landed on `web-koinaku` and deployed to `https://web.koinaku.com`. Root cause was `seededIndex` returning a floating-point index; fixed and regression-tested. Friends/cohort UI polished (primary-brand create button, bottom-nav clearance, responsive 2-column layout). Production smoke verified at 375/768/1280/1440: lesson completion works, quizzes cycle through MCQ/T/F/fill_blank, library/friends responsive. Previous work: KO-DEDUP-001 deactivated duplicate Foundation 0 variants; SEC-001 added CI, Zod validation, typed service layer, RLS smoke tests, security docs, pre-commit hooks. KO-SEC-002 added production browser security headers, root Next.js `proxy.ts` auth redirects, HTTPS-only `Secure` auth cookie attributes, `security.txt`, `robots.txt`, and corrected stale `httpOnly` docs. Latest gates: `npx tsc --noEmit` clean; `npm run lint` 0 errors / 20 warnings; `npx vitest run` 388 passed / 5 skipped; `npm run build` passed; `npm run loop:gates` passed with Lighthouse skipped because it is not installed.
+- **Current state:**
+  - KO-CURR-004 shipped and deployed: Learn page shows 8 chapters as `01 - Money Basics` … `08 - Cryptocurrency 101`.
+  - Fixed the Vercel deploy blocker: wrapped `app/onboarding/page.tsx` in a React `Suspense` boundary so `useSearchParams()` no longer breaks the Next.js static build.
+  - KO-AUTH-001 verified complete: signup validates email with Zod, enforces password rules (≥8 chars, number, special char), shows/hides password toggles on login/signup/reset, forgot-password flow exists, and `/profile/account/password` lets users change passwords.
+  - Friend list "unknown" names verified fixed (`getFriends` joins `profiles.display_name`).
+  - Streak/XP verified working (`complete_lesson` awards XP and calls `check_in_streak` once per WIB day; no hard cap).
+  - OJK/BI/IDX source links verified fixed: `ReachableLink` bypasses browser CORS checks for Tier-1 sources and falls back to Wikipedia for truly dead links.
+  - KO-QUIZ-001 shipped: `complete_lesson` now returns the next **uncompleted** lesson in curriculum order, so the post-lesson "Next" button no longer jumps over completed lessons.
+  - Bug-sheet reconciliation: read the 19-row tracker, verified KO-37→KO-41 Done, created/closed KO-136→KO-144 for fixed bugs, and created KO-145→KO-149 for still-open items. KO-148 (cohort invite) and KO-149 (camera QR scan) were then verified working and moved to Done.
+  - **Remaining open bugs:** KO-145 (BI Rates source 404), KO-146 (IDX education sources 503), KO-147 (Bahasa Indonesia grammar inconsistencies).
+  - Latest gates: `npx tsc --noEmit` clean; `npm run lint` 0 errors / 22 warnings; `npx vitest run` 453 passed / 5 skipped; latest `web-koinaku` pushed and deployed to `https://web.koinaku.com`.
 
 **First actions (in this order, no exceptions):**
 1. Read `loop-state.md`. If it exists and state is not `DONE`, resume from there.
