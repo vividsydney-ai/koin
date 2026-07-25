@@ -273,19 +273,19 @@ function PrivacyPolicyId() {
           </li>
           <li>
             <strong>Data trading simulasi:</strong> portofolio virtual, kepemilikan, transaksi,
-            watchlist, profil risiko.
+            daftar pantau, profil risiko.
           </li>
           <li>
             <strong>Data sosial:</strong> koneksi teman, kode undangan, keanggotaan kelompok,
             peringkat papan peringkat.
           </li>
           <li>
-            <strong>Pengaturan:</strong> preferensi notifikasi, waktu pengingat rentetan, opt-in
+            <strong>Pengaturan:</strong> preferensi notifikasi, waktu pengingat rentetan, keikutsertaan
             laporan mingguan, visibilitas papan peringkat.
           </li>
           <li>
             <strong>Peristiwa penggunaan dan analitik:</strong> peristiwa dalam aplikasi, properti
-            peristiwa, pengidentifikasi sesi, stempel waktu.
+            peristiwa, pengidentifikasi sesi, cap waktu.
           </li>
           <li>
             <strong>Komunikasi:</strong> permintaan dukungan, masukan, laporan bendera konten.

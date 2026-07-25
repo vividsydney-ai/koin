@@ -543,7 +543,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "lesson.quizHeading": "Uji pemahamanmu",
     "lesson.tryAnotherQuestion": "Coba soal lain",
     "lesson.noQuestionAvailable": "Belum ada soal untuk pelajaran ini.",
-    "lesson.sourceTrust": "Kepercayaan sumber",
+    "lesson.sourceTrust": "Keandalan sumber",
     "lesson.sourceHeading": "Dari mana asalnya",
     "lesson.sourceBody":
       "Koin hanya mengajar dari regulator Indonesia berlisensi dan institusi terverifikasi. Jika kamu melihat saran tanpa sumber, pertanyakan.",
@@ -622,15 +622,15 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "learn.title": "Belajar",
     "learn.subtitle": "Pelajaran uang ringkas, satu konsep dalam satu waktu.",
     "learn.startLesson": "Mulai pelajaran",
-    "learn.startSideQuest": "Mulai side quest",
-    "learn.sideQuest": "Side quest",
+    "learn.startSideQuest": "Mulai misi tambahan",
+    "learn.sideQuest": "Misi tambahan",
     "learn.goalBody":
       "Pelajaran ini mendukung salah satu tujuan finansial yang kamu pilih saat onboarding.",
     "learn.needFoundation": "Kamu perlu memperkuat dasar",
     "learn.readyForMore": "Kamu sudah paham dasar",
     "learn.startFrom": "Mulai dari {title}",
     "learn.foundationPath":
-      "Berdasarkan hasil asesmen, kita mulai dari konsep keuangan paling dasar dulu.",
+      "Berdasarkan hasil asesmenmu, kami akan mulai dari konsep keuangan paling dasar terlebih dahulu.",
     "learn.tailoredPath":
       "Berdasarkan hasil asesmen, kamu bisa langsung mulai dari pelajaran yang paling sesuai.",
     "learn.completedOf": "{completed} dari {total} selesai",
