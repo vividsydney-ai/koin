@@ -2,6 +2,8 @@ import { supabase } from "@/lib/auth/client";
 import { getPortfolio, getHoldings, getMarketData } from "@/lib/trading/client";
 import { getTradeOnboardingStatus } from "@/lib/trading/onboarding";
 import { curriculumChapterNumber, orderCurriculumLessons } from "@/lib/lessons/curriculum";
+import { getCoreStartIndex } from "@/lib/lessons/gating";
+import { requiresChapterMission } from "@/lib/lessons/mastery";
 
 export interface StreakSummary {
   currentStreakDays: number;
@@ -250,9 +252,7 @@ export async function getContinueLesson(userId: string): Promise<ContinueLesson 
     }))
   );
   const startingLessonId = settings?.starting_lesson_id;
-  let startIndex = startingLessonId
-    ? publishedLessons.findIndex((l) => l.id === startingLessonId)
-    : 0;
+  let startIndex = getCoreStartIndex(publishedLessons, startingLessonId);
 
   // If the user's configured starting lesson is no longer published (e.g.
   // removed during content cleanup), fall back to the first published lesson
@@ -261,13 +261,38 @@ export async function getContinueLesson(userId: string): Promise<ContinueLesson 
     startIndex = 0;
   }
 
+  let passedChapterMissions: Set<number> | null = null;
+
+  const hasPassedMission = async (chapterNumber: number) => {
+    if (!passedChapterMissions) {
+      const { data, error } = await supabase
+        .from("chapter_mission_attempts")
+        .select("chapter_number")
+        .eq("user_id", userId)
+        .eq("passed", true);
+      if (error) {
+        console.error("getContinueLesson missions error:", error.message);
+        passedChapterMissions = new Set();
+      } else {
+        passedChapterMissions = new Set((data ?? []).map((row) => Number(row.chapter_number)));
+      }
+    }
+    return passedChapterMissions.has(chapterNumber);
+  };
+
   // Find the first lesson at or after the user's starting point that is in_progress or available.
   for (let i = startIndex; i < publishedLessons.length; i++) {
     const lesson = publishedLessons[i];
     const status = progressMap[lesson.id];
-    const previousCompleted = i === startIndex || progressMap[publishedLessons[i - 1].id] === "completed";
+    const previousLesson = publishedLessons[i - 1];
+    const previousChapter = curriculumChapterNumber(previousLesson?.chapter ?? null);
+    const crossesMissionBoundary = previousLesson?.chapter !== lesson.chapter && requiresChapterMission(previousChapter);
+    const missionBlocksProgress = crossesMissionBoundary && !(await hasPassedMission(previousChapter!));
+    const previousCompleted =
+      !missionBlocksProgress &&
+      (i === startIndex || progressMap[previousLesson?.id ?? ""] === "completed");
 
-    if (status === "in_progress") {
+    if (status === "in_progress" && !missionBlocksProgress) {
       return {
         id: lesson.id,
         slug: lesson.slug,

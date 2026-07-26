@@ -13,7 +13,7 @@ import {
 } from "@/lib/lessons/client";
 import { useAuth } from "@/lib/auth/use-auth";
 import type { Lesson } from "@/lib/lessons/client";
-import { deriveLessonStatuses, type LessonStatus } from "@/lib/lessons/gating";
+import { deriveLessonStatuses, getCoreStartIndex, type LessonStatus } from "@/lib/lessons/gating";
 import { getUserLearningPath, getFinancialGoals, type UserLearningPath } from "@/lib/profile/client";
 import {
   getLessonRecommendations,
@@ -79,8 +79,9 @@ export default function LearnPage() {
 
       const progressMap = userProgress ?? {};
       const derived = deriveLessonStatuses(all, progressMap, path.startingLessonId, passedMissions);
+      const coreStartIndex = getCoreStartIndex(all, path.startingLessonId);
 
-      const firstUnlockedIncomplete = all.find((lesson) => {
+      const firstUnlockedIncomplete = all.slice(Math.max(coreStartIndex, 0)).find((lesson) => {
         const status = derived[lesson.id];
         return status !== "locked" && status !== "completed";
       });
@@ -130,7 +131,7 @@ export default function LearnPage() {
 
   const firstUnlockedIncomplete = loading
     ? null
-    : lessons.find((lesson) => {
+    : lessons.slice(Math.max(getCoreStartIndex(lessons, learningPath.startingLessonId), 0)).find((lesson) => {
         const status = derivedProgress?.[lesson.id];
         return status !== "locked" && status !== "completed";
       });

@@ -156,7 +156,7 @@ export function scoreAssessment(
 /**
  * Determine the learning-path gate from an assessment result.
  * - 0-1 correct: full Foundation 0 track.
- * - 2-3 correct: Foundation 0, skip the first 4 micro-lessons.
+ * - 2-3 correct: Foundation 0 from its first lesson.
  * - 4-5 correct: skip Foundation 0, start main track.
  */
 export function computeLearningPath(result: AssessmentResult): {
