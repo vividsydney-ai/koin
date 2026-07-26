@@ -544,6 +544,7 @@ export type Database = {
           questions_answered: number
           refill_used: boolean
           status: string
+          time_zone: string
           updated_at: string
           user_id: string
         }
@@ -559,6 +560,7 @@ export type Database = {
           questions_answered?: number
           refill_used?: boolean
           status?: string
+          time_zone?: string
           updated_at?: string
           user_id: string
         }
@@ -574,6 +576,7 @@ export type Database = {
           questions_answered?: number
           refill_used?: boolean
           status?: string
+          time_zone?: string
           updated_at?: string
           user_id?: string
         }
@@ -607,6 +610,7 @@ export type Database = {
           max_focus: number
           mission_week_start: string | null
           missions_completed_this_week: number
+          time_zone: string
           updated_at: string
           user_id: string
         }
@@ -615,6 +619,7 @@ export type Database = {
           max_focus?: number
           mission_week_start?: string | null
           missions_completed_this_week?: number
+          time_zone?: string
           updated_at?: string
           user_id: string
         }
@@ -623,6 +628,7 @@ export type Database = {
           max_focus?: number
           mission_week_start?: string | null
           missions_completed_this_week?: number
+          time_zone?: string
           updated_at?: string
           user_id?: string
         }
@@ -2514,6 +2520,7 @@ export type Database = {
         Returns: Json
       }
       add_friend_by_qr: { Args: { p_scanned_user_id: string }; Returns: Json }
+      assert_focus_time_zone: { Args: { p_time_zone: string }; Returns: string }
       award_koin_points: {
         Args: {
           p_amount: number
@@ -2554,30 +2561,57 @@ export type Database = {
         }
         Returns: Json
       }
-      ensure_daily_focus_challenge: {
-        Args: { p_user_id: string }
-        Returns: {
-          challenge_date: string
-          completed_at: string | null
-          correct_answers: number
-          created_at: string
-          focus_remaining: number
-          id: string
-          max_focus: number
-          questions: Json
-          questions_answered: number
-          refill_used: boolean
-          status: string
-          updated_at: string
-          user_id: string
-        }
-        SetofOptions: {
-          from: "*"
-          to: "daily_focus_challenges"
-          isOneToOne: true
-          isSetofReturn: false
-        }
-      }
+      ensure_daily_focus_challenge:
+        | {
+            Args: { p_user_id: string }
+            Returns: {
+              challenge_date: string
+              completed_at: string | null
+              correct_answers: number
+              created_at: string
+              focus_remaining: number
+              id: string
+              max_focus: number
+              questions: Json
+              questions_answered: number
+              refill_used: boolean
+              status: string
+              time_zone: string
+              updated_at: string
+              user_id: string
+            }
+            SetofOptions: {
+              from: "*"
+              to: "daily_focus_challenges"
+              isOneToOne: true
+              isSetofReturn: false
+            }
+          }
+        | {
+            Args: { p_time_zone: string; p_user_id: string }
+            Returns: {
+              challenge_date: string
+              completed_at: string | null
+              correct_answers: number
+              created_at: string
+              focus_remaining: number
+              id: string
+              max_focus: number
+              questions: Json
+              questions_answered: number
+              refill_used: boolean
+              status: string
+              time_zone: string
+              updated_at: string
+              user_id: string
+            }
+            SetofOptions: {
+              from: "*"
+              to: "daily_focus_challenges"
+              isOneToOne: true
+              isSetofReturn: false
+            }
+          }
       evaluate_adaptive_triggers: {
         Args: { p_user_id: string }
         Returns: undefined
@@ -2591,8 +2625,15 @@ export type Database = {
         }
         Returns: Json
       }
-      focus_week_start: { Args: { p_timestamp?: string }; Returns: string }
-      get_daily_focus_challenge: { Args: never; Returns: Json }
+      focus_week_start:
+        | { Args: { p_timestamp?: string }; Returns: string }
+        | {
+            Args: { p_time_zone: string; p_timestamp: string }
+            Returns: string
+          }
+      get_daily_focus_challenge:
+        | { Args: never; Returns: Json }
+        | { Args: { p_time_zone: string }; Returns: Json }
       get_latest_market_data: {
         Args: never
         Returns: {
@@ -2629,7 +2670,9 @@ export type Database = {
         Returns: Json
       }
       recompute_streak_status: { Args: { p_user_id: string }; Returns: Json }
-      refill_daily_focus: { Args: never; Returns: Json }
+      refill_daily_focus:
+        | { Args: never; Returns: Json }
+        | { Args: { p_time_zone: string }; Returns: Json }
       seed_next_market_data: {
         Args: { p_trade_date?: string }
         Returns: {
@@ -2637,10 +2680,16 @@ export type Database = {
           symbol: string
         }[]
       }
-      submit_daily_focus_answer: {
-        Args: { p_answer: Json; p_question_index: number }
-        Returns: Json
-      }
+      submit_daily_focus_answer:
+        | { Args: { p_answer: Json; p_question_index: number }; Returns: Json }
+        | {
+            Args: {
+              p_answer: Json
+              p_question_index: number
+              p_time_zone: string
+            }
+            Returns: Json
+          }
     }
     Enums: {
       [_ in never]: never

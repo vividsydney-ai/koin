@@ -288,6 +288,9 @@ function ChapterCard({
     0
   );
   const isComplete = completedCount === chapter.lessonCount && chapter.lessonCount > 0;
+  const isLocked = chapter.topics
+    .flatMap((topic) => topic.lessons)
+    .every((lesson) => derivedProgress?.[lesson.id] === "locked");
 
   return (
     <div
@@ -295,10 +298,14 @@ function ChapterCard({
       role="listitem"
     >
       <button
-        onClick={onToggle}
-        className="flex w-full items-center justify-between gap-3 p-4 text-left transition-colors hover:bg-muted/20"
-        aria-expanded={isExpanded}
-        aria-controls={`chapter-${chapter.title}-lessons`}
+        onClick={isLocked ? undefined : onToggle}
+        disabled={isLocked}
+        className={`flex w-full items-center justify-between gap-3 p-4 text-left transition-colors ${
+          isLocked ? "cursor-not-allowed" : "hover:bg-muted/20"
+        }`}
+        aria-expanded={isLocked ? undefined : isExpanded}
+        aria-controls={isLocked ? undefined : `chapter-${chapter.title}-lessons`}
+        aria-label={isLocked ? `${localizedChapterTitle(chapter.title, t)} is locked` : undefined}
       >
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
@@ -320,9 +327,13 @@ function ChapterCard({
               background: `conic-gradient(var(--color-success) ${(completedCount / Math.max(1, chapter.lessonCount)) * 360}deg, var(--color-muted) 0deg)`,
             }}
           />
-          <span aria-hidden="true" className="text-xl font-medium leading-none text-muted-foreground">
-            {isExpanded ? "−" : "+"}
-          </span>
+          {isLocked ? (
+            <LockIcon className="h-4 w-4 text-muted-foreground" />
+          ) : (
+            <span aria-hidden="true" className="text-xl font-medium leading-none text-muted-foreground">
+              {isExpanded ? "−" : "+"}
+            </span>
+          )}
         </div>
       </button>
 

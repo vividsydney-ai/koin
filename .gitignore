@@ -103,6 +103,7 @@ CURRICULUM-*.md
 *curriculum*.mjs
 *curriculum*.sql
 *lessons*.csv
+daily-focus-quiz-bank-review-*.csv
 all-lessons-*.csv
 reorganized-curriculum-*.csv
 create-linear-issues.mjs

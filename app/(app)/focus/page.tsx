@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth/use-auth";
 import {
   getDailyFocusChallenge,
+  getLocalTimeZone,
   refillDailyFocus,
   submitDailyFocusAnswer,
   type DailyFocusQuestion,
@@ -22,13 +23,14 @@ export default function DailyFocusPage() {
   const [pendingQuestion, setPendingQuestion] = useState<DailyFocusQuestion | null>(null);
   const [feedback, setFeedback] = useState<{ correct: boolean; explanation: string | null; answer: string | boolean | null } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const timeZone = getLocalTimeZone();
 
   useEffect(() => {
     let mounted = true;
     const load = async () => {
       if (!user) return;
       setLoading(true);
-      const state = await getDailyFocusChallenge();
+      const state = await getDailyFocusChallenge(timeZone);
       if (!mounted) return;
       setFocus(state);
       setLoading(false);
@@ -37,7 +39,7 @@ export default function DailyFocusPage() {
     return () => {
       mounted = false;
     };
-  }, [user]);
+  }, [user, timeZone]);
 
   const currentIndex = focus?.questionsAnswered ?? 0;
   const currentQuestion = pendingQuestion ?? focus?.questions[currentIndex] ?? null;
@@ -48,7 +50,7 @@ export default function DailyFocusPage() {
     setError(null);
     setPendingQuestion(currentQuestion);
 
-    const result = await submitDailyFocusAnswer(currentIndex, value);
+    const result = await submitDailyFocusAnswer(currentIndex, value, timeZone);
     if (result.error || !result.state) {
       setError(result.error ?? "We could not record that answer. Please try again.");
       setPendingQuestion(null);
@@ -75,7 +77,7 @@ export default function DailyFocusPage() {
     if (refilling) return;
     setRefilling(true);
     setError(null);
-    const result = await refillDailyFocus();
+    const result = await refillDailyFocus(timeZone);
     if (result.error || !result.state) {
       setError(result.error ?? "We could not refill Focus right now.");
     } else {
@@ -217,7 +219,7 @@ function MissionProgress({ focus }: { focus: DailyFocusState }) {
           <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-surface-inset" role="progressbar" aria-label="Weekly Money Missions" aria-valuemin={0} aria-valuemax={focus.missionGoal} aria-valuenow={focus.missionsCompletedThisWeek}>
             <div className="h-full rounded-full bg-warning" style={{ width: `${percent}%` }} />
           </div>
-          <p className="mt-2 text-xs leading-5 text-muted-foreground">Finish Daily Focus five times in one Jakarta week to permanently gain a fourth Focus.</p>
+          <p className="mt-2 text-xs leading-5 text-muted-foreground">Finish Daily Focus five times in one local week to permanently gain a fourth Focus.</p>
         </>
       )}
     </section>

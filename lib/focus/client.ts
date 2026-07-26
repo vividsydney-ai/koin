@@ -29,7 +29,17 @@ export interface DailyFocusState {
 const dailyFocusAnswerSchema = z.object({
   questionIndex: z.number().int().min(0).max(4),
   answer: z.union([z.string().min(1), z.boolean()]),
+  timeZone: z.string().min(1).max(100),
 });
+
+/** The browser's IANA timezone is the reliable source for a learner's local calendar. */
+export function getLocalTimeZone(): string {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+  } catch {
+    return "UTC";
+  }
+}
 
 function parseState(raw: unknown): DailyFocusState | null {
   if (!raw || typeof raw !== "object") return null;
@@ -70,8 +80,10 @@ function parseState(raw: unknown): DailyFocusState | null {
   };
 }
 
-export async function getDailyFocusChallenge(): Promise<DailyFocusState | null> {
-  const { data, error } = await supabase.rpc("get_daily_focus_challenge");
+export async function getDailyFocusChallenge(timeZone = getLocalTimeZone()): Promise<DailyFocusState | null> {
+  const { data, error } = await supabase.rpc("get_daily_focus_challenge", {
+    p_time_zone: timeZone,
+  });
   if (error) {
     console.error("getDailyFocusChallenge error:", error.message);
     return null;
@@ -81,9 +93,10 @@ export async function getDailyFocusChallenge(): Promise<DailyFocusState | null> 
 
 export async function submitDailyFocusAnswer(
   questionIndex: number,
-  answer: string | boolean
+  answer: string | boolean,
+  timeZone = getLocalTimeZone()
 ): Promise<{ state: DailyFocusState | null; error: string | null }> {
-  const parsed = dailyFocusAnswerSchema.safeParse({ questionIndex, answer });
+  const parsed = dailyFocusAnswerSchema.safeParse({ questionIndex, answer, timeZone });
   if (!parsed.success) {
     return { state: null, error: "That Focus answer was not valid." };
   }
@@ -91,14 +104,17 @@ export async function submitDailyFocusAnswer(
   const { data, error } = await supabase.rpc("submit_daily_focus_answer", {
     p_question_index: parsed.data.questionIndex,
     p_answer: parsed.data.answer,
+    p_time_zone: parsed.data.timeZone,
   });
 
   if (error) return { state: null, error: error.message };
   return { state: parseState(data), error: null };
 }
 
-export async function refillDailyFocus(): Promise<{ state: DailyFocusState | null; error: string | null }> {
-  const { data, error } = await supabase.rpc("refill_daily_focus");
+export async function refillDailyFocus(timeZone = getLocalTimeZone()): Promise<{ state: DailyFocusState | null; error: string | null }> {
+  const { data, error } = await supabase.rpc("refill_daily_focus", {
+    p_time_zone: timeZone,
+  });
   if (error) return { state: null, error: error.message };
   return { state: parseState(data), error: null };
 }

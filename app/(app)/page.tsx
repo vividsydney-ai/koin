@@ -30,7 +30,7 @@ import {
   dismissRecommendation,
   type LessonRecommendation,
 } from "@/lib/adaptive/client";
-import { getDailyFocusChallenge, type DailyFocusState } from "@/lib/focus/client";
+import { getDailyFocusChallenge, getLocalTimeZone, type DailyFocusState } from "@/lib/focus/client";
 
 export default function Home() {
   const { user, profile, loading: authLoading } = useAuth(true);
@@ -61,7 +61,7 @@ export default function Home() {
         getContinueLesson(user.id),
         getPortfolioSnapshot(user.id),
         getLeaderboardSnippet(user.id),
-        getDailyFocusChallenge(),
+        getDailyFocusChallenge(getLocalTimeZone()),
       ]);
 
       // Refresh adaptive recommendations in the background (inactivity / drawdown checks).
