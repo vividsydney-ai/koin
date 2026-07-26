@@ -670,7 +670,7 @@ function SplitParagraphs({
   return (
     <div className={className}>
       {parts.map((part, i) => (
-        <p key={i} className="text-[15px] font-medium leading-7 text-foreground/90 sm:text-base sm:leading-7">
+        <p key={i} className="text-[15px] font-medium leading-7 text-[#5a5d5f] sm:text-base sm:leading-7">
           {part}
         </p>
       ))}
