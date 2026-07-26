@@ -9,7 +9,7 @@ import type { QuizQuestion } from "./question";
  * if the column is missing or a topic has not been assigned yet.
  */
 const TOPIC_SLUG_TO_CHAPTER: Record<string, string> = {
-  foundation_zero: "Money Basics",
+  foundation_zero: "Foundation",
   money_basics: "Money Basics",
   value_purchasing_power: "Money Basics",
   inflation: "Money Basics",
@@ -453,6 +453,7 @@ export interface Chapter {
 }
 
 const CHAPTER_ORDER = [
+  "Foundation",
   "Money Basics",
   "Money Life Skills",
   "Protect Yourself",

@@ -69,6 +69,17 @@ describe("getTopicsWithChapters", () => {
         icon: null,
         color: null,
         display_order: 0,
+        chapter: "Foundation",
+        lessons: [],
+      },
+      {
+        id: "t-money-basics",
+        slug: "money_basics",
+        name: "Money Basics",
+        name_id: "Dasar Uang",
+        icon: null,
+        color: null,
+        display_order: 11,
         chapter: "Money Basics",
         lessons: [],
       },
@@ -86,7 +97,13 @@ describe("getTopicsWithChapters", () => {
     ]);
 
     const chapters = await getTopicsWithChapters();
-    expect(chapters.map((c) => c.title)).toEqual(["Money Basics", "Protect Yourself", "Grow Your Money"]);
+    expect(chapters.map((c) => c.title)).toEqual([
+      "Foundation",
+      "Money Basics",
+      "Protect Yourself",
+      "Grow Your Money",
+    ]);
+    expect(chapters.map((c) => c.displayOrder)).toEqual([0, 1, 3, 6]);
   });
 
   it("orders lessons within a topic by lesson_number", async () => {
