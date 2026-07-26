@@ -1,7 +1,11 @@
+import { curriculumChapterNumber } from "./curriculum";
+import { requiresChapterMission } from "./mastery";
+
 export type LessonStatus = "locked" | "available" | "in_progress" | "completed";
 
 export interface GatingLesson {
   id: string;
+  chapter?: string | null;
 }
 
 /**
@@ -17,7 +21,8 @@ export interface GatingLesson {
 export function deriveLessonStatuses<T extends GatingLesson>(
   lessons: T[],
   progressMap: Record<string, LessonStatus>,
-  startingLessonId: string | null
+  startingLessonId: string | null,
+  passedChapterMissions: ReadonlySet<number> = new Set()
 ): Record<string, LessonStatus> {
   const startIndex = startingLessonId ? lessons.findIndex((l) => l.id === startingLessonId) : 0;
 
@@ -43,7 +48,17 @@ export function deriveLessonStatuses<T extends GatingLesson>(
       continue;
     }
 
-    if (i === startIndex || derived[lessons[i - 1]?.id] === "completed") {
+    const previousLesson = lessons[i - 1];
+    const previousChapter = curriculumChapterNumber(previousLesson?.chapter ?? null);
+    const crossesMissionBoundary =
+      previousLesson?.chapter !== lesson.chapter &&
+      requiresChapterMission(previousChapter) &&
+      !passedChapterMissions.has(previousChapter!);
+
+    if (
+      i === startIndex ||
+      (derived[previousLesson?.id] === "completed" && !crossesMissionBoundary)
+    ) {
       derived[lesson.id] = saved ?? "available";
       continue;
     }

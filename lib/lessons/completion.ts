@@ -1,5 +1,7 @@
 import * as lessonService from "@/lib/services/lessons";
-import { getAllLessons, getLessonProgress, getLessonStatus } from "@/lib/lessons/client";
+import { getAllLessons, getLessonProgress, getLessonStatus, getPassedChapterMissions } from "@/lib/lessons/client";
+import { curriculumChapterNumber } from "@/lib/lessons/curriculum";
+import { requiresChapterMission } from "@/lib/lessons/mastery";
 import type { ServiceError } from "@/lib/types/service-error";
 
 export interface CompletionInput {
@@ -71,6 +73,17 @@ export async function getNextLessonSlug(currentLessonId: string, userId: string)
   if (currentIndex === -1) return null;
 
   const followingLessons = lessons.slice(currentIndex + 1);
+  if (followingLessons.length === 0) return null;
+
+  const currentChapterNumber = curriculumChapterNumber(lessons[currentIndex].chapter ?? null);
+  const currentChapterIsComplete = lessons
+    .filter((lesson) => lesson.chapter === lessons[currentIndex].chapter)
+    .every((lesson) => progress?.[lesson.id] === "completed");
+  if (currentChapterIsComplete && requiresChapterMission(currentChapterNumber)) {
+    const passedMissions = await getPassedChapterMissions(userId);
+    if (!passedMissions.has(currentChapterNumber!)) return null;
+  }
+
   return (
     followingLessons.find((lesson) => progress?.[lesson.id] !== "completed")?.slug ??
     followingLessons[0]?.slug ??

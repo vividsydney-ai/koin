@@ -31,6 +31,7 @@ import { trackEvent } from "@/lib/analytics/client";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { StatCard } from "@/components/StatCard";
 import { ReachableLink } from "@/components/sources/ReachableLink";
+import { lessonCheckCount } from "@/lib/lessons/mastery";
 
 const STEP_IDS = ["intro", "concept", "example", "quiz", "source"] as const;
 
@@ -102,6 +103,7 @@ export default function LessonPlayer({
   const [step, setStep] = useState(0);
   const [quizDone, setQuizDone] = useState(false);
   const [quizCorrect, setQuizCorrect] = useState<boolean | null>(null);
+  const [quizResults, setQuizResults] = useState<boolean[]>([]);
   const [completionResult, setCompletionResult] = useState<CompletionResult | null>(null);
   const [completing, setCompleting] = useState(false);
   const [completionError, setCompletionError] = useState<string | null>(null);
@@ -132,6 +134,7 @@ export default function LessonPlayer({
       setStep(0);
       setQuizDone(false);
       setQuizCorrect(null);
+      setQuizResults([]);
       setCompletionResult(null);
       setCompletionError(null);
       setShowSummary(false);
@@ -166,14 +169,33 @@ export default function LessonPlayer({
         let example: ContentVariant | null = null;
         let exampleVariants: ContentVariant[] = fetchedExampleVariants;
         const explanationVariants: ContentVariant[] = explanationData;
-        const questionVariants: ContentVariant[] = fetchedQuestionVariants;
+        let questionVariants: ContentVariant[] = fetchedQuestionVariants;
+        const baseQuizData = locale === "id" && data.quizDataId ? data.quizDataId : data.quizData;
         let processedQuestion: ProcessedQuestion | null = null;
 
         // Use the localized variant pool for both locales; it already swaps body/body_id
         // based on locale inside getLessonVariants.
         example = fetchedExampleVariants[seededIndex(seed, fetchedExampleVariants.length)] ?? null;
 
-        const questionInfos = getValidatedQuestionVariants(fetchedQuestionVariants);
+        let questionInfos = getValidatedQuestionVariants(fetchedQuestionVariants);
+        // Later lessons need two distinct checks. If the learner's adaptive
+        // difficulty pool is too small, widen only the question pool instead
+        // of silently weakening the mastery requirement.
+        if (questionInfos.length < lessonCheckCount(chapterNumber)) {
+          questionVariants = await getLessonVariants(data.id, "question", null, locale);
+          questionInfos = getValidatedQuestionVariants(questionVariants);
+        }
+        if (questionInfos.length < lessonCheckCount(chapterNumber) && baseQuizData.length > 0) {
+          const baseQuestionVariants: ContentVariant[] = baseQuizData.map((body, index) => ({
+            id: `base-quiz:${data.id}:${index}`,
+            variantType: "question",
+            body,
+            difficulty: data.difficulty,
+            topicTag: null,
+          }));
+          questionVariants = [...questionVariants, ...baseQuestionVariants];
+          questionInfos = getValidatedQuestionVariants(questionVariants);
+        }
         const lastAttemptedType = recentInfo.lastVariantId
           ? questionInfos.find((info) => info.variant.id === recentInfo.lastVariantId)?.question.type ?? null
           : null;
@@ -205,7 +227,6 @@ export default function LessonPlayer({
           exampleVariants = [example];
         }
         if (!processedQuestion) {
-          const baseQuizData = locale === "id" && data.quizDataId ? data.quizDataId : data.quizData;
           if (baseQuizData.length > 0) {
             const validated = validateQuestion(baseQuizData[0]);
             if (validated) {
@@ -282,11 +303,12 @@ export default function LessonPlayer({
       userId: user.id,
       lessonId: lesson.id,
       lessonNumber: lesson.lessonNumber,
-      score: quizCorrect ? 1 : 0,
-      maxScore: 1,
-      answersJson: activeQuestion?.variantId
-        ? [{ variant_id: activeQuestion.variantId, correct: quizCorrect ?? false }]
-        : [],
+      score: quizResults.filter(Boolean).length,
+      maxScore: Math.max(1, quizResults.length),
+      answersJson: Array.from(shownQuestionVariantIds).map((variantId, index) => ({
+        variant_id: variantId,
+        correct: quizResults[index] ?? false,
+      })),
       timeSpentSeconds,
       quizCorrect: quizCorrect ?? false,
     });
@@ -514,9 +536,11 @@ export default function LessonPlayer({
               {step === 3 && (
                 <QuizStep
                   question={activeQuestion}
-                  onComplete={(correct) => {
+                  requiredChecks={lessonCheckCount(chapterNumber)}
+                  onComplete={(results) => {
                     setQuizDone(true);
-                    setQuizCorrect(correct);
+                    setQuizResults(results);
+                    setQuizCorrect(results.every(Boolean));
                     if (user && lesson) {
                       trackEvent({
                         userId: user.id,
@@ -524,7 +548,9 @@ export default function LessonPlayer({
                         properties: {
                           lesson_id: lesson.id,
                           lesson_slug: lesson.slug,
-                          correct,
+                          correct: results.every(Boolean),
+                          check_count: results.length,
+                          correct_count: results.filter(Boolean).length,
                         },
                       });
                     }
@@ -833,13 +859,17 @@ function QuizStep({
   onComplete,
   onAnotherQuestion,
   canShowAnotherQuestion,
+  requiredChecks,
 }: {
   question: ProcessedQuestion | null;
-  onComplete: (correct: boolean) => void;
+  onComplete: (results: boolean[]) => void;
   onAnotherQuestion?: () => ProcessedQuestion | null;
   canShowAnotherQuestion?: boolean;
+  requiredChecks: number;
 }) {
   const { t } = useLocale();
+  const [results, setResults] = useState<boolean[]>([]);
+  const [awaitingNext, setAwaitingNext] = useState(false);
   if (!question) {
     return (
       <div className="space-y-5">
@@ -871,16 +901,34 @@ function QuizStep({
         key={question.variantId ?? "legacy"}
         question={question}
         seed={seed}
-        onComplete={(correct) => onComplete(correct)}
+        onComplete={(correct) => {
+          setResults((previous) => [...previous, correct]);
+          setAwaitingNext(true);
+        }}
       />
 
-      {onAnotherQuestion && canShowAnotherQuestion && (
+      {awaitingNext && results.length < requiredChecks && onAnotherQuestion && canShowAnotherQuestion && (
         <button
-          onClick={() => onAnotherQuestion()}
+          onClick={() => {
+            if (onAnotherQuestion()) setAwaitingNext(false);
+          }}
           className="inline-flex min-h-[44px] items-center gap-1.5 text-sm font-medium text-primary hover:underline"
-          aria-label={t("lesson.tryAnotherQuestion")}
+          aria-label={t("mission.nextCheck")}
         >
-          {t("lesson.tryAnotherQuestion")}
+          {t("mission.nextCheck")}
+        </button>
+      )}
+      {awaitingNext && results.length < requiredChecks && !canShowAnotherQuestion && (
+        <div className="rounded-md border border-warning/30 bg-warning/5 px-4 py-3 text-sm text-warning">
+          {t("lesson.noQuestionAvailable")}
+        </div>
+      )}
+      {awaitingNext && results.length >= requiredChecks && (
+        <button
+          onClick={() => onComplete(results)}
+          className="inline-flex min-h-[44px] items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+        >
+          {t("lesson.continue")}
         </button>
       )}
     </div>

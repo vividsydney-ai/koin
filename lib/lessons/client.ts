@@ -3,6 +3,8 @@ import type { Locale } from "@/lib/i18n/types";
 import type { LessonStatus } from "./gating";
 import type { QuizQuestion } from "./question";
 import { orderCurriculumLessons, curriculumChapterNumber } from "./curriculum";
+import { requiresChapterMission } from "./mastery";
+import { completeChapterMissionSchema } from "@/lib/schemas/lessons";
 
 /**
  * Fallback chapter mapping by topic slug. Once the `topics.chapter` column is
@@ -307,11 +309,76 @@ export async function getChapterCompletionMilestone(
   );
   if (!isChapterComplete) return null;
 
+  // The milestone for Chapters 07–09 belongs to the successfully completed
+  // Money Mission, not merely reaching its last lesson.
+  if (requiresChapterMission(chapterNumber)) {
+    const passedMissions = await getPassedChapterMissions(userId);
+    if (!passedMissions.has(chapterNumber)) return null;
+  }
+
   const nextChapterNumber = curriculumChapterNumber(
     lessons.find((lesson) => curriculumChapterNumber(lesson.chapter ?? null) === chapterNumber + 1)?.chapter ?? null
   );
 
   return { chapterNumber, nextChapterNumber };
+}
+
+export async function getPassedChapterMissions(userId: string): Promise<Set<number>> {
+  const { data, error } = await supabase
+    .from("chapter_mission_attempts")
+    .select("chapter_number")
+    .eq("user_id", userId)
+    .eq("passed", true);
+
+  if (error) {
+    // The app remains usable before the migration reaches an environment; the
+    // Learn page will simply keep later chapters unavailable until it does.
+    console.error("getPassedChapterMissions error:", error.message);
+    return new Set();
+  }
+
+  return new Set((data ?? []).map((row) => Number(row.chapter_number)));
+}
+
+export interface ChapterMissionCompletion {
+  attemptNumber: number;
+  passed: boolean;
+  score: number;
+  maxScore: number;
+}
+
+export async function completeChapterMission(
+  input: {
+    chapterNumber: number;
+    answers: Array<{ variantId: string; response: string | boolean }>;
+  }
+): Promise<ChapterMissionCompletion | null> {
+  const parsed = completeChapterMissionSchema.safeParse(input);
+  if (!parsed.success) {
+    console.error("completeChapterMission validation error:", parsed.error.issues[0]?.message);
+    return null;
+  }
+
+  const { data, error } = await supabase.rpc("complete_chapter_mission", {
+    p_chapter_number: parsed.data.chapterNumber,
+    p_answers: parsed.data.answers.map((answer) => ({
+      variant_id: answer.variantId,
+      response: answer.response,
+    })),
+  });
+
+  if (error || !data) {
+    console.error("completeChapterMission error:", error?.message);
+    return null;
+  }
+
+  const result = data as Record<string, unknown>;
+  return {
+    attemptNumber: Number(result.attempt_number ?? 0),
+    passed: Boolean(result.passed),
+    score: Number(result.score ?? 0),
+    maxScore: Number(result.max_score ?? parsed.data.answers.length),
+  };
 }
 
 export { seededIndex, seededShuffle } from "./random";

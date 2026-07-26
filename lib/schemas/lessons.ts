@@ -11,3 +11,17 @@ export const completeLessonSchema = z.object({
 });
 
 export type CompleteLessonInput = z.infer<typeof completeLessonSchema>;
+
+export const chapterMissionRouteSchema = z.coerce.number().int().min(7).max(9);
+
+export const chapterMissionAnswerSchema = z.object({
+  variantId: z.string().uuid(),
+  response: z.union([z.string().min(1), z.boolean()]),
+});
+
+export const completeChapterMissionSchema = z.object({
+  chapterNumber: chapterMissionRouteSchema,
+  answers: z.array(chapterMissionAnswerSchema).length(3),
+});
+
+export type CompleteChapterMissionInput = z.infer<typeof completeChapterMissionSchema>;

@@ -13,7 +13,7 @@ export interface MultipleChoiceContentProps {
   options: QuizOption[];
   correctValue: string;
   explanation: string;
-  onComplete?: (correct: boolean) => void;
+  onComplete?: (correct: boolean, response?: string) => void;
   kicker?: string;
 }
 
@@ -56,7 +56,7 @@ export function MultipleChoiceContent({
     if (showResult) return;
     setSelected(value);
     setShowResult(true);
-    onComplete?.(value === correctValue);
+    onComplete?.(value === correctValue, value);
   };
 
   const isCorrect = selected === correctValue;

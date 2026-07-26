@@ -5,6 +5,7 @@ import Link from "next/link";
 import {
   getAllLessons,
   getLessonProgress,
+  getPassedChapterMissions,
   ensureLessonProgressAvailable,
   getTopicsWithChapters,
   type Chapter,
@@ -47,6 +48,7 @@ export default function LearnPage() {
   >([]);
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [derivedProgress, setDerivedProgress] = useState<Record<string, LessonStatus> | null>(null);
+  const [passedChapterMissions, setPassedChapterMissions] = useState<Set<number>>(new Set());
   const [recommendations, setRecommendations] = useState<LessonRecommendation[]>([]);
   const [learningPath, setLearningPath] = useState<UserLearningPath>({
     foundationZeroRequired: true,
@@ -61,7 +63,7 @@ export default function LearnPage() {
     let mounted = true;
     const load = async () => {
       setLoading(true);
-      const [all, chapterData, userProgress, recs, path, goals] = await Promise.all([
+      const [all, chapterData, userProgress, recs, path, goals, passedMissions] = await Promise.all([
         getAllLessons(),
         getTopicsWithChapters(),
         user ? getLessonProgress(user.id) : Promise.resolve(null),
@@ -70,12 +72,13 @@ export default function LearnPage() {
           ? getUserLearningPath(user.id)
           : Promise.resolve({ foundationZeroRequired: true, startingLessonId: null, assessmentScore: null }),
         user ? getFinancialGoals(user.id) : Promise.resolve(null),
+        user ? getPassedChapterMissions(user.id) : Promise.resolve(new Set<number>()),
       ]);
 
       if (!mounted) return;
 
       const progressMap = userProgress ?? {};
-      const derived = deriveLessonStatuses(all, progressMap, path.startingLessonId);
+      const derived = deriveLessonStatuses(all, progressMap, path.startingLessonId, passedMissions);
 
       const firstUnlockedIncomplete = all.find((lesson) => {
         const status = derived[lesson.id];
@@ -90,19 +93,31 @@ export default function LearnPage() {
         setLessons(all);
         setChapters(chapterData);
         setDerivedProgress(derived);
+        setPassedChapterMissions(passedMissions);
         setRecommendations(recs);
         setLearningPath(path);
         setFinancialGoals(goals);
         setLoading(false);
 
-        // Expand the chapter that contains the current lesson by default.
-        if (firstUnlockedIncomplete) {
-          const currentChapter = chapterData.find((chapter) =>
+        // Expand the current lesson chapter, or the mission that is holding
+        // the next chapter closed, by default.
+        const currentChapter = firstUnlockedIncomplete
+          ? chapterData.find((chapter) =>
             chapter.topics.some((topic) => topic.lessons.some((lesson) => lesson.id === firstUnlockedIncomplete.id))
-          );
-          if (currentChapter) {
-            setExpandedChapters(new Set([currentChapter.title]));
-          }
+          )
+          : chapterData.find((chapter) => {
+              const number = chapter.displayOrder + 1;
+              return (
+                number >= 7 &&
+                number <= 9 &&
+                !passedMissions.has(number) &&
+                chapter.topics.flatMap((topic) => topic.lessons).every(
+                  (lesson) => derived[lesson.id] === "completed"
+                )
+              );
+            });
+        if (currentChapter) {
+          setExpandedChapters(new Set([currentChapter.title]));
         }
       }
     };
@@ -260,6 +275,7 @@ export default function LearnPage() {
               key={chapter.title}
               chapter={chapter}
               derivedProgress={derivedProgress}
+              missionPassed={passedChapterMissions.has(chapter.displayOrder + 1)}
               isExpanded={expandedChapters.has(chapter.title)}
               onToggle={() => toggleChapter(chapter.title)}
             />
@@ -273,11 +289,13 @@ export default function LearnPage() {
 function ChapterCard({
   chapter,
   derivedProgress,
+  missionPassed,
   isExpanded,
   onToggle,
 }: {
   chapter: Chapter;
   derivedProgress: Record<string, LessonStatus> | null;
+  missionPassed: boolean;
   isExpanded: boolean;
   onToggle: () => void;
 }) {
@@ -288,6 +306,8 @@ function ChapterCard({
     0
   );
   const isComplete = completedCount === chapter.lessonCount && chapter.lessonCount > 0;
+  const needsMission = chapter.displayOrder + 1 >= 7 && chapter.displayOrder + 1 <= 9;
+  const isMastered = isComplete && (!needsMission || missionPassed);
   const isLocked = chapter.topics
     .flatMap((topic) => topic.lessons)
     .every((lesson) => derivedProgress?.[lesson.id] === "locked");
@@ -312,13 +332,16 @@ function ChapterCard({
             <h2 className="font-semibold text-foreground">
               {String(chapter.displayOrder + 1).padStart(2, "0")} - {localizedChapterTitle(chapter.title, t)}
             </h2>
-            {isComplete && <CheckIconMini className="h-4 w-4 text-success" />}
+            {isMastered && <CheckIconMini className="h-4 w-4 text-success" />}
           </div>
           <p className="mt-0.5 text-xs text-muted-foreground">
             {t("learn.completedOf")
               .replace("{completed}", String(completedCount))
               .replace("{total}", String(chapter.lessonCount))}
           </p>
+          {isComplete && needsMission && !missionPassed && (
+            <p className="mt-1 text-xs font-medium text-warning">{t("learn.missionRequired")}</p>
+          )}
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <span
@@ -348,6 +371,19 @@ function ChapterCard({
                   status={derivedProgress?.[lesson.id] ?? "locked"}
                 />
               ))
+            )}
+            {isComplete && needsMission && (
+              <Link
+                href={`/learn/mission/${chapter.displayOrder + 1}`}
+                className={`mt-2 flex items-center justify-between rounded-md border px-3 py-3 text-sm font-semibold transition-colors ${
+                  missionPassed
+                    ? "border-success/30 bg-success/5 text-success"
+                    : "border-warning/30 bg-warning/5 text-warning hover:bg-warning/10"
+                }`}
+              >
+                <span>{missionPassed ? t("learn.missionComplete") : t("learn.startMission")}</span>
+                <span aria-hidden>{missionPassed ? "✓" : "→"}</span>
+              </Link>
             )}
           </div>
         </div>

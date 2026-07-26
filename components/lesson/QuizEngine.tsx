@@ -21,27 +21,34 @@ interface QuizEngineProps {
   question: ProcessedQuestion;
   seed: string;
   onComplete?: (correct: boolean) => void;
+  onAnswer?: QuizCompletion;
 }
 
-export function QuizEngine({ question, seed, onComplete }: QuizEngineProps) {
+export type QuizCompletion = (correct: boolean, response?: string | boolean) => void;
+
+export function QuizEngine({ question, seed, onComplete, onAnswer }: QuizEngineProps) {
+  const forwardCompletion: QuizCompletion = (correct, response) => {
+    onComplete?.(correct);
+    onAnswer?.(correct, response);
+  };
   const { t } = useLocale();
   switch (question.type) {
     case "multiple_choice":
-      return <MultipleChoice question={question} seed={seed} onComplete={onComplete} />;
+      return <MultipleChoice question={question} seed={seed} onComplete={forwardCompletion} />;
     case "true_false":
-      return <TrueFalse question={question} onComplete={onComplete} />;
+      return <TrueFalse question={question} onComplete={forwardCompletion} />;
     case "swipe_yes_no":
-      return <YesNo question={question} onComplete={onComplete} />;
+      return <YesNo question={question} onComplete={forwardCompletion} />;
     case "fill_blank":
-      return <FillBlank question={question} onComplete={onComplete} />;
+      return <FillBlank question={question} onComplete={forwardCompletion} />;
     case "word_bank":
-      return <WordBank question={question} seed={seed} onComplete={onComplete} />;
+      return <WordBank question={question} seed={seed} onComplete={forwardCompletion} />;
     case "ordering":
-      return <Ordering question={question} seed={seed} onComplete={onComplete} />;
+      return <Ordering question={question} seed={seed} onComplete={forwardCompletion} />;
     case "matching":
-      return <Matching question={question} seed={seed} onComplete={onComplete} />;
+      return <Matching question={question} seed={seed} onComplete={forwardCompletion} />;
     case "case_study":
-      return <CaseStudy question={question} seed={seed} onComplete={onComplete} />;
+      return <CaseStudy question={question} seed={seed} onComplete={forwardCompletion} />;
     default:
       return (
         <div className="rounded-md border border-warning/30 bg-warning/5 px-4 py-3 text-sm text-warning">
@@ -82,7 +89,7 @@ function TrueFalse({
   onComplete,
 }: {
   question: TrueFalseQuestion;
-  onComplete?: (correct: boolean) => void;
+  onComplete?: QuizCompletion;
 }) {
   const { t } = useLocale();
   return (
@@ -105,7 +112,7 @@ function YesNo({
   onComplete,
 }: {
   question: SwipeYesNoQuestion;
-  onComplete?: (correct: boolean) => void;
+  onComplete?: QuizCompletion;
 }) {
   const { t } = useLocale();
   return (
@@ -128,7 +135,7 @@ function FillBlank({
   onComplete,
 }: {
   question: FillBlankQuestion;
-  onComplete?: (correct: boolean) => void;
+  onComplete?: QuizCompletion;
 }) {
   const { t } = useLocale();
   const [value, setValue] = useState("");
@@ -536,7 +543,7 @@ function BinaryChoice({
   falseLabel: string;
   answer: boolean;
   explanation: string;
-  onComplete?: (correct: boolean) => void;
+  onComplete?: QuizCompletion;
   kicker: string;
   kickerIcon: React.ReactNode;
   tint?: Tint;
@@ -549,7 +556,7 @@ function BinaryChoice({
     if (showResult) return;
     setSelected(value);
     setShowResult(true);
-    onComplete?.(value === answer);
+    onComplete?.(value === answer, value);
   };
 
   return (

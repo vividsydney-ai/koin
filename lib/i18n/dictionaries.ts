@@ -81,6 +81,22 @@ export interface Dictionary {
   "lesson.chapterCompleteBody": string;
   "lesson.chapterCompleteFinalBody": string;
   "lesson.chapterCompleteContinue": string;
+  "learn.missionRequired": string;
+  "learn.startMission": string;
+  "learn.missionComplete": string;
+  "mission.kicker": string;
+  "mission.title": string;
+  "mission.body": string;
+  "mission.nextCheck": string;
+  "mission.checkProgress": string;
+  "mission.passTitle": string;
+  "mission.passBody": string;
+  "mission.retryTitle": string;
+  "mission.retryBody": string;
+  "mission.retry": string;
+  "mission.backToLearn": string;
+  "mission.locked": string;
+  "mission.loadError": string;
 
   // Quiz engine
   "quiz.correctAnswer": string;
@@ -338,6 +354,22 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "lesson.chapterCompleteBody": "Chapter {nextChapterNumber} is now unlocked.",
     "lesson.chapterCompleteFinalBody": "You have completed every chapter.",
     "lesson.chapterCompleteContinue": "Keep going",
+    "learn.missionRequired": "Complete the Money Mission to unlock the next chapter.",
+    "learn.startMission": "Start Money Mission",
+    "learn.missionComplete": "Money Mission complete",
+    "mission.kicker": "Money Mission",
+    "mission.title": "Show what you know",
+    "mission.body": "Three chapter questions. Get them all right to unlock what is next. You can retry whenever you like.",
+    "mission.nextCheck": "Next check",
+    "mission.checkProgress": "Check {current} of {total}",
+    "mission.passTitle": "Chapter {chapterNumber} complete!",
+    "mission.passBody": "Your next chapter is now unlocked.",
+    "mission.retryTitle": "Almost there",
+    "mission.retryBody": "Review the explanations, then try another set whenever you are ready.",
+    "mission.retry": "Try again",
+    "mission.backToLearn": "Back to Learn",
+    "mission.locked": "Finish every lesson in this chapter before starting its Money Mission.",
+    "mission.loadError": "We could not prepare your Money Mission. Please try again.",
 
     "quiz.correctAnswer": "Correct answer:",
     "quiz.true": "True",
@@ -586,6 +618,22 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "lesson.chapterCompleteBody": "Bab {nextChapterNumber} sekarang terbuka.",
     "lesson.chapterCompleteFinalBody": "Kamu telah menyelesaikan semua bab.",
     "lesson.chapterCompleteContinue": "Lanjutkan",
+    "learn.missionRequired": "Selesaikan Misi Uang untuk membuka bab berikutnya.",
+    "learn.startMission": "Mulai Misi Uang",
+    "learn.missionComplete": "Misi Uang selesai",
+    "mission.kicker": "Misi Uang",
+    "mission.title": "Tunjukkan yang kamu pahami",
+    "mission.body": "Tiga soal bab. Jawab semuanya benar untuk membuka langkah berikutnya. Kamu boleh mencoba lagi kapan pun.",
+    "mission.nextCheck": "Soal berikutnya",
+    "mission.checkProgress": "Soal {current} dari {total}",
+    "mission.passTitle": "Bab {chapterNumber} selesai!",
+    "mission.passBody": "Bab berikutnya sekarang terbuka.",
+    "mission.retryTitle": "Hampir berhasil",
+    "mission.retryBody": "Tinjau penjelasannya, lalu coba set soal lain saat kamu siap.",
+    "mission.retry": "Coba lagi",
+    "mission.backToLearn": "Kembali ke Belajar",
+    "mission.locked": "Selesaikan semua pelajaran dalam bab ini sebelum memulai Misi Uang.",
+    "mission.loadError": "Kami belum bisa menyiapkan Misi Uangmu. Coba lagi.",
 
     "quiz.correctAnswer": "Jawaban benar:",
     "quiz.true": "Benar",
