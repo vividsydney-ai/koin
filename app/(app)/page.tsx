@@ -30,6 +30,7 @@ import {
   dismissRecommendation,
   type LessonRecommendation,
 } from "@/lib/adaptive/client";
+import { getDailyFocusChallenge, type DailyFocusState } from "@/lib/focus/client";
 
 export default function Home() {
   const { user, profile, loading: authLoading } = useAuth(true);
@@ -43,6 +44,7 @@ export default function Home() {
   const [portfolio, setPortfolio] = useState<PortfolioSnapshot | null>(null);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [recommendations, setRecommendations] = useState<LessonRecommendation[]>([]);
+  const [dailyFocus, setDailyFocus] = useState<DailyFocusState | null>(null);
   const [loading, setLoading] = useState(true);
   const [showProgressCard, setShowProgressCard] = useState(false);
 
@@ -51,7 +53,7 @@ export default function Home() {
     const load = async () => {
       if (!user) return;
       setLoading(true);
-      const [streakData, xpData, kpData, badgeData, lessonData, portfolioData, leaderboardData] = await Promise.all([
+      const [streakData, xpData, kpData, badgeData, lessonData, portfolioData, leaderboardData, focusData] = await Promise.all([
         getStreak(user.id),
         getXpSummary(user.id),
         getKoinPointsBalance(user.id),
@@ -59,6 +61,7 @@ export default function Home() {
         getContinueLesson(user.id),
         getPortfolioSnapshot(user.id),
         getLeaderboardSnippet(user.id),
+        getDailyFocusChallenge(),
       ]);
 
       // Refresh adaptive recommendations in the background (inactivity / drawdown checks).
@@ -73,6 +76,7 @@ export default function Home() {
       setContinueLesson(lessonData);
       setPortfolio(portfolioData);
       setLeaderboard(leaderboardData);
+      setDailyFocus(focusData);
       setRecommendations(recommendationData);
       setLoading(false);
     };
@@ -112,6 +116,8 @@ export default function Home() {
         <div className="space-y-4 lg:grid lg:grid-cols-3 lg:gap-4 lg:space-y-0">
           <div className="space-y-4 lg:col-span-2">
             <StreakCard streak={streak} />
+            <ContinueLessonCard lesson={continueLesson} />
+            <DailyFocusCard focus={dailyFocus} />
             <RecommendationsCard
               recommendations={recommendations}
               onDismiss={async (id) => {
@@ -119,7 +125,6 @@ export default function Home() {
                 setRecommendations((prev) => prev.filter((r) => r.id !== id));
               }}
             />
-            <ContinueLessonCard lesson={continueLesson} />
             <XpLevelCard xp={xp} />
             <PortfolioCard portfolio={portfolio} />
           </div>
@@ -146,6 +151,57 @@ export default function Home() {
           onClose={() => setShowProgressCard(false)}
         />
       )}
+    </div>
+  );
+}
+
+function DailyFocusCard({ focus }: { focus: DailyFocusState | null }) {
+  if (!focus) return null;
+
+  const isCompleted = focus.status === "completed";
+  const isExhausted = focus.status === "exhausted";
+  const progressLabel = isCompleted
+    ? "Completed for today"
+    : isExhausted
+      ? "Focus spent for today"
+      : `Question ${Math.min(focus.questionsAnswered + 1, 5)} of 5`;
+
+  return (
+    <Link href="/focus" className="block">
+      <article className="rounded-card border border-primary/20 bg-[color-mix(in_srgb,var(--color-primary)_6%,var(--color-surface))] p-5 shadow-sm transition-colors hover:bg-[color-mix(in_srgb,var(--color-primary)_9%,var(--color-surface))]">
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-primary">
+              <FocusIcon className="h-3.5 w-3.5" /> Optional daily practice
+            </span>
+            <h3 className="mt-3 font-display text-xl font-bold text-foreground">Daily Focus</h3>
+            <p className="mt-1 text-sm leading-5 text-muted-foreground">
+              {isCompleted
+                ? "Five money checks done. +20 Koin Points earned."
+                : isExhausted
+                  ? "Refill once with 50 Koin Points, or return tomorrow."
+                  : "Five quick checks. A wrong answer uses one Focus — never lesson progress."}
+            </p>
+          </div>
+          <FocusPips remaining={focus.focusRemaining} max={focus.maxFocus} />
+        </div>
+        <div className="mt-4 flex items-center justify-between gap-3 text-xs font-bold">
+          <span className={isCompleted ? "text-success" : isExhausted ? "text-danger" : "text-primary"}>{progressLabel}</span>
+          <span className="text-warning">{focus.fourthFocusUnlocked ? "4 Focus unlocked" : `${focus.missionsCompletedThisWeek}/5 missions`}</span>
+        </div>
+      </article>
+    </Link>
+  );
+}
+
+function FocusPips({ remaining, max }: { remaining: number; max: number }) {
+  return (
+    <div className="flex shrink-0 gap-1" aria-label={`${remaining} of ${max} Focus remaining`}>
+      {Array.from({ length: max }, (_, index) => (
+        <span key={index} className={`flex h-7 w-7 items-center justify-center rounded-md border ${index < remaining ? "border-primary/30 bg-primary text-primary-foreground" : "border-muted bg-surface text-muted-foreground"}`}>
+          <FocusIcon className="h-3.5 w-3.5" />
+        </span>
+      ))}
     </div>
   );
 }
@@ -516,6 +572,15 @@ function SparkleIcon({ className = "h-5 w-5" }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor">
       <path d="M12 2 14.5 9.5H22l-6 4.5 2.5 7.5-6.5-5-6.5 5 2.5-7.5-6-4.5h7.5z" />
+    </svg>
+  );
+}
+
+function FocusIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="m12 3 2.25 6.75L21 12l-6.75 2.25L12 21l-2.25-6.75L3 12l6.75-2.25L12 3Z" />
+      <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none" />
     </svg>
   );
 }

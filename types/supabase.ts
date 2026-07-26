@@ -39,6 +39,52 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_deletion_requests: {
+        Row: {
+          cancelled_at: string | null
+          requested_at: string
+          scheduled_for: string
+          token_hash: string
+          user_id: string
+        }
+        Insert: {
+          cancelled_at?: string | null
+          requested_at?: string
+          scheduled_for: string
+          token_hash: string
+          user_id: string
+        }
+        Update: {
+          cancelled_at?: string | null
+          requested_at?: string
+          scheduled_for?: string
+          token_hash?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "account_deletion_requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "analytics_activation"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "account_deletion_requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "analytics_first_trade"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "account_deletion_requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       analytics_events: {
         Row: {
           created_at: string | null
@@ -480,6 +526,125 @@ export type Database = {
             foreignKeyName: "daily_checkins_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      daily_focus_challenges: {
+        Row: {
+          challenge_date: string
+          completed_at: string | null
+          correct_answers: number
+          created_at: string
+          focus_remaining: number
+          id: string
+          max_focus: number
+          questions: Json
+          questions_answered: number
+          refill_used: boolean
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          challenge_date: string
+          completed_at?: string | null
+          correct_answers?: number
+          created_at?: string
+          focus_remaining: number
+          id?: string
+          max_focus: number
+          questions: Json
+          questions_answered?: number
+          refill_used?: boolean
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          challenge_date?: string
+          completed_at?: string | null
+          correct_answers?: number
+          created_at?: string
+          focus_remaining?: number
+          id?: string
+          max_focus?: number
+          questions?: Json
+          questions_answered?: number
+          refill_used?: boolean
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_focus_challenges_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "analytics_activation"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "daily_focus_challenges_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "analytics_first_trade"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "daily_focus_challenges_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      focus_profiles: {
+        Row: {
+          fourth_focus_unlocked_at: string | null
+          max_focus: number
+          mission_week_start: string | null
+          missions_completed_this_week: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          fourth_focus_unlocked_at?: string | null
+          max_focus?: number
+          mission_week_start?: string | null
+          missions_completed_this_week?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          fourth_focus_unlocked_at?: string | null
+          max_focus?: number
+          mission_week_start?: string | null
+          missions_completed_this_week?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "focus_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "analytics_activation"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "focus_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "analytics_first_trade"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "focus_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -2056,12 +2221,19 @@ export type Database = {
         Row: {
           assessment_answers: Json | null
           assessment_score: number | null
+          cohort_alerts_enabled: boolean
           foundation_zero_required: boolean | null
+          friend_alerts_enabled: boolean
           locale: string
           notifications_enabled: boolean | null
+          privacy_accepted_at: string | null
+          privacy_version: string | null
           show_on_leaderboard: boolean | null
           starting_lesson_id: string | null
           streak_reminder_time: string | null
+          streak_reminders_enabled: boolean
+          terms_accepted_at: string | null
+          terms_version: string | null
           trade_onboarding_completed: boolean | null
           updated_at: string | null
           user_id: string
@@ -2070,12 +2242,19 @@ export type Database = {
         Insert: {
           assessment_answers?: Json | null
           assessment_score?: number | null
+          cohort_alerts_enabled?: boolean
           foundation_zero_required?: boolean | null
+          friend_alerts_enabled?: boolean
           locale?: string
           notifications_enabled?: boolean | null
+          privacy_accepted_at?: string | null
+          privacy_version?: string | null
           show_on_leaderboard?: boolean | null
           starting_lesson_id?: string | null
           streak_reminder_time?: string | null
+          streak_reminders_enabled?: boolean
+          terms_accepted_at?: string | null
+          terms_version?: string | null
           trade_onboarding_completed?: boolean | null
           updated_at?: string | null
           user_id: string
@@ -2084,12 +2263,19 @@ export type Database = {
         Update: {
           assessment_answers?: Json | null
           assessment_score?: number | null
+          cohort_alerts_enabled?: boolean
           foundation_zero_required?: boolean | null
+          friend_alerts_enabled?: boolean
           locale?: string
           notifications_enabled?: boolean | null
+          privacy_accepted_at?: string | null
+          privacy_version?: string | null
           show_on_leaderboard?: boolean | null
           starting_lesson_id?: string | null
           streak_reminder_time?: string | null
+          streak_reminders_enabled?: boolean
+          terms_accepted_at?: string | null
+          terms_version?: string | null
           trade_onboarding_completed?: boolean | null
           updated_at?: string | null
           user_id?: string
@@ -2358,6 +2544,40 @@ export type Database = {
         Returns: Json
       }
       create_friend_invite: { Args: { p_user_id: string }; Returns: Json }
+      daily_focus_response: {
+        Args: {
+          p_answer_correct?: boolean
+          p_challenge: Database["public"]["Tables"]["daily_focus_challenges"]["Row"]
+          p_correct_answer?: Json
+          p_explanation?: string
+          p_profile: Database["public"]["Tables"]["focus_profiles"]["Row"]
+        }
+        Returns: Json
+      }
+      ensure_daily_focus_challenge: {
+        Args: { p_user_id: string }
+        Returns: {
+          challenge_date: string
+          completed_at: string | null
+          correct_answers: number
+          created_at: string
+          focus_remaining: number
+          id: string
+          max_focus: number
+          questions: Json
+          questions_answered: number
+          refill_used: boolean
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "daily_focus_challenges"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       evaluate_adaptive_triggers: {
         Args: { p_user_id: string }
         Returns: undefined
@@ -2371,6 +2591,8 @@ export type Database = {
         }
         Returns: Json
       }
+      focus_week_start: { Args: { p_timestamp?: string }; Returns: string }
+      get_daily_focus_challenge: { Args: never; Returns: Json }
       get_latest_market_data: {
         Args: never
         Returns: {
@@ -2407,12 +2629,17 @@ export type Database = {
         Returns: Json
       }
       recompute_streak_status: { Args: { p_user_id: string }; Returns: Json }
+      refill_daily_focus: { Args: never; Returns: Json }
       seed_next_market_data: {
         Args: { p_trade_date?: string }
         Returns: {
           close_price: number
           symbol: string
         }[]
+      }
+      submit_daily_focus_answer: {
+        Args: { p_answer: Json; p_question_index: number }
+        Returns: Json
       }
     }
     Enums: {

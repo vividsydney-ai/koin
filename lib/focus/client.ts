@@ -1,0 +1,104 @@
+import { supabase } from "@/lib/auth/client";
+import { z } from "zod";
+
+export type DailyFocusStatus = "active" | "completed" | "exhausted";
+
+export interface DailyFocusQuestion {
+  type: "multiple_choice" | "true_false" | "swipe_yes_no";
+  question: string;
+  options?: string[];
+}
+
+export interface DailyFocusState {
+  challengeDate: string;
+  maxFocus: number;
+  focusRemaining: number;
+  questionsAnswered: number;
+  correctAnswers: number;
+  status: DailyFocusStatus;
+  refillUsed: boolean;
+  missionsCompletedThisWeek: number;
+  missionGoal: number;
+  fourthFocusUnlocked: boolean;
+  questions: DailyFocusQuestion[];
+  answerCorrect: boolean | null;
+  explanation: string | null;
+  correctAnswer: string | boolean | null;
+}
+
+const dailyFocusAnswerSchema = z.object({
+  questionIndex: z.number().int().min(0).max(4),
+  answer: z.union([z.string().min(1), z.boolean()]),
+});
+
+function parseState(raw: unknown): DailyFocusState | null {
+  if (!raw || typeof raw !== "object") return null;
+  const value = raw as Record<string, unknown>;
+  const questions = Array.isArray(value.questions)
+    ? value.questions.filter(
+        (question): question is DailyFocusQuestion =>
+          Boolean(question) &&
+          typeof question === "object" &&
+          ["multiple_choice", "true_false", "swipe_yes_no"].includes(
+            String((question as Record<string, unknown>).type)
+          ) &&
+          typeof (question as Record<string, unknown>).question === "string"
+      )
+    : [];
+
+  const status = value.status;
+  if (status !== "active" && status !== "completed" && status !== "exhausted") return null;
+
+  return {
+    challengeDate: String(value.challenge_date ?? ""),
+    maxFocus: Number(value.max_focus ?? 3),
+    focusRemaining: Number(value.focus_remaining ?? 0),
+    questionsAnswered: Number(value.questions_answered ?? 0),
+    correctAnswers: Number(value.correct_answers ?? 0),
+    status,
+    refillUsed: Boolean(value.refill_used),
+    missionsCompletedThisWeek: Number(value.missions_completed_this_week ?? 0),
+    missionGoal: Number(value.mission_goal ?? 5),
+    fourthFocusUnlocked: Boolean(value.fourth_focus_unlocked),
+    questions,
+    answerCorrect: typeof value.answer_correct === "boolean" ? value.answer_correct : null,
+    explanation: typeof value.explanation === "string" ? value.explanation : null,
+    correctAnswer:
+      typeof value.correct_answer === "string" || typeof value.correct_answer === "boolean"
+        ? value.correct_answer
+        : null,
+  };
+}
+
+export async function getDailyFocusChallenge(): Promise<DailyFocusState | null> {
+  const { data, error } = await supabase.rpc("get_daily_focus_challenge");
+  if (error) {
+    console.error("getDailyFocusChallenge error:", error.message);
+    return null;
+  }
+  return parseState(data);
+}
+
+export async function submitDailyFocusAnswer(
+  questionIndex: number,
+  answer: string | boolean
+): Promise<{ state: DailyFocusState | null; error: string | null }> {
+  const parsed = dailyFocusAnswerSchema.safeParse({ questionIndex, answer });
+  if (!parsed.success) {
+    return { state: null, error: "That Focus answer was not valid." };
+  }
+
+  const { data, error } = await supabase.rpc("submit_daily_focus_answer", {
+    p_question_index: parsed.data.questionIndex,
+    p_answer: parsed.data.answer,
+  });
+
+  if (error) return { state: null, error: error.message };
+  return { state: parseState(data), error: null };
+}
+
+export async function refillDailyFocus(): Promise<{ state: DailyFocusState | null; error: string | null }> {
+  const { data, error } = await supabase.rpc("refill_daily_focus");
+  if (error) return { state: null, error: error.message };
+  return { state: parseState(data), error: null };
+}
