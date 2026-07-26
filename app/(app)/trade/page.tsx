@@ -17,7 +17,7 @@ import {
 } from "@/lib/trading/client";
 import {
   getTradeOnboardingStatus,
-  PAPER_TRADING_UNLOCK_LESSON_NUMBER,
+  PAPER_TRADING_UNLOCK_CHAPTER_LABEL,
   type TradeOnboardingStatus,
 } from "@/lib/trading/onboarding";
 import { trackEvent } from "@/lib/analytics/client";
@@ -156,7 +156,7 @@ export default function TradePage() {
   return (
     <div className="min-h-screen bg-background p-5 pb-28">
       <header className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">Trade</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">Paper Trading</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Practice buying and selling Indonesian stocks with paper money.
         </p>
@@ -171,7 +171,8 @@ export default function TradePage() {
         </div>
       ) : !onboardingStatus?.requiredLessonsCompleted ? (
         <LockedState
-          lessonEightCompleted={Boolean(onboardingStatus?.completedLessonSlugs.length)}
+          completedCount={onboardingStatus?.completedLessonSlugs.length ?? 0}
+          requiredCount={onboardingStatus?.requiredLessonCount ?? 0}
         />
       ) : !onboardingStatus?.onboardingCompleted || showOnboarding ? (
         <TradeOnboarding
@@ -238,23 +239,23 @@ export default function TradePage() {
 }
 
 function LockedState({
-  lessonEightCompleted,
+  completedCount,
+  requiredCount,
 }: {
-  lessonEightCompleted: boolean;
+  completedCount: number;
+  requiredCount: number;
 }) {
   return (
     <div className="rounded-lg border border-dashed border-muted bg-surface p-6 text-center">
       <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-warning/10 text-2xl">
         🔒
       </div>
-      <h2 className="mt-4 text-lg font-bold text-foreground">Trade is locked</h2>
+      <h2 className="mt-4 text-lg font-bold text-foreground">Paper trading is locked</h2>
       <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-        Complete Lesson {PAPER_TRADING_UNLOCK_LESSON_NUMBER} in the Learn tab to unlock paper trading.
+        Complete {PAPER_TRADING_UNLOCK_CHAPTER_LABEL} in the Learn tab to unlock paper trading.
       </p>
       <p className="mt-4 text-xs text-muted-foreground">
-        {lessonEightCompleted
-          ? `Lesson ${PAPER_TRADING_UNLOCK_LESSON_NUMBER} complete`
-          : `Lesson ${PAPER_TRADING_UNLOCK_LESSON_NUMBER} not yet complete`}
+        Progress: {completedCount} / {requiredCount} required lessons
       </p>
     </div>
   );

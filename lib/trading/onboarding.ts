@@ -1,11 +1,13 @@
 import { supabase } from "@/lib/auth/client";
 import { ensurePortfolio } from "@/lib/trading/client";
 
-export const PAPER_TRADING_UNLOCK_LESSON_NUMBER = 8;
+export const PAPER_TRADING_UNLOCK_CHAPTER = "Investing in Indonesia";
+export const PAPER_TRADING_UNLOCK_CHAPTER_LABEL = "Chapter 08 — Investing in Indonesia";
 
 export interface TradeOnboardingStatus {
   requiredLessonsCompleted: boolean;
   completedLessonSlugs: string[];
+  requiredLessonCount: number;
   onboardingCompleted: boolean;
   canTrade: boolean;
 }
@@ -16,13 +18,22 @@ export interface RiskProfile {
 }
 
 export async function getTradeOnboardingStatus(userId: string): Promise<TradeOnboardingStatus> {
-  const [{ data: progress, error: progressError }, { data: settings, error: settingsError }] =
+  const [
+    { data: progress, error: progressError },
+    { data: chapterLessons, error: chapterLessonsError },
+    { data: settings, error: settingsError },
+  ] =
     await Promise.all([
       supabase
         .from("lesson_progress")
-        .select("status, lessons!inner(slug, lesson_number, is_published)")
+        .select("status, lessons!inner(slug, is_published, topics!inner(chapter))")
         .eq("user_id", userId)
         .eq("status", "completed"),
+      supabase
+        .from("lessons")
+        .select("slug, topics!inner(chapter)")
+        .eq("is_published", true)
+        .eq("topics.chapter", PAPER_TRADING_UNLOCK_CHAPTER),
       supabase
         .from("user_settings")
         .select("trade_onboarding_completed")
@@ -33,28 +44,35 @@ export async function getTradeOnboardingStatus(userId: string): Promise<TradeOnb
   if (progressError) {
     console.error("getTradeOnboardingStatus progress error:", progressError.message);
   }
+  if (chapterLessonsError) {
+    console.error("getTradeOnboardingStatus chapter lessons error:", chapterLessonsError.message);
+  }
   if (settingsError) {
     console.error("getTradeOnboardingStatus settings error:", settingsError.message);
   }
 
+  const requiredSlugs = new Set(
+    (chapterLessons ?? []).flatMap((lesson: Record<string, unknown>) =>
+      typeof lesson.slug === "string" ? [lesson.slug] : []
+    )
+  );
   const completedLessonSlugs = (progress ?? []).flatMap((row: Record<string, unknown>) => {
     const lesson = row.lessons as Record<string, unknown> | null;
-    if (
-      lesson?.lesson_number === PAPER_TRADING_UNLOCK_LESSON_NUMBER &&
-      lesson.is_published === true &&
-      typeof lesson.slug === "string"
-    ) {
+    if (lesson?.is_published === true && typeof lesson.slug === "string" && requiredSlugs.has(lesson.slug)) {
       return [lesson.slug];
     }
     return [];
   });
 
-  const requiredLessonsCompleted = completedLessonSlugs.length > 0;
+  const requiredLessonCount = requiredSlugs.size;
+  const requiredLessonsCompleted =
+    requiredLessonCount > 0 && completedLessonSlugs.length === requiredLessonCount;
   const onboardingCompleted = settings?.trade_onboarding_completed ?? false;
 
   return {
     requiredLessonsCompleted,
     completedLessonSlugs,
+    requiredLessonCount,
     onboardingCompleted,
     canTrade: requiredLessonsCompleted && onboardingCompleted,
   };
