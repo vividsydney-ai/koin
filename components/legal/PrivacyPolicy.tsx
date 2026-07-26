@@ -269,7 +269,7 @@ function PrivacyPolicyId() {
             jawaban kuis, rekomendasi yang ditampilkan.
           </li>
           <li>
-            <strong>Data gamifikasi:</strong> peristiwa XP, level, rentetan, lencana, Poin Koin.
+            <strong>Data gamifikasi:</strong> peristiwa XP, level, streak, lencana, Poin Koin.
           </li>
           <li>
             <strong>Data trading simulasi:</strong> portofolio virtual, kepemilikan, transaksi,
@@ -280,7 +280,7 @@ function PrivacyPolicyId() {
             peringkat papan peringkat.
           </li>
           <li>
-            <strong>Pengaturan:</strong> preferensi notifikasi, waktu pengingat rentetan, keikutsertaan
+            <strong>Pengaturan:</strong> preferensi notifikasi, waktu pengingat streak, keikutsertaan
             laporan mingguan, visibilitas papan peringkat.
           </li>
           <li>
@@ -312,11 +312,11 @@ function PrivacyPolicyId() {
       <LegalSection title="5. Mengapa kami menggunakannya">
         <ul className="list-disc space-y-2 pl-5">
           <li>Membuat dan mengelola akun kamu serta mengotentikasi kamu.</li>
-          <li>Menyampaikan pelajaran, kuis, rentetan, XP, lencana, dan Poin Koin.</li>
+          <li>Menyampaikan pelajaran, kuis, streak, XP, lencana, dan Poin Koin.</li>
           <li>Mengoperasikan sandbox paper trading dan kelulusan.</li>
           <li>Mempersonalisasi jalur pembelajaran dan rekomendasi kamu.</li>
           <li>Menjalankan papan peringkat, teman, dan kelompok.</li>
-          <li>Mengirim pengingat rentetan, laporan mingguan, dan email layanan.</li>
+          <li>Mengirim pengingat streak, laporan mingguan, dan email layanan.</li>
           <li>Memahami dan meningkatkan Layanan.</li>
           <li>Menjaga keamanan Layanan dan mencegah penyalahgunaan.</li>
           <li>Memenuhi kewajiban hukum dan menegakkan Ketentuan kami.</li>

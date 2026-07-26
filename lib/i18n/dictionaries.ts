@@ -667,7 +667,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "home.koinPointsBody": "Dapatkan lebih banyak dengan naik level.",
     "home.noBadges": "Belum ada lencana",
     "home.noBadgesBody":
-      "Selesaikan pelajaran, jaga rentetan, atau lakukan transaksi pertama untuk mendapatkan lencana pertamamu.",
+      "Selesaikan pelajaran, jaga streak, atau lakukan transaksi pertama untuk mendapatkan lencana pertamamu.",
     "home.startLearning": "Mulai belajar",
     "home.latestBadge": "Lencana terbaru",
     "home.portfolio": "Portofolio",
@@ -714,7 +714,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
 
     "profile.loading": "Memuat profil…",
     "profile.edit": "Ubah",
-    "profile.streak": "Rentetan",
+    "profile.streak": "Streak",
     "profile.paperPortfolio": "Portofolio Simulasi",
     "profile.totalValue": "Nilai total",
     "profile.cash": "Kas",
@@ -727,7 +727,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "profile.koin": "Koin",
     "profile.noBadgesYet": "Belum ada lencana",
     "profile.noBadgesBody":
-      "Selesaikan pelajaran, jaga rentetan, dan lakukan transaksi pertama untuk mendapatkan lencana.",
+      "Selesaikan pelajaran, jaga streak, dan lakukan transaksi pertama untuk mendapatkan lencana.",
     "profile.startLearning": "Mulai belajar",
 
     "settings.title": "Pengaturan",

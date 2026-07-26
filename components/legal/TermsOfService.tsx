@@ -289,7 +289,7 @@ function TermsOfServiceId() {
 
       <LegalSection title="5. Item virtual">
         <p>
-          XP, level, rentetan, lencana, Poin Koin, portofolio simulasi, dan sertifikat
+          XP, level, streak, lencana, Poin Koin, portofolio simulasi, dan sertifikat
           kelulusan adalah item virtual tanpa nilai moneter. Item virtual tidak dapat dibeli,
           dijual, ditukar, diuangkan, dipindahkan, atau dikonversi menjadi uang atau barang apa pun.
           Paper trading hanya menggunakan saldo Rupiah simulasi. Kami dapat menyesuaikan atau
