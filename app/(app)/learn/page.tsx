@@ -101,7 +101,7 @@ export default function LearnPage() {
             chapter.topics.some((topic) => topic.lessons.some((lesson) => lesson.id === firstUnlockedIncomplete.id))
           );
           if (currentChapter) {
-            setExpandedChapters((prev) => new Set([...prev, currentChapter.title]));
+            setExpandedChapters(new Set([currentChapter.title]));
           }
         }
       }
@@ -145,13 +145,7 @@ export default function LearnPage() {
 
   const toggleChapter = (title: string) => {
     setExpandedChapters((prev) => {
-      const next = new Set(prev);
-      if (next.has(title)) {
-        next.delete(title);
-      } else {
-        next.add(title);
-      }
-      return next;
+      return prev.has(title) ? new Set() : new Set([title]);
     });
   };
 
@@ -326,7 +320,9 @@ function ChapterCard({
               background: `conic-gradient(var(--color-success) ${(completedCount / Math.max(1, chapter.lessonCount)) * 360}deg, var(--color-muted) 0deg)`,
             }}
           />
-          <ChevronIcon className={`h-5 w-5 text-muted-foreground transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+          <span aria-hidden="true" className="text-xl font-medium leading-none text-muted-foreground">
+            {isExpanded ? "−" : "+"}
+          </span>
         </div>
       </button>
 
@@ -437,22 +433,6 @@ function LockIcon({ className }: { className?: string }) {
     >
       <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
       <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-    </svg>
-  );
-}
-
-function ChevronIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="m6 9 6 6 6-6" />
     </svg>
   );
 }
