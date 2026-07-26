@@ -23,6 +23,7 @@ import { getGoalBasedRecommendation } from "@/lib/adaptive/goals";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 const CHAPTER_TITLE_KEY: Record<string, string> = {
+  "Foundation": "chapter.foundation",
   "Money Basics": "chapter.moneyBasics",
   "Money Life Skills": "chapter.moneyLifeSkills",
   "Protect Yourself": "chapter.protectYourself",

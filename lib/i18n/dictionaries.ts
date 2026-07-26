@@ -140,6 +140,7 @@ export interface Dictionary {
   "learn.minutesShort": string;
 
   // Chapter titles (mapped from DB English titles)
+  "chapter.foundation": string;
   "chapter.moneyBasics": string;
   "chapter.moneyLifeSkills": string;
   "chapter.protectYourself": string;
@@ -394,6 +395,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "learn.completedOf": "{completed} of {total} completed",
     "learn.minutesShort": "min",
 
+    "chapter.foundation": "Foundation",
     "chapter.moneyBasics": "Money Basics",
     "chapter.moneyLifeSkills": "Money Life Skills",
     "chapter.protectYourself": "Protect Yourself",
@@ -636,6 +638,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "learn.completedOf": "{completed} dari {total} selesai",
     "learn.minutesShort": "mnt",
 
+    "chapter.foundation": "Fondasi",
     "chapter.moneyBasics": "Dasar Uang",
     "chapter.moneyLifeSkills": "Keterampilan Keuangan",
     "chapter.protectYourself": "Lindungi Diri",
