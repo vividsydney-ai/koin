@@ -658,11 +658,19 @@ function SplitParagraphs({
   className?: string;
 }) {
   if (!text) return null;
-  const parts = splitSentences(String(text));
+  const sentences = splitSentences(String(text));
+  // A line per sentence turns a short explanation into a visual wall. Pairing
+  // related sentences creates a calmer reading rhythm while preserving the
+  // original, source-reviewed lesson copy.
+  const parts = sentences.reduce<string[]>((paragraphs, sentence, index) => {
+    if (index % 2 === 0) paragraphs.push(sentence);
+    else paragraphs[paragraphs.length - 1] += ` ${sentence}`;
+    return paragraphs;
+  }, []);
   return (
     <div className={className}>
       {parts.map((part, i) => (
-        <p key={i} className="text-[15px] leading-relaxed sm:text-base">
+        <p key={i} className="text-[15px] font-medium leading-7 text-foreground/90 sm:text-base sm:leading-7">
           {part}
         </p>
       ))}
@@ -727,7 +735,7 @@ function ConceptStep({
       {!showSimpler ? (
         <div className="mt-4 space-y-3">
           <SectionKicker icon={<LightbulbIcon />} label={t("lesson.theIdea")} tone="primary" />
-          <SplitParagraphs text={conceptBody} className="space-y-3 text-muted-foreground" />
+          <SplitParagraphs text={conceptBody} className="space-y-4" />
         </div>
       ) : (
         simplerVariant && (
@@ -820,7 +828,7 @@ function ExampleStep({
       </h2>
       <div className="mt-3 space-y-3 rounded-lg border border-muted/60 bg-surface-raised p-4">
         <SectionKicker icon={<MapPinIcon />} label={t("lesson.realExample")} tone="info" />
-        <SplitParagraphs text={String(displayText ?? "")} className="space-y-3 text-muted-foreground" />
+        <SplitParagraphs text={String(displayText ?? "")} className="space-y-4" />
       </div>
       {canShowAnother && !showAlternate && (
         <button
@@ -926,9 +934,10 @@ function QuizStep({
       {awaitingNext && results.length >= requiredChecks && (
         <button
           onClick={() => onComplete(results)}
-          className="inline-flex min-h-[44px] items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+          className="flex min-h-[48px] w-full items-center justify-center gap-2 rounded-md bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-[0.98]"
         >
           {t("lesson.continue")}
+          <ArrowRightIcon />
         </button>
       )}
     </div>
