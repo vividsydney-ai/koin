@@ -123,6 +123,7 @@ export interface Dictionary {
   "home.inviteFriends": string;
   "home.recommendedForYou": string;
   "home.dismissRecommendation": string;
+  "home.chapterLessonLabel": string;
 
   // Learn page
   "learn.title": string;
@@ -377,6 +378,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "home.inviteFriends": "Invite friends",
     "home.recommendedForYou": "Recommended for you",
     "home.dismissRecommendation": "Dismiss recommendation",
+    "home.chapterLessonLabel": "Chapter {chapterNumber} | Lesson {lessonNumber}",
 
     "learn.title": "Learn",
     "learn.subtitle": "Bite-sized money lessons, one concept at a time.",
@@ -620,6 +622,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "home.inviteFriends": "Undang teman",
     "home.recommendedForYou": "Direkomendasikan untukmu",
     "home.dismissRecommendation": "Tutup rekomendasi",
+    "home.chapterLessonLabel": "Bab {chapterNumber} | Pelajaran {lessonNumber}",
 
     "learn.title": "Belajar",
     "learn.subtitle": "Pelajaran uang ringkas, satu konsep dalam satu waktu.",

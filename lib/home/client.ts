@@ -45,7 +45,56 @@ export interface ContinueLesson {
   title: string;
   titleId: string | null;
   lessonNumber: number;
+  chapterNumber: number | null;
+  chapterLessonNumber: number | null;
   status: "available" | "in_progress" | "completed";
+}
+
+const DISPLAY_CHAPTER_ORDER = [
+  "Foundation",
+  "Money Basics",
+  "Money Life Skills",
+  "Protect Yourself",
+  "Let's Talk About Debt",
+  "Plan Your Money",
+  "Grow Your Money",
+  "Investing in Indonesia",
+  "Cryptocurrency 101",
+];
+
+type ContinueLessonRow = {
+  id: string;
+  slug: string;
+  title: string;
+  title_id: string | null;
+  lesson_number: number;
+  topics: { chapter: string | null } | { chapter: string | null }[] | null;
+};
+
+function chapterForLesson(lesson: ContinueLessonRow): string | null {
+  const topic = Array.isArray(lesson.topics) ? lesson.topics[0] : lesson.topics;
+  return topic?.chapter?.trim() || null;
+}
+
+function getChapterPosition(lessons: ContinueLessonRow[], lesson: ContinueLessonRow) {
+  const chapter = chapterForLesson(lesson);
+  if (!chapter) return { chapterNumber: null, chapterLessonNumber: null };
+
+  const chapters = [...new Set(lessons.map(chapterForLesson).filter((value): value is string => Boolean(value)))].sort(
+    (a, b) => {
+      const aOrder = DISPLAY_CHAPTER_ORDER.indexOf(a);
+      const bOrder = DISPLAY_CHAPTER_ORDER.indexOf(b);
+      return (aOrder === -1 ? Number.MAX_SAFE_INTEGER : aOrder) - (bOrder === -1 ? Number.MAX_SAFE_INTEGER : bOrder);
+    }
+  );
+  const chapterLessons = lessons
+    .filter((candidate) => chapterForLesson(candidate) === chapter)
+    .sort((a, b) => a.lesson_number - b.lesson_number);
+
+  return {
+    chapterNumber: chapters.indexOf(chapter) + 1,
+    chapterLessonNumber: chapterLessons.findIndex((candidate) => candidate.id === lesson.id) + 1,
+  };
 }
 
 export interface PortfolioSnapshot {
@@ -191,7 +240,7 @@ export async function getRecentBadge(userId: string): Promise<RecentBadge | null
 
 export async function getContinueLesson(userId: string): Promise<ContinueLesson | null> {
   const [{ data: lessons, error: lessonsError }, { data: progress, error: progressError }, { data: settings, error: settingsError }] = await Promise.all([
-    supabase.from("lessons").select("id, slug, title, title_id, lesson_number").eq("is_published", true).order("lesson_number", { ascending: true }),
+    supabase.from("lessons").select("id, slug, title, title_id, lesson_number, topics(chapter)").eq("is_published", true).order("lesson_number", { ascending: true }),
     supabase.from("lesson_progress").select("lesson_id, status").eq("user_id", userId),
     supabase.from("user_settings").select("starting_lesson_id").eq("user_id", userId).maybeSingle(),
   ]);
@@ -225,10 +274,11 @@ export async function getContinueLesson(userId: string): Promise<ContinueLesson 
   }
 
   // Find the first lesson at or after the user's starting point that is in_progress or available.
-  for (let i = startIndex; i < (lessons ?? []).length; i++) {
-    const lesson = lessons![i];
+  const publishedLessons = (lessons ?? []) as ContinueLessonRow[];
+  for (let i = startIndex; i < publishedLessons.length; i++) {
+    const lesson = publishedLessons[i];
     const status = progressMap[lesson.id];
-    const previousCompleted = i === startIndex || progressMap[lessons![i - 1].id] === "completed";
+    const previousCompleted = i === startIndex || progressMap[publishedLessons[i - 1].id] === "completed";
 
     if (status === "in_progress") {
       return {
@@ -237,6 +287,7 @@ export async function getContinueLesson(userId: string): Promise<ContinueLesson 
         title: lesson.title,
         titleId: lesson.title_id ?? null,
         lessonNumber: lesson.lesson_number,
+        ...getChapterPosition(publishedLessons, lesson),
         status: "in_progress",
       };
     }
@@ -248,6 +299,7 @@ export async function getContinueLesson(userId: string): Promise<ContinueLesson 
         title: lesson.title,
         titleId: lesson.title_id ?? null,
         lessonNumber: lesson.lesson_number,
+        ...getChapterPosition(publishedLessons, lesson),
         status: (status as ContinueLesson["status"]) || "available",
       };
     }

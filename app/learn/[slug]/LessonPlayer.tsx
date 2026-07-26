@@ -426,7 +426,7 @@ export default function LessonPlayer({
           <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
             {chapterNumber && lessonNumber && chapterLessonsCount
               ? t("lesson.chapterLabel")
-                  .replace("{chapterNumber}", String(chapterNumber))
+                  .replace("{chapterNumber}", String(chapterNumber).padStart(2, "0"))
                   .replace("{lessonNumber}", String(lessonNumber))
                   .replace("{total}", String(chapterLessonsCount))
               : `${t("lesson.lessonWord")} ${lesson.lessonNumber}${totalLessons ? ` ${t("lesson.of")} ${totalLessons}` : ""}`}
@@ -1366,4 +1366,3 @@ function TargetIcon() {
     </svg>
   );
 }
-

@@ -275,7 +275,11 @@ function ContinueLessonCard({ lesson }: { lesson: ContinueLesson | null }) {
             </span>
             <h3 className="mt-3 font-display text-xl font-bold text-foreground">{title}</h3>
             <p className="mt-1 text-sm text-muted-foreground">
-              {t("lesson.lessonWord")} {lesson.lessonNumber}
+              {lesson.chapterNumber !== null && lesson.chapterLessonNumber !== null
+                ? t("home.chapterLessonLabel")
+                    .replace("{chapterNumber}", String(lesson.chapterNumber).padStart(2, "0"))
+                    .replace("{lessonNumber}", String(lesson.chapterLessonNumber))
+                : `${t("lesson.lessonWord")} ${lesson.lessonNumber}`}
             </p>
           </div>
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm">

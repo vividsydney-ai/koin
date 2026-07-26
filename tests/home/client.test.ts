@@ -60,7 +60,7 @@ describe("home client", () => {
       progress = [],
       startingLessonId = null,
     }: {
-      lessons: { id: string; slug: string; title: string; lesson_number: number }[];
+      lessons: { id: string; slug: string; title: string; lesson_number: number; topics?: { chapter: string | null } }[];
       progress?: { lesson_id: string; status: string }[];
       startingLessonId?: string | null;
     }) {
@@ -100,14 +100,47 @@ describe("home client", () => {
     it("returns the first lesson for a new user", async () => {
       setupGetContinueLesson({
         lessons: [
-          { id: "l1", slug: "lesson-1", title: "Lesson 1", lesson_number: 1 },
-          { id: "l2", slug: "lesson-2", title: "Lesson 2", lesson_number: 2 },
+          { id: "l1", slug: "lesson-1", title: "Lesson 1", lesson_number: 101, topics: { chapter: "Foundation" } },
+          { id: "l2", slug: "lesson-2", title: "Lesson 2", lesson_number: 104, topics: { chapter: "Foundation" } },
+          { id: "l3", slug: "lesson-3", title: "Lesson 3", lesson_number: 1, topics: { chapter: "Money Basics" } },
         ],
       });
 
       const result = await getContinueLesson("user-1");
 
-      expect(result).toMatchObject({ id: "l1", slug: "lesson-1", status: "available" });
+      expect(result).toMatchObject({
+        id: "l1",
+        slug: "lesson-1",
+        status: "available",
+        chapterNumber: 1,
+        chapterLessonNumber: 1,
+      });
+    });
+
+    it("returns a chapter-relative label rather than the internal lesson number", async () => {
+      setupGetContinueLesson({
+        lessons: [
+          { id: "l1", slug: "foundation-1", title: "Foundation 1", lesson_number: 101, topics: { chapter: "Foundation" } },
+          { id: "l2", slug: "foundation-2", title: "Foundation 2", lesson_number: 102, topics: { chapter: "Foundation" } },
+          { id: "l3", slug: "foundation-3", title: "Foundation 3", lesson_number: 103, topics: { chapter: "Foundation" } },
+          { id: "l4", slug: "foundation-4", title: "Income vs Wealth", lesson_number: 104, topics: { chapter: "Foundation" } },
+          { id: "l5", slug: "money-1", title: "Money 1", lesson_number: 1, topics: { chapter: "Money Basics" } },
+        ],
+        progress: [
+          { lesson_id: "l1", status: "completed" },
+          { lesson_id: "l2", status: "completed" },
+          { lesson_id: "l3", status: "completed" },
+        ],
+      });
+
+      const result = await getContinueLesson("user-1");
+
+      expect(result).toMatchObject({
+        id: "l4",
+        lessonNumber: 104,
+        chapterNumber: 1,
+        chapterLessonNumber: 4,
+      });
     });
 
     it("falls back to lesson 1 when configured starting lesson is unpublished", async () => {
