@@ -15,7 +15,11 @@ import {
   type Trade,
   type MarketData,
 } from "@/lib/trading/client";
-import { getTradeOnboardingStatus, type TradeOnboardingStatus } from "@/lib/trading/onboarding";
+import {
+  getTradeOnboardingStatus,
+  PAPER_TRADING_UNLOCK_LESSON_NUMBER,
+  type TradeOnboardingStatus,
+} from "@/lib/trading/onboarding";
 import { trackEvent } from "@/lib/analytics/client";
 import { EmptyState } from "@/components/EmptyState";
 import PriceChart from "@/components/PriceChart";
@@ -167,8 +171,7 @@ export default function TradePage() {
         </div>
       ) : !onboardingStatus?.requiredLessonsCompleted ? (
         <LockedState
-          completedSlugs={onboardingStatus?.completedLessonSlugs ?? []}
-          totalRequired={3}
+          lessonEightCompleted={Boolean(onboardingStatus?.completedLessonSlugs.length)}
         />
       ) : !onboardingStatus?.onboardingCompleted || showOnboarding ? (
         <TradeOnboarding
@@ -235,11 +238,9 @@ export default function TradePage() {
 }
 
 function LockedState({
-  completedSlugs,
-  totalRequired,
+  lessonEightCompleted,
 }: {
-  completedSlugs: string[];
-  totalRequired: number;
+  lessonEightCompleted: boolean;
 }) {
   return (
     <div className="rounded-lg border border-dashed border-muted bg-surface p-6 text-center">
@@ -248,10 +249,12 @@ function LockedState({
       </div>
       <h2 className="mt-4 text-lg font-bold text-foreground">Trade is locked</h2>
       <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-        Complete the first {totalRequired} lessons in the Learn tab to unlock paper trading.
+        Complete Lesson {PAPER_TRADING_UNLOCK_LESSON_NUMBER} in the Learn tab to unlock paper trading.
       </p>
       <p className="mt-4 text-xs text-muted-foreground">
-        Progress: {completedSlugs.length} / {totalRequired} required lessons
+        {lessonEightCompleted
+          ? `Lesson ${PAPER_TRADING_UNLOCK_LESSON_NUMBER} complete`
+          : `Lesson ${PAPER_TRADING_UNLOCK_LESSON_NUMBER} not yet complete`}
       </p>
     </div>
   );

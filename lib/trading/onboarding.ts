@@ -1,7 +1,7 @@
 import { supabase } from "@/lib/auth/client";
 import { ensurePortfolio } from "@/lib/trading/client";
 
-const REQUIRED_LESSON_SLUGS = ["money-basics-101", "budgeting-101", "inflation-101"];
+export const PAPER_TRADING_UNLOCK_LESSON_NUMBER = 8;
 
 export interface TradeOnboardingStatus {
   requiredLessonsCompleted: boolean;
@@ -20,7 +20,7 @@ export async function getTradeOnboardingStatus(userId: string): Promise<TradeOnb
     await Promise.all([
       supabase
         .from("lesson_progress")
-        .select("status, lessons!inner(slug)")
+        .select("status, lessons!inner(slug, lesson_number, is_published)")
         .eq("user_id", userId)
         .eq("status", "completed"),
       supabase
@@ -37,18 +37,19 @@ export async function getTradeOnboardingStatus(userId: string): Promise<TradeOnb
     console.error("getTradeOnboardingStatus settings error:", settingsError.message);
   }
 
-  const completedSlugs = new Set(
-    (progress ?? []).map((row: Record<string, unknown>) => (row.lessons as Record<string, unknown>)?.slug).filter(Boolean)
-  );
-
-  const completedLessonSlugs: string[] = [];
-  for (const slug of REQUIRED_LESSON_SLUGS) {
-    if (completedSlugs.has(slug)) {
-      completedLessonSlugs.push(slug);
+  const completedLessonSlugs = (progress ?? []).flatMap((row: Record<string, unknown>) => {
+    const lesson = row.lessons as Record<string, unknown> | null;
+    if (
+      lesson?.lesson_number === PAPER_TRADING_UNLOCK_LESSON_NUMBER &&
+      lesson.is_published === true &&
+      typeof lesson.slug === "string"
+    ) {
+      return [lesson.slug];
     }
-  }
+    return [];
+  });
 
-  const requiredLessonsCompleted = completedLessonSlugs.length === REQUIRED_LESSON_SLUGS.length;
+  const requiredLessonsCompleted = completedLessonSlugs.length > 0;
   const onboardingCompleted = settings?.trade_onboarding_completed ?? false;
 
   return {
