@@ -910,35 +910,36 @@ function QuizStep({
         question={question}
         seed={seed}
         onComplete={(correct) => {
-          setResults((previous) => [...previous, correct]);
+          const nextResults = [...results, correct];
+          setResults(nextResults);
           setAwaitingNext(true);
+          // The fixed footer is the single progression CTA. Once the required
+          // check count is met, enable it; never duplicate Continue in-card.
+          if (nextResults.length >= requiredChecks) onComplete(nextResults);
         }}
       />
 
-      {awaitingNext && results.length < requiredChecks && onAnotherQuestion && canShowAnotherQuestion && (
+      {awaitingNext && onAnotherQuestion && canShowAnotherQuestion && (
         <button
           onClick={() => {
-            if (onAnotherQuestion()) setAwaitingNext(false);
+            if (onAnotherQuestion()) {
+              // An optional replay after the required check starts a fresh
+              // practice question; a required second check retains its first
+              // result for lesson mastery.
+              if (results.length >= requiredChecks) setResults([]);
+              setAwaitingNext(false);
+            }
           }}
           className="inline-flex min-h-[44px] items-center gap-1.5 text-sm font-medium text-primary hover:underline"
-          aria-label={t("mission.nextCheck")}
+          aria-label={results.length < requiredChecks ? t("mission.nextCheck") : t("lesson.tryAnotherQuestion")}
         >
-          {t("mission.nextCheck")}
+          {results.length < requiredChecks ? t("mission.nextCheck") : t("lesson.tryAnotherQuestion")}
         </button>
       )}
       {awaitingNext && results.length < requiredChecks && !canShowAnotherQuestion && (
         <div className="rounded-md border border-warning/30 bg-warning/5 px-4 py-3 text-sm text-warning">
           {t("lesson.noQuestionAvailable")}
         </div>
-      )}
-      {awaitingNext && results.length >= requiredChecks && (
-        <button
-          onClick={() => onComplete(results)}
-          className="flex min-h-[48px] w-full items-center justify-center gap-2 rounded-md bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-[0.98]"
-        >
-          {t("lesson.continue")}
-          <ArrowRightIcon />
-        </button>
       )}
     </div>
   );
