@@ -2,6 +2,7 @@ import { supabase } from "@/lib/auth/client";
 import type { Locale } from "@/lib/i18n/types";
 import type { LessonStatus } from "./gating";
 import type { QuizQuestion } from "./question";
+import { orderCurriculumLessons, curriculumChapterNumber } from "./curriculum";
 
 /**
  * Fallback chapter mapping by topic slug. Once the `topics.chapter` column is
@@ -57,6 +58,7 @@ export interface Lesson {
   title: string;
   titleId: string;
   lessonNumber: number;
+  chapter?: string | null;
   difficulty: string;
   xpReward: number;
   estimatedMinutes: number;
@@ -252,11 +254,12 @@ export async function getLessonSources(lessonId: string): Promise<LessonSource[]
 }
 
 export async function getAllLessons(): Promise<
-  Pick<Lesson, "id" | "slug" | "title" | "titleId" | "lessonNumber" | "difficulty" | "xpReward" | "estimatedMinutes" | "summary" | "summaryId">[]
+  Pick<Lesson, "id" | "slug" | "title" | "titleId" | "lessonNumber" | "chapter" | "difficulty" | "xpReward" | "estimatedMinutes" | "summary" | "summaryId">[]
 > {
   const { data, error } = await supabase
     .from("lessons")
-    .select("id, slug, title, title_id, lesson_number, difficulty, xp_reward, estimated_minutes, summary, summary_id")
+    .select("id, slug, title, title_id, lesson_number, difficulty, xp_reward, estimated_minutes, summary, summary_id, topics(chapter)")
+    .eq("is_published", true)
     .order("lesson_number", { ascending: true });
 
   if (error) {
@@ -264,20 +267,51 @@ export async function getAllLessons(): Promise<
     return [];
   }
 
-  return (
-    data?.map((l) => ({
+  const lessons = data?.map((l) => {
+    const topic = Array.isArray(l.topics) ? l.topics[0] : l.topics;
+    return {
       id: l.id,
       slug: l.slug,
       title: l.title,
       titleId: l.title_id ?? null,
       lessonNumber: l.lesson_number,
+      chapter: topic?.chapter?.trim() || null,
       difficulty: l.difficulty,
       xpReward: l.xp_reward,
       estimatedMinutes: l.estimated_minutes,
       summary: l.summary,
       summaryId: l.summary_id ?? null,
-    })) ?? []
+    };
+  }) ?? [];
+
+  return orderCurriculumLessons(lessons);
+}
+
+export interface ChapterCompletionMilestone {
+  chapterNumber: number;
+  nextChapterNumber: number | null;
+}
+
+export async function getChapterCompletionMilestone(
+  userId: string,
+  completedLessonId: string
+): Promise<ChapterCompletionMilestone | null> {
+  const [lessons, progress] = await Promise.all([getAllLessons(), getLessonProgress(userId)]);
+  const completedLesson = lessons.find((lesson) => lesson.id === completedLessonId);
+  const chapterNumber = curriculumChapterNumber(completedLesson?.chapter ?? null);
+  if (!completedLesson || !chapterNumber || !progress) return null;
+
+  const chapterLessons = lessons.filter((lesson) => lesson.chapter === completedLesson.chapter);
+  const isChapterComplete = chapterLessons.length > 0 && chapterLessons.every(
+    (lesson) => progress[lesson.id] === "completed"
   );
+  if (!isChapterComplete) return null;
+
+  const nextChapterNumber = curriculumChapterNumber(
+    lessons.find((lesson) => curriculumChapterNumber(lesson.chapter ?? null) === chapterNumber + 1)?.chapter ?? null
+  );
+
+  return { chapterNumber, nextChapterNumber };
 }
 
 export { seededIndex, seededShuffle } from "./random";

@@ -8,6 +8,8 @@ import {
   getLessonSources,
   getRecentAttemptVariantIds,
   getLessonStatus,
+  getChapterCompletionMilestone,
+  type ChapterCompletionMilestone,
   seededIndex,
   type Lesson,
   type ContentVariant,
@@ -109,7 +111,17 @@ export default function LessonPlayer({
   const [loadError, setLoadError] = useState<string | null>(null);
   const [retryCounter, setRetryCounter] = useState(0);
   const [alreadyCompleted, setAlreadyCompleted] = useState(false);
+  const [chapterMilestone, setChapterMilestone] = useState<ChapterCompletionMilestone | null>(null);
   const startTimeRef = useRef<number>(0);
+
+  useEffect(() => {
+    if (!chapterMilestone) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setChapterMilestone(null);
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [chapterMilestone]);
 
   useEffect(() => {
     let mounted = true;
@@ -123,6 +135,7 @@ export default function LessonPlayer({
       setCompletionResult(null);
       setCompletionError(null);
       setShowSummary(false);
+      setChapterMilestone(null);
 
       try {
         const data = await getLessonBySlug(slug);
@@ -311,9 +324,14 @@ export default function LessonPlayer({
       },
     });
 
+    const milestone = result.alreadyCompleted
+      ? null
+      : await getChapterCompletionMilestone(user.id, lesson.id);
+
     setCompletionError(null);
     setCompletionResult(result);
     setShowSummary(true);
+    setChapterMilestone(milestone);
   };
 
   const seedBase = user && lesson ? `${user.id}:${lesson.id}:${todayKey()}` : `${lesson?.id ?? slug}:${todayKey()}`;
@@ -540,6 +558,13 @@ export default function LessonPlayer({
           </button>
         )}
       </footer>
+
+      {chapterMilestone && (
+        <ChapterCompletionCelebration
+          milestone={chapterMilestone}
+          onClose={() => setChapterMilestone(null)}
+        />
+      )}
 
     </div>
   );
@@ -1130,6 +1155,63 @@ function CheckIconMini() {
     <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
       <path d="m20 6-9 9-5-5" />
     </svg>
+  );
+}
+
+function ChapterCompletionCelebration({
+  milestone,
+  onClose,
+}: {
+  milestone: ChapterCompletionMilestone;
+  onClose: () => void;
+}) {
+  const { t } = useLocale();
+  const confetti = Array.from({ length: 22 }, (_, index) => ({
+    id: index,
+    left: 4 + ((index * 17) % 92),
+    delay: (index % 6) * 0.08,
+    color: ["bg-primary", "bg-success", "bg-warning", "bg-secondary"][index % 4],
+  }));
+
+  return (
+    <div
+      className="fixed inset-0 z-[var(--z-modal)] flex items-center justify-center bg-foreground/35 p-5 backdrop-blur-sm"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="chapter-complete-title"
+    >
+      <div className="relative w-full max-w-md overflow-hidden rounded-card border border-warning/30 bg-surface p-7 text-center shadow-lift">
+        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-48 overflow-hidden">
+          {confetti.map((piece) => (
+            <span
+              key={piece.id}
+              className={`chapter-confetti-piece absolute h-2.5 w-1.5 rounded-sm ${piece.color}`}
+              style={{ left: `${piece.left}%`, animationDelay: `${piece.delay}s` }}
+            />
+          ))}
+        </div>
+        <div className="relative mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-warning/15 text-warning">
+          <CheckIconLarge />
+        </div>
+        <p className="relative mt-5 text-xs font-bold uppercase tracking-[0.14em] text-warning">{t("lesson.complete")}</p>
+        <h2 id="chapter-complete-title" className="relative mt-2 font-display text-3xl font-bold tracking-tight text-foreground">
+          {t("lesson.chapterCompleteTitle").replace("{chapterNumber}", String(milestone.chapterNumber).padStart(2, "0"))}
+        </h2>
+        <p className="relative mt-3 text-sm leading-6 text-muted-foreground">
+          {milestone.nextChapterNumber
+            ? t("lesson.chapterCompleteBody").replace("{nextChapterNumber}", String(milestone.nextChapterNumber).padStart(2, "0"))
+            : t("lesson.chapterCompleteFinalBody")}
+        </p>
+        <button
+          type="button"
+          onClick={onClose}
+          autoFocus
+          className="relative mt-6 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-primary px-5 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90 active:scale-[0.98]"
+        >
+          {t("lesson.chapterCompleteContinue")}
+        </button>
+      </div>
+    </div>
   );
 }
 

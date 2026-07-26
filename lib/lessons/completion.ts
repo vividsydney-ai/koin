@@ -1,6 +1,5 @@
-import { supabase } from "@/lib/auth/client";
 import * as lessonService from "@/lib/services/lessons";
-import { getLessonStatus } from "@/lib/lessons/client";
+import { getAllLessons, getLessonProgress, getLessonStatus } from "@/lib/lessons/client";
 import type { ServiceError } from "@/lib/types/service-error";
 
 export interface CompletionInput {
@@ -34,7 +33,8 @@ export interface CompletionResult {
 export async function completeLesson(input: CompletionInput): Promise<CompletionResult | ServiceError> {
   const result = await lessonService.completeLesson(input);
   if (result.ok) {
-    return result.data;
+    const nextLessonSlug = await getNextLessonSlug(input.lessonId, input.userId);
+    return { ...result.data, nextLessonSlug };
   }
 
   console.error("completeLesson error:", result.error.message);
@@ -49,7 +49,7 @@ export async function completeLesson(input: CompletionInput): Promise<Completion
     console.error("completeLesson: could not verify lesson status after RPC error", e);
   }
   if (status === "completed") {
-    const nextSlug = await getNextLessonSlug(input.lessonNumber ?? 0);
+    const nextSlug = await getNextLessonSlug(input.lessonId, input.userId);
     return {
       xpEarned: 0,
       lessonXp: 0,
@@ -65,16 +65,15 @@ export async function completeLesson(input: CompletionInput): Promise<Completion
   return result.error;
 }
 
-export async function getNextLessonSlug(currentLessonNumber: number): Promise<string | null> {
-  const { data, error } = await supabase
-    .from("lessons")
-    .select("slug")
-    .gt("lesson_number", currentLessonNumber)
-    .eq("is_published", true)
-    .order("lesson_number", { ascending: true })
-    .limit(1)
-    .single();
+export async function getNextLessonSlug(currentLessonId: string, userId: string): Promise<string | null> {
+  const [lessons, progress] = await Promise.all([getAllLessons(), getLessonProgress(userId)]);
+  const currentIndex = lessons.findIndex((lesson) => lesson.id === currentLessonId);
+  if (currentIndex === -1) return null;
 
-  if (error || !data) return null;
-  return data.slug;
+  const followingLessons = lessons.slice(currentIndex + 1);
+  return (
+    followingLessons.find((lesson) => progress?.[lesson.id] !== "completed")?.slug ??
+    followingLessons[0]?.slug ??
+    null
+  );
 }

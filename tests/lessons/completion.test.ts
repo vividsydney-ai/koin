@@ -3,17 +3,26 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 const TEST_USER_ID = "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11";
 const TEST_LESSON_ID = "b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a22";
 
-const { rpc, single, from } = vi.hoisted(() => ({
+const { rpc } = vi.hoisted(() => ({
   rpc: vi.fn(),
-  single: vi.fn(),
-  from: vi.fn(),
+}));
+
+const { getAllLessons, getLessonProgress, getLessonStatus } = vi.hoisted(() => ({
+  getAllLessons: vi.fn(),
+  getLessonProgress: vi.fn(),
+  getLessonStatus: vi.fn(),
 }));
 
 vi.mock("@/lib/auth/client", () => ({
   supabase: {
     rpc,
-    from,
   },
+}));
+
+vi.mock("@/lib/lessons/client", () => ({
+  getAllLessons,
+  getLessonProgress,
+  getLessonStatus,
 }));
 
 import { completeLesson, getNextLessonSlug } from "@/lib/lessons/completion";
@@ -21,6 +30,12 @@ import { completeLesson, getNextLessonSlug } from "@/lib/lessons/completion";
 describe("completeLesson", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    getAllLessons.mockResolvedValue([
+      { id: TEST_LESSON_ID, slug: "foundation-4", lessonNumber: 104, chapter: "Foundation" },
+      { id: "next-lesson", slug: "money-basics-1", lessonNumber: 1, chapter: "Money Basics" },
+    ]);
+    getLessonProgress.mockResolvedValue({ [TEST_LESSON_ID]: "completed" });
+    getLessonStatus.mockResolvedValue(null);
   });
 
   it("calls complete_lesson RPC with the right payload", async () => {
@@ -64,7 +79,7 @@ describe("completeLesson", () => {
       streakDays: 2,
       streakStatus: "active",
       badgesEarned: [{ slug: "first_lesson", name: "First Lesson", icon: "📚" }],
-      nextLessonSlug: "budgeting-101",
+      nextLessonSlug: "money-basics-1",
       alreadyCompleted: false,
     });
   });
@@ -90,29 +105,18 @@ describe("completeLesson", () => {
 });
 
 describe("getNextLessonSlug", () => {
-  it("returns the next published lesson slug", async () => {
-    const eq = vi.fn(() => ({ order: vi.fn(() => ({ limit: vi.fn(() => ({ single })) })) }));
-    const gt = vi.fn(() => ({ eq }));
-    const select = vi.fn(() => ({ gt }));
-    from.mockReturnValueOnce({ select });
-    single.mockResolvedValueOnce({ data: { slug: "budgeting-101" }, error: null });
+  it("returns the next lesson in displayed curriculum order", async () => {
+    const slug = await getNextLessonSlug(TEST_LESSON_ID, TEST_USER_ID);
 
-    const slug = await getNextLessonSlug(1);
-    expect(slug).toBe("budgeting-101");
-    expect(from).toHaveBeenCalledWith("lessons");
-    expect(select).toHaveBeenCalledWith("slug");
-    expect(gt).toHaveBeenCalledWith("lesson_number", 1);
-    expect(eq).toHaveBeenCalledWith("is_published", true);
+    expect(slug).toBe("money-basics-1");
   });
 
-  it("returns null when there is no next lesson", async () => {
-    const eq = vi.fn(() => ({ order: vi.fn(() => ({ limit: vi.fn(() => ({ single })) })) }));
-    const gt = vi.fn(() => ({ eq }));
-    const select = vi.fn(() => ({ gt }));
-    from.mockReturnValueOnce({ select });
-    single.mockResolvedValueOnce({ data: null, error: { message: "not found" } });
+  it("returns null when there is no following curriculum lesson", async () => {
+    getAllLessons.mockResolvedValue([
+      { id: TEST_LESSON_ID, slug: "final-lesson", lessonNumber: 65, chapter: "Cryptocurrency 101" },
+    ]);
 
-    const slug = await getNextLessonSlug(99);
+    const slug = await getNextLessonSlug(TEST_LESSON_ID, TEST_USER_ID);
     expect(slug).toBeNull();
   });
 });

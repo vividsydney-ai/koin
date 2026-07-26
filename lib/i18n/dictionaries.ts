@@ -77,6 +77,10 @@ export interface Dictionary {
   "lesson.alreadyEarned": string;
   "lesson.alreadyEarnedValue": string;
   "lesson.chapterLabel": string;
+  "lesson.chapterCompleteTitle": string;
+  "lesson.chapterCompleteBody": string;
+  "lesson.chapterCompleteFinalBody": string;
+  "lesson.chapterCompleteContinue": string;
 
   // Quiz engine
   "quiz.correctAnswer": string;
@@ -330,6 +334,10 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "lesson.alreadyEarned": "Already earned",
     "lesson.alreadyEarnedValue": "0",
     "lesson.chapterLabel": "Chapter {chapterNumber} · Lesson {lessonNumber} of {total}",
+    "lesson.chapterCompleteTitle": "Chapter {chapterNumber} complete!",
+    "lesson.chapterCompleteBody": "Chapter {nextChapterNumber} is now unlocked.",
+    "lesson.chapterCompleteFinalBody": "You have completed every chapter.",
+    "lesson.chapterCompleteContinue": "Keep going",
 
     "quiz.correctAnswer": "Correct answer:",
     "quiz.true": "True",
@@ -574,6 +582,10 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "lesson.alreadyEarned": "Sudah didapat",
     "lesson.alreadyEarnedValue": "0",
     "lesson.chapterLabel": "Bab {chapterNumber} · Pelajaran {lessonNumber} dari {total}",
+    "lesson.chapterCompleteTitle": "Bab {chapterNumber} selesai!",
+    "lesson.chapterCompleteBody": "Bab {nextChapterNumber} sekarang terbuka.",
+    "lesson.chapterCompleteFinalBody": "Kamu telah menyelesaikan semua bab.",
+    "lesson.chapterCompleteContinue": "Lanjutkan",
 
     "quiz.correctAnswer": "Jawaban benar:",
     "quiz.true": "Benar",

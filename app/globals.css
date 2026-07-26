@@ -172,6 +172,25 @@ body {
   }
 }
 
+.chapter-confetti-piece {
+  top: -1rem;
+  animation: chapterConfetti 1.25s var(--ease-out-quart) both;
+}
+
+@keyframes chapterConfetti {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, -0.5rem, 0) rotate(0deg);
+  }
+  12% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(1.5rem, 13rem, 0) rotate(300deg);
+  }
+}
+
 /* Smooth reduced-motion-aware transitions */
 @media (prefers-reduced-motion: reduce) {
   *,

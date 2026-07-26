@@ -1,11 +1,26 @@
 import { describe, it, expect } from "vitest";
 import { deriveLessonStatuses, type LessonStatus } from "@/lib/lessons/gating";
+import { orderCurriculumLessons } from "@/lib/lessons/curriculum";
 
 function buildLessons(count: number) {
   return Array.from({ length: count }, (_, i) => ({ id: `lesson-${i + 1}` }));
 }
 
 describe("deriveLessonStatuses", () => {
+  it("orders Foundation before Money Basics even when internal lesson numbers are 101+", () => {
+    const lessons = orderCurriculumLessons([
+      { id: "money-1", lessonNumber: 1, chapter: "Money Basics" },
+      { id: "foundation-4", lessonNumber: 104, chapter: "Foundation" },
+      { id: "foundation-1", lessonNumber: 101, chapter: "Foundation" },
+    ]);
+
+    expect(lessons.map((lesson) => lesson.id)).toEqual([
+      "foundation-1",
+      "foundation-4",
+      "money-1",
+    ]);
+  });
+
   it("unlocks the first lesson when no starting lesson is set", () => {
     const lessons = buildLessons(3);
     const result = deriveLessonStatuses(lessons, {}, null);

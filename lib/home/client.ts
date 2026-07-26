@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/auth/client";
 import { getPortfolio, getHoldings, getMarketData } from "@/lib/trading/client";
 import { getTradeOnboardingStatus } from "@/lib/trading/onboarding";
+import { curriculumChapterNumber, orderCurriculumLessons } from "@/lib/lessons/curriculum";
 
 export interface StreakSummary {
   currentStreakDays: number;
@@ -50,18 +51,6 @@ export interface ContinueLesson {
   status: "available" | "in_progress" | "completed";
 }
 
-const DISPLAY_CHAPTER_ORDER = [
-  "Foundation",
-  "Money Basics",
-  "Money Life Skills",
-  "Protect Yourself",
-  "Let's Talk About Debt",
-  "Plan Your Money",
-  "Grow Your Money",
-  "Investing in Indonesia",
-  "Cryptocurrency 101",
-];
-
 type ContinueLessonRow = {
   id: string;
   slug: string;
@@ -79,20 +68,12 @@ function chapterForLesson(lesson: ContinueLessonRow): string | null {
 function getChapterPosition(lessons: ContinueLessonRow[], lesson: ContinueLessonRow) {
   const chapter = chapterForLesson(lesson);
   if (!chapter) return { chapterNumber: null, chapterLessonNumber: null };
-
-  const chapters = [...new Set(lessons.map(chapterForLesson).filter((value): value is string => Boolean(value)))].sort(
-    (a, b) => {
-      const aOrder = DISPLAY_CHAPTER_ORDER.indexOf(a);
-      const bOrder = DISPLAY_CHAPTER_ORDER.indexOf(b);
-      return (aOrder === -1 ? Number.MAX_SAFE_INTEGER : aOrder) - (bOrder === -1 ? Number.MAX_SAFE_INTEGER : bOrder);
-    }
-  );
   const chapterLessons = lessons
     .filter((candidate) => chapterForLesson(candidate) === chapter)
     .sort((a, b) => a.lesson_number - b.lesson_number);
 
   return {
-    chapterNumber: chapters.indexOf(chapter) + 1,
+    chapterNumber: curriculumChapterNumber(chapter),
     chapterLessonNumber: chapterLessons.findIndex((candidate) => candidate.id === lesson.id) + 1,
   };
 }
@@ -261,9 +242,16 @@ export async function getContinueLesson(userId: string): Promise<ContinueLesson 
     progressMap[row.lesson_id] = row.status;
   }
 
+  const publishedLessons = orderCurriculumLessons(
+    ((lessons ?? []) as ContinueLessonRow[]).map((lesson) => ({
+      ...lesson,
+      lessonNumber: lesson.lesson_number,
+      chapter: chapterForLesson(lesson),
+    }))
+  );
   const startingLessonId = settings?.starting_lesson_id;
   let startIndex = startingLessonId
-    ? (lessons ?? []).findIndex((l) => l.id === startingLessonId)
+    ? publishedLessons.findIndex((l) => l.id === startingLessonId)
     : 0;
 
   // If the user's configured starting lesson is no longer published (e.g.
@@ -274,7 +262,6 @@ export async function getContinueLesson(userId: string): Promise<ContinueLesson 
   }
 
   // Find the first lesson at or after the user's starting point that is in_progress or available.
-  const publishedLessons = (lessons ?? []) as ContinueLessonRow[];
   for (let i = startIndex; i < publishedLessons.length; i++) {
     const lesson = publishedLessons[i];
     const status = progressMap[lesson.id];
