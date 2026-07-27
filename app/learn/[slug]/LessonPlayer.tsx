@@ -540,7 +540,7 @@ export default function LessonPlayer({
                   onComplete={(results) => {
                     setQuizDone(true);
                     setQuizResults(results);
-                    setQuizCorrect(results.every(Boolean));
+                    setQuizCorrect(results.filter(Boolean).length >= lessonCheckCount(chapterNumber));
                     if (user && lesson) {
                       trackEvent({
                         userId: user.id,
@@ -895,6 +895,14 @@ function QuizStep({
   }
 
   const seed = question.variantId ?? "legacy";
+  const completedChecks = results.filter(Boolean).length;
+  const retryingWrongAnswer = results.at(-1) === false;
+  const nextActionLabel =
+    completedChecks < requiredChecks && retryingWrongAnswer
+      ? t("lesson.tryAnotherQuestion")
+      : completedChecks < requiredChecks
+        ? t("mission.nextCheck")
+        : t("lesson.tryAnotherQuestion");
 
   return (
     <div className="space-y-5">
@@ -913,9 +921,11 @@ function QuizStep({
           const nextResults = [...results, correct];
           setResults(nextResults);
           setAwaitingNext(true);
-          // The fixed footer is the single progression CTA. Once the required
-          // check count is met, enable it; never duplicate Continue in-card.
-          if (nextResults.length >= requiredChecks) onComplete(nextResults);
+          // Failed checks stay practice-only. The learner must answer a fresh
+          // variant correctly before the fixed footer can advance the lesson.
+          // The explanation remains visible in QuizEngine while awaiting the
+          // next variant.
+          if (nextResults.filter(Boolean).length >= requiredChecks) onComplete(nextResults);
         }}
       />
 
@@ -926,17 +936,17 @@ function QuizStep({
               // An optional replay after the required check starts a fresh
               // practice question; a required second check retains its first
               // result for lesson mastery.
-              if (results.length >= requiredChecks) setResults([]);
+              if (results.filter(Boolean).length >= requiredChecks) setResults([]);
               setAwaitingNext(false);
             }
           }}
           className="inline-flex min-h-[44px] items-center gap-1.5 text-sm font-medium text-primary hover:underline"
-          aria-label={results.length < requiredChecks ? t("mission.nextCheck") : t("lesson.tryAnotherQuestion")}
+          aria-label={nextActionLabel}
         >
-          {results.length < requiredChecks ? t("mission.nextCheck") : t("lesson.tryAnotherQuestion")}
+          {nextActionLabel}
         </button>
       )}
-      {awaitingNext && results.length < requiredChecks && !canShowAnotherQuestion && (
+      {awaitingNext && completedChecks < requiredChecks && !canShowAnotherQuestion && (
         <div className="rounded-md border border-warning/30 bg-warning/5 px-4 py-3 text-sm text-warning">
           {t("lesson.noQuestionAvailable")}
         </div>

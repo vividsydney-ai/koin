@@ -83,6 +83,37 @@ const exampleVariants: ContentVariant[] = [
   { id: "ex-alt-2", variantType: "example", body: { text: "Contoh alternatif kedua" }, difficulty: "beginner", topicTag: null },
 ];
 
+const questionVariants: ContentVariant[] = [
+  {
+    id: "question-1",
+    variantType: "question",
+    body: {
+      type: "multiple_choice",
+      question: "What should you do first?",
+      options: ["Save first", "Spend everything"],
+      answer: "Save first",
+      explanation: "Saving first protects the goal.",
+      parameters: {},
+    },
+    difficulty: "beginner",
+    topicTag: "saving",
+  },
+  {
+    id: "question-2",
+    variantType: "question",
+    body: {
+      type: "multiple_choice",
+      question: "Which habit supports saving?",
+      options: ["Track spending", "Ignore spending"],
+      answer: "Track spending",
+      explanation: "Tracking spending reveals room to save.",
+      parameters: {},
+    },
+    difficulty: "beginner",
+    topicTag: "saving",
+  },
+];
+
 describe("LessonPlayer", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -111,6 +142,35 @@ describe("LessonPlayer", () => {
 
     expect(screen.getByText("Contoh utama")).toBeInTheDocument();
     expect(screen.getByLabelText("See another example")).toBeInTheDocument();
+  });
+
+  it("keeps lesson continuation locked after a wrong check and offers a fresh variant", async () => {
+    vi.mocked(lessonsClient.getLessonVariants).mockImplementation(async (_lessonId, variantType) => {
+      if (variantType === "example") return exampleVariants;
+      if (variantType === "question") return questionVariants;
+      if (variantType === "explanation") return [];
+      return [];
+    });
+
+    render(<LessonPlayer slug="test-lesson" />);
+
+    await waitFor(() => expect(screen.queryByText("Loading lesson…")).not.toBeInTheDocument(), { timeout: 2000 });
+    fireEvent.click(screen.getByText("Continue"));
+    fireEvent.click(screen.getByText("Continue"));
+    fireEvent.click(screen.getByText("Continue"));
+
+    await waitFor(() => expect(screen.getByText("What should you do first?")).toBeInTheDocument(), { timeout: 2000 });
+    fireEvent.click(screen.getByRole("button", { name: "Spend everything" }));
+
+    expect(screen.getByText("Saving first protects the goal.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Try another question" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Continue" })).toBeDisabled();
+
+    fireEvent.click(screen.getByRole("button", { name: "Try another question" }));
+    await waitFor(() => expect(screen.getByText("Which habit supports saving?")).toBeInTheDocument(), { timeout: 2000 });
+    fireEvent.click(screen.getByRole("button", { name: "Track spending" }));
+
+    expect(screen.getByRole("button", { name: "Continue" })).toBeEnabled();
   });
 
   it("in Indonesian locale shows a different example when clicking Lihat contoh lain", async () => {
