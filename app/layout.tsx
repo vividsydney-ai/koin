@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import Script from "next/script";
 
 export const metadata: Metadata = {
   title: "Koinaku — Keuangan, akhirnya mudah dipahami orang Indonesia",
@@ -32,6 +33,13 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col">{children}</body>
+      {/* Cloudflare Web Analytics — cookieless tracking */}
+      <Script
+        id="cloudflare-web-analytics"
+        strategy="afterInteractive"
+        src="https://static.cloudflareinsights.com/beacon.min.js"
+        data-cf-beacon='{"token": "232a8f72178d4a818b67bc5c2ce86461"}'
+      />
     </html>
   );
 }
