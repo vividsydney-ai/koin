@@ -35,8 +35,9 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">{children}</body>
       {/* Cloudflare Web Analytics — cookieless tracking */}
       <Script
-        id="cloudflare-web-analytics"
+        id="cloudflare-web-analytics-web"
         strategy="afterInteractive"
+        type="module"
         src="https://static.cloudflareinsights.com/beacon.min.js"
         data-cf-beacon='{"token": "232a8f72178d4a818b67bc5c2ce86461"}'
       />
