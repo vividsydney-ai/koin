@@ -202,6 +202,19 @@ export default function ProfilePage() {
             </Link>
           </section>
 
+          <section className="rounded-lg border border-muted bg-surface p-5">
+            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+              {locale === "id" ? "Bantuan" : "Help"}
+            </h2>
+            <Link
+              href="/profile/faq"
+              className="flex min-h-11 items-center justify-between rounded-md border border-border bg-background px-4 py-3 text-foreground transition-colors hover:bg-surface-raised"
+            >
+              <span className="text-sm font-medium">{locale === "id" ? "Bantuan & FAQ" : "Help & FAQ"}</span>
+              <span aria-hidden="true" className="text-muted-foreground">→</span>
+            </Link>
+          </section>
+
           <button
             onClick={handleLogout}
             className="w-full rounded-md border border-danger/30 bg-surface py-3 font-semibold text-danger hover:bg-danger/5 touch-target"

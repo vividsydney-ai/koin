@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth/use-auth";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 import {
   getDailyFocusChallenge,
   getLocalTimeZone,
@@ -16,6 +17,7 @@ type FocusAnswer = string | boolean;
 
 export default function DailyFocusPage() {
   const { user, loading: authLoading } = useAuth(true);
+  const { locale } = useLocale();
   const [focus, setFocus] = useState<DailyFocusState | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -123,6 +125,9 @@ export default function DailyFocusPage() {
           <div>
             <h1 className="font-display text-3xl font-bold tracking-tight text-foreground">Daily Focus</h1>
             <p className="mt-1 text-sm text-muted-foreground">Five quick money checks. Lessons always stay unlimited.</p>
+            <Link href="/profile/faq" className="mt-2 inline-flex min-h-11 items-center text-sm font-semibold text-primary hover:underline">
+              {locale === "id" ? "Cara kerja Daily Focus" : "How Daily Focus works"} →
+            </Link>
           </div>
           <FocusMark className="mt-1 h-9 w-9 shrink-0 text-primary" />
         </div>
