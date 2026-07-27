@@ -8,6 +8,17 @@ export const metadata: Metadata = {
   description:
     "Literasi keuangan baru untuk generasi muda Indonesia. Sumber terverifikasi OJK, BI, dan IDX.",
   manifest: "/manifest.json",
+  icons: {
+    icon: "/brand/koinaku-icon.svg",
+    shortcut: "/brand/koinaku-icon.svg",
+    apple: "/brand/koinaku-icon.png",
+  },
+  openGraph: {
+    title: "Koinaku — Keuangan, akhirnya mudah dipahami orang Indonesia",
+    description: "Belajar uang dengan cara yang mudah dipahami.",
+    type: "website",
+    images: [{ url: "/brand/koinaku-icon.png", width: 768, height: 768, alt: "Koinaku bull icon" }],
+  },
   appleWebApp: {
     capable: true,
     title: "Koinaku",

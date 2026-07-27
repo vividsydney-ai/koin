@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import { signUpWithEmail, resendSignupEmail } from "@/lib/auth/client";
 import { displayNameSchema, emailSchema, signupPasswordSchema } from "@/lib/auth/schemas";
@@ -149,6 +150,16 @@ export default function SignupPage() {
       return;
     }
 
+    // Supabase can return a privacy-preserving empty response when signup is
+    // rejected before a user is created. Never show a verification-email state
+    // unless Auth returned a concrete user record.
+    if (!result.data.user) {
+      setError("We could not create your account. Please complete the captcha and try again.");
+      turnstileRef.current?.reset();
+      setCaptchaToken(null);
+      return;
+    }
+
     // Otherwise, the user must confirm their email before continuing.
     setEmailSent(true);
   };
@@ -181,9 +192,14 @@ export default function SignupPage() {
     <main className="flex min-h-screen flex-col justify-center bg-background p-6">
       <div className="mx-auto w-full max-w-sm rounded-2xl border border-border/60 bg-surface p-6 shadow-sm">
         <div className="mb-6 text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary text-2xl font-bold text-white shadow-sm">
-            K
-          </div>
+          <Image
+            src="/brand/koinaku-logo-icon.png"
+            alt="Koinaku"
+            width={320}
+            height={81}
+            priority
+            className="mx-auto mb-5 h-auto w-[190px]"
+          />
           <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">
             Create your Koinaku account
           </h1>
