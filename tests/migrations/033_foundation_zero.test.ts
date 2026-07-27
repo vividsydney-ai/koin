@@ -26,7 +26,8 @@ describe.runIf(!skipReason)("Foundation 0 mini-track (KO-FOUND-001)", () => {
 
     expect(error).toBeNull();
     expect(data).not.toBeNull();
-    expect(data!.display_order).toBe(1);
+    // Foundation is Chapter 00 and must sort before Money Basics (Chapter 01).
+    expect(data!.display_order).toBe(0);
   });
 
   it("has 12 Foundation 0 lessons with lesson_number 101-112", async () => {
