@@ -168,7 +168,10 @@ export function computeLearningPath(result: AssessmentResult): {
   if (score >= 4) {
     return {
       foundationZeroRequired: false,
-      startingLessonSlug: "money-basics-101",
+      // `money-basics-101` was intentionally unpublished when Foundation 0
+      // became the canonical introduction. Start capable learners at the
+      // first published lesson in Chapter 01 instead.
+      startingLessonSlug: "needs-vs-wants-101",
     };
   }
 

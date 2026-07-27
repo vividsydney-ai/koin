@@ -140,9 +140,9 @@ describe("diagnosticQuestions", () => {
       const path5 = computeLearningPath(resultWithScore(5));
 
       expect(path4.foundationZeroRequired).toBe(false);
-      expect(path4.startingLessonSlug).toBe("money-basics-101");
+      expect(path4.startingLessonSlug).toBe("needs-vs-wants-101");
       expect(path5.foundationZeroRequired).toBe(false);
-      expect(path5.startingLessonSlug).toBe("money-basics-101");
+      expect(path5.startingLessonSlug).toBe("needs-vs-wants-101");
     });
   });
 });
