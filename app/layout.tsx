@@ -39,7 +39,7 @@ export default function RootLayout({
         strategy="afterInteractive"
         type="module"
         src="https://static.cloudflareinsights.com/beacon.min.js"
-        data-cf-beacon='{"token": "232a8f72178d4a818b67bc5c2ce86461"}'
+        data-cf-beacon='{"token": "436077d39ca44d72a18cc7a11a214184"}'
       />
     </html>
   );
