@@ -4,6 +4,7 @@ import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://web.koinaku.com"),
   title: "Koinaku — Keuangan, akhirnya mudah dipahami orang Indonesia",
   description:
     "Literasi keuangan baru untuk generasi muda Indonesia. Sumber terverifikasi OJK, BI, dan IDX.",
