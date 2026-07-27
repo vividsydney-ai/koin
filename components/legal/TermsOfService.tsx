@@ -13,7 +13,7 @@ function TermsOfServiceEn() {
       <LegalSection title="1. About these Terms">
         <p>
           These Terms of Service are a legal agreement between you and{" "}
-          <strong>Vivid Savitri-Hampton trading as Koinaku</strong> (“Koinaku”, “we”, “us”), the
+          <strong>Koinaku</strong> (“Koinaku”, “we”, “us”), the
           operator of the Koinaku web application at web.koinaku.com and the Koinaku website at
           koinaku.com (together, the “Service”). By creating an account or using the Service, you
           agree to these Terms and our Privacy Policy. If you do not agree, do not use the Service.
@@ -217,9 +217,7 @@ function TermsOfServiceEn() {
 
       <LegalSection title="20. Contact">
         <p>
-          <strong>Vivid Savitri-Hampton trading as Koinaku</strong>
-          <br />
-          38 Sandstone Crescent, Tascott, NSW 2250, Australia
+          <strong>Koinaku</strong>
           <br />
           Email: hello@koinaku.com
           <br />
@@ -236,7 +234,7 @@ function TermsOfServiceId() {
       <LegalSection title="1. Tentang Ketentuan ini">
         <p>
           Ketentuan Layanan ini adalah perjanjian hukum antara kamu dan{" "}
-          <strong>Vivid Savitri-Hampton yang berdagang sebagai Koinaku</strong> (“Koinaku”, “kami”),
+          <strong>Koinaku</strong> (“Koinaku”, “kami”),
           pengelola aplikasi web Koinaku di web.koinaku.com dan situs web koinaku.com (bersama,
           “Layanan”). Dengan membuat akun atau menggunakan Layanan, kamu setuju dengan Ketentuan ini
           dan Kebijakan Privasi kami. Jika tidak setuju, jangan gunakan Layanan.
@@ -434,9 +432,7 @@ function TermsOfServiceId() {
 
       <LegalSection title="20. Kontak">
         <p>
-          <strong>Vivid Savitri-Hampton yang berdagang sebagai Koinaku</strong>
-          <br />
-          38 Sandstone Crescent, Tascott, NSW 2250, Australia
+          <strong>Koinaku</strong>
           <br />
           Email: hello@koinaku.com
           <br />

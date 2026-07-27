@@ -36,6 +36,19 @@ type FaqEntry = {
   answer_id: string;
 };
 
+function EmailLinkedText({ text }: { text: string }) {
+  const parts = text.split(/([A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,})/gi);
+  return parts.map((part, index) =>
+    /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(part) ? (
+      <a key={`${part}-${index}`} href={`mailto:${part}`} className="font-semibold text-primary hover:underline">
+        {part}
+      </a>
+    ) : (
+      part
+    )
+  );
+}
+
 export default function ProfileFaqPage() {
   const { user, loading: authLoading } = useAuth(true);
   const { locale } = useLocale();
@@ -156,7 +169,9 @@ export default function ProfileFaqPage() {
                       <span>{copy(entry.question_en, entry.question_id)}</span>
                       <span className="shrink-0 text-lg text-primary transition-transform group-open:rotate-45" aria-hidden="true">+</span>
                     </summary>
-                    <p className="border-t border-border bg-background px-5 py-4 text-sm leading-6 text-muted-foreground">{copy(entry.answer_en, entry.answer_id)}</p>
+                    <p className="border-t border-border bg-background px-5 py-4 text-sm leading-6 text-muted-foreground">
+                      <EmailLinkedText text={copy(entry.answer_en, entry.answer_id)} />
+                    </p>
                   </details>
                 ))}
               </div>

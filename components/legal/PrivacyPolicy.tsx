@@ -12,9 +12,8 @@ function PrivacyPolicyEn() {
     <>
       <LegalSection title="1. Who we are">
         <p>
-          Koinaku is a financial education platform operated by{" "}
-          <strong>Vivid Savitri-Hampton trading as Koinaku</strong>, 38 Sandstone Crescent, Tascott,
-          NSW 2250, Australia, for users primarily in Indonesia. Contact us at{" "}
+          Koinaku is a financial education platform operated by <strong>Koinaku</strong> for users
+          primarily in Indonesia. Contact us at{" "}
           <a href="mailto:hello@koinaku.com" className="text-primary hover:underline">
             hello@koinaku.com
           </a>
@@ -213,8 +212,7 @@ function PrivacyPolicyEn() {
 
       <LegalSection title="15. Contact and complaints">
         <p>
-          <strong>Data controller:</strong> Vivid Savitri-Hampton trading as Koinaku, 38 Sandstone
-          Crescent, Tascott, NSW 2250, Australia
+          <strong>Data controller:</strong> Koinaku
           <br />
           <strong>Privacy contact:</strong>{" "}
           <a href="mailto:hello@koinaku.com" className="text-primary hover:underline">
@@ -231,10 +229,8 @@ function PrivacyPolicyId() {
     <>
       <LegalSection title="1. Siapa kami">
         <p>
-          Koinaku adalah platform edukasi keuangan yang dioperasikan oleh{" "}
-          <strong>Vivid Savitri-Hampton yang berdagang sebagai Koinaku</strong>, 38 Sandstone
-          Crescent, Tascott, NSW 2250, Australia, untuk pengguna utama di Indonesia. Hubungi kami
-          di{" "}
+          Koinaku adalah platform edukasi keuangan yang dioperasikan oleh <strong>Koinaku</strong>
+          untuk pengguna utama di Indonesia. Hubungi kami di{" "}
           <a href="mailto:hello@koinaku.com" className="text-primary hover:underline">
             hello@koinaku.com
           </a>
@@ -440,8 +436,7 @@ function PrivacyPolicyId() {
 
       <LegalSection title="15. Kontak dan pengaduan">
         <p>
-          <strong>Pengontrol data:</strong> Vivid Savitri-Hampton yang berdagang sebagai Koinaku,
-          38 Sandstone Crescent, Tascott, NSW 2250, Australia
+          <strong>Pengontrol data:</strong> Koinaku
           <br />
           <strong>Kontak privasi:</strong>{" "}
           <a href="mailto:hello@koinaku.com" className="text-primary hover:underline">
