@@ -3,7 +3,7 @@ import { Capacitor } from "@capacitor/core";
 import { Preferences } from "@capacitor/preferences";
 import { cookieStorage } from "./storage";
 import { normalizeAuthError, type AuthError } from "./errors";
-import { signInSchema, signUpSchema, resendEmailSchema } from "./schemas";
+import { signInSchema, signUpSchema, resendEmailSchema, signupLocaleSchema } from "./schemas";
 import { ok, err, type Result } from "@/lib/types/result";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -86,11 +86,16 @@ export async function signUpWithEmail(
   confirmPassword: string,
   displayName: string,
   captchaToken?: string,
-  acceptedTerms?: boolean
+  acceptedTerms?: boolean,
+  preferredLanguage: "en" | "id" = "en"
 ): Promise<Result<{ user: User | null; session: Session | null }, AuthError>> {
   const parsed = signUpSchema.safeParse({ email, password, confirmPassword, displayName });
   if (!parsed.success) {
     return err({ code: "invalid_email", message: parsed.error.issues[0].message });
+  }
+  const locale = signupLocaleSchema.safeParse(preferredLanguage);
+  if (!locale.success) {
+    return err({ code: "unknown", message: "Choose a confirmation email language." });
   }
 
   const { data, error } = await supabase.auth.signUp({
@@ -99,6 +104,9 @@ export async function signUpWithEmail(
     options: {
       data: {
         display_name: parsed.data.displayName,
+        // Supabase's hosted confirmation template reads this metadata to render
+        // exactly one language. It is retained when auth.resend() is used.
+        preferred_language: locale.data,
         ...(acceptedTerms ? { terms_accepted: true, terms_version: "2026-07-24", privacy_version: "2026-07-24" } : {}),
       },
       emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,

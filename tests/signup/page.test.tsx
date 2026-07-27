@@ -51,7 +51,7 @@ describe("Signup page", () => {
     expect(signUpWithEmailMock).not.toHaveBeenCalled();
   });
 
-  it("submits with email, password, confirm password, and display name when passwords match", async () => {
+  it("submits the selected confirmation-email language with the signup metadata", async () => {
     render(<SignupPage />);
 
     fireEvent.change(screen.getByLabelText(/full name/i), { target: { value: "Budi Santoso" } });
@@ -65,9 +65,25 @@ describe("Signup page", () => {
         "budi@example.com",
         "password123",
         "password123",
-        "Budi Santoso"
+        "Budi Santoso",
+        undefined,
+        true,
+        "en"
       );
     });
+  });
+
+  it("rejects a whitespace-only full name", async () => {
+    render(<SignupPage />);
+
+    fireEvent.change(screen.getByLabelText(/full name/i), { target: { value: "   " } });
+    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: "budi@example.com" } });
+    fireEvent.change(screen.getByLabelText(/^password$/i), { target: { value: "password123" } });
+    fireEvent.change(screen.getByLabelText(/^confirm password$/i), { target: { value: "password123" } });
+    fireEvent.click(screen.getByRole("button", { name: /create account/i }));
+
+    await waitFor(() => expect(screen.getAllByText(/full name is required/i)).toHaveLength(2));
+    expect(signUpWithEmailMock).not.toHaveBeenCalled();
   });
 
   it("toggles password input type when show/hide is clicked", () => {

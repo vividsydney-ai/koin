@@ -67,7 +67,10 @@ describe("Signup page captcha (KO-CAPTCHA-001)", () => {
         "budi@example.com",
         "password123",
         "password123",
-        "Budi Santoso"
+        "Budi Santoso",
+        undefined,
+        true,
+        "en"
       );
     });
   });
@@ -112,7 +115,9 @@ describe("Signup page captcha (KO-CAPTCHA-001)", () => {
         "password123",
         "password123",
         "Budi Santoso",
-        "token-123"
+        "token-123",
+        true,
+        "en"
       );
     });
   });

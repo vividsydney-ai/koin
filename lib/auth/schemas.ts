@@ -21,8 +21,11 @@ export const signupPasswordSchema = z
 
 export const displayNameSchema = z
   .string({ message: "Full name is required" })
+  .trim()
   .min(1, "Full name is required")
   .max(100, "Full name must be 100 characters or less");
+
+export const signupLocaleSchema = z.enum(["en", "id"]);
 
 export const signInSchema = z.object({
   email: emailSchema,

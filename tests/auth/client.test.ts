@@ -135,18 +135,24 @@ describe("auth client", () => {
       expect(mockSignUp).not.toHaveBeenCalled();
     });
 
-    it("calls signUp with email redirect and metadata", async () => {
+    it("calls signUp with a trimmed full name, email language, redirect, and metadata", async () => {
       mockSignUp.mockResolvedValue({ data: { user: null, session: null }, error: null });
-      const result = await signUpWithEmail("a@b.com", "password123", "password123", "Budi");
+      const result = await signUpWithEmail("a@b.com", "password123", "password123", "  Budi  ", undefined, undefined, "id");
       expect(result.ok).toBe(true);
       expect(mockSignUp).toHaveBeenCalledWith({
         email: "a@b.com",
         password: "password123",
         options: {
-          data: { display_name: "Budi" },
+          data: { display_name: "Budi", preferred_language: "id" },
           emailRedirectTo: expect.stringContaining("/auth/callback"),
         },
       });
+    });
+
+    it("rejects a whitespace-only full name before calling Supabase", async () => {
+      const result = await signUpWithEmail("a@b.com", "password123", "password123", "   ");
+      expect(result.ok).toBe(false);
+      expect(mockSignUp).not.toHaveBeenCalled();
     });
   });
 

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import { signUpWithEmail, resendSignupEmail } from "@/lib/auth/client";
-import { emailSchema, signupPasswordSchema } from "@/lib/auth/schemas";
+import { displayNameSchema, emailSchema, signupPasswordSchema } from "@/lib/auth/schemas";
 import { PasswordRequirements } from "@/components/auth/PasswordRequirements";
 
 // When unset, captcha is skipped entirely — signup works exactly as before
@@ -56,6 +56,7 @@ function EyeOffIcon({ className }: { className?: string }) {
 export default function SignupPage() {
   const router = useRouter();
   const [fullName, setFullName] = useState("");
+  const [confirmationLocale, setConfirmationLocale] = useState<"en" | "id">("en");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -68,10 +69,13 @@ export default function SignupPage() {
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [acceptedTerms, setAcceptedTerms] = useState(isTestEnv);
   const [emailTouched, setEmailTouched] = useState(false);
+  const [fullNameTouched, setFullNameTouched] = useState(false);
   const turnstileRef = useRef<TurnstileInstance | null>(null);
 
   const emailValidation = emailSchema.safeParse(email);
   const showEmailError = emailTouched && !emailValidation.success;
+  const fullNameValidation = displayNameSchema.safeParse(fullName);
+  const showFullNameError = fullNameTouched && !fullNameValidation.success;
 
   const handleEmailSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,6 +83,13 @@ export default function SignupPage() {
     setError(null);
     setInfo(null);
     setEmailTouched(true);
+    setFullNameTouched(true);
+
+    if (!fullNameValidation.success) {
+      setError(fullNameValidation.error.issues[0]?.message ?? "Please enter your full name.");
+      setLoading(false);
+      return;
+    }
 
     if (!emailValidation.success) {
       setError("Please enter a valid email address.");
@@ -113,18 +124,15 @@ export default function SignupPage() {
       return;
     }
 
-    // Preserve the original call shape in tests; in production pass the
-    // terms-acceptance flag so the trigger can record it.
-    let result;
-    if (isTestEnv) {
-      result = captchaToken
-        ? await signUpWithEmail(email, password, confirmPassword, fullName, captchaToken)
-        : await signUpWithEmail(email, password, confirmPassword, fullName);
-    } else {
-      result = captchaToken
-        ? await signUpWithEmail(email, password, confirmPassword, fullName, captchaToken, acceptedTerms)
-        : await signUpWithEmail(email, password, confirmPassword, fullName, undefined, acceptedTerms);
-    }
+    const result = await signUpWithEmail(
+      email,
+      password,
+      confirmPassword,
+      fullName,
+      captchaToken ?? undefined,
+      acceptedTerms,
+      confirmationLocale
+    );
     setLoading(false);
 
     if (!result.ok) {
@@ -200,10 +208,36 @@ export default function SignupPage() {
                   type="text"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
+                  onBlur={() => setFullNameTouched(true)}
                   required
                   placeholder="Alfa Satria"
+                  aria-invalid={showFullNameError}
+                  aria-describedby={showFullNameError ? "full-name-error" : undefined}
                   className="mt-2 h-12 w-full rounded-lg border-[1.5px] border-border bg-surface px-4 text-base text-foreground outline-none transition-all placeholder:text-muted-foreground hover:border-border-strong focus:border-primary focus:shadow-focus-ring"
                 />
+                {showFullNameError && (
+                  <p id="full-name-error" className="mt-1.5 text-xs text-danger">
+                    {fullNameValidation.error.issues[0]?.message ?? "Please enter your full name."}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label htmlFor="confirmationLocale" className="block text-sm font-medium text-foreground">
+                  Language for confirmation
+                </label>
+                <select
+                  id="confirmationLocale"
+                  value={confirmationLocale}
+                  onChange={(event) => setConfirmationLocale(event.target.value as "en" | "id")}
+                  className="mt-2 h-12 w-full rounded-lg border-[1.5px] border-border bg-surface px-4 text-base text-foreground outline-none transition-all hover:border-border-strong focus:border-primary focus:shadow-focus-ring"
+                >
+                  <option value="en">English</option>
+                  <option value="id">Bahasa Indonesia</option>
+                </select>
+                <p className="mt-1.5 text-xs text-muted-foreground">
+                  We will send one confirmation email in this language.
+                </p>
               </div>
 
               <div>
