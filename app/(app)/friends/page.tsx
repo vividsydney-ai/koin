@@ -141,7 +141,7 @@ export default function FriendsPage() {
                 <h2 className="mb-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
                   {t("friends.weeklyLeaderboard")}
                 </h2>
-                <LeaderboardSection title="XP" entries={leaderboard.xp} valueKey="xpThisWeek" />
+                <LeaderboardSection title={t("home.weeklyXp")} entries={leaderboard.xp} valueKey="xpThisWeek" />
                 <LeaderboardSection title={t("home.koinPoints")} entries={leaderboard.koinPoints} valueKey="koinPointsThisWeek" />
               </section>
             )}
@@ -923,6 +923,7 @@ function LeaderboardSection({
               </span>
               <span className={`text-sm font-semibold tabular-nums ${valueColor}`}>
                 {(entry[valueKey] ?? 0).toLocaleString("id-ID")}
+                {valueKey === "xpThisWeek" ? ` ${t("home.weeklyXp")}` : ""}
               </span>
             </li>
           );

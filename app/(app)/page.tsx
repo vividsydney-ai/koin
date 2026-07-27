@@ -483,7 +483,7 @@ function LeaderboardCard({ entries }: { entries: LeaderboardEntry[] }) {
                 )}
               </span>
               <span className="text-sm font-semibold tabular-nums text-xp">
-                {entry.xpThisWeek.toLocaleString("id-ID")} XP
+                {entry.xpThisWeek.toLocaleString("id-ID")} {t("home.weeklyXp")}
               </span>
             </li>
           );

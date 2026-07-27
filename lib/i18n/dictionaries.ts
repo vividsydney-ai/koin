@@ -138,6 +138,7 @@ export interface Dictionary {
   "home.portfolioEmptyBody": string;
   "home.goToTrade": string;
   "home.weeklyLeaderboard": string;
+  "home.weeklyXp": string;
   "home.noFriendsOnBoard": string;
   "home.inviteFriendsBody": string;
   "home.inviteFriends": string;
@@ -412,6 +413,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       "Your portfolio snapshot will appear here once you unlock paper trading from the Trade tab.",
     "home.goToTrade": "Go to Trade",
     "home.weeklyLeaderboard": "Weekly leaderboard",
+    "home.weeklyXp": "Weekly XP",
     "home.noFriendsOnBoard": "No friends on the board",
     "home.inviteFriendsBody":
       "Invite friends to see who tops the weekly XP and Koin Points boards.",
@@ -676,6 +678,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       "Snapshot portofoliomu akan muncul di sini setelah kamu membuka kunci trading simulasi dari tab Trading.",
     "home.goToTrade": "Ke Trading",
     "home.weeklyLeaderboard": "Papan peringkat mingguan",
+    "home.weeklyXp": "XP minggu ini",
     "home.noFriendsOnBoard": "Belum ada teman di papan peringkat",
     "home.inviteFriendsBody":
       "Undang teman untuk melihat siapa yang memuncaki papan XP dan Poin Koin mingguan.",
