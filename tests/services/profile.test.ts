@@ -131,4 +131,35 @@ describe("profile service", () => {
       })
     );
   });
+
+  it("does not mark onboarding complete when the selected start lesson is unavailable", async () => {
+    const profileUpdate = vi.fn().mockReturnValue({ eq: vi.fn().mockReturnValue({ error: null }) });
+    mocks.from.mockImplementation((table: string) => {
+      if (table === "lessons") {
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              single: vi.fn().mockReturnValue({
+                data: null,
+                error: { message: "Cannot coerce the result to a single JSON object" },
+              }),
+            }),
+          }),
+        };
+      }
+      if (table === "profiles") return { update: profileUpdate };
+      return { update: vi.fn().mockReturnValue({ eq: vi.fn().mockReturnValue({ error: null }) }) };
+    });
+
+    const result = await completeOnboarding({
+      userId: TEST_USER_ID,
+      displayName: "Budi",
+      ageRange: "19_22",
+      financialGoals: ["start_investing"],
+      notificationsEnabled: true,
+    });
+
+    expect(result.ok).toBe(false);
+    expect(profileUpdate).not.toHaveBeenCalled();
+  });
 });

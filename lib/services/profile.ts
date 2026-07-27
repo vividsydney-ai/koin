@@ -63,6 +63,30 @@ export async function completeOnboarding(
     assessmentResult,
   } = parsed.data;
 
+  // Resolve the gated start lesson before persisting completion. This avoids a
+  // partially completed onboarding record if curriculum data is misconfigured.
+  const path = assessmentResult
+    ? computeLearningPath(assessmentResult)
+    : {
+        foundationZeroRequired: true,
+        startingLessonSlug: "fz-what-is-money",
+      };
+
+  const { data: startingLesson, error: startingLessonError } = await supabase
+    .from("lessons")
+    .select("id")
+    .eq("slug", path.startingLessonSlug)
+    .single();
+
+  if (startingLessonError || !startingLesson) {
+    return err(
+      serviceError(
+        "rpc_error",
+        "We could not prepare your learning path. Please try again."
+      )
+    );
+  }
+
   const { error: profileError } = await supabase
     .from("profiles")
     .update({
@@ -78,24 +102,6 @@ export async function completeOnboarding(
 
   if (profileError) {
     return err(serviceError("rpc_error", profileError.message));
-  }
-
-  // Compute learning-path gate from assessment result.
-  const path = assessmentResult
-    ? computeLearningPath(assessmentResult)
-    : {
-        foundationZeroRequired: true,
-        startingLessonSlug: "fz-what-is-money",
-      };
-
-  const { data: startingLesson, error: startingLessonError } = await supabase
-    .from("lessons")
-    .select("id")
-    .eq("slug", path.startingLessonSlug)
-    .single();
-
-  if (startingLessonError) {
-    return err(serviceError("rpc_error", startingLessonError.message));
   }
 
   const { error: settingsError } = await supabase
