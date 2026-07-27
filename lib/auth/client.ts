@@ -120,7 +120,7 @@ export async function signUpWithEmail(
   return ok({ user: data.user ?? null, session: data.session ?? null });
 }
 
-export async function resendSignupEmail(email: string): Promise<Result<null, AuthError>> {
+export async function resendSignupEmail(email: string, captchaToken?: string): Promise<Result<null, AuthError>> {
   const parsed = resendEmailSchema.safeParse({ email });
   if (!parsed.success) {
     return err({ code: "invalid_email", message: parsed.error.issues[0].message });
@@ -129,6 +129,7 @@ export async function resendSignupEmail(email: string): Promise<Result<null, Aut
   const { error } = await supabase.auth.resend({
     type: "signup",
     email: parsed.data.email,
+    ...(captchaToken ? { options: { captchaToken } } : {}),
   });
 
   if (error) return err(normalizeAuthError(error));

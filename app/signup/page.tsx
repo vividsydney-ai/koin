@@ -158,10 +158,18 @@ export default function SignupPage() {
     setError(null);
     setInfo(null);
 
-    const result = await resendSignupEmail(email);
+    if (TURNSTILE_SITE_KEY && !captchaToken) {
+      setError("Please complete the captcha check before resending.");
+      setLoading(false);
+      return;
+    }
+
+    const result = await resendSignupEmail(email, captchaToken ?? undefined);
     setLoading(false);
 
     if (!result.ok) {
+      turnstileRef.current?.reset();
+      setCaptchaToken(null);
       setError(result.error.message);
       return;
     }
@@ -394,9 +402,20 @@ export default function SignupPage() {
             <p className="text-sm text-muted-foreground">
               Didn&apos;t receive it? Check your spam or promotions folder, then resend below.
             </p>
+            {TURNSTILE_SITE_KEY && (
+              <div className="flex justify-center pt-1">
+                <Turnstile
+                  ref={turnstileRef}
+                  siteKey={TURNSTILE_SITE_KEY}
+                  onSuccess={(token) => setCaptchaToken(token)}
+                  onExpire={() => setCaptchaToken(null)}
+                  onError={() => setCaptchaToken(null)}
+                />
+              </div>
+            )}
             <button
               onClick={handleResend}
-              disabled={loading}
+              disabled={loading || (Boolean(TURNSTILE_SITE_KEY) && !captchaToken)}
               className="inline-flex h-12 w-full items-center justify-center rounded-full border-[1.5px] border-border bg-surface px-6 text-sm font-semibold text-foreground transition-all hover:bg-surface-raised disabled:opacity-50"
             >
               {loading ? "Resending..." : "Resend verification email"}

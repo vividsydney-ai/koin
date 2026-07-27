@@ -121,4 +121,20 @@ describe("Signup page captcha (KO-CAPTCHA-001)", () => {
       );
     });
   });
+
+  it("requires and passes a fresh captcha token when resending", async () => {
+    vi.stubEnv("NEXT_PUBLIC_TURNSTILE_SITE_KEY", "test-site-key");
+    const SignupPage = await importSignupPage();
+    render(<SignupPage />);
+
+    fillForm();
+    fireEvent.click(screen.getByTestId("turnstile-widget"));
+    await waitFor(() => expect(screen.getByRole("button", { name: /create account/i })).not.toBeDisabled());
+    fireEvent.click(screen.getByRole("button", { name: /create account/i }));
+    await waitFor(() => expect(screen.getByRole("button", { name: /resend verification email/i })).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId("turnstile-widget"));
+    fireEvent.click(screen.getByRole("button", { name: /resend verification email/i }));
+
+    await waitFor(() => expect(resendSignupEmailMock).toHaveBeenCalledWith("budi@example.com", "token-123"));
+  });
 });

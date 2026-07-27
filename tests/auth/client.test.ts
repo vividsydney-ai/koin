@@ -165,11 +165,12 @@ describe("auth client", () => {
 
     it("calls auth.resend for signup", async () => {
       mockResend.mockResolvedValue({ error: null });
-      const result = await resendSignupEmail("a@b.com");
+      const result = await resendSignupEmail("a@b.com", "captcha-token");
       expect(result.ok).toBe(true);
       expect(mockResend).toHaveBeenCalledWith({
         type: "signup",
         email: "a@b.com",
+        options: { captchaToken: "captcha-token" },
       });
     });
   });
