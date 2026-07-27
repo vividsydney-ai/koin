@@ -13,7 +13,7 @@ import {
   type DailyFocusState,
 } from "@/lib/focus/client";
 
-type FocusAnswer = string | boolean;
+type FocusAnswer = string | boolean | string[];
 
 export default function DailyFocusPage() {
   const { user, loading: authLoading } = useAuth(true);
@@ -155,7 +155,7 @@ export default function DailyFocusPage() {
       {error && <p className="mt-4 rounded-md border border-danger/25 bg-danger/5 px-4 py-3 text-sm font-medium text-danger">{error}</p>}
 
       {focus.status === "active" && currentQuestion && (
-        <QuestionCard question={currentQuestion} disabled={submitting || Boolean(feedback)} onAnswer={answer} />
+        <QuestionCard key={currentIndex} question={currentQuestion} disabled={submitting || Boolean(feedback)} onAnswer={answer} />
       )}
 
       {feedback && (
@@ -182,12 +182,35 @@ export default function DailyFocusPage() {
 }
 
 function QuestionCard({ question, disabled, onAnswer }: { question: DailyFocusQuestion; disabled: boolean; onAnswer: (answer: FocusAnswer) => void }) {
-  const options: { label: string; value: FocusAnswer }[] =
-    question.type === "multiple_choice"
-      ? (question.options ?? []).map((option) => ({ label: option, value: option }))
-      : question.type === "true_false"
-        ? [{ label: "True", value: true }, { label: "False", value: false }]
-        : [{ label: "Yes", value: true }, { label: "No", value: false }];
+  const [fillValue, setFillValue] = useState("");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const { locale } = useLocale();
+  const checkLabel = locale === "id" ? "Periksa jawaban" : "Check answer";
+
+  const handleOption = (value: FocusAnswer) => {
+    if (disabled) return;
+    onAnswer(value);
+  };
+
+  const toggleSelect = (option: string) => {
+    if (disabled) return;
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(option)) next.delete(option);
+      else next.add(option);
+      return next;
+    });
+  };
+
+  const submitSelectAll = () => {
+    if (disabled || selected.size === 0) return;
+    onAnswer(Array.from(selected));
+  };
+
+  const submitFillBlank = () => {
+    if (disabled || !fillValue.trim()) return;
+    onAnswer(fillValue.trim());
+  };
 
   return (
     <section className="mt-5 rounded-card border border-muted bg-surface p-5 shadow-sm">
@@ -195,13 +218,94 @@ function QuestionCard({ question, disabled, onAnswer }: { question: DailyFocusQu
         <FocusMark className="h-3.5 w-3.5" /> Focus check
       </span>
       <h2 className="mt-3 text-xl font-bold leading-snug text-foreground">{question.question}</h2>
-      <div className="mt-5 grid gap-3">
-        {options.map((option) => (
-          <button key={option.label} disabled={disabled} onClick={() => onAnswer(option.value)} className="flex min-h-12 w-full items-center rounded-md border border-muted bg-surface px-4 text-left text-sm font-semibold text-foreground transition-colors hover:border-primary/40 hover:bg-primary/5 disabled:cursor-wait disabled:opacity-60">
-            {option.label}
+
+      {question.type === "fill_blank" && (
+        <div className="mt-5 space-y-4">
+          <label htmlFor="focus-fill-blank" className="sr-only">
+            {locale === "id" ? "Ketik jawabanmu" : "Type your answer"}
+          </label>
+          <input
+            id="focus-fill-blank"
+            type="text"
+            value={fillValue}
+            onChange={(e) => setFillValue(e.target.value)}
+            disabled={disabled}
+            placeholder={locale === "id" ? "Ketik jawabanmu" : "Type your answer"}
+            className="h-12 w-full rounded-lg border-[1.5px] border-border bg-background px-4 text-base text-foreground outline-none transition-all placeholder:text-muted-foreground hover:border-border-strong focus:border-primary focus:shadow-focus-ring disabled:opacity-60"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") submitFillBlank();
+            }}
+          />
+          <button
+            onClick={submitFillBlank}
+            disabled={disabled || !fillValue.trim()}
+            className="flex min-h-11 w-full items-center justify-center rounded-full bg-primary px-5 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
+          >
+            {checkLabel}
           </button>
-        ))}
-      </div>
+        </div>
+      )}
+
+      {question.type === "select_all" && (
+        <div className="mt-5 space-y-3">
+          <p className="text-xs font-semibold text-muted-foreground">{locale === "id" ? "Pilih semua yang benar:" : "Select all that apply:"}</p>
+          {(question.options ?? []).map((option) => (
+            <label
+              key={option}
+              className={`flex min-h-12 cursor-pointer items-center gap-3 rounded-md border px-4 text-sm font-semibold text-foreground transition-colors ${
+                selected.has(option)
+                  ? "border-primary bg-primary/5"
+                  : "border-muted bg-surface hover:border-primary/40 hover:bg-primary/5"
+              } ${disabled ? "cursor-not-allowed opacity-60" : ""}`}
+            >
+              <input
+                type="checkbox"
+                checked={selected.has(option)}
+                onChange={() => toggleSelect(option)}
+                disabled={disabled}
+                className="h-5 w-5 accent-primary"
+              />
+              <span>{option}</span>
+            </label>
+          ))}
+          <button
+            onClick={submitSelectAll}
+            disabled={disabled || selected.size === 0}
+            className="flex min-h-11 w-full items-center justify-center rounded-full bg-primary px-5 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
+          >
+            {checkLabel}
+          </button>
+        </div>
+      )}
+
+      {(question.type === "multiple_choice" || question.type === "true_false" || question.type === "swipe_yes_no") && (
+        <div className="mt-5 grid gap-3">
+          {question.type === "multiple_choice"
+            ? (question.options ?? []).map((option) => (
+                <button
+                  key={option}
+                  disabled={disabled}
+                  onClick={() => handleOption(option)}
+                  className="flex min-h-12 w-full items-center rounded-md border border-muted bg-surface px-4 text-left text-sm font-semibold text-foreground transition-colors hover:border-primary/40 hover:bg-primary/5 disabled:cursor-wait disabled:opacity-60"
+                >
+                  {option}
+                </button>
+              ))
+            : [
+                { label: locale === "id" ? "Benar" : "True", value: true },
+                { label: locale === "id" ? "Salah" : "False", value: false },
+              ].map((option) => (
+                <button
+                  key={option.label}
+                  disabled={disabled}
+                  onClick={() => handleOption(option.value)}
+                  className="flex min-h-12 w-full items-center rounded-md border border-muted bg-surface px-4 text-left text-sm font-semibold text-foreground transition-colors hover:border-primary/40 hover:bg-primary/5 disabled:cursor-wait disabled:opacity-60"
+                >
+                  {option.label}
+                </button>
+              ))}
+        </div>
+      )}
     </section>
   );
 }

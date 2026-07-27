@@ -4,10 +4,18 @@ import { z } from "zod";
 export type DailyFocusStatus = "active" | "completed" | "exhausted";
 
 export interface DailyFocusQuestion {
-  type: "multiple_choice" | "true_false" | "swipe_yes_no";
+  type: "multiple_choice" | "true_false" | "swipe_yes_no" | "fill_blank" | "select_all";
   question: string;
   options?: string[];
 }
+
+const supportedQuestionTypes = new Set<DailyFocusQuestion["type"]>([
+  "multiple_choice",
+  "true_false",
+  "swipe_yes_no",
+  "fill_blank",
+  "select_all",
+]);
 
 export interface DailyFocusState {
   challengeDate: string;
@@ -28,7 +36,11 @@ export interface DailyFocusState {
 
 const dailyFocusAnswerSchema = z.object({
   questionIndex: z.number().int().min(0).max(4),
-  answer: z.union([z.string().min(1), z.boolean()]),
+  answer: z.union([
+    z.string().min(1),
+    z.boolean(),
+    z.array(z.string().min(1)).min(1),
+  ]),
   timeZone: z.string().min(1).max(100),
 });
 
@@ -49,8 +61,8 @@ function parseState(raw: unknown): DailyFocusState | null {
         (question): question is DailyFocusQuestion =>
           Boolean(question) &&
           typeof question === "object" &&
-          ["multiple_choice", "true_false", "swipe_yes_no"].includes(
-            String((question as Record<string, unknown>).type)
+          supportedQuestionTypes.has(
+            String((question as Record<string, unknown>).type) as DailyFocusQuestion["type"]
           ) &&
           typeof (question as Record<string, unknown>).question === "string"
       )
@@ -93,7 +105,7 @@ export async function getDailyFocusChallenge(timeZone = getLocalTimeZone()): Pro
 
 export async function submitDailyFocusAnswer(
   questionIndex: number,
-  answer: string | boolean,
+  answer: string | boolean | string[],
   timeZone = getLocalTimeZone()
 ): Promise<{ state: DailyFocusState | null; error: string | null }> {
   const parsed = dailyFocusAnswerSchema.safeParse({ questionIndex, answer, timeZone });
