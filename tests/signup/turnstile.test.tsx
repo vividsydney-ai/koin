@@ -124,6 +124,7 @@ describe("Signup page captcha (KO-CAPTCHA-001)", () => {
 
   it("requires and passes a fresh captcha token when resending", async () => {
     vi.stubEnv("NEXT_PUBLIC_TURNSTILE_SITE_KEY", "test-site-key");
+    signUpWithEmailMock.mockResolvedValueOnce({ ok: true, data: { user: { id: "user-1" }, session: null } });
     const SignupPage = await importSignupPage();
     render(<SignupPage />);
 
