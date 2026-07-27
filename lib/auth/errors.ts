@@ -13,6 +13,7 @@ export type AuthErrorCode =
   | "invalid_credentials"
   | "email_not_confirmed"
   | "rate_limit"
+  | "captcha_failed"
   | "network_error"
   | "unknown";
 
@@ -33,6 +34,13 @@ export function normalizeAuthError(raw: { message?: string; status?: number }): 
 
   if (raw.status === 429 || lower.includes("rate limit") || lower.includes("too many requests")) {
     return { code: "rate_limit", message: "Too many attempts. Please try again later." };
+  }
+
+  if (lower.includes("captcha") || lower.includes("request disallowed")) {
+    return {
+      code: "captcha_failed",
+      message: "Human verification failed. Please complete the captcha and try again.",
+    };
   }
 
   if (lower.includes("invalid login credentials")) {
