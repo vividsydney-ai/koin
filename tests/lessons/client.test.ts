@@ -37,6 +37,11 @@ describe("lessons client", () => {
         text: "An emergency fund covers urgent costs and protects your savings.",
       })
     ).toBe(true);
+    expect(
+      isLikelyIndonesianOnlyVariant({
+        text: "Bunga sederhana dihitung dari modal awal saja. Rumusnya: Bunga = Pokok × Suku Bunga × Waktu.",
+      })
+    ).toBe(true);
   });
 
   it("hides an ID-only legacy variant from English while keeping it for Indonesian", async () => {

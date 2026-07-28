@@ -89,12 +89,12 @@ export interface ContentVariant {
 export type { QuizQuestion };
 
 const INDONESIAN_LOCALE_MARKERS = new Set(
-  "yang dan dengan untuk dari ini itu adalah akan bisa tidak pada atau dalam sebagai karena kamu kami mereka saham uang keuangan investasi risiko pengeluaran tabungan pemasukan kebutuhan keinginan memiliki menjadi mendapatkan digunakan sebuah dapat agar oleh saat juga lebih sudah belum tanpa setiap terhadap antara melalui supaya sehingga jika maka ketika".split(
+  "yang dan dengan untuk dari ini itu adalah akan bisa tidak pada atau dalam sebagai karena kamu kami mereka saham uang keuangan investasi risiko pengeluaran tabungan pemasukan kebutuhan keinginan memiliki menjadi mendapatkan digunakan sebuah dapat agar oleh saat juga lebih sudah belum tanpa setiap terhadap antara melalui supaya sehingga jika maka ketika bunga modal pokok suku waktu dihitung rumusnya awal menabung berhutang utang imbalan besarnya tergantung jumlah pertumbuhan".split(
     " "
   )
 );
 const ENGLISH_LOCALE_MARKERS = new Set(
-  "the and with for from this that is are will can not on or in as because you we they stock money financial investment risk spending savings income needs wants have has become get used to when also more without every through between if then".split(
+  "the and with for from this that is are will can not on or in as because you we they stock money financial investment risk spending savings income needs wants have has become get used to when also more without every through between if then interest principal rate time calculated calculation original amount savings borrowing debt reward depends growth".split(
     " "
   )
 );
