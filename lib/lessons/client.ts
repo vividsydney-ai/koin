@@ -120,6 +120,18 @@ export function isLikelyIndonesianOnlyVariant(body: Record<string, unknown>): bo
   return idCount >= 2 && idCount > enCount * 1.5;
 }
 
+/** Hide high-confidence English-only legacy variants from Indonesian learners. */
+export function isLikelyEnglishOnlyVariant(body: Record<string, unknown>): boolean {
+  const words = flattenVariantText(body)
+    .join(" ")
+    .toLowerCase()
+    .match(/[a-zà-ÿ]+/g);
+  if (!words || words.length < 3) return false;
+  const idCount = words.filter((word) => INDONESIAN_LOCALE_MARKERS.has(word)).length;
+  const enCount = words.filter((word) => ENGLISH_LOCALE_MARKERS.has(word)).length;
+  return enCount >= 2 && enCount > idCount * 1.5;
+}
+
 export interface LessonSource {
   id: string;
   sourceCode: string;
@@ -215,7 +227,7 @@ export async function getLessonVariants(
 
   const localeSafeVariants =
     locale === "id"
-      ? variants
+      ? variants.filter((variant) => !isLikelyEnglishOnlyVariant(variant.body))
       : variants.filter((variant) => !isLikelyIndonesianOnlyVariant(variant.body));
 
   if (preferredDifficulty) {

@@ -15,6 +15,7 @@ vi.mock("@/lib/auth/client", () => ({
 
 import {
   getLessonVariants,
+  isLikelyEnglishOnlyVariant,
   isLikelyIndonesianOnlyVariant,
   type ContentVariant,
 } from "@/lib/lessons/client";
@@ -31,6 +32,11 @@ describe("lessons client", () => {
         text: "Diversification spreads risk so one asset's loss has less impact.",
       })
     ).toBe(false);
+    expect(
+      isLikelyEnglishOnlyVariant({
+        text: "An emergency fund covers urgent costs and protects your savings.",
+      })
+    ).toBe(true);
   });
 
   it("hides an ID-only legacy variant from English while keeping it for Indonesian", async () => {
@@ -67,6 +73,19 @@ describe("lessons client", () => {
     ]);
     const indonesian = await getLessonVariants("lesson-1", "example", null, "id");
     expect(indonesian.map((variant) => variant.id)).toEqual(["id-only"]);
+
+    mockVariantsResponse([
+      {
+        id: "english-only",
+        variantType: "example",
+        body: { text: "The fund is safe and protects your savings." },
+        bodyId: { text: "The fund is safe and protects your savings." },
+        difficulty: "beginner",
+        topicTag: null,
+      },
+    ]);
+    const guardedIndonesian = await getLessonVariants("lesson-1", "example", null, "id");
+    expect(guardedIndonesian).toHaveLength(0);
   });
 
   function createQueryChain(rows: unknown[]) {
