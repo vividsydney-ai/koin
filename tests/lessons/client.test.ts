@@ -13,9 +13,62 @@ vi.mock("@/lib/auth/client", () => ({
   },
 }));
 
-import { getLessonVariants, type ContentVariant } from "@/lib/lessons/client";
+import {
+  getLessonVariants,
+  isLikelyIndonesianOnlyVariant,
+  type ContentVariant,
+} from "@/lib/lessons/client";
 
 describe("lessons client", () => {
+  it("detects an ID-only legacy variant without rejecting normal English finance terms", () => {
+    expect(
+      isLikelyIndonesianOnlyVariant({
+        text: "Diversifikasi menyebarkan risiko sehingga kerugian satu aset lebih kecil.",
+      })
+    ).toBe(true);
+    expect(
+      isLikelyIndonesianOnlyVariant({
+        text: "Diversification spreads risk so one asset's loss has less impact.",
+      })
+    ).toBe(false);
+  });
+
+  it("hides an ID-only legacy variant from English while keeping it for Indonesian", async () => {
+    mockVariantsResponse([
+      {
+        id: "id-only",
+        variantType: "example",
+        body: { text: "Dana darurat adalah uang untuk kebutuhan mendesak." },
+        bodyId: { text: "Dana darurat adalah uang untuk kebutuhan mendesak." },
+        difficulty: "beginner",
+        topicTag: null,
+      },
+      {
+        id: "english",
+        variantType: "example",
+        body: { text: "An emergency fund covers urgent costs." },
+        bodyId: { text: "Dana darurat menutup biaya mendesak." },
+        difficulty: "beginner",
+        topicTag: null,
+      },
+    ]);
+    const english = await getLessonVariants("lesson-1", "example", null, "en");
+    expect(english.map((variant) => variant.id)).toEqual(["english"]);
+
+    mockVariantsResponse([
+      {
+        id: "id-only",
+        variantType: "example",
+        body: { text: "Dana darurat adalah uang untuk kebutuhan mendesak." },
+        bodyId: { text: "Dana darurat adalah uang untuk kebutuhan mendesak." },
+        difficulty: "beginner",
+        topicTag: null,
+      },
+    ]);
+    const indonesian = await getLessonVariants("lesson-1", "example", null, "id");
+    expect(indonesian.map((variant) => variant.id)).toEqual(["id-only"]);
+  });
+
   function createQueryChain(rows: unknown[]) {
     const chain = {
       eq: vi.fn(() => chain),

@@ -88,6 +88,38 @@ export interface ContentVariant {
 
 export type { QuizQuestion };
 
+const INDONESIAN_LOCALE_MARKERS = new Set(
+  "yang dan dengan untuk dari ini itu adalah akan bisa tidak pada atau dalam sebagai karena kamu kami mereka saham uang keuangan investasi risiko pengeluaran tabungan pemasukan kebutuhan keinginan memiliki menjadi mendapatkan digunakan sebuah dapat agar oleh saat juga lebih sudah belum tanpa setiap terhadap antara melalui supaya sehingga jika maka ketika".split(
+    " "
+  )
+);
+const ENGLISH_LOCALE_MARKERS = new Set(
+  "the and with for from this that is are will can not on or in as because you we they stock money financial investment risk spending savings income needs wants have has become get used to when also more without every through between if then".split(
+    " "
+  )
+);
+
+function flattenVariantText(value: unknown, output: string[] = []): string[] {
+  if (typeof value === "string") output.push(value);
+  else if (Array.isArray(value)) value.forEach((item) => flattenVariantText(item, output));
+  else if (value && typeof value === "object") {
+    Object.values(value).forEach((item) => flattenVariantText(item, output));
+  }
+  return output;
+}
+
+/** Hide high-confidence ID-only legacy variants from English learners until KO-225 translations land. */
+export function isLikelyIndonesianOnlyVariant(body: Record<string, unknown>): boolean {
+  const words = flattenVariantText(body)
+    .join(" ")
+    .toLowerCase()
+    .match(/[a-zà-ÿ]+/g);
+  if (!words || words.length < 3) return false;
+  const idCount = words.filter((word) => INDONESIAN_LOCALE_MARKERS.has(word)).length;
+  const enCount = words.filter((word) => ENGLISH_LOCALE_MARKERS.has(word)).length;
+  return idCount >= 2 && idCount > enCount * 1.5;
+}
+
 export interface LessonSource {
   id: string;
   sourceCode: string;
@@ -181,8 +213,13 @@ export async function getLessonVariants(
       };
     }) ?? [];
 
+  const localeSafeVariants =
+    locale === "id"
+      ? variants
+      : variants.filter((variant) => !isLikelyIndonesianOnlyVariant(variant.body));
+
   if (preferredDifficulty) {
-    const filtered = variants.filter(
+    const filtered = localeSafeVariants.filter(
       (v) => v.difficulty === preferredDifficulty || v.difficulty == null
     );
     if (filtered.length > 0) {
@@ -203,7 +240,7 @@ export async function getLessonVariants(
       ];
 
       for (const difficulty of lowerFirst) {
-        const fallback = variants.filter((v) => v.difficulty === difficulty);
+        const fallback = localeSafeVariants.filter((v) => v.difficulty === difficulty);
         if (fallback.length > 0) {
           return fallback;
         }
@@ -211,7 +248,7 @@ export async function getLessonVariants(
     }
   }
 
-  return variants;
+  return localeSafeVariants;
 }
 
 export async function getLessonSources(lessonId: string): Promise<LessonSource[]> {
