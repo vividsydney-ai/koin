@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/auth/client";
 import { z } from "zod";
+import type { Locale } from "@/lib/i18n/types";
 
 export type DailyFocusStatus = "active" | "completed" | "exhausted";
 
@@ -31,7 +32,7 @@ export interface DailyFocusState {
   questions: DailyFocusQuestion[];
   answerCorrect: boolean | null;
   explanation: string | null;
-  correctAnswer: string | boolean | null;
+  correctAnswer: string | boolean | string[] | null;
 }
 
 const dailyFocusAnswerSchema = z.object({
@@ -86,15 +87,16 @@ function parseState(raw: unknown): DailyFocusState | null {
     answerCorrect: typeof value.answer_correct === "boolean" ? value.answer_correct : null,
     explanation: typeof value.explanation === "string" ? value.explanation : null,
     correctAnswer:
-      typeof value.correct_answer === "string" || typeof value.correct_answer === "boolean"
-        ? value.correct_answer
+      typeof value.correct_answer === "string" || typeof value.correct_answer === "boolean" || Array.isArray(value.correct_answer)
+        ? (value.correct_answer as string | boolean | string[])
         : null,
   };
 }
 
-export async function getDailyFocusChallenge(timeZone = getLocalTimeZone()): Promise<DailyFocusState | null> {
+export async function getDailyFocusChallenge(timeZone = getLocalTimeZone(), locale: Locale = "en"): Promise<DailyFocusState | null> {
   const { data, error } = await supabase.rpc("get_daily_focus_challenge", {
     p_time_zone: timeZone,
+    p_locale: locale,
   });
   if (error) {
     console.error("getDailyFocusChallenge error:", error.message);
@@ -106,7 +108,8 @@ export async function getDailyFocusChallenge(timeZone = getLocalTimeZone()): Pro
 export async function submitDailyFocusAnswer(
   questionIndex: number,
   answer: string | boolean | string[],
-  timeZone = getLocalTimeZone()
+  timeZone = getLocalTimeZone(),
+  locale: Locale = "en"
 ): Promise<{ state: DailyFocusState | null; error: string | null }> {
   const parsed = dailyFocusAnswerSchema.safeParse({ questionIndex, answer, timeZone });
   if (!parsed.success) {
@@ -117,15 +120,17 @@ export async function submitDailyFocusAnswer(
     p_question_index: parsed.data.questionIndex,
     p_answer: parsed.data.answer,
     p_time_zone: parsed.data.timeZone,
+    p_locale: locale,
   });
 
   if (error) return { state: null, error: error.message };
   return { state: parseState(data), error: null };
 }
 
-export async function refillDailyFocus(timeZone = getLocalTimeZone()): Promise<{ state: DailyFocusState | null; error: string | null }> {
+export async function refillDailyFocus(timeZone = getLocalTimeZone(), locale: Locale = "en"): Promise<{ state: DailyFocusState | null; error: string | null }> {
   const { data, error } = await supabase.rpc("refill_daily_focus", {
     p_time_zone: timeZone,
+    p_locale: locale,
   });
   if (error) return { state: null, error: error.message };
   return { state: parseState(data), error: null };

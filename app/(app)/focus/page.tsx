@@ -17,13 +17,13 @@ type FocusAnswer = string | boolean | string[];
 
 export default function DailyFocusPage() {
   const { user, loading: authLoading } = useAuth(true);
-  const { locale } = useLocale();
+  const { locale, t } = useLocale();
   const [focus, setFocus] = useState<DailyFocusState | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [refilling, setRefilling] = useState(false);
   const [pendingQuestion, setPendingQuestion] = useState<DailyFocusQuestion | null>(null);
-  const [feedback, setFeedback] = useState<{ correct: boolean; explanation: string | null; answer: string | boolean | null } | null>(null);
+  const [feedback, setFeedback] = useState<{ correct: boolean; explanation: string | null; answer: string | boolean | string[] | null } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const timeZone = getLocalTimeZone();
 
@@ -32,7 +32,7 @@ export default function DailyFocusPage() {
     const load = async () => {
       if (!user) return;
       setLoading(true);
-      const state = await getDailyFocusChallenge(timeZone);
+      const state = await getDailyFocusChallenge(timeZone, locale);
       if (!mounted) return;
       setFocus(state);
       setLoading(false);
@@ -41,7 +41,7 @@ export default function DailyFocusPage() {
     return () => {
       mounted = false;
     };
-  }, [user, timeZone]);
+  }, [user, timeZone, locale]);
 
   const currentIndex = focus?.questionsAnswered ?? 0;
   const currentQuestion = pendingQuestion ?? focus?.questions[currentIndex] ?? null;
@@ -52,9 +52,9 @@ export default function DailyFocusPage() {
     setError(null);
     setPendingQuestion(currentQuestion);
 
-    const result = await submitDailyFocusAnswer(currentIndex, value, timeZone);
+    const result = await submitDailyFocusAnswer(currentIndex, value, timeZone, locale);
     if (result.error || !result.state) {
-      setError(result.error ?? "We could not record that answer. Please try again.");
+      setError(result.error ?? t("focus.answerError"));
       setPendingQuestion(null);
       setSubmitting(false);
       return;
@@ -79,9 +79,9 @@ export default function DailyFocusPage() {
     if (refilling) return;
     setRefilling(true);
     setError(null);
-    const result = await refillDailyFocus(timeZone);
+    const result = await refillDailyFocus(timeZone, locale);
     if (result.error || !result.state) {
-      setError(result.error ?? "We could not refill Focus right now.");
+      setError(result.error ?? t("focus.refillError"));
     } else {
       setFocus(result.state);
     }
@@ -103,10 +103,10 @@ export default function DailyFocusPage() {
         <BackLink />
         <section className="mt-6 rounded-card border border-muted bg-surface p-6 text-center shadow-sm">
           <FocusMark className="mx-auto h-10 w-10 text-primary" />
-          <h1 className="mt-4 font-display text-2xl font-bold text-foreground">Daily Focus is resting</h1>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">We could not load today&apos;s challenge. Please try again in a moment.</p>
+          <h1 className="mt-4 font-display text-2xl font-bold text-foreground">{t("focus.restingTitle")}</h1>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">{t("focus.restingBody")}</p>
           <Link href="/" className="mt-5 inline-flex min-h-11 items-center justify-center rounded-full bg-primary px-5 text-sm font-bold text-primary-foreground">
-            Back home
+            {t("focus.backHome")}
           </Link>
         </section>
       </div>
@@ -120,13 +120,13 @@ export default function DailyFocusPage() {
       <BackLink />
 
       <header className="mt-6">
-        <p className="text-xs font-bold uppercase tracking-[0.16em] text-primary">Optional daily practice</p>
+        <p className="text-xs font-bold uppercase tracking-[0.16em] text-primary">{t("focus.kicker")}</p>
         <div className="mt-2 flex items-start justify-between gap-4">
           <div>
-            <h1 className="font-display text-3xl font-bold tracking-tight text-foreground">Daily Focus</h1>
-            <p className="mt-1 text-sm text-muted-foreground">Five quick money checks. Lessons always stay unlimited.</p>
+            <h1 className="font-display text-3xl font-bold tracking-tight text-foreground">{t("focus.title")}</h1>
+            <p className="mt-1 text-sm text-muted-foreground">{t("focus.subtitle")}</p>
             <Link href="/profile/faq" className="mt-2 inline-flex min-h-11 items-center text-sm font-semibold text-primary hover:underline">
-              {locale === "id" ? "Cara kerja Daily Focus" : "How Daily Focus works"} →
+              {t("focus.howItWorks")} →
             </Link>
           </div>
           <FocusMark className="mt-1 h-9 w-9 shrink-0 text-primary" />
@@ -136,17 +136,17 @@ export default function DailyFocusPage() {
       <section className="mt-6 rounded-card border border-primary/20 bg-[color-mix(in_srgb,var(--color-primary)_6%,var(--color-surface))] p-5 shadow-sm">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <p className="text-sm font-bold text-foreground">Your Focus</p>
-            <p className="mt-1 text-xs text-muted-foreground">A wrong answer uses one. Core lessons never do.</p>
+            <p className="text-sm font-bold text-foreground">{t("focus.yourFocus")}</p>
+            <p className="mt-1 text-xs text-muted-foreground">{t("focus.wrongAnswer")}</p>
           </div>
           <FocusPips remaining={focus.focusRemaining} max={focus.maxFocus} />
         </div>
-        <div className="mt-5 h-2 overflow-hidden rounded-full bg-surface-inset" role="progressbar" aria-label="Daily Focus question progress" aria-valuemin={0} aria-valuemax={5} aria-valuenow={focus.questionsAnswered}>
+        <div className="mt-5 h-2 overflow-hidden rounded-full bg-surface-inset" role="progressbar" aria-label={t("focus.progressAria")} aria-valuemin={0} aria-valuemax={5} aria-valuenow={focus.questionsAnswered}>
           <div className="h-full rounded-full bg-primary transition-[width] duration-200" style={{ width: `${(focus.questionsAnswered / 5) * 100}%` }} />
         </div>
         <div className="mt-2 flex items-center justify-between text-xs font-semibold text-muted-foreground">
-          <span>{focus.status === "completed" ? "Complete" : `Question ${Math.min(focus.questionsAnswered + 1, 5)} of 5`}</span>
-          <span>{focus.correctAnswers} correct</span>
+          <span>{focus.status === "completed" ? t("focus.complete") : `${t("focus.question")} ${Math.min(focus.questionsAnswered + 1, 5)} of 5`}</span>
+          <span>{focus.correctAnswers} {t("focus.correctCount")}</span>
         </div>
       </section>
 
@@ -160,8 +160,8 @@ export default function DailyFocusPage() {
 
       {feedback && (
         <section className={`mt-5 rounded-card border p-5 shadow-sm ${feedback.correct ? "border-success/30 bg-success/5" : "border-danger/25 bg-danger/5"}`} aria-live="polite">
-          <p className={`text-sm font-bold ${feedback.correct ? "text-success" : "text-danger"}`}>{feedback.correct ? "Nice work — your Focus is intact." : "Not quite — one Focus was used."}</p>
-          {!feedback.correct && feedback.answer !== null && <p className="mt-2 text-sm font-semibold text-foreground">Correct answer: {String(feedback.answer)}</p>}
+            <p className={`text-sm font-bold ${feedback.correct ? "text-success" : "text-danger"}`}>{feedback.correct ? t("focus.correctFeedback") : t("focus.incorrectFeedback")}</p>
+          {!feedback.correct && feedback.answer !== null && <p className="mt-2 text-sm font-semibold text-foreground">{t("quiz.correctAnswer")} {Array.isArray(feedback.answer) ? feedback.answer.join(", ") : String(feedback.answer)}</p>}
           {feedback.explanation && <p className="mt-2 text-sm leading-6 text-muted-foreground">{feedback.explanation}</p>}
           {finishedAnswer ? (
             <CompletionCard focus={focus} />
@@ -169,7 +169,7 @@ export default function DailyFocusPage() {
             <ExhaustedActions focus={focus} refilling={refilling} onRefill={refill} />
           ) : (
             <button onClick={continueChallenge} className="mt-5 flex min-h-11 w-full items-center justify-center rounded-full bg-primary px-5 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90">
-              Next question
+              {t("focus.nextQuestion")}
             </button>
           )}
         </section>
@@ -184,8 +184,8 @@ export default function DailyFocusPage() {
 function QuestionCard({ question, disabled, onAnswer }: { question: DailyFocusQuestion; disabled: boolean; onAnswer: (answer: FocusAnswer) => void }) {
   const [fillValue, setFillValue] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const { locale } = useLocale();
-  const checkLabel = locale === "id" ? "Periksa jawaban" : "Check answer";
+  const { t } = useLocale();
+  const checkLabel = t("quiz.checkAnswer");
 
   const handleOption = (value: FocusAnswer) => {
     if (disabled) return;
@@ -215,14 +215,14 @@ function QuestionCard({ question, disabled, onAnswer }: { question: DailyFocusQu
   return (
     <section className="mt-5 rounded-card border border-muted bg-surface p-5 shadow-sm">
       <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-primary">
-        <FocusMark className="h-3.5 w-3.5" /> Focus check
+        <FocusMark className="h-3.5 w-3.5" /> {t("focus.check")}
       </span>
       <h2 className="mt-3 text-xl font-bold leading-snug text-foreground">{question.question}</h2>
 
       {question.type === "fill_blank" && (
         <div className="mt-5 space-y-4">
           <label htmlFor="focus-fill-blank" className="sr-only">
-            {locale === "id" ? "Ketik jawabanmu" : "Type your answer"}
+            {t("quiz.typeAnswer")}
           </label>
           <input
             id="focus-fill-blank"
@@ -230,7 +230,7 @@ function QuestionCard({ question, disabled, onAnswer }: { question: DailyFocusQu
             value={fillValue}
             onChange={(e) => setFillValue(e.target.value)}
             disabled={disabled}
-            placeholder={locale === "id" ? "Ketik jawabanmu" : "Type your answer"}
+            placeholder={t("quiz.typeAnswer")}
             className="h-12 w-full rounded-lg border-[1.5px] border-border bg-background px-4 text-base text-foreground outline-none transition-all placeholder:text-muted-foreground hover:border-border-strong focus:border-primary focus:shadow-focus-ring disabled:opacity-60"
             onKeyDown={(e) => {
               if (e.key === "Enter") submitFillBlank();
@@ -248,7 +248,7 @@ function QuestionCard({ question, disabled, onAnswer }: { question: DailyFocusQu
 
       {question.type === "select_all" && (
         <div className="mt-5 space-y-3">
-          <p className="text-xs font-semibold text-muted-foreground">{locale === "id" ? "Pilih semua yang benar:" : "Select all that apply:"}</p>
+          <p className="text-xs font-semibold text-muted-foreground">{t("focus.selectAll")}</p>
           {(question.options ?? []).map((option) => (
             <label
               key={option}
@@ -292,8 +292,8 @@ function QuestionCard({ question, disabled, onAnswer }: { question: DailyFocusQu
                 </button>
               ))
             : [
-                { label: locale === "id" ? "Benar" : "True", value: true },
-                { label: locale === "id" ? "Salah" : "False", value: false },
+                { label: t("quiz.true"), value: true },
+                { label: t("quiz.false"), value: false },
               ].map((option) => (
                 <button
                   key={option.label}
@@ -311,24 +311,25 @@ function QuestionCard({ question, disabled, onAnswer }: { question: DailyFocusQu
 }
 
 function MissionProgress({ focus }: { focus: DailyFocusState }) {
+  const { t } = useLocale();
   const percent = Math.min(100, (focus.missionsCompletedThisWeek / focus.missionGoal) * 100);
   return (
     <section className="mt-4 rounded-card border border-warning/25 bg-[color-mix(in_srgb,var(--color-warning)_7%,var(--color-surface))] p-4">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-warning">Weekly Money Missions</p>
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-warning">{t("focus.weeklyMissions")}</p>
           <p className="mt-1 text-sm font-bold text-foreground">
-            {focus.fourthFocusUnlocked ? "Fourth Focus unlocked" : `${focus.missionsCompletedThisWeek} of ${focus.missionGoal} completed`}
+            {focus.fourthFocusUnlocked ? t("focus.fourthUnlocked") : `${focus.missionsCompletedThisWeek} of ${focus.missionGoal} ${t("focus.missionsCompleted")}`}
           </p>
         </div>
         <span className="rounded-full bg-warning/10 px-2.5 py-1 text-xs font-bold text-warning">{focus.fourthFocusUnlocked ? "4 Focus" : "3 → 4"}</span>
       </div>
       {!focus.fourthFocusUnlocked && (
         <>
-          <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-surface-inset" role="progressbar" aria-label="Weekly Money Missions" aria-valuemin={0} aria-valuemax={focus.missionGoal} aria-valuenow={focus.missionsCompletedThisWeek}>
+          <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-surface-inset" role="progressbar" aria-label={t("focus.weeklyMissions")} aria-valuemin={0} aria-valuemax={focus.missionGoal} aria-valuenow={focus.missionsCompletedThisWeek}>
             <div className="h-full rounded-full bg-warning" style={{ width: `${percent}%` }} />
           </div>
-          <p className="mt-2 text-xs leading-5 text-muted-foreground">Finish Daily Focus five times in one local week to permanently gain a fourth Focus.</p>
+          <p className="mt-2 text-xs leading-5 text-muted-foreground">{t("focus.missionsBody")}</p>
         </>
       )}
     </section>
@@ -336,41 +337,45 @@ function MissionProgress({ focus }: { focus: DailyFocusState }) {
 }
 
 function ExhaustedActions({ focus, refilling, onRefill }: { focus: DailyFocusState; refilling: boolean; onRefill: () => void }) {
+  const { t } = useLocale();
   return (
     <section className="mt-5 rounded-card border border-muted bg-surface p-5 shadow-sm">
-      <h2 className="text-lg font-bold text-foreground">Focus spent for today</h2>
-      <p className="mt-1 text-sm leading-6 text-muted-foreground">You can return tomorrow, or use your one optional refill. Your lessons are still open anytime.</p>
+      <h2 className="text-lg font-bold text-foreground">{t("focus.exhaustedTitle")}</h2>
+      <p className="mt-1 text-sm leading-6 text-muted-foreground">{t("focus.exhaustedBody")}</p>
       {!focus.refillUsed ? (
         <button onClick={onRefill} disabled={refilling} className="mt-5 flex min-h-11 w-full items-center justify-center rounded-full bg-primary px-5 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60">
-          {refilling ? "Refilling…" : "Refill Focus · 50 Koin Points"}
+          {refilling ? t("focus.refilling") : t("focus.refill")}
         </button>
       ) : (
-        <p className="mt-4 text-sm font-semibold text-muted-foreground">Today&apos;s refill has already been used.</p>
+        <p className="mt-4 text-sm font-semibold text-muted-foreground">{t("focus.refillUsed")}</p>
       )}
-      <Link href="/learn" className="mt-3 flex min-h-11 items-center justify-center rounded-full border border-muted px-5 text-sm font-bold text-foreground transition-colors hover:bg-surface-raised">Continue learning</Link>
+      <Link href="/learn" className="mt-3 flex min-h-11 items-center justify-center rounded-full border border-muted px-5 text-sm font-bold text-foreground transition-colors hover:bg-surface-raised">{t("focus.continueLearning")}</Link>
     </section>
   );
 }
 
 function CompletionCard({ focus }: { focus: DailyFocusState }) {
+  const { t } = useLocale();
   return (
     <section className="mt-5 rounded-card border border-success/30 bg-success/5 p-5 text-center">
       <FocusMark className="mx-auto h-9 w-9 text-success" />
-      <h2 className="mt-3 text-xl font-bold text-foreground">Focus complete</h2>
-      <p className="mt-1 text-sm leading-6 text-muted-foreground">You earned 20 Koin Points and completed one Money Mission. Come back tomorrow for a new set.</p>
-      {focus.fourthFocusUnlocked && <p className="mt-3 text-sm font-bold text-success">Your fourth Focus is ready for tomorrow.</p>}
-      <Link href="/" className="mt-5 inline-flex min-h-11 items-center justify-center rounded-full bg-primary px-5 text-sm font-bold text-primary-foreground">Back home</Link>
+      <h2 className="mt-3 text-xl font-bold text-foreground">{t("focus.completeTitle")}</h2>
+      <p className="mt-1 text-sm leading-6 text-muted-foreground">{t("focus.completeBody")}</p>
+      {focus.fourthFocusUnlocked && <p className="mt-3 text-sm font-bold text-success">{t("focus.fourthReady")}</p>}
+      <Link href="/" className="mt-5 inline-flex min-h-11 items-center justify-center rounded-full bg-primary px-5 text-sm font-bold text-primary-foreground">{t("focus.backHome")}</Link>
     </section>
   );
 }
 
 function BackLink() {
-  return <Link href="/" className="inline-flex min-h-11 items-center gap-2 text-sm font-bold text-primary"><ArrowLeftIcon className="h-4 w-4" /> Home</Link>;
+  const { t } = useLocale();
+  return <Link href="/" className="inline-flex min-h-11 items-center gap-2 text-sm font-bold text-primary"><ArrowLeftIcon className="h-4 w-4" /> {t("focus.backHome")}</Link>;
 }
 
 function FocusPips({ remaining, max }: { remaining: number; max: number }) {
+  const { t } = useLocale();
   return (
-    <div className="flex gap-1.5" aria-label={`${remaining} of ${max} Focus remaining`}>
+    <div className="flex gap-1.5" aria-label={t("focus.pipsRemaining").replace("{remaining}", String(remaining)).replace("{max}", String(max))}>
       {Array.from({ length: max }, (_, index) => <span key={index} className={`flex h-8 w-8 items-center justify-center rounded-md border ${index < remaining ? "border-primary/30 bg-primary text-primary-foreground" : "border-muted bg-surface text-muted-foreground"}`}><FocusMark className="h-4 w-4" /></span>)}
     </div>
   );

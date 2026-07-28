@@ -98,6 +98,42 @@ export interface Dictionary {
   "mission.locked": string;
   "mission.loadError": string;
 
+  // Daily Focus
+  "focus.restingTitle": string;
+  "focus.restingBody": string;
+  "focus.backHome": string;
+  "focus.kicker": string;
+  "focus.title": string;
+  "focus.subtitle": string;
+  "focus.howItWorks": string;
+  "focus.yourFocus": string;
+  "focus.wrongAnswer": string;
+  "focus.progressAria": string;
+  "focus.complete": string;
+  "focus.question": string;
+  "focus.correctCount": string;
+  "focus.check": string;
+  "focus.correctFeedback": string;
+  "focus.incorrectFeedback": string;
+  "focus.nextQuestion": string;
+  "focus.selectAll": string;
+  "focus.weeklyMissions": string;
+  "focus.fourthUnlocked": string;
+  "focus.missionsCompleted": string;
+  "focus.missionsBody": string;
+  "focus.exhaustedTitle": string;
+  "focus.exhaustedBody": string;
+  "focus.refill": string;
+  "focus.refilling": string;
+  "focus.refillUsed": string;
+  "focus.continueLearning": string;
+  "focus.completeTitle": string;
+  "focus.completeBody": string;
+  "focus.fourthReady": string;
+  "focus.pipsRemaining": string;
+  "focus.answerError": string;
+  "focus.refillError": string;
+
   // Quiz engine
   "quiz.correctAnswer": string;
   "quiz.true": string;
@@ -372,6 +408,41 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "mission.locked": "Finish every lesson in this chapter before starting its Money Mission.",
     "mission.loadError": "We could not prepare your Money Mission. Please try again.",
 
+    "focus.restingTitle": "Daily Focus is resting",
+    "focus.restingBody": "We could not load today’s challenge. Please try again in a moment.",
+    "focus.backHome": "Back home",
+    "focus.kicker": "Optional daily practice",
+    "focus.title": "Daily Focus",
+    "focus.subtitle": "Five quick money checks. Lessons always stay unlimited.",
+    "focus.howItWorks": "How Daily Focus works",
+    "focus.yourFocus": "Your Focus",
+    "focus.wrongAnswer": "A wrong answer uses one. Core lessons never do.",
+    "focus.progressAria": "Daily Focus question progress",
+    "focus.complete": "Complete",
+    "focus.question": "Question",
+    "focus.correctCount": "correct",
+    "focus.check": "Focus check",
+    "focus.correctFeedback": "Nice work — your Focus is intact.",
+    "focus.incorrectFeedback": "Not quite — one Focus was used.",
+    "focus.nextQuestion": "Next question",
+    "focus.selectAll": "Select all that apply:",
+    "focus.weeklyMissions": "Weekly Money Missions",
+    "focus.fourthUnlocked": "Fourth Focus unlocked",
+    "focus.missionsCompleted": "completed",
+    "focus.missionsBody": "Finish Daily Focus five times in one local week to permanently gain a fourth Focus.",
+    "focus.exhaustedTitle": "Focus spent for today",
+    "focus.exhaustedBody": "You can return tomorrow, or use your one optional refill. Your lessons are still open anytime.",
+    "focus.refill": "Refill Focus · 50 Koin Points",
+    "focus.refilling": "Refilling…",
+    "focus.refillUsed": "Today’s refill has already been used.",
+    "focus.continueLearning": "Continue learning",
+    "focus.completeTitle": "Focus complete",
+    "focus.completeBody": "You earned 20 Koin Points and completed one Money Mission. Come back tomorrow for a new set.",
+    "focus.fourthReady": "Your fourth Focus is ready for tomorrow.",
+    "focus.pipsRemaining": "{remaining} of {max} Focus remaining",
+    "focus.answerError": "We could not record that answer. Please try again.",
+    "focus.refillError": "We could not refill Focus right now.",
+
     "quiz.correctAnswer": "Correct answer:",
     "quiz.true": "True",
     "quiz.false": "False",
@@ -605,7 +676,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "sources.readOnWikipedia": "Baca di Wikipedia",
     "sources.originalUnavailable": "Tautan asli tidak tersedia",
     "lesson.quizBonus": "Termasuk +{bonus} bonus kuis",
-    "lesson.streak": "Rentetan",
+    "lesson.streak": "Streak",
     "lesson.baseXp": "XP dasar",
     "lesson.badgeEarned": "Lencana didapat",
     "lesson.nextLesson": "Pelajaran berikutnya",
@@ -637,6 +708,41 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "mission.locked": "Selesaikan semua pelajaran dalam bab ini sebelum memulai Misi Uang.",
     "mission.loadError": "Kami belum bisa menyiapkan Misi Uangmu. Coba lagi.",
 
+    "focus.restingTitle": "Daily Focus sedang beristirahat",
+    "focus.restingBody": "Kami tidak dapat memuat tantangan hari ini. Coba lagi sebentar lagi.",
+    "focus.backHome": "Kembali ke beranda",
+    "focus.kicker": "Latihan harian opsional",
+    "focus.title": "Daily Focus",
+    "focus.subtitle": "Lima cek singkat tentang uang. Pelajaran tetap bisa diulang tanpa batas.",
+    "focus.howItWorks": "Cara kerja Daily Focus",
+    "focus.yourFocus": "Focus kamu",
+    "focus.wrongAnswer": "Jawaban salah memakai satu Focus. Pelajaran utama tidak pernah menguranginya.",
+    "focus.progressAria": "Progres pertanyaan Daily Focus",
+    "focus.complete": "Selesai",
+    "focus.question": "Pertanyaan",
+    "focus.correctCount": "benar",
+    "focus.check": "Cek Focus",
+    "focus.correctFeedback": "Mantap — Focus kamu tetap utuh.",
+    "focus.incorrectFeedback": "Belum tepat — satu Focus terpakai.",
+    "focus.nextQuestion": "Pertanyaan berikutnya",
+    "focus.selectAll": "Pilih semua yang benar:",
+    "focus.weeklyMissions": "Misi Uang Mingguan",
+    "focus.fourthUnlocked": "Focus keempat terbuka",
+    "focus.missionsCompleted": "selesai",
+    "focus.missionsBody": "Selesaikan Daily Focus lima kali dalam satu minggu lokal untuk mendapatkan Focus keempat secara permanen.",
+    "focus.exhaustedTitle": "Focus hari ini sudah habis",
+    "focus.exhaustedBody": "Kamu bisa kembali besok, atau memakai satu kali isi ulang opsional. Pelajaran tetap bisa dipelajari kapan saja.",
+    "focus.refill": "Isi ulang Focus · 50 Koin Points",
+    "focus.refilling": "Mengisi ulang…",
+    "focus.refillUsed": "Isi ulang hari ini sudah digunakan.",
+    "focus.continueLearning": "Lanjut belajar",
+    "focus.completeTitle": "Focus selesai",
+    "focus.completeBody": "Kamu mendapatkan 20 Koin Points dan menyelesaikan satu Misi Uang. Kembali besok untuk set pertanyaan baru.",
+    "focus.fourthReady": "Focus keempatmu siap digunakan besok.",
+    "focus.pipsRemaining": "{remaining} dari {max} Focus tersisa",
+    "focus.answerError": "Kami tidak dapat mencatat jawaban itu. Coba lagi.",
+    "focus.refillError": "Kami tidak dapat mengisi ulang Focus sekarang.",
+
     "quiz.correctAnswer": "Jawaban benar:",
     "quiz.true": "Benar",
     "quiz.false": "Salah",
@@ -650,9 +756,9 @@ export const dictionaries: Record<Locale, Dictionary> = {
 
     "home.greeting": "Senang melihatmu,",
     "home.share": "Bagikan",
-    "home.streak.label": "Rentetan",
+    "home.streak.label": "Streak",
     "home.streak.keepLearning": "Terus belajar setiap hari untuk membangunnya.",
-    "home.streak.broken": "Rentetan hilang. Mulai yang baru hari ini!",
+    "home.streak.broken": "Streak hilang. Mulai yang baru hari ini!",
     "home.streak.frozen": "Beku digunakan — kamu masih dalam permainan.",
     "home.streak.atRisk": "Selesaikan pelajaran hari ini untuk menjaganya.",
     "home.continueLesson": "Lanjutkan pelajaran",
