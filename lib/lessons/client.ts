@@ -89,7 +89,7 @@ export interface ContentVariant {
 export type { QuizQuestion };
 
 const INDONESIAN_LOCALE_MARKERS = new Set(
-  "yang dan dengan untuk dari ini itu adalah akan bisa tidak pada atau dalam sebagai karena kamu kami mereka saham uang keuangan investasi risiko pengeluaran tabungan pemasukan kebutuhan keinginan memiliki menjadi mendapatkan digunakan sebuah dapat agar oleh saat juga lebih sudah belum tanpa setiap terhadap antara melalui supaya sehingga jika maka ketika bunga modal pokok suku waktu dihitung rumusnya awal menabung berhutang utang imbalan besarnya tergantung jumlah pertumbuhan".split(
+  "yang dan dengan untuk dari ini itu adalah akan bisa tidak pada atau dalam sebagai karena kamu kami mereka saham uang keuangan investasi risiko pengeluaran tabungan pemasukan kebutuhan keinginan memiliki menjadi mendapatkan digunakan sebuah dapat agar oleh saat juga lebih sudah belum tanpa setiap terhadap antara melalui supaya sehingga jika maka ketika bunga modal pokok suku waktu dihitung rumusnya awal menabung berhutang utang imbalan besarnya tergantung jumlah pertumbuhan sederhana selama tahun berapa meminjam menguntungkan pembayar pinjaman per satu".split(
     " "
   )
 );
@@ -130,6 +130,24 @@ export function isLikelyEnglishOnlyVariant(body: Record<string, unknown>): boole
   const idCount = words.filter((word) => INDONESIAN_LOCALE_MARKERS.has(word)).length;
   const enCount = words.filter((word) => ENGLISH_LOCALE_MARKERS.has(word)).length;
   return enCount >= 2 && enCount > idCount * 1.5;
+}
+
+/**
+ * A small batch of legacy rows was duplicated into both locale columns. When
+ * the two payloads are identical, treat a high-confidence Indonesian payload
+ * as Indonesian-only so English retries cannot surface it.
+ */
+function isDuplicatedIndonesianVariant(variant: ContentVariant): boolean {
+  const markerCount = flattenVariantText(variant.body)
+    .join(" ")
+    .toLowerCase()
+    .match(/[a-zà-ÿ]+/g)
+    ?.filter((word) => INDONESIAN_LOCALE_MARKERS.has(word)).length ?? 0;
+  return Boolean(
+    variant.bodyId &&
+      JSON.stringify(variant.body) === JSON.stringify(variant.bodyId) &&
+      (isLikelyIndonesianOnlyVariant(variant.body) || markerCount >= 2)
+  );
 }
 
 export interface LessonSource {
@@ -228,7 +246,11 @@ export async function getLessonVariants(
   const localeSafeVariants =
     locale === "id"
       ? variants.filter((variant) => !isLikelyEnglishOnlyVariant(variant.body))
-      : variants.filter((variant) => !isLikelyIndonesianOnlyVariant(variant.body));
+      : variants.filter(
+          (variant) =>
+            !isLikelyIndonesianOnlyVariant(variant.body) &&
+            !isDuplicatedIndonesianVariant(variant)
+        );
 
   if (preferredDifficulty) {
     const filtered = localeSafeVariants.filter(

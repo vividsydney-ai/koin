@@ -93,6 +93,43 @@ describe("lessons client", () => {
     expect(guardedIndonesian).toHaveLength(0);
   });
 
+  it("keeps a duplicated Indonesian question out of English retries", async () => {
+    const duplicated = {
+      type: "fill_blank",
+      answer: "{{amount * rate / 100}}",
+      question:
+        "Rina menabung Rp{{amount}} dengan bunga {{rate}}% per tahun. Bunga sederhana selama satu tahun adalah Rp_____.",
+      parameters: { amount: { min: 1_000_000, max: 2_000_000 }, rate: { min: 3, max: 6 } },
+      explanation: "Bunga = Rp{{amount}} × {{rate}}% = Rp{{amount * rate / 100}}.",
+    };
+    mockVariantsResponse([
+      {
+        id: "duplicated-id-question",
+        variantType: "question",
+        body: duplicated,
+        bodyId: duplicated,
+        difficulty: "intermediate",
+        topicTag: null,
+      },
+    ]);
+
+    const english = await getLessonVariants("lesson-1", "question", null, "en");
+    expect(english).toHaveLength(0);
+
+    mockVariantsResponse([
+      {
+        id: "duplicated-id-question",
+        variantType: "question",
+        body: duplicated,
+        bodyId: duplicated,
+        difficulty: "intermediate",
+        topicTag: null,
+      },
+    ]);
+    const indonesian = await getLessonVariants("lesson-1", "question", null, "id");
+    expect(indonesian).toHaveLength(1);
+  });
+
   function createQueryChain(rows: unknown[]) {
     const chain = {
       eq: vi.fn(() => chain),
@@ -105,7 +142,14 @@ describe("lessons client", () => {
 
   function mockVariantsResponse(rows: Partial<ContentVariant>[]) {
     from.mockReturnValueOnce({
-      select: vi.fn(() => createQueryChain(rows)),
+      select: vi.fn(() =>
+        createQueryChain(
+          rows.map((row) => ({
+            ...row,
+            body_id: row.bodyId ?? (row as Partial<ContentVariant> & { body_id?: unknown }).body_id ?? null,
+          }))
+        )
+      ),
     });
   }
 
