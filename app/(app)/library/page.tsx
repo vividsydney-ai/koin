@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { getSources, type Source } from "@/lib/sources/client";
+import { getLocalizedSourceUrl } from "@/lib/sources/localized-url";
 import { FilterChips } from "@/components/FilterChips";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { ReachableLink } from "@/components/sources/ReachableLink";
@@ -195,6 +196,7 @@ export default function LibraryPage() {
 
 function SourceCard({ source }: { source: Source }) {
   const { t, locale } = useLocale();
+  const localizedUrl = getLocalizedSourceUrl(source, locale);
   const [expanded, setExpanded] = useState(false);
   const activeSynopsis = locale === "id" ? (source.synopsisId ?? source.synopsis) : source.synopsis;
   const activeRelevance = locale === "id" ? (source.relevanceBlurbId ?? source.relevanceBlurb) : source.relevanceBlurb;
@@ -231,9 +233,9 @@ function SourceCard({ source }: { source: Source }) {
           </p>
         )}
         <div className="mt-3 flex flex-wrap items-center gap-4">
-          {source.url && (
+          {localizedUrl && (
             <ReachableLink
-              url={source.url}
+              url={localizedUrl}
               title={source.title}
               ariaLabel={`${t("lesson.readSource")}: ${source.title}`}
               linkClassName="inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline"
@@ -310,9 +312,9 @@ function SourceCard({ source }: { source: Source }) {
         </p>
         {blurb && <p className="text-sm text-muted-foreground line-clamp-2">{blurb}</p>}
         <div className="mt-1 flex flex-wrap items-center gap-4">
-          {source.url && (
+          {localizedUrl && (
             <ReachableLink
-              url={source.url}
+              url={localizedUrl}
               title={source.title}
               ariaLabel={`${t("lesson.readSource")}: ${source.title}`}
               linkClassName="inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline"

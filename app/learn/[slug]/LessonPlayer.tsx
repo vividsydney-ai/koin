@@ -32,6 +32,7 @@ import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { StatCard } from "@/components/StatCard";
 import { ReachableLink } from "@/components/sources/ReachableLink";
 import { lessonCheckCount } from "@/lib/lessons/mastery";
+import { getLocalizedSourceUrl } from "@/lib/sources/localized-url";
 
 const STEP_IDS = ["intro", "concept", "example", "quiz", "source"] as const;
 
@@ -1037,6 +1038,7 @@ function SourceStep({
 
 function SourceCard({ source, highlighted = false }: { source: LessonSource; highlighted?: boolean }) {
   const { t, locale } = useLocale();
+  const localizedUrl = getLocalizedSourceUrl(source, locale);
   const [expanded, setExpanded] = useState(false);
   const verified = source.status === "verified";
   const displayTitle = locale === "id" ? (source.localTitle ?? source.title) : source.title;
@@ -1074,9 +1076,9 @@ function SourceCard({ source, highlighted = false }: { source: LessonSource; hig
           </p>
         )}
         <div className="mt-3 flex flex-wrap items-center gap-4">
-          {source.url && (
+          {localizedUrl && (
             <ReachableLink
-              url={source.url}
+              url={localizedUrl}
               title={displayTitle}
               ariaLabel={`${t("lesson.readSource")}: ${displayTitle}`}
               linkClassName="inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline"
@@ -1152,9 +1154,9 @@ function SourceCard({ source, highlighted = false }: { source: LessonSource; hig
         )}
         {blurb && <p className="text-sm text-muted-foreground line-clamp-2">{blurb}</p>}
         <div className="mt-1 flex flex-wrap items-center gap-4">
-          {source.url && (
+          {localizedUrl && (
             <ReachableLink
-              url={source.url}
+              url={localizedUrl}
               title={displayTitle}
               ariaLabel={`${t("lesson.readSource")}: ${displayTitle}`}
               linkClassName="inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline"
