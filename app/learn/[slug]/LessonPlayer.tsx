@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import {
   getLessonBySlug,
@@ -659,22 +659,89 @@ function SplitParagraphs({
   className?: string;
 }) {
   if (!text) return null;
-  const sentences = splitSentences(String(text));
-  // A line per sentence turns a short explanation into a visual wall. Pairing
-  // related sentences creates a calmer reading rhythm while preserving the
-  // original, source-reviewed lesson copy.
-  const parts = sentences.reduce<string[]>((paragraphs, sentence, index) => {
-    if (index % 2 === 0) paragraphs.push(sentence);
-    else paragraphs[paragraphs.length - 1] += ` ${sentence}`;
-    return paragraphs;
-  }, []);
+
+  const renderInline = (value: string): ReactNode[] => {
+    const tokens = value.split(/(\*\*[^*]+\*\*|__[^_]+__|`[^`]+`)/g).filter(Boolean);
+    return tokens.map((token, index) => {
+      if ((token.startsWith("**") && token.endsWith("**")) || (token.startsWith("__") && token.endsWith("__"))) {
+        return <strong key={index} className="font-bold text-foreground">{token.slice(2, -2)}</strong>;
+      }
+      if (token.startsWith("`") && token.endsWith("`")) {
+        return <code key={index} className="rounded bg-surface-raised px-1.5 py-0.5 text-[0.92em]">{token.slice(1, -1)}</code>;
+      }
+      return <span key={index}>{token}</span>;
+    });
+  };
+
+  const lines = String(text).replace(/\r\n?/g, "\n").split("\n");
+  const blocks: Array<{ type: "paragraph" | "ul" | "ol" | "heading"; lines: string[] }> = [];
+  let current: { type: "paragraph" | "ul" | "ol" | "heading"; lines: string[] } | null = null;
+  const flush = () => {
+    if (current?.lines.length) blocks.push(current);
+    current = null;
+  };
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+    if (!line) {
+      flush();
+      continue;
+    }
+    const heading = line.match(/^#{2,4}\s+(.+)$/);
+    const unordered = line.match(/^[-*]\s+(.+)$/);
+    const ordered = line.match(/^\d+[.)]\s+(.+)$/);
+    if (heading) {
+      flush();
+      blocks.push({ type: "heading", lines: [heading[1]] });
+    } else if (unordered) {
+      if (!current || current.type !== "ul") {
+        flush();
+        current = { type: "ul", lines: [] };
+      }
+      current.lines.push(unordered[1]);
+    } else if (ordered) {
+      if (!current || current.type !== "ol") {
+        flush();
+        current = { type: "ol", lines: [] };
+      }
+      current.lines.push(ordered[1]);
+    } else {
+      if (!current || current.type !== "paragraph") {
+        flush();
+        current = { type: "paragraph", lines: [] };
+      }
+      current.lines.push(line);
+    }
+  }
+  flush();
+
   return (
     <div className={className}>
-      {parts.map((part, i) => (
-        <p key={i} className="text-[15px] font-medium leading-7 text-[#5a5d5f] sm:text-base sm:leading-7">
-          {part}
-        </p>
-      ))}
+      {blocks.map((block, i) => {
+        if (block.type === "heading") {
+          return <h3 key={i} className="pt-1 text-base font-bold leading-6 text-foreground">{renderInline(block.lines[0])}</h3>;
+        }
+        if (block.type === "ul" || block.type === "ol") {
+          const List = block.type === "ul" ? "ul" : "ol";
+          return (
+            <List key={i} className={`${block.type === "ul" ? "list-disc" : "list-decimal"} space-y-1 pl-5 text-[15px] font-medium leading-7 text-[#5a5d5f] sm:text-base sm:leading-7`}>
+              {block.lines.map((item, itemIndex) => <li key={itemIndex}>{renderInline(item)}</li>)}
+            </List>
+          );
+        }
+        // Keep long prose readable without destroying authored list/paragraph structure.
+        const sentences = splitSentences(block.lines.join(" "));
+        const parts = sentences.reduce<string[]>((paragraphs, sentence, index) => {
+          if (index % 2 === 0) paragraphs.push(sentence);
+          else paragraphs[paragraphs.length - 1] += ` ${sentence}`;
+          return paragraphs;
+        }, []);
+        return parts.map((part, partIndex) => (
+          <p key={`${i}-${partIndex}`} className="text-[15px] font-medium leading-7 text-[#5a5d5f] sm:text-base sm:leading-7">
+            {renderInline(part)}
+          </p>
+        ));
+      })}
     </div>
   );
 }
