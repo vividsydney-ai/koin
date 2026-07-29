@@ -8,6 +8,8 @@ export const CURRICULUM_CHAPTER_ORDER = [
   "Grow Your Money",
   "Investing in Indonesia",
   "Cryptocurrency 101",
+  "Reading Trading Charts",
+  "Decision Analysis Lab",
 ] as const;
 
 export type CurriculumLesson = {

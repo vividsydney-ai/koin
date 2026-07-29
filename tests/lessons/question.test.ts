@@ -44,6 +44,37 @@ describe("question", () => {
       expect(validateQuestion(body)).toEqual(body);
     });
 
+    it("accepts an instructional chart interpretation question", () => {
+      const body: QuizQuestion = {
+        type: "chart_interpretation",
+        question: "Which option shows a candle that closed higher than it opened?",
+        chart: [{ open: 10, high: 14, low: 8, close: 12, label: "Example" }],
+        options: [
+          { id: "up", label: "Closed higher", chart: [{ open: 10, high: 14, low: 9, close: 13 }] },
+          { id: "down", label: "Closed lower", chart: [{ open: 13, high: 14, low: 9, close: 10 }] },
+        ],
+        answer: "up",
+        explanation: "A higher close than open is an up candle.",
+        parameters: {},
+      };
+      expect(validateQuestion(body)).toEqual(body);
+    });
+
+    it("rejects a chart candle whose high and low do not contain the body", () => {
+      expect(validateQuestion({
+        type: "chart_interpretation",
+        question: "Invalid candle",
+        chart: [{ open: 10, high: 9, low: 8, close: 12 }],
+        options: [
+          { id: "a", label: "A", chart: [{ open: 10, high: 12, low: 9, close: 11 }] },
+          { id: "b", label: "B", chart: [{ open: 11, high: 12, low: 9, close: 10 }] },
+        ],
+        answer: "a",
+        explanation: "Invalid candle should fail.",
+        parameters: {},
+      })).toBeNull();
+    });
+
     it("rejects a multiple_choice question with no options", () => {
       const body = {
         type: "multiple_choice" as const,

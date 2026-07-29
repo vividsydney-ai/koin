@@ -136,6 +136,9 @@ export interface Dictionary {
 
   // Quiz engine
   "quiz.correctAnswer": string;
+  "quiz.chartCheck": string;
+  "quiz.chartPracticeLabel": string;
+  "quiz.chartPracticeCaption": string;
   "quiz.true": string;
   "quiz.false": string;
   "quiz.yes": string;
@@ -207,6 +210,8 @@ export interface Dictionary {
   "chapter.growYourMoney": string;
   "chapter.investingInIndonesia": string;
   "chapter.cryptocurrency101": string;
+  "chapter.readingTradingCharts": string;
+  "chapter.decisionAnalysisLab": string;
   "chapter.uncategorized": string;
 
   // Profile page
@@ -444,6 +449,9 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "focus.refillError": "We could not refill Focus right now.",
 
     "quiz.correctAnswer": "Correct answer:",
+    "quiz.chartCheck": "Chart check",
+    "quiz.chartPracticeLabel": "Practice candlestick chart",
+    "quiz.chartPracticeCaption": "Practice data only — not a price forecast.",
     "quiz.true": "True",
     "quiz.false": "False",
     "quiz.yes": "Yes",
@@ -519,6 +527,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "chapter.growYourMoney": "Grow Your Money",
     "chapter.investingInIndonesia": "Investing in Indonesia",
     "chapter.cryptocurrency101": "Cryptocurrency 101",
+    "chapter.readingTradingCharts": "Reading Trading Charts",
+    "chapter.decisionAnalysisLab": "Decision Analysis Lab",
     "chapter.uncategorized": "Uncategorized",
 
     "profile.loading": "Loading profile…",
@@ -744,6 +754,9 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "focus.refillError": "Kami tidak dapat mengisi ulang Focus sekarang.",
 
     "quiz.correctAnswer": "Jawaban benar:",
+    "quiz.chartCheck": "Cek grafik",
+    "quiz.chartPracticeLabel": "Grafik candlestick untuk latihan",
+    "quiz.chartPracticeCaption": "Data latihan saja — bukan perkiraan harga.",
     "quiz.true": "Benar",
     "quiz.false": "Salah",
     "quiz.yes": "Ya",
@@ -819,6 +832,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "chapter.growYourMoney": "Kembangkan Uangmu",
     "chapter.investingInIndonesia": "Berinvestasi di Indonesia",
     "chapter.cryptocurrency101": "Dasar-Dasar Kripto",
+    "chapter.readingTradingCharts": "Membaca Grafik Trading",
+    "chapter.decisionAnalysisLab": "Lab Analisis Keputusan",
     "chapter.uncategorized": "Tidak Berkategori",
 
     "profile.loading": "Memuat profil…",

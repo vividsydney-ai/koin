@@ -52,6 +52,8 @@ const TOPIC_SLUG_TO_CHAPTER: Record<string, string> = {
   macro_indicators: "Investing in Indonesia",
 
   cryptocurrency: "Cryptocurrency 101",
+  chart_literacy: "Reading Trading Charts",
+  decision_analysis: "Decision Analysis Lab",
 };
 
 export interface Lesson {
@@ -634,6 +636,8 @@ const CHAPTER_ORDER = [
   "Grow Your Money",
   "Investing in Indonesia",
   "Cryptocurrency 101",
+  "Reading Trading Charts",
+  "Decision Analysis Lab",
 ];
 
 function chapterDisplayOrder(title: string): number {

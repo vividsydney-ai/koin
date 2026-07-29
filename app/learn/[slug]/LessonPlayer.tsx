@@ -18,6 +18,7 @@ import {
 } from "@/lib/lessons/client";
 import { useAuth } from "@/lib/auth/use-auth";
 import { QuizEngine } from "@/components/lesson/QuizEngine";
+import { LessonChartVisual } from "@/components/charts/LessonChartVisual";
 import {
   validateQuestion,
   applyParameters,
@@ -804,6 +805,9 @@ function ConceptStep({
         <div className="mt-4 space-y-3">
           <SectionKicker icon={<LightbulbIcon />} label={t("lesson.theIdea")} tone="primary" />
           <SplitParagraphs text={conceptBody} className="space-y-4" />
+          {(lesson.chapter === "Reading Trading Charts" || lesson.chapter === "Decision Analysis Lab") && (
+            <LessonChartVisual slug={lesson.slug} advanced={lesson.chapter === "Decision Analysis Lab"} />
+          )}
         </div>
       ) : (
         simplerVariant && (

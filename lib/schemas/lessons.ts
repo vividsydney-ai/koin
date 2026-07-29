@@ -12,7 +12,7 @@ export const completeLessonSchema = z.object({
 
 export type CompleteLessonInput = z.infer<typeof completeLessonSchema>;
 
-export const chapterMissionRouteSchema = z.coerce.number().int().min(7).max(9);
+export const chapterMissionRouteSchema = z.coerce.number().int().min(7).max(11);
 
 export const chapterMissionAnswerSchema = z.object({
   variantId: z.string().uuid(),

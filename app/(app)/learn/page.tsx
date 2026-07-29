@@ -33,6 +33,8 @@ const CHAPTER_TITLE_KEY: Record<string, string> = {
   "Grow Your Money": "chapter.growYourMoney",
   "Investing in Indonesia": "chapter.investingInIndonesia",
   "Cryptocurrency 101": "chapter.cryptocurrency101",
+  "Reading Trading Charts": "chapter.readingTradingCharts",
+  "Decision Analysis Lab": "chapter.decisionAnalysisLab",
 };
 
 function localizedChapterTitle(title: string, t: (key: string) => string): string {
@@ -307,7 +309,9 @@ function ChapterCard({
     0
   );
   const isComplete = completedCount === chapter.lessonCount && chapter.lessonCount > 0;
-  const needsMission = chapter.displayOrder + 1 >= 7 && chapter.displayOrder + 1 <= 9;
+  const chapterNumber = chapter.displayOrder + 1;
+  const isAdvancedTrack = chapterNumber >= 11;
+  const needsMission = chapterNumber >= 7 && chapterNumber <= 11;
   const isMastered = isComplete && (!needsMission || missionPassed);
   const isLocked = chapter.topics
     .flatMap((topic) => topic.lessons)
@@ -315,7 +319,7 @@ function ChapterCard({
 
   return (
     <div
-      className="overflow-hidden rounded-lg border border-muted/60 bg-surface shadow-sm"
+      className={`overflow-hidden rounded-lg border bg-surface shadow-sm ${isAdvancedTrack ? "border-secondary/30" : "border-muted/60"}`}
       role="listitem"
     >
       <button
@@ -331,7 +335,7 @@ function ChapterCard({
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <h2 className="font-semibold text-foreground">
-              {String(chapter.displayOrder + 1).padStart(2, "0")} - {localizedChapterTitle(chapter.title, t)}
+              <span className={isAdvancedTrack ? "text-secondary" : undefined}>{String(chapterNumber).padStart(2, "0")}</span> - {localizedChapterTitle(chapter.title, t)}
             </h2>
             {isMastered && <CheckIconMini className="h-4 w-4 text-success" />}
           </div>
@@ -348,7 +352,7 @@ function ChapterCard({
           <span
             className="h-1.5 w-1.5 rounded-full"
             style={{
-              background: `conic-gradient(var(--color-success) ${(completedCount / Math.max(1, chapter.lessonCount)) * 360}deg, var(--color-muted) 0deg)`,
+              background: `conic-gradient(${isAdvancedTrack ? "var(--color-secondary)" : "var(--color-success)"} ${(completedCount / Math.max(1, chapter.lessonCount)) * 360}deg, var(--color-muted) 0deg)`,
             }}
           />
           {isLocked ? (

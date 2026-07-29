@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { QuizCard, MultipleChoiceContent } from "./QuizCard";
+import { CandlestickChart } from "@/components/charts/CandlestickChart";
 import { seededShuffle } from "@/lib/lessons/random";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import {
@@ -15,6 +16,7 @@ import {
   type OrderingQuestion,
   type MatchingQuestion,
   type CaseStudyQuestion,
+  type ChartInterpretationQuestion,
 } from "@/lib/lessons/question";
 
 interface QuizEngineProps {
@@ -49,6 +51,8 @@ export function QuizEngine({ question, seed, onComplete, onAnswer }: QuizEngineP
       return <Matching question={question} seed={seed} onComplete={forwardCompletion} />;
     case "case_study":
       return <CaseStudy question={question} seed={seed} onComplete={forwardCompletion} />;
+    case "chart_interpretation":
+      return <ChartInterpretation question={question} onComplete={forwardCompletion} />;
     default:
       return (
         <div className="rounded-md border border-warning/30 bg-warning/5 px-4 py-3 text-sm text-warning">
@@ -56,6 +60,59 @@ export function QuizEngine({ question, seed, onComplete, onAnswer }: QuizEngineP
         </div>
       );
   }
+}
+
+function ChartInterpretation({
+  question,
+  onComplete,
+}: {
+  question: ChartInterpretationQuestion;
+  onComplete?: QuizCompletion;
+}) {
+  const { t } = useLocale();
+  const [selected, setSelected] = useState<string | null>(null);
+  const isAnswered = selected !== null;
+  const isCorrect = selected === question.answer;
+
+  const choose = (id: string) => {
+    if (isAnswered) return;
+    setSelected(id);
+    onComplete?.(id === question.answer, id);
+  };
+
+  return (
+    <QuizCardShell kicker={t("quiz.chartCheck")} kickerIcon={<GridIcon />} tint="info">
+      <h3 className="mt-3 text-lg font-semibold leading-snug text-foreground">{question.question}</h3>
+      <div className="mt-4">
+        <CandlestickChart candles={question.chart} label={t("quiz.chartPracticeLabel")} caption={t("quiz.chartPracticeCaption")} animate />
+      </div>
+      <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+        {question.options.map((option) => {
+          const state = !isAnswered ? "neutral" : option.id === question.answer ? "correct" : option.id === selected ? "wrong" : "neutral";
+          return (
+            <button
+              key={option.id}
+              onClick={() => choose(option.id)}
+              disabled={isAnswered}
+              className={`rounded-md border p-2 text-left transition-all active:scale-[0.98] disabled:cursor-default ${
+                state === "correct" ? "border-success bg-success/10" : state === "wrong" ? "border-danger bg-danger/5" : "border-muted bg-surface hover:border-secondary/60 hover:bg-secondary/5"
+              }`}
+              aria-label={option.label}
+            >
+              <CandlestickChart candles={option.chart} label={option.label} compact accent="advanced" animate={false} />
+              <span className="mt-2 block px-1 text-sm font-semibold text-foreground">{option.label}</span>
+            </button>
+          );
+        })}
+      </div>
+      {isAnswered && (
+        <div className={`mt-4 rounded-md p-3 text-sm font-medium ${isCorrect ? "bg-success/10 text-success" : "bg-muted text-foreground"}`}>
+          {!isCorrect && <p className="mb-1 font-bold">{t("quiz.correctAnswer")} {question.options.find((option) => option.id === question.answer)?.label}</p>}
+          <p>{question.explanation}</p>
+        </div>
+      )}
+    </QuizCardShell>
+  );
 }
 
 function MultipleChoice({

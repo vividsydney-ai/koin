@@ -11,6 +11,7 @@ export const questionTypes = [
   "slider",
   "swipe_yes_no",
   "case_study",
+  "chart_interpretation",
 ] as const;
 
 export type QuestionType = (typeof questionTypes)[number];
@@ -30,6 +31,18 @@ const baseQuestionSchema = z.object({
   explanation: z.string().min(1),
   parameters: z.record(z.string(), parameterSpecSchema).default({}),
 });
+
+export const candlestickSchema = z.object({
+  open: z.number(),
+  high: z.number(),
+  low: z.number(),
+  close: z.number(),
+  label: z.string().min(1).optional(),
+}).refine((candle) => candle.high >= Math.max(candle.open, candle.close) && candle.low <= Math.min(candle.open, candle.close), {
+  message: "Candlestick high/low must contain open and close",
+});
+
+export type Candlestick = z.infer<typeof candlestickSchema>;
 
 export const multipleChoiceSchema = baseQuestionSchema.extend({
   type: z.literal("multiple_choice"),
@@ -87,6 +100,17 @@ export const caseStudySchema = baseQuestionSchema.extend({
   answer: z.string().min(1),
 });
 
+export const chartInterpretationSchema = baseQuestionSchema.extend({
+  type: z.literal("chart_interpretation"),
+  chart: z.array(candlestickSchema).min(1),
+  options: z.array(z.object({
+    id: z.string().min(1),
+    label: z.string().min(1),
+    chart: z.array(candlestickSchema).min(1),
+  })).min(2).max(4),
+  answer: z.string().min(1),
+});
+
 export const quizQuestionSchema = z.discriminatedUnion("type", [
   multipleChoiceSchema,
   trueFalseSchema,
@@ -97,6 +121,7 @@ export const quizQuestionSchema = z.discriminatedUnion("type", [
   sliderSchema,
   swipeYesNoSchema,
   caseStudySchema,
+  chartInterpretationSchema,
 ]);
 
 export type QuizQuestion = z.infer<typeof quizQuestionSchema>;
@@ -110,6 +135,7 @@ export type MatchingQuestion = z.infer<typeof matchingSchema>;
 export type SliderQuestion = z.infer<typeof sliderSchema>;
 export type SwipeYesNoQuestion = z.infer<typeof swipeYesNoSchema>;
 export type CaseStudyQuestion = z.infer<typeof caseStudySchema>;
+export type ChartInterpretationQuestion = z.infer<typeof chartInterpretationSchema>;
 
 export type ProcessedQuestion = QuizQuestion & { variantId?: string };
 

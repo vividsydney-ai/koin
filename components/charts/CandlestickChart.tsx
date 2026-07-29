@@ -1,0 +1,97 @@
+"use client";
+
+import { useEffect, useRef } from "react";
+import { gsap } from "gsap";
+import type { Candlestick } from "@/lib/lessons/question";
+
+export interface CandlestickChartProps {
+  candles: Candlestick[];
+  label: string;
+  caption?: string;
+  compact?: boolean;
+  accent?: "core" | "advanced";
+  animate?: boolean;
+}
+
+function formatNumber(value: number) {
+  return new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(value);
+}
+
+/**
+ * A deterministic, instructional SVG chart—not market data or a prediction.
+ * It is shared by explanations and chart_interpretation quiz options.
+ */
+export function CandlestickChart({
+  candles,
+  label,
+  caption,
+  compact = false,
+  accent = "core",
+  animate = true,
+}: CandlestickChartProps) {
+  const rootRef = useRef<HTMLDivElement>(null);
+  const width = compact ? 210 : 420;
+  const height = compact ? 132 : 230;
+  const padding = compact ? { top: 16, right: 12, bottom: 22, left: 12 } : { top: 24, right: 22, bottom: 34, left: 34 };
+  const values = candles.flatMap((candle) => [candle.low, candle.high]);
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = Math.max(1, max - min);
+  const plotHeight = height - padding.top - padding.bottom;
+  const plotWidth = width - padding.left - padding.right;
+  const step = plotWidth / Math.max(1, candles.length);
+  const bodyWidth = Math.min(compact ? 18 : 26, step * 0.52);
+  const y = (value: number) => padding.top + ((max - value) / range) * plotHeight;
+  const chartAccent = accent === "advanced" ? "var(--color-secondary)" : "var(--color-primary)";
+
+  useEffect(() => {
+    if (!animate || !rootRef.current) return;
+    const context = gsap.context(() => {
+      const media = gsap.matchMedia();
+      media.add({ reduceMotion: "(prefers-reduced-motion: reduce)" }, (ctx) => {
+        const reduceMotion = Boolean(ctx.conditions?.reduceMotion);
+        gsap.fromTo(
+          ".candle-mark",
+          { autoAlpha: 0, scaleY: 0.35, transformOrigin: "50% 100%" },
+          { autoAlpha: 1, scaleY: 1, duration: reduceMotion ? 0 : 0.38, ease: "power2.out", stagger: reduceMotion ? 0 : 0.055 }
+        );
+      });
+      return () => media.revert();
+    }, rootRef);
+    return () => context.revert();
+  }, [animate, candles]);
+
+  const textualSummary = candles
+    .map((candle, index) => {
+      const direction = candle.close > candle.open ? "up" : candle.close < candle.open ? "down" : "flat";
+      return `${candle.label ?? `Candle ${index + 1}`}: opened ${formatNumber(candle.open)}, high ${formatNumber(candle.high)}, low ${formatNumber(candle.low)}, closed ${formatNumber(candle.close)} (${direction}).`;
+    })
+    .join(" ");
+
+  return (
+    <div ref={rootRef} className="overflow-hidden rounded-md border border-muted/70 bg-surface p-2" role="figure" aria-label={label}>
+      <svg viewBox={`0 0 ${width} ${height}`} className="h-auto w-full" role="img" aria-label={`${label}. ${textualSummary}`}>
+        <rect x="0" y="0" width={width} height={height} rx="10" fill="var(--color-surface-raised)" />
+        {[0.25, 0.5, 0.75].map((position) => (
+          <line key={position} x1={padding.left} x2={width - padding.right} y1={padding.top + plotHeight * position} y2={padding.top + plotHeight * position} stroke="var(--color-muted)" strokeWidth="1" strokeDasharray="3 4" />
+        ))}
+        {candles.map((candle, index) => {
+          const x = padding.left + step * index + step / 2;
+          const positive = candle.close >= candle.open;
+          const fill = positive ? "var(--color-success)" : "var(--color-danger)";
+          const bodyTop = y(Math.max(candle.open, candle.close));
+          const bodyBottom = y(Math.min(candle.open, candle.close));
+          return (
+            <g key={`${candle.label ?? "candle"}-${index}`} className="candle-mark">
+              <line x1={x} x2={x} y1={y(candle.high)} y2={y(candle.low)} stroke={fill} strokeWidth={compact ? 2 : 3} strokeLinecap="round" />
+              <rect x={x - bodyWidth / 2} y={bodyTop} width={bodyWidth} height={Math.max(3, bodyBottom - bodyTop)} rx="2" fill={fill} />
+              {!compact && <text x={x} y={height - 12} textAnchor="middle" fill="var(--color-muted-foreground)" fontSize="10">{candle.label ?? index + 1}</text>}
+            </g>
+          );
+        })}
+        {!compact && <path d={`M ${padding.left} ${height - padding.bottom + 0.5} H ${width - padding.right}`} stroke={chartAccent} strokeWidth="1.5" opacity="0.65" />}
+      </svg>
+      {caption && <p className="px-1 pt-1 text-xs leading-5 text-muted-foreground">{caption}</p>}
+    </div>
+  );
+}
