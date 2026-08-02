@@ -14,14 +14,29 @@ export interface UpdateMarketDataResult {
   tradeDate: string;
   inserted: number;
   simulated: number;
+  requestedSymbols: number;
+  unavailableSymbols: string[];
   errors: string[];
 }
 
-const MVP_SYMBOLS = ["BBCA", "BBRI", "TLKM", "GOTO", "UNVR"];
-const SUPPORTED_SYMBOLS = [
-  "BBCA", "BBNI", "BBRI", "BMRI", "GOTO", "ICBP", "INDF", "TLKM", "UNVR",
-  "XISR", "XIIT", "XISC",
+interface ActiveInstrument {
+  symbol: string;
+  name: string;
+  sourceUrl: string;
+}
+
+// Compatibility fallback for local development and older test doubles. In
+// production, updateMarketData reads the active Supabase catalogue instead.
+const FALLBACK_MVP_INSTRUMENTS: ActiveInstrument[] = [
+  { symbol: "BBCA", name: "Bank Central Asia Tbk", sourceUrl: "https://www.idx.co.id/id/data-pasar/data-saham/daftar-saham/" },
+  { symbol: "BBRI", name: "Bank Rakyat Indonesia Tbk", sourceUrl: "https://www.idx.co.id/id/data-pasar/data-saham/daftar-saham/" },
+  { symbol: "TLKM", name: "Telkom Indonesia Tbk", sourceUrl: "https://www.idx.co.id/id/data-pasar/data-saham/daftar-saham/" },
+  { symbol: "GOTO", name: "GoTo Gojek Tokopedia Tbk", sourceUrl: "https://www.idx.co.id/id/data-pasar/data-saham/daftar-saham/" },
+  { symbol: "UNVR", name: "Unilever Indonesia Tbk", sourceUrl: "https://www.idx.co.id/id/data-pasar/data-saham/daftar-saham/" },
 ];
+
+const OFFICIAL_EOD_SOURCE_URL =
+  "https://www.idx.co.id/id-id/data-pasar/ringkasan-perdagangan/ringkasan-saham/";
 
 const COMPANY_NAMES: Record<string, string> = {
   BBCA: "Bank Central Asia Tbk",
@@ -69,12 +84,49 @@ function parseIdxNumber(value: unknown): number | null {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+async function getActiveInstruments(supabase: SupabaseClient): Promise<ActiveInstrument[]> {
+  // The fallback also keeps the server unit tests decoupled from a database
+  // query implementation; production Supabase clients always expose select.
+  const table = supabase.from("instruments") as unknown as {
+    select?: (columns: string) => {
+      eq: (column: string, value: boolean) => {
+        order: (column: string, options: { ascending: boolean }) => Promise<{
+          data: Array<{ symbol: string; name: string; source_url: string }> | null;
+          error: { message: string } | null;
+        }>;
+      };
+    };
+  };
+  if (typeof table.select !== "function") return FALLBACK_MVP_INSTRUMENTS;
+
+  const { data, error } = await table
+    .select("symbol, name, source_url")
+    .eq("is_active", true)
+    .order("symbol", { ascending: true });
+
+  if (error) throw new Error(`Instrument catalogue query failed: ${error.message}`);
+
+  const instruments = (data ?? [])
+    .filter((row) => row.symbol && row.name && row.source_url)
+    .map((row) => ({ symbol: row.symbol, name: row.name, sourceUrl: row.source_url }));
+
+  if (instruments.length === 0) {
+    throw new Error("Instrument catalogue has no active symbols");
+  }
+
+  return instruments;
+}
+
 /**
  * Attempt to fetch previous-trading-day EOD prices from IDX public endpoint.
- * Returns rows only for the MVP symbols. If the fetch fails or a symbol is
- * missing, that symbol is omitted so the caller can fall back to synthetic.
+ * Returns rows only for the requested active catalogue symbols. If the fetch
+ * fails or a symbol is missing, that symbol is omitted so the caller can use
+ * the clearly labelled simulated fallback.
  */
-export async function fetchIdxEodPrices(tradeDate?: string): Promise<IdxPriceRow[]> {
+export async function fetchIdxEodPrices(
+  tradeDate?: string,
+  instruments: ActiveInstrument[] = FALLBACK_MVP_INSTRUMENTS
+): Promise<IdxPriceRow[]> {
   const targetDate = tradeDate ? new Date(tradeDate) : new Date();
   const formatted = formatIdxDate(targetDate);
   const url = `https://www.idx.co.id/umbraco/Surface/TradingSummary/GetStockSummary?date=${formatted}&start=0&length=1000`;
@@ -93,11 +145,13 @@ export async function fetchIdxEodPrices(tradeDate?: string): Promise<IdxPriceRow
   const records = Array.isArray(json.data) ? json.data : Array.isArray(json) ? json : [];
 
   const bySymbol = new Map<string, IdxPriceRow>();
+  const instrumentBySymbol = new Map(instruments.map((instrument) => [instrument.symbol, instrument]));
 
   for (const raw of records) {
     const row = raw as Record<string, unknown>;
     const symbol = String(row.Code ?? row.code ?? row.Ticker ?? row.ticker ?? "").trim();
-    if (!SUPPORTED_SYMBOLS.includes(symbol)) continue;
+    const instrument = instrumentBySymbol.get(symbol);
+    if (!instrument) continue;
 
     const closePrice = parseIdxNumber(row.ClosePrice ?? row.closePrice ?? row.Close ?? row.close);
     const volume = parseIdxNumber(row.Volume ?? row.volume ?? row.Vol);
@@ -106,7 +160,7 @@ export async function fetchIdxEodPrices(tradeDate?: string): Promise<IdxPriceRow
 
     bySymbol.set(symbol, {
       symbol,
-      companyName: COMPANY_NAMES[symbol] ?? String(row.Name ?? row.name ?? symbol),
+      companyName: String(row.Name ?? row.name ?? COMPANY_NAMES[symbol] ?? instrument.name),
       closePrice,
       volume: volume ?? 0,
       tradeDate: targetDate.toISOString().split("T")[0],
@@ -118,7 +172,7 @@ export async function fetchIdxEodPrices(tradeDate?: string): Promise<IdxPriceRow
 
 /**
  * Upsert real IDX prices for the requested date, then generate synthetic
- * drift prices for any MVP symbols that are missing. This keeps the paper
+ * drift prices for any active catalogue symbols that are missing. This keeps the paper
  * trading simulator alive even when the public endpoint is down.
  */
 export async function updateMarketData(tradeDate?: string): Promise<UpdateMarketDataResult> {
@@ -127,16 +181,24 @@ export async function updateMarketData(tradeDate?: string): Promise<UpdateMarket
   const errors: string[] = [];
   let inserted = 0;
   let simulated = 0;
+  let simulatedSymbols = new Set<string>();
+  let instruments = FALLBACK_MVP_INSTRUMENTS;
+
+  const supabase = getAdminClient();
+  try {
+    instruments = await getActiveInstruments(supabase);
+  } catch (e) {
+    const message = e instanceof Error ? e.message : String(e);
+    errors.push(`Instrument catalogue error: ${message}`);
+  }
 
   let idxRows: IdxPriceRow[] = [];
   try {
-    idxRows = await fetchIdxEodPrices(dateString);
+    idxRows = await fetchIdxEodPrices(dateString, instruments);
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
     errors.push(`IDX fetch error: ${message}`);
   }
-
-  const supabase = getAdminClient();
 
   for (const row of idxRows) {
     const { error } = await supabase.from("market_data").upsert(
@@ -146,7 +208,7 @@ export async function updateMarketData(tradeDate?: string): Promise<UpdateMarket
         trade_date: row.tradeDate,
         close_price: row.closePrice,
         volume: row.volume,
-        source_url: "https://www.idx.co.id/id-id/data-pasar/ringkasan-perdagangan/ringkasan-saham/",
+        source_url: OFFICIAL_EOD_SOURCE_URL,
         is_simulated: false,
       },
       { onConflict: "symbol,trade_date" }
@@ -159,7 +221,7 @@ export async function updateMarketData(tradeDate?: string): Promise<UpdateMarket
     }
   }
 
-  const missingSymbols = MVP_SYMBOLS.filter(
+  const missingSymbols = instruments.map((instrument) => instrument.symbol).filter(
     (symbol) => !idxRows.some((row) => row.symbol === symbol)
   );
 
@@ -173,12 +235,21 @@ export async function updateMarketData(tradeDate?: string): Promise<UpdateMarket
     if (error) {
       errors.push(`Synthetic fallback error: ${error.message}`);
     } else {
-      const syntheticSymbols = new Set(
+      simulatedSymbols = new Set(
         (data as Record<string, unknown>[] | null)?.map((row) => String(row.symbol)) ?? []
       );
-      simulated = syntheticSymbols.size;
+      simulated = missingSymbols.filter((symbol) => simulatedSymbols.has(symbol)).length;
     }
   }
 
-  return { tradeDate: dateString, inserted, simulated, errors };
+  const unavailableSymbols = missingSymbols.filter((symbol) => !simulatedSymbols.has(symbol));
+
+  return {
+    tradeDate: dateString,
+    inserted,
+    simulated,
+    requestedSymbols: instruments.length,
+    unavailableSymbols,
+    errors,
+  };
 }

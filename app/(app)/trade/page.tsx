@@ -95,10 +95,12 @@ export default function TradePage() {
     };
   }, [loadAll, user]);
 
-  const selectedPrice = useMemo(() => {
-    const row = marketData.find((m) => m.symbol === symbol);
-    return row?.closePrice ?? 0;
-  }, [marketData, symbol]);
+  const selectedQuote = useMemo(
+    () => marketData.find((row) => row.symbol === symbol),
+    [marketData, symbol]
+  );
+
+  const selectedPrice = selectedQuote?.closePrice ?? 0;
 
   const estimatedTotal = useMemo(() => {
     return selectedPrice * lotCount * SHARES_PER_LOT;
@@ -258,6 +260,7 @@ export default function TradePage() {
                 instrumentQuery={instrumentQuery}
                 setInstrumentQuery={setInstrumentQuery}
                 selectedPrice={selectedPrice}
+                selectedQuote={selectedQuote}
                 estimatedTotal={estimatedTotal}
                 canSubmit={canSubmit}
                 executing={executing}
@@ -385,6 +388,7 @@ function OrderCard({
   instrumentQuery,
   setInstrumentQuery,
   selectedPrice,
+  selectedQuote,
   estimatedTotal,
   canSubmit,
   executing,
@@ -405,6 +409,7 @@ function OrderCard({
   instrumentQuery: string;
   setInstrumentQuery: (query: string) => void;
   selectedPrice: number;
+  selectedQuote?: MarketData;
   estimatedTotal: number;
   canSubmit: boolean;
   executing: boolean;
@@ -519,6 +524,7 @@ function OrderCard({
               Rp {estimatedTotal.toLocaleString("id-ID")}
             </span>
           </div>
+          <QuoteStatus quote={selectedQuote} className="mt-2" />
         </div>
 
         {error && (
@@ -569,7 +575,7 @@ function WatchlistCard({ instruments, marketData }: { instruments: Instrument[];
             </div>
             <div className="text-right">
               <p className="text-sm font-semibold text-foreground">{quote ? `Rp ${quote.closePrice.toLocaleString("id-ID")}` : "—"}</p>
-              <p className={`text-xs ${quote?.isSimulated ? "text-warning" : "text-success"}`}>{quote?.isSimulated ? "Simulated" : "IDX EOD"}</p>
+              <QuoteStatus quote={quote} className="justify-end" />
             </div>
           </div>
         ))}
@@ -697,15 +703,42 @@ function DataDisclaimer({ marketData }: { marketData: MarketData[] }) {
     .map((m) => m.tradeDate)
     .sort()
     .at(-1);
-  const hasSimulated = marketData.some((m) => m.isSimulated);
+  const simulatedCount = marketData.filter((m) => m.isSimulated).length;
+  const sourceUrl = marketData.find((m) => m.sourceUrl)?.sourceUrl;
 
   return (
     <div className="rounded-md border border-warning/20 bg-warning/5 p-3 text-xs leading-relaxed text-muted-foreground">
       <span className="font-semibold text-foreground">Data disclaimer:</span>{" "}
       Prices are delayed and for paper-trading practice only. Latest data:{" "}
       {latestDate ? new Date(latestDate).toLocaleDateString("id-ID") : "—"}.
-      {hasSimulated && " Some prices are simulated when official data is unavailable."} Not financial advice.
+      {simulatedCount > 0 && ` ${simulatedCount} quote${simulatedCount === 1 ? " is" : "s are"} simulated because official data was unavailable.`}
+      {sourceUrl && (
+        <>
+          {" "}
+          <a href={sourceUrl} target="_blank" rel="noreferrer" className="font-medium text-primary hover:underline">
+            View source
+          </a>
+          .
+        </>
+      )} Not financial advice.
     </div>
+  );
+}
+
+function QuoteStatus({ quote, className = "" }: { quote?: MarketData; className?: string }) {
+  if (!quote) {
+    return <p className={`text-xs text-muted-foreground ${className}`.trim()}>Data pending</p>;
+  }
+
+  const source = quote.isSimulated ? "Simulated fallback" : "IDX EOD";
+  const date = new Date(`${quote.tradeDate}T00:00:00`).toLocaleDateString("id-ID");
+
+  return (
+    <p className={`flex gap-1 text-xs ${quote.isSimulated ? "text-warning" : "text-success"} ${className}`.trim()}>
+      <span>{source}</span>
+      <span aria-hidden="true">·</span>
+      <span>as of {date}</span>
+    </p>
   );
 }
 

@@ -267,6 +267,64 @@ export type Database = {
           },
         ]
       }
+      chapter_mission_attempts: {
+        Row: {
+          attempt_number: number
+          chapter_number: number
+          completed_at: string | null
+          created_at: string
+          id: string
+          max_score: number
+          passed: boolean
+          score: number
+          user_id: string
+        }
+        Insert: {
+          attempt_number: number
+          chapter_number: number
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          max_score: number
+          passed: boolean
+          score: number
+          user_id: string
+        }
+        Update: {
+          attempt_number?: number
+          chapter_number?: number
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          max_score?: number
+          passed?: boolean
+          score?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chapter_mission_attempts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "analytics_activation"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "chapter_mission_attempts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "analytics_first_trade"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "chapter_mission_attempts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cohort_memberships: {
         Row: {
           cohort_id: string
@@ -604,6 +662,181 @@ export type Database = {
           },
         ]
       }
+      daily_focus_questions: {
+        Row: {
+          body: Json
+          chapter: string
+          created_at: string
+          difficulty: string
+          id: string
+          is_active: boolean
+          topic: string
+          type: string
+        }
+        Insert: {
+          body: Json
+          chapter: string
+          created_at?: string
+          difficulty: string
+          id: string
+          is_active?: boolean
+          topic: string
+          type: string
+        }
+        Update: {
+          body?: Json
+          chapter?: string
+          created_at?: string
+          difficulty?: string
+          id?: string
+          is_active?: boolean
+          topic?: string
+          type?: string
+        }
+        Relationships: []
+      }
+      faq_entries: {
+        Row: {
+          answer_en: string
+          answer_id: string
+          created_at: string
+          display_order: number
+          entry_key: string
+          id: string
+          is_published: boolean
+          question_en: string
+          question_id: string
+          section_id: string
+          updated_at: string
+        }
+        Insert: {
+          answer_en: string
+          answer_id: string
+          created_at?: string
+          display_order: number
+          entry_key: string
+          id?: string
+          is_published?: boolean
+          question_en: string
+          question_id: string
+          section_id: string
+          updated_at?: string
+        }
+        Update: {
+          answer_en?: string
+          answer_id?: string
+          created_at?: string
+          display_order?: number
+          entry_key?: string
+          id?: string
+          is_published?: boolean
+          question_en?: string
+          question_id?: string
+          section_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "faq_entries_section_id_fkey"
+            columns: ["section_id"]
+            isOneToOne: false
+            referencedRelation: "faq_sections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      faq_pages: {
+        Row: {
+          created_at: string
+          is_published: boolean
+          notice_en: string
+          notice_id: string
+          page_key: string
+          subtitle_en: string
+          subtitle_id: string
+          title_en: string
+          title_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          is_published?: boolean
+          notice_en: string
+          notice_id: string
+          page_key: string
+          subtitle_en: string
+          subtitle_id: string
+          title_en: string
+          title_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          is_published?: boolean
+          notice_en?: string
+          notice_id?: string
+          page_key?: string
+          subtitle_en?: string
+          subtitle_id?: string
+          title_en?: string
+          title_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      faq_sections: {
+        Row: {
+          created_at: string
+          display_order: number
+          eyebrow_en: string | null
+          eyebrow_id: string | null
+          id: string
+          is_published: boolean
+          is_roadmap: boolean
+          page_key: string
+          section_key: string
+          title_en: string
+          title_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_order: number
+          eyebrow_en?: string | null
+          eyebrow_id?: string | null
+          id?: string
+          is_published?: boolean
+          is_roadmap?: boolean
+          page_key: string
+          section_key: string
+          title_en: string
+          title_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          eyebrow_en?: string | null
+          eyebrow_id?: string | null
+          id?: string
+          is_published?: boolean
+          is_roadmap?: boolean
+          page_key?: string
+          section_key?: string
+          title_en?: string
+          title_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "faq_sections_page_key_fkey"
+            columns: ["page_key"]
+            isOneToOne: false
+            referencedRelation: "faq_pages"
+            referencedColumns: ["page_key"]
+          },
+        ]
+      }
       focus_profiles: {
         Row: {
           fourth_focus_unlocked_at: string | null
@@ -821,6 +1054,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      instruments: {
+        Row: {
+          created_at: string
+          exchange: string
+          id: string
+          instrument_type: string
+          is_active: boolean
+          lot_size: number
+          name: string
+          source_url: string
+          symbol: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          exchange?: string
+          id?: string
+          instrument_type: string
+          is_active?: boolean
+          lot_size?: number
+          name: string
+          source_url: string
+          symbol: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          exchange?: string
+          id?: string
+          instrument_type?: string
+          is_active?: boolean
+          lot_size?: number
+          name?: string
+          source_url?: string
+          symbol?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       koin_point_balances: {
         Row: {
@@ -1656,45 +1928,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      instruments: {
-        Row: {
-          created_at: string
-          exchange: string
-          id: string
-          instrument_type: string
-          is_active: boolean
-          lot_size: number
-          name: string
-          source_url: string
-          symbol: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          exchange?: string
-          id?: string
-          instrument_type: string
-          is_active?: boolean
-          lot_size?: number
-          name: string
-          source_url: string
-          symbol: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          exchange?: string
-          id?: string
-          instrument_type?: string
-          is_active?: boolean
-          lot_size?: number
-          name?: string
-          source_url?: string
-          symbol?: string
-          updated_at?: string
-        }
-        Relationships: []
       }
       profiles: {
         Row: {
@@ -2569,6 +2802,10 @@ export type Database = {
       }
       add_friend_by_qr: { Args: { p_scanned_user_id: string }; Returns: Json }
       assert_focus_time_zone: { Args: { p_time_zone: string }; Returns: string }
+      award_first_friend_badge: {
+        Args: { p_user_id: string }
+        Returns: undefined
+      }
       award_koin_points: {
         Args: {
           p_amount: number
@@ -2582,6 +2819,11 @@ export type Database = {
       check_adaptive_triggers: { Args: never; Returns: undefined }
       check_graduation: { Args: { p_user_id: string }; Returns: Json }
       check_in_streak: { Args: { p_user_id: string }; Returns: Json }
+      claim_paper_portfolio: { Args: { p_user_id: string }; Returns: Json }
+      complete_chapter_mission: {
+        Args: { p_answers: Json; p_chapter_number: number }
+        Returns: Json
+      }
       complete_lesson: {
         Args: {
           p_answers_json: Json
@@ -2660,6 +2902,31 @@ export type Database = {
               isSetofReturn: false
             }
           }
+        | {
+            Args: { p_locale: string; p_time_zone: string; p_user_id: string }
+            Returns: {
+              challenge_date: string
+              completed_at: string | null
+              correct_answers: number
+              created_at: string
+              focus_remaining: number
+              id: string
+              max_focus: number
+              questions: Json
+              questions_answered: number
+              refill_used: boolean
+              status: string
+              time_zone: string
+              updated_at: string
+              user_id: string
+            }
+            SetofOptions: {
+              from: "*"
+              to: "daily_focus_challenges"
+              isOneToOne: true
+              isSetofReturn: false
+            }
+          }
       evaluate_adaptive_triggers: {
         Args: { p_user_id: string }
         Returns: undefined
@@ -2673,8 +2940,6 @@ export type Database = {
         }
         Returns: Json
       }
-      claim_paper_portfolio: { Args: { p_user_id: string }; Returns: Json }
-      mark_paper_chest_viewed: { Args: { p_user_id: string }; Returns: undefined }
       focus_week_start:
         | { Args: { p_timestamp?: string }; Returns: string }
         | {
@@ -2684,6 +2949,7 @@ export type Database = {
       get_daily_focus_challenge:
         | { Args: never; Returns: Json }
         | { Args: { p_time_zone: string }; Returns: Json }
+        | { Args: { p_locale: string; p_time_zone: string }; Returns: Json }
       get_latest_market_data: {
         Args: never
         Returns: {
@@ -2691,6 +2957,8 @@ export type Database = {
           company_name: string
           id: string
           is_simulated: boolean
+          recorded_at: string
+          source_url: string
           symbol: string
           trade_date: string
           volume: number
@@ -2719,10 +2987,15 @@ export type Database = {
         Args: { p_invite_code: string; p_user_id: string }
         Returns: Json
       }
+      mark_paper_chest_viewed: {
+        Args: { p_user_id: string }
+        Returns: undefined
+      }
       recompute_streak_status: { Args: { p_user_id: string }; Returns: Json }
       refill_daily_focus:
         | { Args: never; Returns: Json }
         | { Args: { p_time_zone: string }; Returns: Json }
+        | { Args: { p_locale: string; p_time_zone: string }; Returns: Json }
       seed_next_market_data: {
         Args: { p_trade_date?: string }
         Returns: {
@@ -2735,6 +3008,15 @@ export type Database = {
         | {
             Args: {
               p_answer: Json
+              p_question_index: number
+              p_time_zone: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              p_answer: Json
+              p_locale: string
               p_question_index: number
               p_time_zone: string
             }
