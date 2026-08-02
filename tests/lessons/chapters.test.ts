@@ -240,6 +240,43 @@ describe("getTopicsWithChapters", () => {
     ]);
   });
 
+  it("keeps the same canonical order for Indonesian lesson titles", async () => {
+    mockTopicsResponse([
+      {
+        id: "t-id-late",
+        slug: "taxes",
+        name: "Taxes",
+        name_id: "Pajak",
+        display_order: 1,
+        chapter: "Investing in Indonesia",
+        lessons: [
+          { id: "l-id-late", slug: "taxes-on-returns", title: "Taxes on Your Returns", title_id: "Pajak atas Imbal Hasil", lesson_number: 35, difficulty: "beginner", xp_reward: 10, estimated_minutes: 3, summary: "", summary_id: "" },
+        ],
+      },
+      {
+        id: "t-id-early",
+        slug: "stocks",
+        name: "Stocks",
+        name_id: "Saham",
+        display_order: 99,
+        chapter: "Investing in Indonesia",
+        lessons: [
+          { id: "l-id-early", slug: "what-is-a-stock", title: "What Is a Stock?", title_id: "Apa Itu Saham?", lesson_number: 31, difficulty: "beginner", xp_reward: 10, estimated_minutes: 3, summary: "", summary_id: "" },
+        ],
+      },
+    ]);
+
+    const chapter = (await getTopicsWithChapters())[0];
+    expect(chapter.topics.flatMap((topic) => topic.lessons.map((lesson) => lesson.slug))).toEqual([
+      "what-is-a-stock",
+      "taxes-on-returns",
+    ]);
+    expect(chapter.topics.flatMap((topic) => topic.lessons.map((lesson) => lesson.titleId))).toEqual([
+      "Apa Itu Saham?",
+      "Pajak atas Imbal Hasil",
+    ]);
+  });
+
   it("reports completed counts when a progress map is provided", async () => {
     mockTopicsResponse([
       {
