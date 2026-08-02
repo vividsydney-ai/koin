@@ -9,45 +9,66 @@ import {
 } from "@/lib/trading/client";
 
 const RANGES: PortfolioHistoryRange[] = ["1D", "1M", "1Y", "All"];
-const rupiah = new Intl.NumberFormat("id-ID", {
-  style: "currency",
-  currency: "IDR",
-  maximumFractionDigits: 0,
-});
+const rupiah = new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 });
+const compact = new Intl.NumberFormat("id-ID", { notation: "compact", maximumFractionDigits: 1 });
+const CHART_HEIGHT = 60;
+const LINE_Y = 29;
 
-function formatCompact(value: number) {
-  return new Intl.NumberFormat("id-ID", {
-    notation: "compact",
-    maximumFractionDigits: 1,
-  }).format(value);
+type ChartShape = {
+  line: string;
+  area: string;
+  marker: { x: number; y: number };
+  axisValues: number[];
+};
+
+function formatAxis(value: number) {
+  return `Rp ${compact.format(value)}`;
 }
 
-function chartPath(points: PortfolioValueSnapshot[]) {
-  if (points.length === 0) return { line: "", area: "" };
+function formatDate(date: string) {
+  return new Date(`${date}T00:00:00`).toLocaleDateString("id-ID", { day: "numeric", month: "short" });
+}
+
+function createChartShape(points: PortfolioValueSnapshot[]): ChartShape {
   const values = points.map((point) => point.totalValue);
-  const min = Math.min(...values);
-  const max = Math.max(...values);
-  const spread = Math.max(max - min, Math.max(max * 0.015, 1));
-  const width = 100;
-  const height = 52;
-  const coords = points.map((point, index) => {
-    const x = points.length === 1 ? width / 2 : (index / (points.length - 1)) * width;
-    const y = height - ((point.totalValue - min + spread * 0.15) / (spread * 1.3)) * height;
-    return [x, Math.max(4, Math.min(height - 4, y))] as const;
-  });
-  // SVG does not paint a path made from one move command. A newly unlocked
-  // portfolio has one authoritative snapshot, so draw that value as a visible
-  // flat line across the chart until another daily point exists.
-  if (coords.length === 1) {
-    const y = coords[0][1];
+  const current = values.at(-1) ?? 0;
+  const variation = Math.max(Math.abs(current) * 0.015, 1);
+  const rawMin = values.length > 1 ? Math.min(...values) : current - variation;
+  const rawMax = values.length > 1 ? Math.max(...values) : current + variation;
+  const padding = Math.max((rawMax - rawMin) * 0.18, variation * 0.25);
+  const minimum = rawMin - padding;
+  const maximum = rawMax + padding;
+  const range = Math.max(maximum - minimum, 1);
+  const axisValues = [maximum, (maximum + minimum) / 2, minimum];
+
+  if (points.length < 2) {
     return {
-      line: `M0,${y} L${width},${y}`,
-      area: `M0,${y} L${width},${y} L${width},${height} L0,${height} Z`,
+      line: `M0,${LINE_Y} L100,${LINE_Y}`,
+      area: "",
+      marker: { x: 0, y: LINE_Y },
+      axisValues,
     };
   }
-  const line = coords.map(([x, y], index) => `${index === 0 ? "M" : "L"}${x},${y}`).join(" ");
-  const area = `${line} L${coords.at(-1)?.[0] ?? width},${height} L${coords[0]?.[0] ?? 0},${height} Z`;
-  return { line, area };
+
+  const coords = points.map((point, index) => {
+    const x = (index / (points.length - 1)) * 100;
+    const y = 4 + ((maximum - point.totalValue) / range) * (CHART_HEIGHT - 12);
+    return { x, y };
+  });
+  let line = `M${coords[0].x},${coords[0].y}`;
+  for (let index = 1; index < coords.length; index += 1) {
+    const previous = coords[index - 1];
+    const currentPoint = coords[index];
+    const midpoint = (previous.x + currentPoint.x) / 2;
+    line += ` C${midpoint},${previous.y} ${midpoint},${currentPoint.y} ${currentPoint.x},${currentPoint.y}`;
+  }
+
+  return {
+    line,
+    area: `${line} L100,${CHART_HEIGHT - 2} L0,${CHART_HEIGHT - 2} Z`,
+    marker: coords.at(-1) ?? { x: 100, y: LINE_Y },
+    axisValues,
+  };
 }
 
 export default function PortfolioChart({ userId, totalValue }: { userId: string; totalValue: number }) {
@@ -68,40 +89,41 @@ export default function PortfolioChart({ userId, totalValue }: { userId: string;
     return () => {
       active = false;
     };
-  }, [range, userId, totalValue]);
+  }, [range, totalValue, userId]);
 
-  const displayPoints = useMemo(() => {
+  const displayPoints = useMemo<PortfolioValueSnapshot[]>(() => {
     if (points.length > 0) return points;
     return [{ date: new Date().toISOString().slice(0, 10), cashBalance: totalValue, holdingsValue: 0, totalValue }];
   }, [points, totalValue]);
-  const path = useMemo(() => chartPath(displayPoints), [displayPoints]);
-  const first = displayPoints[0]?.totalValue ?? totalValue;
-  const change = totalValue - first;
-  const isPositive = change >= 0;
-  const hasMovementHistory = points.length > 1;
+  const chart = useMemo(() => createChartShape(displayPoints), [displayPoints]);
+  const firstValue = displayPoints[0]?.totalValue ?? totalValue;
+  const change = totalValue - firstValue;
+  const hasHistory = points.length > 1;
 
   useLayoutEffect(() => {
     if (!visualRef.current || loading) return;
-
     const media = gsap.matchMedia();
     media.add("(prefers-reduced-motion: no-preference)", () => {
       gsap.fromTo(
         visualRef.current,
-        { autoAlpha: 0.45, scaleX: 0.985, transformOrigin: "50% 50%" },
-        { autoAlpha: 1, scaleX: 1, duration: 0.22, ease: "power3.out", overwrite: "auto" }
+        { autoAlpha: 0.35, scaleY: 0.98, transformOrigin: "50% 50%" },
+        { autoAlpha: 1, scaleY: 1, duration: 0.22, ease: "power3.out", overwrite: "auto" }
       );
     });
     return () => media.revert();
-  }, [hasMovementHistory, loading, path.line, range]);
+  }, [chart.line, loading, range]);
+
+  const firstDate = formatDate(displayPoints[0]?.date ?? new Date().toISOString().slice(0, 10));
+  const lastDate = formatDate(displayPoints.at(-1)?.date ?? new Date().toISOString().slice(0, 10));
 
   return (
-    <section className="rounded-[18px] border border-muted/60 bg-surface p-4 shadow-sm sm:p-5" aria-label="Your portfolio performance">
-      <div className="flex flex-wrap items-start justify-between gap-3">
+    <section className="rounded-[18px] border border-muted/60 bg-surface p-5 shadow-sm" aria-label="Your portfolio performance">
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Your portfolio</p>
-          <p className="mt-1 text-2xl font-bold tracking-tight text-foreground">{rupiah.format(totalValue)}</p>
-          <p className={`mt-1 text-xs font-semibold ${isPositive ? "text-success" : "text-danger"}`}>
-            {isPositive ? "+" : ""}{rupiah.format(change)} {range === "1D" ? "today" : `over ${range}`}
+          <h2 className="text-base font-bold tracking-tight text-foreground">Your portfolio</h2>
+          <p className="mt-3 text-2xl font-bold tracking-tight text-foreground">{rupiah.format(totalValue)}</p>
+          <p className={`mt-1 text-sm font-semibold ${change >= 0 ? "text-success" : "text-danger"}`}>
+            {change >= 0 ? "+" : ""}{rupiah.format(change)} {range === "1D" ? "today" : `over ${range}`}
           </p>
         </div>
         <div className="flex rounded-xl bg-muted p-1" role="tablist" aria-label="Portfolio chart range">
@@ -112,7 +134,7 @@ export default function PortfolioChart({ userId, totalValue }: { userId: string;
               role="tab"
               aria-selected={range === item}
               onClick={() => setRange(item)}
-              className={`min-h-11 rounded-lg px-3 text-xs font-bold transition ${range === item ? "bg-surface text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+              className={`min-h-10 rounded-lg px-3 text-xs font-bold transition-colors duration-150 ${range === item ? "bg-surface text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
             >
               {item}
             </button>
@@ -120,29 +142,32 @@ export default function PortfolioChart({ userId, totalValue }: { userId: string;
         </div>
       </div>
 
-      <div className="mt-5 h-52" aria-live="polite">
-        {loading ? (
-          <div className="h-full animate-pulse rounded-xl bg-muted" />
-        ) : (
-          <svg viewBox="0 0 100 60" preserveAspectRatio="none" className="h-full w-full motion-safe:transition-opacity motion-safe:duration-200" role="img" aria-label={`${range} portfolio value chart`}>
-            <path d="M0,54 H100" stroke="var(--border)" strokeWidth="0.45" />
-            <g ref={visualRef}>
-              {hasMovementHistory && <path d={path.area} fill="var(--primary)" fillOpacity="0.08" />}
-              <path d={path.line} fill="none" stroke="var(--primary)" strokeOpacity={hasMovementHistory ? "1" : "0.58"} strokeLinecap="round" strokeLinejoin="round" strokeWidth={hasMovementHistory ? "1.5" : "1"} vectorEffect="non-scaling-stroke" />
-              {!hasMovementHistory && <circle cx="5" cy="46" r="1.6" fill="var(--surface)" stroke="var(--primary)" strokeWidth="0.8" vectorEffect="non-scaling-stroke" />}
-            </g>
-          </svg>
-        )}
+      <div className="mt-8 grid grid-cols-[3.75rem_minmax(0,1fr)] gap-x-3" aria-live="polite">
+        <div className="flex h-56 flex-col justify-between pb-7 text-right text-[11px] font-medium text-muted-foreground">
+          {chart.axisValues.map((value) => <span key={value}>{formatAxis(value)}</span>)}
+        </div>
+        <div>
+          {loading ? (
+            <div className="h-56 animate-pulse rounded-xl bg-muted" />
+          ) : (
+            <svg viewBox={`0 0 100 ${CHART_HEIGHT}`} preserveAspectRatio="none" className="h-56 w-full" role="img" aria-label={`${range} portfolio value chart`}>
+              {[7, LINE_Y, 52].map((y) => <path key={y} d={`M0,${y} H100`} stroke="var(--color-border)" strokeDasharray="2 2" strokeOpacity="0.75" strokeWidth="0.35" />)}
+              <g ref={visualRef}>
+                {hasHistory && <path d={chart.area} fill="var(--color-primary)" fillOpacity="0.09" />}
+                <path d={chart.line} fill="none" stroke="var(--color-primary)" strokeLinecap="round" strokeLinejoin="round" strokeOpacity={hasHistory ? "1" : "0.72"} strokeWidth={hasHistory ? "1.2" : "0.8"} vectorEffect="non-scaling-stroke" />
+                <circle cx={chart.marker.x} cy={chart.marker.y} r={hasHistory ? "1.15" : "1.45"} fill="var(--color-surface)" stroke="var(--color-primary)" strokeWidth="0.75" vectorEffect="non-scaling-stroke" />
+              </g>
+            </svg>
+          )}
+          <div className="mt-2 grid grid-cols-3 text-[11px] font-medium text-muted-foreground">
+            <span>{firstDate}</span>
+            <span className="text-center">{hasHistory ? "Portfolio value" : "Starting value"}</span>
+            <span className="text-right">{lastDate}</span>
+          </div>
+        </div>
       </div>
 
-      <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
-        <span>{displayPoints[0] ? new Date(`${displayPoints[0].date}T00:00:00`).toLocaleDateString("id-ID", { day: "numeric", month: "short" }) : "—"}</span>
-        <span>{hasMovementHistory ? `${points.length} daily snapshots` : "Starting value"}</span>
-        <span>{formatCompact(totalValue)}</span>
-      </div>
-      {points.length < 2 && !loading && (
-        <p className="mt-3 text-xs leading-relaxed text-muted-foreground">Your starting value is recorded. Daily IDX EOD valuations will extend this line as the market moves.</p>
-      )}
+      {!hasHistory && !loading && <p className="mt-5 text-xs leading-relaxed text-muted-foreground">Your starting value is shown as a baseline. Daily IDX EOD valuations will build the history from here.</p>}
     </section>
   );
 }
