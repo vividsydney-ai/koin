@@ -43,6 +43,12 @@ function selectMissionQuestions(
 ): MissionQuestion[] {
   const selected: MissionQuestion[] = [];
   for (const [index, { lessonId, variant }] of seededShuffle(seed, variants).entries()) {
+    // The mission RPC deliberately scores only native multiple-choice and
+    // true/false rows (`body.type`). `validateQuestion` also normalizes legacy
+    // mechanics such as scenario/comparison into multiple-choice, so checking
+    // the raw payload first keeps the browser's selection contract identical
+    // to the server's eligibility query.
+    if (!['multiple_choice', 'true_false'].includes(String(variant.body.type))) continue;
     const validated = validateQuestion(variant.body);
     if (!validated || !["multiple_choice", "true_false"].includes(validated.type)) continue;
     selected.push({
