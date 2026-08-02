@@ -69,6 +69,22 @@ export interface TradeResult {
   cashBalance: number;
 }
 
+export interface WatchlistEntry {
+  id: string;
+  userId: string;
+  symbol: string;
+  createdAt: string;
+}
+
+export interface PortfolioValueSnapshot {
+  date: string;
+  cashBalance: number;
+  holdingsValue: number;
+  totalValue: number;
+}
+
+export type PortfolioHistoryRange = "1D" | "1M" | "1Y" | "All";
+
 export async function getPortfolio(userId: string): Promise<Portfolio | null> {
   const { data, error } = await supabase
     .from("portfolios")
@@ -115,6 +131,73 @@ export async function getInstruments(): Promise<Instrument[]> {
     exchange: row.exchange,
     lotSize: row.lot_size,
     sourceUrl: row.source_url,
+  }));
+}
+
+export async function getWatchlist(userId: string): Promise<WatchlistEntry[]> {
+  const { data, error } = await supabase
+    .from("watchlists")
+    .select("id, user_id, symbol, created_at")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    console.error("getWatchlist error:", error.message);
+    return [];
+  }
+
+  return (data ?? []).map((row) => ({
+    id: row.id,
+    userId: row.user_id,
+    symbol: row.symbol,
+    createdAt: row.created_at,
+  }));
+}
+
+export async function addToWatchlist(userId: string, symbol: string): Promise<void> {
+  const { error } = await supabase
+    .from("watchlists")
+    .upsert({ user_id: userId, symbol: symbol.trim().toUpperCase() }, { onConflict: "user_id,symbol" });
+
+  if (error) throw new Error(error.message);
+}
+
+export async function removeFromWatchlist(userId: string, symbol: string): Promise<void> {
+  const { error } = await supabase
+    .from("watchlists")
+    .delete()
+    .eq("user_id", userId)
+    .eq("symbol", symbol);
+
+  if (error) throw new Error(error.message);
+}
+
+const HISTORY_RANGE_DAYS: Record<PortfolioHistoryRange, number | null> = {
+  "1D": 1,
+  "1M": 31,
+  "1Y": 366,
+  All: null,
+};
+
+export async function getPortfolioValueHistory(
+  userId: string,
+  range: PortfolioHistoryRange
+): Promise<PortfolioValueSnapshot[]> {
+  const { data, error } = await supabase.rpc("get_portfolio_value_history", {
+    p_user_id: userId,
+    p_days: HISTORY_RANGE_DAYS[range],
+  });
+
+  if (error) {
+    console.error("getPortfolioValueHistory error:", error.message);
+    return [];
+  }
+
+  return ((data as Array<Record<string, unknown>> | null) ?? []).map((row) => ({
+    date: String(row.snapshot_date),
+    cashBalance: Number(row.cash_balance),
+    holdingsValue: Number(row.holdings_value),
+    totalValue: Number(row.total_value),
   }));
 }
 

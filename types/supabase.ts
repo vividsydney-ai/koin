@@ -1862,6 +1862,44 @@ export type Database = {
           },
         ]
       }
+      portfolio_value_snapshots: {
+        Row: {
+          cash_balance: number
+          created_at: string
+          holdings_value: number
+          id: string
+          portfolio_id: string
+          snapshot_date: string
+          total_value: number
+        }
+        Insert: {
+          cash_balance: number
+          created_at?: string
+          holdings_value: number
+          id?: string
+          portfolio_id: string
+          snapshot_date: string
+          total_value: number
+        }
+        Update: {
+          cash_balance?: number
+          created_at?: string
+          holdings_value?: number
+          id?: string
+          portfolio_id?: string
+          snapshot_date?: string
+          total_value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portfolio_value_snapshots_portfolio_id_fkey"
+            columns: ["portfolio_id"]
+            isOneToOne: false
+            referencedRelation: "portfolios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       portfolios: {
         Row: {
           cash_balance: number
@@ -2964,6 +3002,15 @@ export type Database = {
           volume: number
         }[]
       }
+      get_portfolio_value_history: {
+        Args: { p_days?: number; p_user_id: string }
+        Returns: {
+          cash_balance: number
+          holdings_value: number
+          snapshot_date: string
+          total_value: number
+        }[]
+      }
       get_public_profile: { Args: { p_user_id: string }; Returns: Json }
       get_streak_reminder_candidates: {
         Args: { p_current_time: string }
@@ -2992,10 +3039,18 @@ export type Database = {
         Returns: undefined
       }
       recompute_streak_status: { Args: { p_user_id: string }; Returns: Json }
+      record_paper_portfolio_snapshot: {
+        Args: { p_portfolio_id: string; p_snapshot_date?: string }
+        Returns: undefined
+      }
       refill_daily_focus:
         | { Args: never; Returns: Json }
         | { Args: { p_time_zone: string }; Returns: Json }
         | { Args: { p_locale: string; p_time_zone: string }; Returns: Json }
+      refresh_paper_portfolio_values: {
+        Args: { p_snapshot_date?: string }
+        Returns: undefined
+      }
       seed_next_market_data: {
         Args: { p_trade_date?: string }
         Returns: {
