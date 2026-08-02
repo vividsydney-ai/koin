@@ -17,7 +17,7 @@ const LINE_Y = 29;
 type ChartShape = {
   line: string;
   area: string;
-  marker: { x: number; y: number };
+  marker?: { x: number; y: number };
   axisValues: number[];
 };
 
@@ -45,7 +45,6 @@ function createChartShape(points: PortfolioValueSnapshot[]): ChartShape {
     return {
       line: `M0,${LINE_Y} L100,${LINE_Y}`,
       area: "",
-      marker: { x: 0, y: LINE_Y },
       axisValues,
     };
   }
@@ -150,19 +149,19 @@ export default function PortfolioChart({ userId, totalValue }: { userId: string;
           {loading ? (
             <div className="h-56 animate-pulse rounded-xl bg-muted" />
           ) : (
-            <svg viewBox={`0 0 100 ${CHART_HEIGHT}`} preserveAspectRatio="none" className="h-56 w-full" role="img" aria-label={`${range} portfolio value chart`}>
+            <svg viewBox={`0 0 100 ${CHART_HEIGHT}`} preserveAspectRatio="none" className="h-56 w-full overflow-visible" role="img" aria-label={`${range} portfolio value chart`}>
               {[7, LINE_Y, 52].map((y) => <path key={y} d={`M0,${y} H100`} stroke="var(--color-border)" strokeDasharray="2 2" strokeOpacity="0.75" strokeWidth="0.35" />)}
               <g ref={visualRef}>
                 {hasHistory && <path d={chart.area} fill="var(--color-primary)" fillOpacity="0.09" />}
-                <path d={chart.line} fill="none" stroke="var(--color-primary)" strokeLinecap="round" strokeLinejoin="round" strokeOpacity={hasHistory ? "1" : "0.72"} strokeWidth={hasHistory ? "1.2" : "0.8"} vectorEffect="non-scaling-stroke" />
-                <circle cx={chart.marker.x} cy={chart.marker.y} r={hasHistory ? "1.15" : "1.45"} fill="var(--color-surface)" stroke="var(--color-primary)" strokeWidth="0.75" vectorEffect="non-scaling-stroke" />
+                <path d={chart.line} fill="none" stroke="var(--color-primary)" strokeLinecap="round" strokeLinejoin="round" strokeOpacity={hasHistory ? "1" : "0.82"} strokeWidth={hasHistory ? "1.2" : "1"} vectorEffect="non-scaling-stroke" />
+                {chart.marker && <circle cx={chart.marker.x} cy={chart.marker.y} r="1.15" fill="var(--color-surface)" stroke="var(--color-primary)" strokeWidth="0.75" vectorEffect="non-scaling-stroke" />}
               </g>
             </svg>
           )}
           <div className="mt-2 grid grid-cols-3 text-[11px] font-medium text-muted-foreground">
             <span>{firstDate}</span>
             <span className="text-center">{hasHistory ? "Portfolio value" : "Starting value"}</span>
-            <span className="text-right">{lastDate}</span>
+            <span className="text-right">{hasHistory ? lastDate : "Now"}</span>
           </div>
         </div>
       </div>
