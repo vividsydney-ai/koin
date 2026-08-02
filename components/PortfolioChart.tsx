@@ -34,6 +34,16 @@ function chartPath(points: PortfolioValueSnapshot[]) {
     const y = height - ((point.totalValue - min + spread * 0.15) / (spread * 1.3)) * height;
     return [x, Math.max(4, Math.min(height - 4, y))] as const;
   });
+  // SVG does not paint a path made from one move command. A newly unlocked
+  // portfolio has one authoritative snapshot, so draw that value as a visible
+  // flat line across the chart until another daily point exists.
+  if (coords.length === 1) {
+    const y = coords[0][1];
+    return {
+      line: `M0,${y} L${width},${y}`,
+      area: `M0,${y} L${width},${y} L${width},${height} L0,${height} Z`,
+    };
+  }
   const line = coords.map(([x, y], index) => `${index === 0 ? "M" : "L"}${x},${y}`).join(" ");
   const area = `${line} L${coords.at(-1)?.[0] ?? width},${height} L${coords[0]?.[0] ?? 0},${height} Z`;
   return { line, area };
