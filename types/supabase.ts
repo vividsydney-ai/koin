@@ -1593,6 +1593,7 @@ export type Database = {
       portfolios: {
         Row: {
           cash_balance: number
+          chest_viewed_at: string | null
           created_at: string | null
           graduated_at: string | null
           graduation_multiplier: number | null
@@ -1600,11 +1601,13 @@ export type Database = {
           starting_cash: number
           status: string | null
           total_value: number
+          unlock_claimed_at: string | null
           updated_at: string | null
           user_id: string
         }
         Insert: {
           cash_balance?: number
+          chest_viewed_at?: string | null
           created_at?: string | null
           graduated_at?: string | null
           graduation_multiplier?: number | null
@@ -1612,11 +1615,13 @@ export type Database = {
           starting_cash?: number
           status?: string | null
           total_value?: number
+          unlock_claimed_at?: string | null
           updated_at?: string | null
           user_id: string
         }
         Update: {
           cash_balance?: number
+          chest_viewed_at?: string | null
           created_at?: string | null
           graduated_at?: string | null
           graduation_multiplier?: number | null
@@ -1624,6 +1629,7 @@ export type Database = {
           starting_cash?: number
           status?: string | null
           total_value?: number
+          unlock_claimed_at?: string | null
           updated_at?: string | null
           user_id?: string
         }
@@ -1650,6 +1656,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      instruments: {
+        Row: {
+          created_at: string
+          exchange: string
+          id: string
+          instrument_type: string
+          is_active: boolean
+          lot_size: number
+          name: string
+          source_url: string
+          symbol: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          exchange?: string
+          id?: string
+          instrument_type: string
+          is_active?: boolean
+          lot_size?: number
+          name: string
+          source_url: string
+          symbol: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          exchange?: string
+          id?: string
+          instrument_type?: string
+          is_active?: boolean
+          lot_size?: number
+          name?: string
+          source_url?: string
+          symbol?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -2232,6 +2277,7 @@ export type Database = {
           friend_alerts_enabled: boolean
           locale: string
           notifications_enabled: boolean | null
+          paper_chest_viewed_at: string | null
           privacy_accepted_at: string | null
           privacy_version: string | null
           show_on_leaderboard: boolean | null
@@ -2253,6 +2299,7 @@ export type Database = {
           friend_alerts_enabled?: boolean
           locale?: string
           notifications_enabled?: boolean | null
+          paper_chest_viewed_at?: string | null
           privacy_accepted_at?: string | null
           privacy_version?: string | null
           show_on_leaderboard?: boolean | null
@@ -2274,6 +2321,7 @@ export type Database = {
           friend_alerts_enabled?: boolean
           locale?: string
           notifications_enabled?: boolean | null
+          paper_chest_viewed_at?: string | null
           privacy_accepted_at?: string | null
           privacy_version?: string | null
           show_on_leaderboard?: boolean | null
@@ -2625,6 +2673,8 @@ export type Database = {
         }
         Returns: Json
       }
+      claim_paper_portfolio: { Args: { p_user_id: string }; Returns: Json }
+      mark_paper_chest_viewed: { Args: { p_user_id: string }; Returns: undefined }
       focus_week_start:
         | { Args: { p_timestamp?: string }; Returns: string }
         | {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import { useAuth } from "@/lib/auth/use-auth";
 import {
@@ -9,14 +9,17 @@ import {
   getTrades,
   getMarketData,
   executeTrade,
-  ensurePortfolio,
+  getInstruments,
   type Portfolio,
   type Holding,
   type Trade,
   type MarketData,
+  type Instrument,
 } from "@/lib/trading/client";
 import {
   getTradeOnboardingStatus,
+  claimPaperPortfolio,
+  markPaperChestViewed,
   PAPER_TRADING_UNLOCK_CHAPTER_LABEL,
   type TradeOnboardingStatus,
 } from "@/lib/trading/onboarding";
@@ -34,33 +37,40 @@ export default function TradePage() {
   const [holdings, setHoldings] = useState<Holding[]>([]);
   const [trades, setTrades] = useState<Trade[]>([]);
   const [marketData, setMarketData] = useState<MarketData[]>([]);
+  const [instruments, setInstruments] = useState<Instrument[]>([]);
   const [loading, setLoading] = useState(true);
   const [executing, setExecuting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [onboardingStatus, setOnboardingStatus] = useState<TradeOnboardingStatus | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [openingChest, setOpeningChest] = useState(false);
 
   const [symbol, setSymbol] = useState("");
   const [tradeType, setTradeType] = useState<"buy" | "sell">("buy");
   const [lotCount, setLotCount] = useState(1);
+  const [instrumentQuery, setInstrumentQuery] = useState("");
 
-  const loadAll = async () => {
+  const loadAll = useCallback(async () => {
     if (!user) return;
     setLoading(true);
     setError(null);
     try {
-      const [p, h, t, m, status] = await Promise.all([
-        getPortfolio(user.id),
-        getHoldings(user.id),
-        getTrades(user.id),
+      // Resolve eligibility first. Nothing below can render a balance before
+      // the server-authoritative chest claim has created the portfolio.
+      const status = await getTradeOnboardingStatus(user.id);
+      const [p, h, t, m, catalogue] = await Promise.all([
+        status.canTrade ? getPortfolio(user.id) : Promise.resolve(null),
+        status.canTrade ? getHoldings(user.id) : Promise.resolve([]),
+        status.canTrade ? getTrades(user.id) : Promise.resolve([]),
         getMarketData(),
-        getTradeOnboardingStatus(user.id),
+        getInstruments(),
       ]);
       setPortfolio(p);
       setHoldings(h);
       setTrades(t);
       setMarketData(m);
+      setInstruments(catalogue);
       setOnboardingStatus(status);
       if (!symbol && m.length > 0) {
         setSymbol(m[0].symbol);
@@ -70,7 +80,7 @@ export default function TradePage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [symbol, user]);
 
   useEffect(() => {
     let mounted = true;
@@ -83,7 +93,7 @@ export default function TradePage() {
     return () => {
       mounted = false;
     };
-  }, [user]);
+  }, [loadAll, user]);
 
   const selectedPrice = useMemo(() => {
     const row = marketData.find((m) => m.symbol === symbol);
@@ -102,7 +112,6 @@ export default function TradePage() {
     setError(null);
     setSuccess(null);
     try {
-      await ensurePortfolio(user.id);
       const isFirstTrade = trades.length === 0;
       await executeTrade(user.id, symbol, tradeType, lotCount);
       trackEvent({
@@ -134,6 +143,28 @@ export default function TradePage() {
       setError(e instanceof Error ? e.message : "Trade failed");
     } finally {
       setExecuting(false);
+    }
+  };
+
+  const handleOpenChest = async () => {
+    if (!user || openingChest) return;
+    setOpeningChest(true);
+    setError(null);
+    try {
+      await markPaperChestViewed(user.id);
+      trackEvent({ userId: user.id, name: "paper_chest_viewed" });
+      const claim = await claimPaperPortfolio(user.id);
+      setPortfolio(claim.portfolio);
+      trackEvent({
+        userId: user.id,
+        name: "paper_portfolio_claimed",
+        properties: { starting_cash: claim.portfolio.startingCash },
+      });
+      await loadAll();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not open your paper portfolio");
+    } finally {
+      setOpeningChest(false);
     }
   };
 
@@ -187,6 +218,8 @@ export default function TradePage() {
               : undefined
           }
         />
+      ) : !portfolio ? (
+        <PaperChest opening={openingChest} error={error} onOpen={handleOpenChest} />
       ) : (
         <div className="space-y-5">
           <div className="flex items-center justify-between">
@@ -198,43 +231,83 @@ export default function TradePage() {
             </button>
           </div>
 
-          <PortfolioSummaryCard
-            portfolio={portfolio}
-            portfolioValue={portfolioValue}
-            totalReturnPct={totalReturnPct}
-          />
-
-          <PriceChart
-            symbol={symbol}
-            companyName={marketData.find((m) => m.symbol === symbol)?.companyName}
-          />
-
-          <OrderCard
-            symbol={symbol}
-            setSymbol={setSymbol}
-            tradeType={tradeType}
-            setTradeType={setTradeType}
-            lotCount={lotCount}
-            setLotCount={setLotCount}
-            marketData={marketData}
-            selectedPrice={selectedPrice}
-            estimatedTotal={estimatedTotal}
-            canSubmit={canSubmit}
-            executing={executing}
-            error={error}
-            success={success}
-            cashBalance={portfolio?.cashBalance ?? 0}
-            holdings={holdings}
-            onExecute={handleExecute}
-          />
-          <DataDisclaimer marketData={marketData} />
-
-          <HoldingsCard holdings={holdings} marketData={marketData} />
-          <TradesCard trades={trades} />
+          <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
+            <main className="min-w-0 space-y-5">
+              <PortfolioSummaryCard
+                portfolio={portfolio}
+                portfolioValue={portfolioValue}
+                totalReturnPct={totalReturnPct}
+              />
+              <PriceChart
+                symbol={symbol}
+                companyName={marketData.find((m) => m.symbol === symbol)?.companyName}
+              />
+              <HoldingsCard holdings={holdings} marketData={marketData} />
+              <TradesCard trades={trades} />
+            </main>
+            <aside className="space-y-5 lg:sticky lg:top-5">
+              <OrderCard
+                symbol={symbol}
+                setSymbol={setSymbol}
+                tradeType={tradeType}
+                setTradeType={setTradeType}
+                lotCount={lotCount}
+                setLotCount={setLotCount}
+                marketData={marketData}
+                instruments={instruments}
+                instrumentQuery={instrumentQuery}
+                setInstrumentQuery={setInstrumentQuery}
+                selectedPrice={selectedPrice}
+                estimatedTotal={estimatedTotal}
+                canSubmit={canSubmit}
+                executing={executing}
+                error={error}
+                success={success}
+                cashBalance={portfolio?.cashBalance ?? 0}
+                holdings={holdings}
+                onExecute={handleExecute}
+              />
+              <WatchlistCard instruments={instruments} marketData={marketData} />
+              <DataDisclaimer marketData={marketData} />
+            </aside>
+          </div>
         </div>
       )}
 
     </div>
+  );
+}
+
+function PaperChest({
+  opening,
+  error,
+  onOpen,
+}: {
+  opening: boolean;
+  error: string | null;
+  onOpen: () => void;
+}) {
+  return (
+    <section className="mx-auto max-w-xl rounded-[18px] border border-warning/30 bg-surface p-6 text-center shadow-lg sm:p-10">
+      <div className="mx-auto flex h-28 w-28 items-center justify-center rounded-3xl border-4 border-warning/50 bg-warning/10 text-6xl motion-safe:animate-bounce" aria-hidden="true">
+        🎁
+      </div>
+      <p className="mt-6 text-xs font-bold uppercase tracking-[0.18em] text-warning">Milestone unlocked</p>
+      <h2 className="mt-2 text-2xl font-bold text-foreground">Your paper portfolio is ready</h2>
+      <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-muted-foreground">
+        Open the chest to receive IDR 10,000,000 in simulated buying power. It is one grant, for learning only — never real money.
+      </p>
+      <button
+        type="button"
+        onClick={onOpen}
+        disabled={opening}
+        className="mt-7 min-h-11 rounded-xl bg-primary px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:opacity-90 disabled:opacity-60"
+      >
+        {opening ? "Opening your chest…" : "Open my paper portfolio"}
+      </button>
+      {error && <p className="mt-4 text-sm text-danger" role="alert">{error}</p>}
+      <p className="mt-5 text-xs text-muted-foreground">Prices are delayed or simulated. No real orders are placed.</p>
+    </section>
   );
 }
 
@@ -308,6 +381,9 @@ function OrderCard({
   lotCount,
   setLotCount,
   marketData,
+  instruments,
+  instrumentQuery,
+  setInstrumentQuery,
   selectedPrice,
   estimatedTotal,
   canSubmit,
@@ -325,6 +401,9 @@ function OrderCard({
   lotCount: number;
   setLotCount: (n: number) => void;
   marketData: MarketData[];
+  instruments: Instrument[];
+  instrumentQuery: string;
+  setInstrumentQuery: (query: string) => void;
   selectedPrice: number;
   estimatedTotal: number;
   canSubmit: boolean;
@@ -370,21 +449,33 @@ function OrderCard({
 
       <div className="mt-4 space-y-4">
         <div>
-          <label htmlFor="symbol" className="block text-sm font-medium text-foreground">
-            Stock
+          <label htmlFor="instrument-search" className="block text-sm font-medium text-foreground">
+            Search IDX stocks and ETFs
           </label>
+          <input
+            id="instrument-search"
+            type="search"
+            value={instrumentQuery}
+            onChange={(e) => setInstrumentQuery(e.target.value)}
+            placeholder="Symbol or company name"
+            className="mt-1.5 min-h-11 w-full rounded-md border border-muted bg-background px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary"
+          />
+          <label htmlFor="symbol" className="sr-only">Instrument</label>
           <select
             id="symbol"
             value={symbol}
             onChange={(e) => setSymbol(e.target.value)}
             className="mt-1.5 w-full rounded-md border border-muted bg-background px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary"
           >
-            {marketData.map((m) => (
-              <option key={m.symbol} value={m.symbol}>
-                {m.symbol} — Rp {m.closePrice.toLocaleString("id-ID")}
-                {m.companyName ? ` (${m.companyName})` : ""}
+            {instruments.filter((instrument) => `${instrument.symbol} ${instrument.name} ${instrument.instrumentType}`.toLowerCase().includes(instrumentQuery.toLowerCase())).map((instrument) => {
+              const quote = marketData.find((m) => m.symbol === instrument.symbol);
+              return (
+              <option key={instrument.symbol} value={instrument.symbol}>
+                {instrument.symbol} — {instrument.name} ({instrument.instrumentType.toUpperCase()})
+                {quote ? ` · Rp ${quote.closePrice.toLocaleString("id-ID")}` : " · Data pending"}
               </option>
-            ))}
+              );
+            })}
           </select>
         </div>
 
@@ -454,6 +545,36 @@ function OrderCard({
         </button>
       </div>
     </div>
+  );
+}
+
+function WatchlistCard({ instruments, marketData }: { instruments: Instrument[]; marketData: MarketData[] }) {
+  const rows = instruments.slice(0, 5).map((instrument) => ({
+    instrument,
+    quote: marketData.find((row) => row.symbol === instrument.symbol),
+  }));
+
+  return (
+    <section className="rounded-[18px] border border-muted/60 bg-surface p-4 shadow-sm">
+      <div className="flex items-center justify-between">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">IDX watchlist</p>
+        <span className="text-xs text-muted-foreground">Delayed</span>
+      </div>
+      <div className="mt-3 space-y-2">
+        {rows.map(({ instrument, quote }) => (
+          <div key={instrument.symbol} className="flex items-center justify-between rounded-lg bg-background px-3 py-2.5">
+            <div>
+              <p className="text-sm font-bold text-foreground">{instrument.symbol}</p>
+              <p className="max-w-[180px] truncate text-xs text-muted-foreground">{instrument.name}</p>
+            </div>
+            <div className="text-right">
+              <p className="text-sm font-semibold text-foreground">{quote ? `Rp ${quote.closePrice.toLocaleString("id-ID")}` : "—"}</p>
+              <p className={`text-xs ${quote?.isSimulated ? "text-warning" : "text-success"}`}>{quote?.isSimulated ? "Simulated" : "IDX EOD"}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
 

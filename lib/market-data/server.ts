@@ -18,13 +18,24 @@ export interface UpdateMarketDataResult {
 }
 
 const MVP_SYMBOLS = ["BBCA", "BBRI", "TLKM", "GOTO", "UNVR"];
+const SUPPORTED_SYMBOLS = [
+  "BBCA", "BBNI", "BBRI", "BMRI", "GOTO", "ICBP", "INDF", "TLKM", "UNVR",
+  "XISR", "XIIT", "XISC",
+];
 
 const COMPANY_NAMES: Record<string, string> = {
   BBCA: "Bank Central Asia Tbk",
+  BBNI: "Bank Negara Indonesia (Persero) Tbk",
   BBRI: "Bank Rakyat Indonesia Tbk",
+  BMRI: "Bank Mandiri (Persero) Tbk",
   TLKM: "Telkom Indonesia Tbk",
   GOTO: "GoTo Gojek Tokopedia Tbk",
+  ICBP: "Indofood CBP Sukses Makmur Tbk",
+  INDF: "Indofood Sukses Makmur Tbk",
   UNVR: "Unilever Indonesia Tbk",
+  XISR: "Reksa Dana Indeks Syariah Indonesia ETF",
+  XIIT: "Premier ETF Indonesia Financial",
+  XISC: "Premier ETF Indonesia Consumer",
 };
 
 function getAdminClient(): SupabaseClient {
@@ -86,7 +97,7 @@ export async function fetchIdxEodPrices(tradeDate?: string): Promise<IdxPriceRow
   for (const raw of records) {
     const row = raw as Record<string, unknown>;
     const symbol = String(row.Code ?? row.code ?? row.Ticker ?? row.ticker ?? "").trim();
-    if (!MVP_SYMBOLS.includes(symbol)) continue;
+    if (!SUPPORTED_SYMBOLS.includes(symbol)) continue;
 
     const closePrice = parseIdxNumber(row.ClosePrice ?? row.closePrice ?? row.Close ?? row.close);
     const volume = parseIdxNumber(row.Volume ?? row.volume ?? row.Vol);

@@ -12,6 +12,16 @@ export interface Portfolio {
   updatedAt: string;
 }
 
+export interface Instrument {
+  id: string;
+  symbol: string;
+  name: string;
+  instrumentType: "stock" | "etf";
+  exchange: string;
+  lotSize: number;
+  sourceUrl: string;
+}
+
 export interface Holding {
   id: string;
   portfolioId: string;
@@ -83,37 +93,34 @@ export async function getPortfolio(userId: string): Promise<Portfolio | null> {
   };
 }
 
+export async function getInstruments(): Promise<Instrument[]> {
+  const { data, error } = await supabase
+    .from("instruments")
+    .select("id, symbol, name, instrument_type, exchange, lot_size, source_url")
+    .eq("is_active", true)
+    .order("symbol", { ascending: true });
+
+  if (error) {
+    console.error("getInstruments error:", error.message);
+    return [];
+  }
+
+  return (data ?? []).map((row) => ({
+    id: row.id,
+    symbol: row.symbol,
+    name: row.name,
+    instrumentType: row.instrument_type as Instrument["instrumentType"],
+    exchange: row.exchange,
+    lotSize: row.lot_size,
+    sourceUrl: row.source_url,
+  }));
+}
+
 export async function ensurePortfolio(userId: string): Promise<Portfolio> {
   const existing = await getPortfolio(userId);
   if (existing) return existing;
 
-  const { data, error } = await supabase
-    .from("portfolios")
-    .insert({
-      user_id: userId,
-      starting_cash: 10000000,
-      cash_balance: 10000000,
-      total_value: 10000000,
-      status: "active",
-    })
-    .select("id, user_id, starting_cash, cash_balance, total_value, status, created_at, updated_at")
-    .single();
-
-  if (error || !data) {
-    console.error("ensurePortfolio error:", error?.message);
-    throw new Error(error?.message ?? "Failed to create portfolio");
-  }
-
-  return {
-    id: data.id,
-    userId: data.user_id,
-    startingCash: Number(data.starting_cash),
-    cashBalance: Number(data.cash_balance),
-    totalValue: Number(data.total_value),
-    status: data.status as Portfolio["status"],
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
-  };
+  throw new Error("Paper portfolio is created when the bonus chest is opened");
 }
 
 export async function getHoldings(userId: string): Promise<Holding[]> {

@@ -27,6 +27,8 @@ export type AnalyticsEventName =
   | "quiz_completed"
   | "chapter_mission_completed"
   | "trade_onboarding_completed"
+  | "paper_chest_viewed"
+  | "paper_portfolio_claimed"
   | "trade_executed"
   | "first_trade"
   | "notification_clicked"

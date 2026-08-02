@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/auth/client";
-import { ensurePortfolio } from "@/lib/trading/client";
+import { ensurePortfolio, type Portfolio } from "@/lib/trading/client";
 
 export const PAPER_TRADING_UNLOCK_CHAPTER = "Investing in Indonesia";
 export const PAPER_TRADING_UNLOCK_CHAPTER_LABEL = "Chapter 08 — Investing in Indonesia";
@@ -10,6 +10,11 @@ export interface TradeOnboardingStatus {
   requiredLessonCount: number;
   onboardingCompleted: boolean;
   canTrade: boolean;
+}
+
+export interface PaperPortfolioClaim {
+  claimed: boolean;
+  portfolio: Portfolio;
 }
 
 export interface RiskProfile {
@@ -93,7 +98,50 @@ export async function completeTradeOnboarding(userId: string): Promise<void> {
     throw new Error(error.message);
   }
 
-  await ensurePortfolio(userId);
+  // Compatibility read for older callers. This function is now deliberately
+  // non-mutating; a missing portfolio is expected until the chest is opened.
+  await ensurePortfolio(userId).catch(() => undefined);
+
+}
+
+/**
+ * Opens the one-time paper portfolio chest. The RPC is the only code path
+ * allowed to create a portfolio or grant its starting balance.
+ */
+export async function claimPaperPortfolio(userId: string): Promise<PaperPortfolioClaim> {
+  const { data, error } = await (supabase as unknown as {
+    rpc: (name: string, args: Record<string, string>) => Promise<{
+      data: { claimed: boolean; portfolio: Record<string, unknown> } | null;
+      error: { message: string } | null;
+    }>;
+  }).rpc("claim_paper_portfolio", { p_user_id: userId });
+
+  if (error || !data?.portfolio) {
+    throw new Error(error?.message ?? "Your paper portfolio could not be opened");
+  }
+
+  const row = data.portfolio;
+  return {
+    claimed: data.claimed,
+    portfolio: {
+      id: String(row.id),
+      userId: String(row.user_id),
+      startingCash: Number(row.starting_cash),
+      cashBalance: Number(row.cash_balance),
+      totalValue: Number(row.total_value),
+      status: row.status as Portfolio["status"],
+      createdAt: String(row.created_at),
+      updatedAt: String(row.updated_at),
+    },
+  };
+}
+
+export async function markPaperChestViewed(userId: string): Promise<void> {
+  const { error } = await (supabase as unknown as {
+    rpc: (name: string, args: Record<string, string>) => Promise<{ error: { message: string } | null }>;
+  }).rpc("mark_paper_chest_viewed", { p_user_id: userId });
+
+  if (error) throw new Error(error.message);
 }
 
 export async function saveRiskProfile(
