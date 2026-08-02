@@ -46,10 +46,21 @@ describe("QuizEngine", () => {
     const onComplete = vi.fn();
     render(<QuizEngine question={question} seed="s3" onComplete={onComplete} />);
 
-    const input = screen.getByLabelText("Type your answer");
-    fireEvent.change(input, { target: { value: "jakarta" } });
+    fireEvent.click(screen.getByText("Jakarta"));
     fireEvent.click(screen.getByText("Check answer"));
     expect(onComplete).toHaveBeenCalledWith(true);
+  });
+
+  it("keeps generated fill-blank distractors in the learner's language", () => {
+    const question: ProcessedQuestion = {
+      ...base,
+      type: "fill_blank",
+      question: "Interest is the cost of borrowing ____. ",
+      answer: "money",
+    };
+    render(<QuizEngine question={question} seed="locale" onComplete={vi.fn()} />);
+    expect(screen.getByText("cash flow")).toBeInTheDocument();
+    expect(screen.queryByText("arus kas")).not.toBeInTheDocument();
   });
 
   it("renders word_bank and checks ordered answer", () => {
@@ -83,7 +94,7 @@ describe("QuizEngine", () => {
     // Initial order from seededShuffle("quiz:ord", ["B","A","C"]) is ["B","C","A"].
     const itemB = screen.getByText("B");
     const itemC = screen.getByText("C");
-    const itemA = screen.getByText("A");
+    const _itemA = screen.getByText("A");
 
     // Swap B and C -> ["C","B","A"], then C and A -> ["A","B","C"].
     fireEvent.click(itemB);
@@ -93,6 +104,25 @@ describe("QuizEngine", () => {
 
     fireEvent.click(screen.getByText("Check answer"));
     expect(onComplete).toHaveBeenCalledWith(true);
+  });
+
+  it("uses matching pairs as a safe fallback when an answer map is incomplete", () => {
+    const question: ProcessedQuestion = {
+      ...base,
+      type: "matching",
+      question: "Match each goal.",
+      pairs: [["Emergency fund", "Bank savings"], ["Long-term goal", "Stock fund"]],
+      answer: {},
+    };
+    const onComplete = vi.fn();
+    render(<QuizEngine question={question} seed="match" onComplete={onComplete} />);
+    // Deliberately submit an incorrect pairing so the result panel renders
+    // the canonical answer derived from `pairs` (even with an empty map).
+    fireEvent.click(screen.getAllByText("Stock fund")[0]);
+    fireEvent.click(screen.getByText("Bank savings"));
+    fireEvent.click(screen.getByText("Check answer"));
+    expect(screen.getByText(/Emergency fund: Bank savings/)).toBeInTheDocument();
+    expect(onComplete).toHaveBeenCalledWith(false);
   });
 
   it("renders swipe_yes_no as a Yes / No binary choice", () => {

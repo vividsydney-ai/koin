@@ -13,7 +13,7 @@ import {
   type DailyFocusState,
 } from "@/lib/focus/client";
 
-type FocusAnswer = string | boolean | string[];
+type FocusAnswer = string | boolean | string[] | Record<string, string>;
 
 export default function DailyFocusPage() {
   const { user, loading: authLoading } = useAuth(true);
@@ -23,7 +23,7 @@ export default function DailyFocusPage() {
   const [submitting, setSubmitting] = useState(false);
   const [refilling, setRefilling] = useState(false);
   const [pendingQuestion, setPendingQuestion] = useState<DailyFocusQuestion | null>(null);
-  const [feedback, setFeedback] = useState<{ correct: boolean; explanation: string | null; answer: string | boolean | string[] | null } | null>(null);
+  const [feedback, setFeedback] = useState<{ correct: boolean; explanation: string | null; answer: string | boolean | string[] | Record<string, string> | null } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const timeZone = getLocalTimeZone();
 
@@ -161,7 +161,7 @@ export default function DailyFocusPage() {
       {feedback && (
         <section className={`mt-5 rounded-card border p-5 shadow-sm ${feedback.correct ? "border-success/30 bg-success/5" : "border-danger/25 bg-danger/5"}`} aria-live="polite">
             <p className={`text-sm font-bold ${feedback.correct ? "text-success" : "text-danger"}`}>{feedback.correct ? t("focus.correctFeedback") : t("focus.incorrectFeedback")}</p>
-          {!feedback.correct && feedback.answer !== null && <p className="mt-2 text-sm font-semibold text-foreground">{t("quiz.correctAnswer")} {Array.isArray(feedback.answer) ? feedback.answer.join(", ") : String(feedback.answer)}</p>}
+          {!feedback.correct && feedback.answer !== null && <p className="mt-2 text-sm font-semibold text-foreground">{t("quiz.correctAnswer")} {formatFocusAnswer(feedback.answer)}</p>}
           {feedback.explanation && <p className="mt-2 text-sm leading-6 text-muted-foreground">{feedback.explanation}</p>}
           {finishedAnswer ? (
             <CompletionCard focus={focus} />
@@ -182,8 +182,10 @@ export default function DailyFocusPage() {
 }
 
 function QuestionCard({ question, disabled, onAnswer }: { question: DailyFocusQuestion; disabled: boolean; onAnswer: (answer: FocusAnswer) => void }) {
-  const [fillValue, setFillValue] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [order, setOrder] = useState<string[]>(question.options ?? []);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [matches, setMatches] = useState<Record<string, string>>({});
   const { t } = useLocale();
   const checkLabel = t("quiz.checkAnswer");
 
@@ -207,9 +209,9 @@ function QuestionCard({ question, disabled, onAnswer }: { question: DailyFocusQu
     onAnswer(Array.from(selected));
   };
 
-  const submitFillBlank = () => {
-    if (disabled || !fillValue.trim()) return;
-    onAnswer(fillValue.trim());
+  const submitOrder = () => { if (!disabled) onAnswer(order); };
+  const submitMatching = () => {
+    if (!disabled && question.pairs?.every(([left]) => matches[left])) onAnswer(matches);
   };
 
   return (
@@ -221,28 +223,31 @@ function QuestionCard({ question, disabled, onAnswer }: { question: DailyFocusQu
 
       {question.type === "fill_blank" && (
         <div className="mt-5 space-y-4">
-          <label htmlFor="focus-fill-blank" className="sr-only">
-            {t("quiz.typeAnswer")}
-          </label>
-          <input
-            id="focus-fill-blank"
-            type="text"
-            value={fillValue}
-            onChange={(e) => setFillValue(e.target.value)}
-            disabled={disabled}
-            placeholder={t("quiz.typeAnswer")}
-            className="h-12 w-full rounded-lg border-[1.5px] border-border bg-background px-4 text-base text-foreground outline-none transition-all placeholder:text-muted-foreground hover:border-border-strong focus:border-primary focus:shadow-focus-ring disabled:opacity-60"
-            onKeyDown={(e) => {
-              if (e.key === "Enter") submitFillBlank();
-            }}
-          />
-          <button
-            onClick={submitFillBlank}
-            disabled={disabled || !fillValue.trim()}
-            className="flex min-h-11 w-full items-center justify-center rounded-full bg-primary px-5 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
-          >
-            {checkLabel}
-          </button>
+          <p className="text-xs font-semibold text-muted-foreground">{t("quiz.chooseAnswer")}</p>
+          {(question.options ?? []).map((option) => <button key={option} disabled={disabled} onClick={() => handleOption(option)} className="flex min-h-12 w-full items-center rounded-md border border-muted bg-surface px-4 text-left text-sm font-semibold text-foreground hover:border-primary/40 hover:bg-primary/5 disabled:opacity-60">{option}</button>)}
+        </div>
+      )}
+
+      {question.type === "word_bank" && (
+        <div className="mt-5 space-y-3">
+          <p className="text-xs font-semibold text-muted-foreground">{t("quiz.chooseAnswer")}</p>
+          {(question.options ?? []).map((option) => <button key={option} disabled={disabled} onClick={() => handleOption([option])} className="flex min-h-12 w-full items-center rounded-md border border-muted bg-surface px-4 text-left text-sm font-semibold text-foreground hover:border-primary/40 hover:bg-primary/5 disabled:opacity-60">{option}</button>)}
+        </div>
+      )}
+
+      {question.type === "ordering" && (
+        <div className="mt-5 space-y-3">
+          <p className="text-xs font-semibold text-muted-foreground">{t("quiz.tapTwoItems")}</p>
+          {order.map((option, index) => <button key={`${option}-${index}`} disabled={disabled} onClick={() => { if (selectedIndex === null) setSelectedIndex(index); else if (selectedIndex !== index) { const next = [...order]; [next[selectedIndex], next[index]] = [next[index], next[selectedIndex]]; setOrder(next); setSelectedIndex(null); } }} className={`flex min-h-12 w-full items-center gap-3 rounded-md border px-4 text-left text-sm font-semibold text-foreground ${selectedIndex === index ? "border-primary bg-primary/5" : "border-muted bg-surface"}`}><span className="font-mono text-xs text-muted-foreground">{index + 1}</span>{option}</button>)}
+          <button onClick={submitOrder} disabled={disabled} className="flex min-h-11 w-full items-center justify-center rounded-full bg-primary px-5 text-sm font-bold text-primary-foreground disabled:opacity-60">{checkLabel}</button>
+        </div>
+      )}
+
+      {question.type === "matching" && question.pairs && (
+        <div className="mt-5 space-y-3">
+          <p className="text-xs font-semibold text-muted-foreground">{t("quiz.tapDefinition")}</p>
+          {question.pairs.map(([left]) => <div key={left} className="rounded-md border border-muted p-3"><p className="mb-2 text-sm font-semibold text-foreground">{left}</p><div className="flex flex-wrap gap-2">{question.pairs!.map(([, candidate]) => <button key={`${left}-${candidate}`} disabled={disabled || (Object.values(matches).includes(candidate) && matches[left] !== candidate)} onClick={() => setMatches((prev) => ({ ...prev, [left]: candidate }))} className={`rounded-md border px-3 py-2 text-sm font-semibold ${matches[left] === candidate ? "border-primary bg-primary/10 text-primary" : "border-muted bg-surface text-foreground"}`}>{candidate}</button>)}</div></div>)}
+          <button onClick={submitMatching} disabled={disabled || !question.pairs.every(([left]) => matches[left])} className="flex min-h-11 w-full items-center justify-center rounded-full bg-primary px-5 text-sm font-bold text-primary-foreground disabled:opacity-60">{checkLabel}</button>
         </div>
       )}
 
@@ -308,6 +313,12 @@ function QuestionCard({ question, disabled, onAnswer }: { question: DailyFocusQu
       )}
     </section>
   );
+}
+
+function formatFocusAnswer(answer: string | boolean | string[] | Record<string, string>): string {
+  if (Array.isArray(answer)) return answer.join(", ");
+  if (typeof answer === "object") return Object.entries(answer).map(([key, value]) => `${key}: ${value}`).join(" · ");
+  return String(answer);
 }
 
 function MissionProgress({ focus }: { focus: DailyFocusState }) {

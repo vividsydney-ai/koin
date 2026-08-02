@@ -638,6 +638,11 @@ const CHAPTER_ORDER = [
   "Cryptocurrency 101",
   "Reading Trading Charts",
   "Decision Analysis Lab",
+  "Decision Quality Under Uncertainty",
+  "Personal Finance Operations",
+  "Evidence-Based Investing Decisions",
+  "Ownership, Enterprise & Income Quality",
+  "Bias-Resistant Decisions & Resilience",
 ];
 
 function chapterDisplayOrder(title: string): number {

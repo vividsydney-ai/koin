@@ -58,6 +58,7 @@ export const trueFalseSchema = baseQuestionSchema.extend({
 export const fillBlankSchema = baseQuestionSchema.extend({
   type: z.literal("fill_blank"),
   answer: z.string().min(1),
+  options: z.array(z.string().min(1)).min(2).optional(),
 });
 
 export const wordBankSchema = baseQuestionSchema.extend({
@@ -141,16 +142,37 @@ export type ProcessedQuestion = QuizQuestion & { variantId?: string };
 
 export function validateQuestion(body: unknown): QuizQuestion | null {
   // Normalize legacy/alias types so the engine can render every valid variant.
-  const normalized =
-    body && typeof body === "object" && (body as Record<string, unknown>).type === "yes_no"
-      ? { ...(body as Record<string, unknown>), type: "swipe_yes_no" }
-      : body;
+  const normalized = normalizeLegacyQuestion(body);
   const parsed = quizQuestionSchema.safeParse(normalized);
   if (!parsed.success) {
     console.error("validateQuestion error:", parsed.error.flatten());
     return null;
   }
   return parsed.data;
+}
+
+/** Convert older content payloads into the richer mechanics the current player supports. */
+function normalizeLegacyQuestion(body: unknown): unknown {
+  if (!body || typeof body !== "object") return body;
+  const value = body as Record<string, unknown>;
+  const type = typeof value.type === "string" ? value.type : undefined;
+  if (type === "yes_no") return { ...value, type: "swipe_yes_no" };
+  if (type && ["scenario", "comparison", "sentence_completion", "image_interpretation", "decision_tree"].includes(type)) {
+    return { ...value, type: "multiple_choice", options: Array.isArray(value.options) ? value.options : [], answer: String(value.answer) };
+  }
+  if (type === "calculation") {
+    return { ...value, type: "fill_blank", answer: String(value.answer) };
+  }
+  if (type === "spot_mistake") {
+    return { ...value, type: "word_bank", answer: Array.isArray(value.answer) ? value.answer : [String(value.answer)], options: Array.isArray(value.options) ? value.options : [] };
+  }
+  if (type === "definition_match" || type === "categorization") {
+    const pairs: [string, string][] = type === "definition_match"
+      ? Object.entries(value.answer ?? {}).map(([left, right]) => [left, String(right)])
+      : Object.entries(value.answer ?? {}).flatMap(([bucket, items]) => (Array.isArray(items) ? items.map((item) => [String(item), bucket] as [string, string]) : []));
+    return { ...value, type: "matching", pairs, answer: Object.fromEntries(pairs) };
+  }
+  return value;
 }
 
 export function applyParameters(seed: string, question: QuizQuestion): QuizQuestion {

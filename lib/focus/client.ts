@@ -5,9 +5,10 @@ import type { Locale } from "@/lib/i18n/types";
 export type DailyFocusStatus = "active" | "completed" | "exhausted";
 
 export interface DailyFocusQuestion {
-  type: "multiple_choice" | "true_false" | "swipe_yes_no" | "fill_blank" | "select_all";
+  type: "multiple_choice" | "true_false" | "swipe_yes_no" | "fill_blank" | "select_all" | "word_bank" | "ordering" | "matching";
   question: string;
   options?: string[];
+  pairs?: [string, string][];
 }
 
 const supportedQuestionTypes = new Set<DailyFocusQuestion["type"]>([
@@ -16,6 +17,9 @@ const supportedQuestionTypes = new Set<DailyFocusQuestion["type"]>([
   "swipe_yes_no",
   "fill_blank",
   "select_all",
+  "word_bank",
+  "ordering",
+  "matching",
 ]);
 
 export interface DailyFocusState {
@@ -32,7 +36,7 @@ export interface DailyFocusState {
   questions: DailyFocusQuestion[];
   answerCorrect: boolean | null;
   explanation: string | null;
-  correctAnswer: string | boolean | string[] | null;
+  correctAnswer: string | boolean | string[] | Record<string, string> | null;
 }
 
 const dailyFocusAnswerSchema = z.object({
@@ -41,6 +45,7 @@ const dailyFocusAnswerSchema = z.object({
     z.string().min(1),
     z.boolean(),
     z.array(z.string().min(1)).min(1),
+    z.record(z.string(), z.string()),
   ]),
   timeZone: z.string().min(1).max(100),
 });
@@ -87,8 +92,8 @@ function parseState(raw: unknown): DailyFocusState | null {
     answerCorrect: typeof value.answer_correct === "boolean" ? value.answer_correct : null,
     explanation: typeof value.explanation === "string" ? value.explanation : null,
     correctAnswer:
-      typeof value.correct_answer === "string" || typeof value.correct_answer === "boolean" || Array.isArray(value.correct_answer)
-        ? (value.correct_answer as string | boolean | string[])
+      typeof value.correct_answer === "string" || typeof value.correct_answer === "boolean" || Array.isArray(value.correct_answer) || (typeof value.correct_answer === "object" && value.correct_answer !== null)
+        ? (value.correct_answer as string | boolean | string[] | Record<string, string>)
         : null,
   };
 }
@@ -107,7 +112,7 @@ export async function getDailyFocusChallenge(timeZone = getLocalTimeZone(), loca
 
 export async function submitDailyFocusAnswer(
   questionIndex: number,
-  answer: string | boolean | string[],
+  answer: string | boolean | string[] | Record<string, string>,
   timeZone = getLocalTimeZone(),
   locale: Locale = "en"
 ): Promise<{ state: DailyFocusState | null; error: string | null }> {

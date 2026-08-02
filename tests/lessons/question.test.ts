@@ -9,6 +9,25 @@ import {
 
 describe("question", () => {
   describe("validateQuestion", () => {
+    it("normalizes legacy scenario and matching payloads into supported mechanics", () => {
+      expect(validateQuestion({
+        type: "scenario",
+        question: "Which approach is safer?",
+        options: ["A", "B"],
+        answer: "B",
+        explanation: "B.",
+        parameters: {},
+      })?.type).toBe("multiple_choice");
+      expect(validateQuestion({
+        type: "definition_match",
+        question: "Match terms.",
+        answer: { Asset: "Something owned", Liability: "Something owed" },
+        options: { terms: ["Asset", "Liability"], definitions: ["Something owned", "Something owed"] },
+        explanation: "Match them.",
+        parameters: {},
+      })?.type).toBe("matching");
+    });
+
     it("accepts a valid multiple_choice question", () => {
       const body: QuizQuestion = {
         type: "multiple_choice",

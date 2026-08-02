@@ -11,6 +11,7 @@ const fillBlank: ProcessedQuestion = {
   type: "fill_blank",
   question: "Money that everyone accepts as payment is called a medium of ____.",
   answer: "exchange",
+  options: ["exchange", "saving", "value"],
   explanation: "A medium of exchange is widely accepted in return for goods.",
   parameters: {},
   variantId: "fb1",
@@ -29,7 +30,7 @@ describe("QuizEngine wrong-answer reveal (KO-REPLAY-002)", () => {
   it("shows the correct answer on a wrong fill_blank attempt", () => {
     render(<QuizEngine question={fillBlank} seed="s1" />);
 
-    fireEvent.change(screen.getByLabelText("quiz.typeAnswer"), { target: { value: "saving" } });
+    fireEvent.click(screen.getByText("saving"));
     fireEvent.click(screen.getByRole("button", { name: /quiz\.checkAnswer/i }));
 
     const label = screen.getByText(/quiz\.correctAnswer/);
@@ -39,7 +40,7 @@ describe("QuizEngine wrong-answer reveal (KO-REPLAY-002)", () => {
   it("does not show the correct-answer line on a correct attempt", () => {
     render(<QuizEngine question={fillBlank} seed="s1" />);
 
-    fireEvent.change(screen.getByLabelText("quiz.typeAnswer"), { target: { value: "exchange" } });
+    fireEvent.click(screen.getByText("exchange"));
     fireEvent.click(screen.getByRole("button", { name: /quiz\.checkAnswer/i }));
 
     expect(screen.queryByText(/quiz\.correctAnswer/)).not.toBeInTheDocument();

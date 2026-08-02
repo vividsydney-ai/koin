@@ -42,7 +42,7 @@ export function QuizEngine({ question, seed, onComplete, onAnswer }: QuizEngineP
     case "swipe_yes_no":
       return <YesNo question={question} onComplete={forwardCompletion} />;
     case "fill_blank":
-      return <FillBlank question={question} onComplete={forwardCompletion} />;
+      return <FillBlank question={question} seed={seed} onComplete={forwardCompletion} />;
     case "word_bank":
       return <WordBank question={question} seed={seed} onComplete={forwardCompletion} />;
     case "ordering":
@@ -189,18 +189,31 @@ function YesNo({
 
 function FillBlank({
   question,
+  seed,
   onComplete,
 }: {
   question: FillBlankQuestion;
+  seed: string;
   onComplete?: QuizCompletion;
 }) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const [value, setValue] = useState("");
   const [showResult, setShowResult] = useState(false);
   const isCorrect = normalizeAnswer(value) === normalizeAnswer(question.answer);
+  const options = useMemo(() => {
+    const configured = question.options ?? [];
+    const answer = question.answer;
+    if (configured.length >= 3) return seededShuffle(`${seed}:fill`, configured);
+    const numeric = Number(answer.replace(/[^0-9.-]/g, ""));
+    const generated = Number.isFinite(numeric) && answer.match(/\d/)
+      ? [answer, `${Math.round(numeric * 0.5)}`, `${Math.round(numeric * 1.5)}`, `${Math.round(numeric * 2)}`]
+      : locale === "id"
+        ? [answer, "anggaran", "risiko", "arus kas"]
+        : [answer, "budget", "risk", "cash flow"];
+    return seededShuffle(`${seed}:fill`, Array.from(new Set([...configured, ...generated]))).slice(0, 4);
+  }, [locale, question.answer, question.options, seed]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = () => {
     if (!value.trim() || showResult) return;
     setShowResult(true);
     onComplete?.(isCorrect);
@@ -209,24 +222,36 @@ function FillBlank({
   return (
     <QuizCardShell kicker="Fill in the blank" kickerIcon={<TypeIcon />} tint="info">
       <h3 className="mt-3 text-lg font-semibold leading-snug text-foreground">{question.question}</h3>
-      <form onSubmit={handleSubmit} className="mt-4 space-y-3">
-        <input
-          type="text"
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          disabled={showResult}
-          placeholder={t("quiz.typeAnswer")}
-          className="w-full rounded-md border border-muted bg-surface px-4 py-3.5 text-sm text-foreground outline-none transition-colors focus:border-primary"
-          aria-label={t("quiz.typeAnswer")}
-        />
-        <button
-          type="submit"
-          disabled={showResult || !value.trim()}
-          className="w-full rounded-md bg-primary px-5 py-3.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-[0.98] disabled:opacity-50"
-        >
-          {t("quiz.checkAnswer")}
-        </button>
-      </form>
+      <p className="mt-2 text-xs text-muted-foreground">{t("quiz.chooseAnswer")}</p>
+      <div className="mt-4 grid gap-2 sm:grid-cols-2">
+        {options.map((option) => {
+          const selected = value === option;
+          const correct = showResult && normalizeAnswer(option) === normalizeAnswer(question.answer);
+          const wrong = showResult && selected && !correct;
+          return (
+            <button
+              key={option}
+              type="button"
+              onClick={() => { if (!showResult) setValue(option); }}
+              disabled={showResult}
+              aria-pressed={selected}
+              className={`rounded-md border px-4 py-3 text-left text-sm font-semibold transition-colors disabled:cursor-default ${
+                correct ? "border-success bg-success/10 text-success" : wrong ? "border-danger bg-danger/5 text-danger" : selected ? "border-primary bg-primary/10 text-primary" : "border-muted bg-surface text-foreground hover:border-primary/40 hover:bg-primary/5"
+              }`}
+            >
+              {option}
+            </button>
+          );
+        })}
+      </div>
+      <button
+        type="button"
+        onClick={handleSubmit}
+        disabled={showResult || !value}
+        className="mt-4 w-full rounded-md bg-primary px-5 py-3.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-[0.98] disabled:opacity-50"
+      >
+        {t("quiz.checkAnswer")}
+      </button>
       {showResult && <Explanation isCorrect={isCorrect} text={question.explanation} correctAnswer={question.answer} />}
     </QuizCardShell>
   );
@@ -406,7 +431,8 @@ function Matching({
   const [showResult, setShowResult] = useState(false);
 
   const filled = leftItems.every((left) => matches[left] != null);
-  const isCorrect = leftItems.every((left) => matches[left] === question.answer[left]);
+  const correctFor = (left: string) => question.answer[left] ?? question.pairs.find(([term]) => term === left)?.[1];
+  const isCorrect = leftItems.every((left) => matches[left] === correctFor(left));
 
   const assign = (left: string, right: string) => {
     if (showResult) return;
@@ -440,7 +466,7 @@ function Matching({
                 disabled={showResult}
                 className={`rounded-md border px-3 py-2 text-sm font-semibold transition-colors disabled:cursor-default ${
                   showResult
-                    ? matches[left] === question.answer[left]
+                    ? matches[left] === correctFor(left)
                       ? "border-success bg-success/10 text-success"
                       : "border-danger bg-danger/5 text-danger"
                     : "border-primary bg-primary/10 text-primary hover:bg-primary/20"
@@ -477,7 +503,7 @@ function Matching({
         <Explanation
           isCorrect={isCorrect}
           text={question.explanation}
-          correctAnswer={leftItems.map((left) => `${left}: ${question.answer[left]}`).join(" · ")}
+          correctAnswer={leftItems.map((left) => `${left}: ${correctFor(left) ?? ""}`).join(" · ")}
         />
       )}
     </QuizCardShell>

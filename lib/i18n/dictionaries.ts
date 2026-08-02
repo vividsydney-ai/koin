@@ -145,6 +145,7 @@ export interface Dictionary {
   "quiz.no": string;
   "quiz.checkAnswer": string;
   "quiz.typeAnswer": string;
+  "quiz.chooseAnswer": string;
   "quiz.tapTwoItems": string;
   "quiz.tapDefinition": string;
   "quiz.notSupported": string;
@@ -458,6 +459,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "quiz.no": "No",
     "quiz.checkAnswer": "Check answer",
     "quiz.typeAnswer": "Type your answer",
+    "quiz.chooseAnswer": "Choose the best answer",
     "quiz.tapTwoItems": "Tap two items to swap their positions.",
     "quiz.tapDefinition": "Tap a definition to match it with each term.",
     "quiz.notSupported": "This question type ({type}) is not supported yet.",
@@ -614,7 +616,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "library.allLanguages": "All languages",
     "library.synopsis": "What this source covers",
     "library.relevance": "Why it matters to you",
-    "library.readMore": "Read more",
+    "library.readMore": "See summary",
     "library.showLess": "Show less",
     "profile.locked": "Locked",
     "profile.keepLearning": "Keep learning to unlock.",
@@ -763,6 +765,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "quiz.no": "Tidak",
     "quiz.checkAnswer": "Periksa jawaban",
     "quiz.typeAnswer": "Ketik jawabanmu",
+    "quiz.chooseAnswer": "Pilih jawaban yang paling tepat",
     "quiz.tapTwoItems": "Ketuk dua item untuk menukar posisinya.",
     "quiz.tapDefinition": "Ketuk definisi untuk mencocokkannya dengan setiap istilah.",
     "quiz.notSupported": "Tipe soal ({type}) belum didukung.",
@@ -919,7 +922,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "library.allLanguages": "Semua bahasa",
     "library.synopsis": "Apa yang dibahas sumber ini",
     "library.relevance": "Mengapa ini penting bagimu",
-    "library.readMore": "Baca selengkapnya",
+    "library.readMore": "Lihat ringkasan",
     "library.showLess": "Tampilkan lebih sedikit",
     "profile.locked": "Terkunci",
     "profile.keepLearning": "Terus belajar untuk membuka.",
