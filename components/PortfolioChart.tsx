@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { gsap } from "gsap";
 import {
   getPortfolioValueHistory,
   type PortfolioHistoryRange,
@@ -53,6 +54,7 @@ export default function PortfolioChart({ userId, totalValue }: { userId: string;
   const [range, setRange] = useState<PortfolioHistoryRange>("1M");
   const [points, setPoints] = useState<PortfolioValueSnapshot[]>([]);
   const [loading, setLoading] = useState(true);
+  const visualRef = useRef<SVGGElement>(null);
 
   useEffect(() => {
     let active = true;
@@ -76,6 +78,21 @@ export default function PortfolioChart({ userId, totalValue }: { userId: string;
   const first = displayPoints[0]?.totalValue ?? totalValue;
   const change = totalValue - first;
   const isPositive = change >= 0;
+  const hasMovementHistory = points.length > 1;
+
+  useLayoutEffect(() => {
+    if (!visualRef.current || loading) return;
+
+    const media = gsap.matchMedia();
+    media.add("(prefers-reduced-motion: no-preference)", () => {
+      gsap.fromTo(
+        visualRef.current,
+        { autoAlpha: 0.45, scaleX: 0.985, transformOrigin: "50% 50%" },
+        { autoAlpha: 1, scaleX: 1, duration: 0.22, ease: "power3.out", overwrite: "auto" }
+      );
+    });
+    return () => media.revert();
+  }, [hasMovementHistory, loading, path.line, range]);
 
   return (
     <section className="rounded-[18px] border border-muted/60 bg-surface p-4 shadow-sm sm:p-5" aria-label="Your portfolio performance">
@@ -107,27 +124,24 @@ export default function PortfolioChart({ userId, totalValue }: { userId: string;
         {loading ? (
           <div className="h-full animate-pulse rounded-xl bg-muted" />
         ) : (
-          <svg viewBox="0 0 100 60" preserveAspectRatio="none" className="h-full w-full" role="img" aria-label={`${range} portfolio value chart`}>
-            <defs>
-              <linearGradient id="portfolio-area" x1="0" x2="0" y1="0" y2="1">
-                <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.28" />
-                <stop offset="100%" stopColor="var(--primary)" stopOpacity="0.02" />
-              </linearGradient>
-            </defs>
+          <svg viewBox="0 0 100 60" preserveAspectRatio="none" className="h-full w-full motion-safe:transition-opacity motion-safe:duration-200" role="img" aria-label={`${range} portfolio value chart`}>
             <path d="M0,54 H100" stroke="var(--border)" strokeWidth="0.45" />
-            <path d={path.area} fill="url(#portfolio-area)" />
-            <path d={path.line} fill="none" stroke="var(--primary)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" vectorEffect="non-scaling-stroke" />
+            <g ref={visualRef}>
+              {hasMovementHistory && <path d={path.area} fill="var(--primary)" fillOpacity="0.08" />}
+              <path d={path.line} fill="none" stroke="var(--primary)" strokeOpacity={hasMovementHistory ? "1" : "0.58"} strokeLinecap="round" strokeLinejoin="round" strokeWidth={hasMovementHistory ? "1.5" : "1"} vectorEffect="non-scaling-stroke" />
+              {!hasMovementHistory && <circle cx="5" cy="46" r="1.6" fill="var(--surface)" stroke="var(--primary)" strokeWidth="0.8" vectorEffect="non-scaling-stroke" />}
+            </g>
           </svg>
         )}
       </div>
 
       <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
         <span>{displayPoints[0] ? new Date(`${displayPoints[0].date}T00:00:00`).toLocaleDateString("id-ID", { day: "numeric", month: "short" }) : "—"}</span>
-        <span>{points.length > 1 ? `${points.length} daily snapshots` : "First snapshot recorded"}</span>
+        <span>{hasMovementHistory ? `${points.length} daily snapshots` : "Starting value"}</span>
         <span>{formatCompact(totalValue)}</span>
       </div>
       {points.length < 2 && !loading && (
-        <p className="mt-3 text-xs leading-relaxed text-muted-foreground">The chart will gain detail as daily EOD valuations are recorded. No trend is invented before then.</p>
+        <p className="mt-3 text-xs leading-relaxed text-muted-foreground">Your starting value is recorded. Daily IDX EOD valuations will extend this line as the market moves.</p>
       )}
     </section>
   );

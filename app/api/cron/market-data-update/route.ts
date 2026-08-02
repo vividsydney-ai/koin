@@ -8,7 +8,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    const result = await updateMarketData();
+    const result = await updateMarketData(undefined, { refreshPortfolioValues: true });
     return NextResponse.json(result);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";

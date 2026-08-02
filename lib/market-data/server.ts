@@ -19,6 +19,10 @@ export interface UpdateMarketDataResult {
   errors: string[];
 }
 
+export interface UpdateMarketDataOptions {
+  refreshPortfolioValues?: boolean;
+}
+
 interface ActiveInstrument {
   symbol: string;
   name: string;
@@ -175,7 +179,10 @@ export async function fetchIdxEodPrices(
  * drift prices for any active catalogue symbols that are missing. This keeps the paper
  * trading simulator alive even when the public endpoint is down.
  */
-export async function updateMarketData(tradeDate?: string): Promise<UpdateMarketDataResult> {
+export async function updateMarketData(
+  tradeDate?: string,
+  options: UpdateMarketDataOptions = {}
+): Promise<UpdateMarketDataResult> {
   const targetDate = tradeDate ? new Date(tradeDate) : new Date();
   const dateString = targetDate.toISOString().split("T")[0];
   const errors: string[] = [];
@@ -243,6 +250,15 @@ export async function updateMarketData(tradeDate?: string): Promise<UpdateMarket
   }
 
   const unavailableSymbols = missingSymbols.filter((symbol) => !simulatedSymbols.has(symbol));
+
+  if (options.refreshPortfolioValues) {
+    const { error } = await supabase.rpc("refresh_paper_portfolio_values", {
+      p_snapshot_date: dateString,
+    });
+    if (error) {
+      errors.push(`Portfolio revaluation error: ${error.message}`);
+    }
+  }
 
   return {
     tradeDate: dateString,
