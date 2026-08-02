@@ -194,6 +194,39 @@ describe("getTopicsWithChapters", () => {
     ]);
   });
 
+  it("uses lesson progression to order topics in every chapter", async () => {
+    mockTopicsResponse([
+      {
+        id: "t-late",
+        slug: "net-worth",
+        name: "Net Worth",
+        name_id: "Kekayaan Bersih",
+        display_order: 1,
+        chapter: "Money Basics",
+        lessons: [
+          { id: "l-late", slug: "net-worth-know-your-financial-position", title: "Net Worth", lesson_number: 58, difficulty: "beginner", xp_reward: 10, estimated_minutes: 3, summary: "" },
+        ],
+      },
+      {
+        id: "t-early",
+        slug: "value",
+        name: "Value",
+        name_id: "Nilai",
+        display_order: 99,
+        chapter: "Money Basics",
+        lessons: [
+          { id: "l-early", slug: "value-and-purchasing-power", title: "Value", lesson_number: 2, difficulty: "beginner", xp_reward: 10, estimated_minutes: 3, summary: "" },
+        ],
+      },
+    ]);
+
+    const chapter = (await getTopicsWithChapters())[0];
+    expect(chapter.topics.flatMap((topic) => topic.lessons.map((lesson) => lesson.slug))).toEqual([
+      "value-and-purchasing-power",
+      "net-worth-know-your-financial-position",
+    ]);
+  });
+
   it("orders progression lessons with the same Chapter 08 contract", () => {
     const ordered = orderCurriculumLessons([
       { id: "tax", slug: "taxes-on-returns", lessonNumber: 35, chapter: "Investing in Indonesia" },
