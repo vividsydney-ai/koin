@@ -35,7 +35,7 @@ import { getDailyFocusChallenge, getLocalTimeZone, type DailyFocusState } from "
 export default function Home() {
   const { user, profile, loading: authLoading } = useAuth(true);
   const pathname = usePathname();
-  const { t } = useLocale();
+  const { locale, t } = useLocale();
   const [streak, setStreak] = useState<StreakSummary | null>(null);
   const [xp, setXp] = useState<XpSummary | null>(null);
   const [koinPoints, setKoinPoints] = useState<KoinPointsSummary | null>(null);
@@ -66,7 +66,7 @@ export default function Home() {
 
       // Refresh adaptive recommendations in the background (inactivity / drawdown checks).
       await checkAdaptiveTriggers();
-      const recommendationData = await getLessonRecommendations(user.id);
+      const recommendationData = await getLessonRecommendations(user.id, locale);
 
       if (!mounted) return;
       setStreak(streakData);
@@ -84,7 +84,7 @@ export default function Home() {
     return () => {
       mounted = false;
     };
-  }, [user, pathname]);
+  }, [user, pathname, locale]);
 
   const isLoading = authLoading || loading;
 

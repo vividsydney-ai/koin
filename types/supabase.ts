@@ -2366,6 +2366,7 @@ export type Database = {
           id: string
           lesson_id: string
           reason: string
+          reason_id: string | null
           trigger_id: string | null
           user_id: string
         }
@@ -2375,6 +2376,7 @@ export type Database = {
           id?: string
           lesson_id: string
           reason: string
+          reason_id?: string | null
           trigger_id?: string | null
           user_id: string
         }
@@ -2384,6 +2386,7 @@ export type Database = {
           id?: string
           lesson_id?: string
           reason?: string
+          reason_id?: string | null
           trigger_id?: string | null
           user_id?: string
         }

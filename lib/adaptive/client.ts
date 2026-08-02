@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/auth/client";
+import type { Locale } from "@/lib/i18n/types";
 
 export interface LessonRecommendation {
   id: string;
@@ -10,11 +11,16 @@ export interface LessonRecommendation {
   createdAt: string;
 }
 
-export async function getLessonRecommendations(userId: string): Promise<LessonRecommendation[]> {
+const ENGLISH_REASON_FALLBACK = "A lesson selected to support your learning journey.";
+
+export async function getLessonRecommendations(
+  userId: string,
+  locale: Locale
+): Promise<LessonRecommendation[]> {
   const { data, error } = await supabase
     .from("user_lesson_recommendations")
     .select(
-      "id, lesson_id, reason, dismissed, created_at, lessons(slug, title)"
+      "id, lesson_id, reason, reason_id, dismissed, created_at, lessons(slug, title, title_id)"
     )
     .eq("user_id", userId)
     .eq("dismissed", false)
@@ -28,12 +34,15 @@ export async function getLessonRecommendations(userId: string): Promise<LessonRe
   return (
     (data as Record<string, unknown>[])?.map((row) => {
       const lesson = (row.lessons as Record<string, unknown>) ?? {};
+      const englishReason = String(row.reason_id ?? "").trim();
+      const englishTitle = String(lesson.title ?? "Recommended lesson");
+      const indonesianTitle = String(lesson.title_id ?? "").trim();
       return {
         id: String(row.id ?? ""),
         lessonId: String(row.lesson_id ?? ""),
         slug: String(lesson.slug ?? ""),
-        title: String(lesson.title ?? "Recommended lesson"),
-        reason: String(row.reason ?? ""),
+        title: locale === "id" && indonesianTitle ? indonesianTitle : englishTitle,
+        reason: locale === "id" ? String(row.reason ?? "") : englishReason || ENGLISH_REASON_FALLBACK,
         dismissed: Boolean(row.dismissed ?? false),
         createdAt: String(row.created_at ?? new Date().toISOString()),
       };

@@ -69,7 +69,7 @@ export default function LearnPage() {
         getAllLessons(),
         getTopicsWithChapters(),
         user ? getLessonProgress(user.id) : Promise.resolve(null),
-        user ? getLessonRecommendations(user.id) : Promise.resolve([]),
+        user ? getLessonRecommendations(user.id, locale) : Promise.resolve([]),
         user
           ? getUserLearningPath(user.id)
           : Promise.resolve({ foundationZeroRequired: true, startingLessonId: null, assessmentScore: null }),
@@ -129,7 +129,7 @@ export default function LearnPage() {
     return () => {
       mounted = false;
     };
-  }, [user]);
+  }, [user, locale]);
 
   const firstUnlockedIncomplete = loading
     ? null

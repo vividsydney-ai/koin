@@ -136,6 +136,7 @@ export async function completeOnboarding(
       user_id: userId,
       lesson_id: lesson.id,
       reason: "Pelajaran pengayaan berdasarkan hasil asesmen awal.",
+      reason_id: "An enrichment lesson based on your onboarding assessment.",
     }));
 
     if (recommendationRows.length > 0) {
