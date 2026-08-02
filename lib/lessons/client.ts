@@ -2,7 +2,7 @@ import { supabase } from "@/lib/auth/client";
 import type { Locale } from "@/lib/i18n/types";
 import type { LessonStatus } from "./gating";
 import type { QuizQuestion } from "./question";
-import { orderCurriculumLessons, curriculumChapterNumber } from "./curriculum";
+import { orderCurriculumLessons, curriculumChapterNumber, curriculumLessonRank } from "./curriculum";
 import { requiresChapterMission } from "./mastery";
 import { completeChapterMissionSchema } from "@/lib/schemas/lessons";
 
@@ -650,8 +650,12 @@ function chapterDisplayOrder(title: string): number {
   return index === -1 ? Number.MAX_SAFE_INTEGER : index;
 }
 
-function lessonDisplayOrder(lesson: { lesson_number: number }): number {
-  return lesson.lesson_number;
+function lessonDisplayOrder(lesson: { slug: string; lesson_number: number }, chapter: string): number {
+  return curriculumLessonRank({
+    chapter,
+    slug: lesson.slug,
+    lessonNumber: lesson.lesson_number,
+  });
 }
 
 /**
@@ -725,9 +729,14 @@ export async function getTopicsWithChapters(
   const chaptersMap = new Map<string, Chapter>();
 
   for (const topic of data ?? []) {
+    const chapterTitle =
+      topic.chapter?.trim() ||
+      (useFallback ? TOPIC_SLUG_TO_CHAPTER[topic.slug] : undefined) ||
+      "Uncategorized";
+
     const lessons = (topic.lessons ?? [])
       .filter((l) => l.is_published !== false)
-      .sort((a, b) => lessonDisplayOrder(a) - lessonDisplayOrder(b))
+      .sort((a, b) => lessonDisplayOrder(a, chapterTitle) - lessonDisplayOrder(b, chapterTitle))
       .map((l) => ({
         id: l.id,
         slug: l.slug,
@@ -740,11 +749,6 @@ export async function getTopicsWithChapters(
         summary: l.summary,
         summaryId: l.summary_id ?? null,
       }));
-
-    const chapterTitle =
-      topic.chapter?.trim() ||
-      (useFallback ? TOPIC_SLUG_TO_CHAPTER[topic.slug] : undefined) ||
-      "Uncategorized";
 
     if (!chaptersMap.has(chapterTitle)) {
       chaptersMap.set(chapterTitle, {
@@ -781,7 +785,24 @@ export async function getTopicsWithChapters(
   });
 
   for (const chapter of chapters) {
-    chapter.topics.sort((a, b) => (a.displayOrder ?? Infinity) - (b.displayOrder ?? Infinity));
+    chapter.topics.sort((a, b) => {
+      const aFirst = a.lessons.length > 0
+        ? Math.min(...a.lessons.map((lesson) => curriculumLessonRank({
+          chapter: chapter.title,
+          slug: lesson.slug,
+          lessonNumber: lesson.lessonNumber,
+        })))
+        : Infinity;
+      const bFirst = b.lessons.length > 0
+        ? Math.min(...b.lessons.map((lesson) => curriculumLessonRank({
+          chapter: chapter.title,
+          slug: lesson.slug,
+          lessonNumber: lesson.lessonNumber,
+        })))
+        : Infinity;
+      if (aFirst !== bFirst) return aFirst - bFirst;
+      return (a.displayOrder ?? Infinity) - (b.displayOrder ?? Infinity);
+    });
   }
 
   return chapters;

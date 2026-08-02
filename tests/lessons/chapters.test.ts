@@ -16,6 +16,7 @@ import {
   findChapterForLesson,
   type Chapter,
 } from "@/lib/lessons/client";
+import { orderCurriculumLessons } from "@/lib/lessons/curriculum";
 
 function createTopicsQueryChain(rows: unknown[]) {
   const chain = {
@@ -158,6 +159,52 @@ describe("getTopicsWithChapters", () => {
 
     const chapters = await getTopicsWithChapters();
     expect(chapters[0].topics.map((t) => t.slug)).toEqual(["foundation_zero", "time_value_money"]);
+  });
+
+  it("uses the canonical Chapter 08 teaching order instead of topic display_order", async () => {
+    mockTopicsResponse([
+      {
+        id: "t-tax",
+        slug: "taxes",
+        name: "Taxes",
+        name_id: "Pajak",
+        display_order: 1,
+        chapter: "Investing in Indonesia",
+        lessons: [
+          { id: "l-tax", slug: "taxes-on-returns", title: "Taxes", lesson_number: 35, difficulty: "beginner", xp_reward: 10, estimated_minutes: 3, summary: "" },
+        ],
+      },
+      {
+        id: "t-stock",
+        slug: "stocks",
+        name: "Stocks",
+        name_id: "Saham",
+        display_order: 99,
+        chapter: "Investing in Indonesia",
+        lessons: [
+          { id: "l-stock", slug: "what-is-a-stock", title: "What Is a Stock?", lesson_number: 31, difficulty: "beginner", xp_reward: 10, estimated_minutes: 3, summary: "" },
+        ],
+      },
+    ]);
+
+    const chapter = (await getTopicsWithChapters())[0];
+    expect(chapter.topics.flatMap((topic) => topic.lessons.map((lesson) => lesson.slug))).toEqual([
+      "what-is-a-stock",
+      "taxes-on-returns",
+    ]);
+  });
+
+  it("orders progression lessons with the same Chapter 08 contract", () => {
+    const ordered = orderCurriculumLessons([
+      { id: "tax", slug: "taxes-on-returns", lessonNumber: 35, chapter: "Investing in Indonesia" },
+      { id: "stock", slug: "what-is-a-stock", lessonNumber: 31, chapter: "Investing in Indonesia" },
+      { id: "broker", slug: "brokerage-account-setup-opening-your-rdn", lessonNumber: 61, chapter: "Investing in Indonesia" },
+    ]);
+    expect(ordered.map((lesson) => lesson.slug)).toEqual([
+      "what-is-a-stock",
+      "brokerage-account-setup-opening-your-rdn",
+      "taxes-on-returns",
+    ]);
   });
 
   it("reports completed counts when a progress map is provided", async () => {
