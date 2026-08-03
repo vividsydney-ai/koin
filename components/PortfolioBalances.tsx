@@ -1,13 +1,13 @@
 "use client";
 
 import { ContextualHelp } from "@/components/ContextualHelp";
+import {
+  formatRupiah,
+  formatRupiahChange,
+  getChangeTone,
+  type ChangeTone,
+} from "@/lib/formatters/rupiah";
 import type { PortfolioValueSnapshot } from "@/lib/trading/client";
-
-const rupiah = new Intl.NumberFormat("id-ID", {
-  style: "currency",
-  currency: "IDR",
-  maximumFractionDigits: 0,
-});
 
 export function getDailyPortfolioChange(
   totalValue: number,
@@ -30,7 +30,7 @@ export function PortfolioBalances({
 }) {
   const dailyChange = getDailyPortfolioChange(totalValue, history);
   const investedValue = Math.max(totalValue - cashBalance, 0);
-  const isPositive = (dailyChange ?? 0) >= 0;
+  const dailyChangeTone = getChangeTone(dailyChange);
 
   return (
     <section
@@ -54,34 +54,30 @@ export function PortfolioBalances({
       <div className="mt-6 grid gap-6 sm:grid-cols-3 sm:gap-8">
         <BalanceMetric
           label="Buying power"
-          value={rupiah.format(cashBalance)}
+          value={formatRupiah(cashBalance)}
           detail="Virtual cash available to place orders"
           help="In Koinaku, buying power is your virtual cash. It goes down when you buy and back up when you sell."
         />
         <BalanceMetric
           label="Invested"
-          value={rupiah.format(investedValue)}
+          value={formatRupiah(investedValue)}
           detail="Latest value of stocks and ETFs you own"
           help="This is what your current holdings are worth at the latest available end-of-day prices. It can rise or fall as those prices change."
         />
         <BalanceMetric
           label="Daily change"
-          value={
-            dailyChange === null
-              ? "—"
-              : `${isPositive ? "+" : ""}${rupiah.format(dailyChange)}`
-          }
+          value={formatRupiahChange(dailyChange)}
           detail={
             dailyChange === null
               ? "First recorded day"
               : "Since the previous EOD valuation"
           }
-          positive={dailyChange === null ? undefined : isPositive}
+          tone={dailyChangeTone}
           help="This compares your portfolio value with its previous end-of-day valuation. A trade can also change today’s recorded balance."
         />
       </div>
       <p className="mt-6 border-t border-muted/60 pt-4 text-xs text-muted-foreground">
-        Your one-time paper grant started at {rupiah.format(startingCash)}. No
+        Your one-time paper grant started at {formatRupiah(startingCash)}. No
         real money is used.
       </p>
     </section>
@@ -93,13 +89,13 @@ function BalanceMetric({
   value,
   detail,
   help,
-  positive,
+  tone,
 }: {
   label: string;
   value: string;
   detail: string;
   help: string;
-  positive?: boolean;
+  tone?: ChangeTone;
 }) {
   return (
     <div>
@@ -112,7 +108,7 @@ function BalanceMetric({
         </ContextualHelp>
       </div>
       <p
-        className={`mt-2 text-2xl font-bold tracking-tight ${positive === undefined ? "text-foreground" : positive ? "text-success" : "text-danger"}`}
+        className={`mt-2 text-2xl font-bold tracking-tight ${tone === "positive" ? "text-success" : tone === "negative" ? "text-danger" : "text-foreground"}`}
       >
         {value}
       </p>

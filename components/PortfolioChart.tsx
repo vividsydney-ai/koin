@@ -4,17 +4,17 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ContextualHelp } from "@/components/ContextualHelp";
 import {
+  formatRupiah,
+  formatRupiahChange,
+  getChangeTone,
+} from "@/lib/formatters/rupiah";
+import {
   getPortfolioValueHistory,
   type PortfolioHistoryRange,
   type PortfolioValueSnapshot,
 } from "@/lib/trading/client";
 
 const RANGES: PortfolioHistoryRange[] = ["1D", "1M", "1Y", "All"];
-const rupiah = new Intl.NumberFormat("id-ID", {
-  style: "currency",
-  currency: "IDR",
-  maximumFractionDigits: 0,
-});
 const compact = new Intl.NumberFormat("id-ID", {
   notation: "compact",
   maximumFractionDigits: 1,
@@ -164,7 +164,13 @@ export default function PortfolioChart({
     >
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <div className="flex items-center">
+          <div className="flex items-center gap-3">
+            <span
+              className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/8 text-primary"
+              aria-hidden="true"
+            >
+              <PortfolioIcon />
+            </span>
             <h2 className="text-base font-bold tracking-tight text-foreground">
               Your portfolio
             </h2>
@@ -176,13 +182,12 @@ export default function PortfolioChart({
             </ContextualHelp>
           </div>
           <p className="mt-3 text-2xl font-bold tracking-tight text-foreground">
-            {rupiah.format(totalValue)}
+            {formatRupiah(totalValue)}
           </p>
           <p
-            className={`mt-1 text-sm font-semibold ${change >= 0 ? "text-success" : "text-danger"}`}
+            className={`mt-1 text-sm font-semibold ${getChangeTone(change) === "positive" ? "text-success" : getChangeTone(change) === "negative" ? "text-danger" : "text-muted-foreground"}`}
           >
-            {change >= 0 ? "+" : ""}
-            {rupiah.format(change)} {range === "1D" ? "today" : `over ${range}`}
+            {formatRupiahChange(change)} {range === "1D" ? "today" : `over ${range}`}
           </p>
         </div>
         <div
@@ -285,5 +290,24 @@ export default function PortfolioChart({
         </p>
       )}
     </section>
+  );
+}
+
+function PortfolioIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-5 w-5"
+    >
+      <path d="M4 18V6" />
+      <path d="M4 18h16" />
+      <path d="m7 14 3-3 3 2 4-5" />
+      <path d="M17 8h-3V5" />
+    </svg>
   );
 }

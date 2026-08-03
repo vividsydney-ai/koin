@@ -5,10 +5,12 @@ import {
   useContext,
   useEffect,
   useId,
+  useLayoutEffect,
   useRef,
   useState,
   type ReactNode,
 } from "react";
+import { createPortal } from "react-dom";
 
 type ContextualHelpState = {
   openId: string | null;
@@ -41,19 +43,51 @@ export function ContextualHelp({
   const generatedId = useId();
   const helpId = `context-help-${generatedId.replace(/:/g, "")}`;
   const containerRef = useRef<HTMLSpanElement>(null);
+  const dialogRef = useRef<HTMLSpanElement>(null);
+  const [position, setPosition] = useState({ top: 0, left: 0 });
 
   const isOpen = context?.openId === helpId;
 
   useEffect(() => {
     if (!isOpen || !context) return;
     const closeOnOutsidePointer = (event: PointerEvent) => {
-      if (!containerRef.current?.contains(event.target as Node))
+      const target = event.target as Node;
+      if (
+        !containerRef.current?.contains(target) &&
+        !dialogRef.current?.contains(target)
+      )
         context.setOpenId(null);
     };
     document.addEventListener("pointerdown", closeOnOutsidePointer);
     return () =>
       document.removeEventListener("pointerdown", closeOnOutsidePointer);
   }, [context, isOpen]);
+
+  useLayoutEffect(() => {
+    if (!isOpen) return;
+    const updatePosition = () => {
+      const anchor = containerRef.current?.getBoundingClientRect();
+      if (!anchor) return;
+      const dialogWidth = 288;
+      const gutter = 12;
+      const preferredLeft =
+        align === "right" ? anchor.right - dialogWidth : anchor.left;
+      setPosition({
+        top: anchor.bottom + 8,
+        left: Math.min(
+          Math.max(gutter, preferredLeft),
+          window.innerWidth - dialogWidth - gutter,
+        ),
+      });
+    };
+    updatePosition();
+    window.addEventListener("resize", updatePosition);
+    window.addEventListener("scroll", updatePosition, true);
+    return () => {
+      window.removeEventListener("resize", updatePosition);
+      window.removeEventListener("scroll", updatePosition, true);
+    };
+  }, [align, isOpen]);
 
   if (!context)
     throw new Error(
@@ -89,16 +123,20 @@ export function ContextualHelp({
           i
         </span>
       </button>
-      {isOpen && (
-        <span
-          id={helpId}
-          role="dialog"
-          aria-label={`${label} explanation`}
-          className={`absolute top-full z-tooltip mt-2 w-72 rounded-xl border border-info/20 bg-surface p-3 text-left text-xs font-normal leading-relaxed text-muted-foreground shadow-lg ${align === "right" ? "right-0" : "left-0"}`}
-        >
-          {children}
-        </span>
-      )}
+      {isOpen &&
+        createPortal(
+          <span
+            ref={dialogRef}
+            id={helpId}
+            role="dialog"
+            aria-label={`${label} explanation`}
+            style={position}
+            className="fixed z-[70] w-72 rounded-xl border border-info/20 bg-surface p-3 text-left text-xs font-normal leading-relaxed text-muted-foreground shadow-lg"
+          >
+            {children}
+          </span>,
+          document.body,
+        )}
     </span>
   );
 }

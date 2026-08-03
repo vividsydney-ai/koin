@@ -26,9 +26,11 @@ describe("ContextualHelp", () => {
     });
 
     fireEvent.click(buyingPower);
-    expect(
-      screen.getByRole("dialog", { name: "Buying power explanation" }),
-    ).toBeInTheDocument();
+    const buyingPowerDialog = screen.getByRole("dialog", {
+      name: "Buying power explanation",
+    });
+    expect(buyingPowerDialog).toBeInTheDocument();
+    expect(buyingPowerDialog.parentElement).toBe(document.body);
     expect(buyingPower).toHaveAttribute("aria-expanded", "true");
 
     fireEvent.click(marketOrder);

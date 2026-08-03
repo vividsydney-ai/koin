@@ -1,6 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 import dynamic from "next/dynamic";
 import { useAuth } from "@/lib/auth/use-auth";
 import {
@@ -9,6 +15,7 @@ import {
   getHoldings,
   getInstruments,
   getMarketData,
+  getMarketDataHistory,
   getPortfolio,
   getPortfolioValueHistory,
   getTrades,
@@ -22,6 +29,15 @@ import {
   type Trade,
   type WatchlistEntry,
 } from "@/lib/trading/client";
+import {
+  formatRupiah,
+  formatRupiahChange,
+  getChangeTone,
+} from "@/lib/formatters/rupiah";
+import {
+  getHoldingMovement,
+  type HoldingMovement,
+} from "@/lib/trading/holding-movement";
 import {
   claimPaperPortfolio,
   getTradeOnboardingStatus,
@@ -40,12 +56,6 @@ import PortfolioChart from "@/components/PortfolioChart";
 
 const TradeOnboarding = dynamic(() => import("./TradeOnboarding"));
 const SHARES_PER_LOT = 100;
-const rupiah = new Intl.NumberFormat("id-ID", {
-  style: "currency",
-  currency: "IDR",
-  maximumFractionDigits: 0,
-});
-
 export default function TradePage() {
   const { user } = useAuth(true);
   const [portfolio, setPortfolio] = useState<Portfolio | null>(null);
@@ -53,6 +63,9 @@ export default function TradePage() {
     PortfolioValueSnapshot[]
   >([]);
   const [holdings, setHoldings] = useState<Holding[]>([]);
+  const [holdingMovements, setHoldingMovements] = useState<
+    Record<string, HoldingMovement>
+  >({});
   const [trades, setTrades] = useState<Trade[]>([]);
   const [marketData, setMarketData] = useState<MarketData[]>([]);
   const [instruments, setInstruments] = useState<Instrument[]>([]);
@@ -86,9 +99,16 @@ export default function TradePage() {
         status.canTrade ? getWatchlist(user.id) : Promise.resolve([]),
       ]);
       const history = p ? await getPortfolioValueHistory(user.id, "1M") : [];
+      const movementEntries = await Promise.all(
+        h.map(async (holding) => [
+          holding.symbol,
+          getHoldingMovement(await getMarketDataHistory(holding.symbol, 2)),
+        ] as const),
+      );
       setPortfolio(p);
       setPortfolioHistory(history);
       setHoldings(h);
+      setHoldingMovements(Object.fromEntries(movementEntries));
       setTrades(t);
       setMarketData(m);
       setInstruments(catalogue);
@@ -284,7 +304,7 @@ export default function TradePage() {
               </button>
             </div>
             <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-start">
-              <main className="min-w-0 space-y-5">
+              <main className="relative z-10 min-w-0 space-y-5">
                 <PortfolioBalances
                   totalValue={portfolioValue}
                   cashBalance={portfolio.cashBalance}
@@ -292,7 +312,11 @@ export default function TradePage() {
                   history={portfolioHistory}
                 />
                 <PortfolioChart userId={user!.id} totalValue={portfolioValue} />
-                <HoldingsCard holdings={holdings} marketData={marketData} />
+                <HoldingsCard
+                  holdings={holdings}
+                  marketData={marketData}
+                  movements={holdingMovements}
+                />
                 <TradesCard trades={trades} />
               </main>
               <aside className="space-y-5 lg:sticky lg:top-5">
@@ -481,14 +505,19 @@ function OrderCard({
   const maxSellLots = holding ? Math.floor(holding.shares / SHARES_PER_LOT) : 0;
   return (
     <section className="rounded-[18px] border border-muted/60 bg-surface p-4 shadow-sm">
-      <div className="flex items-center">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-          Place an order
-        </p>
-        <ContextualHelp label="Paper Trading order">
-          This is a practice order using virtual IDR. It never sends money or an
-          order to IDX.
-        </ContextualHelp>
+      <div className="flex items-center gap-3">
+        <SectionIcon>
+          <OrderIcon />
+        </SectionIcon>
+        <div className="flex items-center">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            Place an order
+          </p>
+          <ContextualHelp label="Paper Trading order">
+            This is a practice order using virtual IDR. It never sends money or
+            an order to IDX.
+          </ContextualHelp>
+        </div>
       </div>
       <div className="mt-4 grid grid-cols-2 gap-2 rounded-xl bg-muted p-1">
         <button
@@ -573,7 +602,7 @@ function OrderCard({
                       <span className="text-right">
                         <span className="block text-xs font-semibold text-foreground">
                           {quote
-                            ? rupiah.format(quote.closePrice)
+                            ? formatRupiah(quote.closePrice)
                             : "Data pending"}
                         </span>
                         <span className="block text-[11px] text-primary">
@@ -603,7 +632,7 @@ function OrderCard({
             </div>
             <div className="text-right">
               <p className="font-semibold text-foreground">
-                {selectedPrice ? rupiah.format(selectedPrice) : "—"}
+                {selectedPrice ? formatRupiah(selectedPrice) : "—"}
               </p>
               <QuoteStatus quote={selectedQuote} className="justify-end" />
             </div>
@@ -646,7 +675,7 @@ function OrderCard({
           <div className="flex justify-between">
             <span className="text-muted-foreground">Estimated cost</span>
             <span className="font-semibold text-foreground">
-              {rupiah.format(estimatedTotal)}
+              {formatRupiah(estimatedTotal)}
             </span>
           </div>
           <div className="mt-1 flex items-center justify-between">
@@ -709,14 +738,19 @@ function WatchlistCard({
     <section className="rounded-[18px] border border-muted/60 bg-surface p-4 shadow-sm">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <div className="flex items-center">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-              IDX watchlist
-            </p>
-            <ContextualHelp label="Watchlist" align="right">
-              A watchlist is only a shortlist of symbols to follow. Adding a
-              symbol here does not buy it.
-            </ContextualHelp>
+          <div className="flex items-center gap-3">
+            <SectionIcon>
+              <WatchlistIcon />
+            </SectionIcon>
+            <div className="flex items-center">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                IDX watchlist
+              </p>
+              <ContextualHelp label="Watchlist" align="right">
+                A watchlist is only a shortlist of symbols to follow. Adding a
+                symbol here does not buy it.
+              </ContextualHelp>
+            </div>
           </div>
           <p className="mt-1 text-xs text-muted-foreground">
             Your saved symbols · delayed EOD
@@ -747,7 +781,7 @@ function WatchlistCard({
               </div>
               <div className="text-right">
                 <p className="text-sm font-semibold text-foreground">
-                  {quote ? rupiah.format(quote.closePrice) : "—"}
+                  {quote ? formatRupiah(quote.closePrice) : "—"}
                 </p>
                 <QuoteStatus quote={quote} className="justify-end" />
               </div>
@@ -921,9 +955,11 @@ function WatchlistDialog({
 function HoldingsCard({
   holdings,
   marketData,
+  movements,
 }: {
   holdings: Holding[];
   marketData: MarketData[];
+  movements: Record<string, HoldingMovement>;
 }) {
   if (!holdings.length)
     return (
@@ -935,26 +971,35 @@ function HoldingsCard({
     );
   return (
     <section className="rounded-[18px] border border-muted/60 bg-surface p-4 shadow-sm">
-      <div className="flex items-center">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-          Holdings
-        </p>
-        <ContextualHelp label="Holdings">
-          A holding is a stock or ETF in your paper portfolio. “Avg” is your
-          average purchase price; the percentage compares its latest value with
-          what you paid.
-        </ContextualHelp>
+      <div className="flex items-center gap-3">
+        <SectionIcon>
+          <HoldingsIcon />
+        </SectionIcon>
+        <div className="flex items-center">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            Holdings
+          </p>
+          <ContextualHelp label="Holdings">
+            A holding is a stock or ETF in your paper portfolio. The movement
+            shown is its latest day-over-day EOD price change, not a live quote.
+          </ContextualHelp>
+        </div>
       </div>
       <div className="mt-3 space-y-3">
         {holdings.map((holding) => {
+          const movement = movements[holding.symbol];
           const price =
+            movement?.latestPrice ??
             marketData.find((item) => item.symbol === holding.symbol)
               ?.closePrice ??
             holding.currentPrice ??
             holding.averageCost;
           const value = holding.shares * price;
-          const cost = holding.shares * holding.averageCost;
-          const returnPct = cost ? ((value - cost) / cost) * 100 : 0;
+          const changeTone = getChangeTone(movement?.change ?? null);
+          const dailyMovement =
+            movement?.changePercent === null || movement?.changePercent === undefined
+              ? "Awaiting prior EOD"
+              : `${formatRupiahChange(movement?.change ?? null)} · ${movement.changePercent > 0 ? "+" : ""}${movement.changePercent.toFixed(2)}% today`;
           return (
             <div
               key={holding.id}
@@ -966,18 +1011,20 @@ function HoldingsCard({
                 </p>
                 <p className="text-xs text-muted-foreground">
                   {holding.shares} shares · avg{" "}
-                  {rupiah.format(holding.averageCost)}
+                  {formatRupiah(holding.averageCost)}
+                </p>
+                <p className="mt-1 text-[11px] text-muted-foreground">
+                  Latest {formatRupiah(price)} · {movement?.isSimulated ? "Simulated EOD" : "IDX EOD"}
                 </p>
               </div>
               <div className="text-right">
                 <p className="font-semibold text-foreground">
-                  {rupiah.format(value)}
+                  {formatRupiah(value)}
                 </p>
                 <p
-                  className={`text-xs font-medium ${returnPct >= 0 ? "text-success" : "text-danger"}`}
+                  className={`text-xs font-medium ${changeTone === "positive" ? "text-success" : changeTone === "negative" ? "text-danger" : "text-muted-foreground"}`}
                 >
-                  {returnPct >= 0 ? "+" : ""}
-                  {returnPct.toFixed(2)}%
+                  {dailyMovement}
                 </p>
               </div>
             </div>
@@ -1022,7 +1069,7 @@ function TradesCard({ trades }: { trades: Trade[] }) {
               </div>
             </div>
             <p className="text-sm font-semibold text-foreground">
-              {rupiah.format(trade.totalAmount)}
+              {formatRupiah(trade.totalAmount)}
             </p>
           </div>
         ))}
@@ -1086,6 +1133,47 @@ function QuoteStatus({
         })}
       </span>
     </p>
+  );
+}
+
+function SectionIcon({ children }: { children: ReactNode }) {
+  return (
+    <span
+      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/8 text-primary"
+      aria-hidden="true"
+    >
+      {children}
+    </span>
+  );
+}
+
+function OrderIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+      <path d="M7 7h11" />
+      <path d="m15 4 3 3-3 3" />
+      <path d="M17 17H6" />
+      <path d="m9 14-3 3 3 3" />
+    </svg>
+  );
+}
+
+function WatchlistIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+      <path d="M6 4.75A1.75 1.75 0 0 1 7.75 3h8.5A1.75 1.75 0 0 1 18 4.75V21l-6-3.5L6 21V4.75Z" />
+    </svg>
+  );
+}
+
+function HoldingsIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+      <rect x="4" y="5" width="16" height="14" rx="2" />
+      <path d="M8 15v-3" />
+      <path d="M12 15V9" />
+      <path d="M16 15v-5" />
+    </svg>
   );
 }
 
