@@ -30,10 +30,12 @@ export function ContextualHelp({
   label,
   children,
   align = "left",
+  compact = false,
 }: {
   label: string;
   children: ReactNode;
   align?: "left" | "right";
+  compact?: boolean;
 }) {
   const context = useContext(ContextualHelpContext);
   const generatedId = useId();
@@ -70,11 +72,19 @@ export function ContextualHelp({
         onKeyDown={(event) => {
           if (event.key === "Escape") context.setOpenId(null);
         }}
-        className="ml-1 inline-flex min-h-11 min-w-11 items-center justify-center rounded-full text-info outline-none transition hover:bg-info/10 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+        className={
+          compact
+            ? "relative inline-flex h-5 w-5 items-center justify-center rounded-full text-info outline-none transition before:absolute before:-inset-3 before:content-[''] hover:bg-info/10 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            : "ml-1 inline-flex min-h-11 min-w-11 items-center justify-center rounded-full text-info outline-none transition hover:bg-info/10 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+        }
       >
         <span
           aria-hidden="true"
-          className="flex h-5 w-5 items-center justify-center rounded-full border border-current text-xs font-bold leading-none"
+          className={
+            compact
+              ? "flex h-4 w-4 items-center justify-center rounded-full border border-current text-[10px] font-bold leading-none"
+              : "flex h-5 w-5 items-center justify-center rounded-full border border-current text-xs font-bold leading-none"
+          }
         >
           i
         </span>

@@ -10,6 +10,7 @@ import {
   getInstruments,
   getMarketData,
   getPortfolio,
+  getPortfolioValueHistory,
   getTrades,
   getWatchlist,
   removeFromWatchlist,
@@ -17,6 +18,7 @@ import {
   type Instrument,
   type MarketData,
   type Portfolio,
+  type PortfolioValueSnapshot,
   type Trade,
   type WatchlistEntry,
 } from "@/lib/trading/client";
@@ -33,6 +35,7 @@ import {
   ContextualHelp,
   ContextualHelpProvider,
 } from "@/components/ContextualHelp";
+import { PortfolioBalances } from "@/components/PortfolioBalances";
 import PortfolioChart from "@/components/PortfolioChart";
 
 const TradeOnboarding = dynamic(() => import("./TradeOnboarding"));
@@ -46,6 +49,9 @@ const rupiah = new Intl.NumberFormat("id-ID", {
 export default function TradePage() {
   const { user } = useAuth(true);
   const [portfolio, setPortfolio] = useState<Portfolio | null>(null);
+  const [portfolioHistory, setPortfolioHistory] = useState<
+    PortfolioValueSnapshot[]
+  >([]);
   const [holdings, setHoldings] = useState<Holding[]>([]);
   const [trades, setTrades] = useState<Trade[]>([]);
   const [marketData, setMarketData] = useState<MarketData[]>([]);
@@ -79,7 +85,9 @@ export default function TradePage() {
         getInstruments(),
         status.canTrade ? getWatchlist(user.id) : Promise.resolve([]),
       ]);
+      const history = p ? await getPortfolioValueHistory(user.id, "1M") : [];
       setPortfolio(p);
+      setPortfolioHistory(history);
       setHoldings(h);
       setTrades(t);
       setMarketData(m);
@@ -115,11 +123,6 @@ export default function TradePage() {
     symbol && lotCount > 0 && selectedPrice > 0 && !executing,
   );
   const portfolioValue = portfolio?.totalValue ?? 0;
-  const totalReturnPct =
-    portfolio && portfolio.startingCash > 0
-      ? ((portfolioValue - portfolio.startingCash) / portfolio.startingCash) *
-        100
-      : 0;
 
   const selectInstrument = (instrument: Instrument) => {
     setSymbol(instrument.symbol);
@@ -282,10 +285,11 @@ export default function TradePage() {
             </div>
             <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-start">
               <main className="min-w-0 space-y-5">
-                <PortfolioSummaryCard
-                  portfolio={portfolio}
-                  portfolioValue={portfolioValue}
-                  totalReturnPct={totalReturnPct}
+                <PortfolioBalances
+                  totalValue={portfolioValue}
+                  cashBalance={portfolio.cashBalance}
+                  startingCash={portfolio.startingCash}
+                  history={portfolioHistory}
                 />
                 <PortfolioChart userId={user!.id} totalValue={portfolioValue} />
                 <HoldingsCard holdings={holdings} marketData={marketData} />
@@ -411,72 +415,6 @@ function LockedState({
       </p>
       <p className="mt-4 text-xs text-muted-foreground">
         Progress: {completedCount} / {requiredCount} required lessons
-      </p>
-    </div>
-  );
-}
-
-function PortfolioSummaryCard({
-  portfolio,
-  portfolioValue,
-  totalReturnPct,
-}: {
-  portfolio: Portfolio;
-  portfolioValue: number;
-  totalReturnPct: number;
-}) {
-  const positive = totalReturnPct >= 0;
-  return (
-    <section className="rounded-[18px] border border-muted/60 bg-surface p-4 shadow-sm sm:p-5">
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Metric
-          label="Portfolio value"
-          value={rupiah.format(portfolioValue)}
-          detail={`${positive ? "+" : ""}${totalReturnPct.toFixed(2)}% since start`}
-          positive={positive}
-        />
-        <Metric
-          label="Buying power"
-          value={rupiah.format(portfolio.cashBalance)}
-          detail="Available to place orders"
-          help="This is virtual cash still available to buy investments. Buying reduces it; selling adds virtual cash back."
-        />
-        <Metric
-          label="Starting portfolio"
-          value={rupiah.format(portfolio.startingCash)}
-          detail="One-time paper grant"
-        />
-      </div>
-    </section>
-  );
-}
-
-function Metric({
-  label,
-  value,
-  detail,
-  positive,
-  help,
-}: {
-  label: string;
-  value: string;
-  detail: string;
-  positive?: boolean;
-  help?: string;
-}) {
-  return (
-    <div>
-      <div className="flex items-center">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-          {label}
-        </p>
-        {help && <ContextualHelp label={label}>{help}</ContextualHelp>}
-      </div>
-      <p className="mt-1 text-xl font-bold text-foreground">{value}</p>
-      <p
-        className={`mt-1 text-xs ${positive === undefined ? "text-muted-foreground" : positive ? "text-success" : "text-danger"}`}
-      >
-        {detail}
       </p>
     </div>
   );
