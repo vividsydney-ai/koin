@@ -33,8 +33,9 @@ function createChartShape(points: PortfolioValueSnapshot[]): ChartShape {
   const values = points.map((point) => point.totalValue);
   const current = values.at(-1) ?? 0;
   const variation = Math.max(Math.abs(current) * 0.015, 1);
-  const rawMin = values.length > 1 ? Math.min(...values) : current - variation;
-  const rawMax = values.length > 1 ? Math.max(...values) : current + variation;
+  const hasMovement = values.some((value) => Math.abs(value - current) >= 1);
+  const rawMin = hasMovement ? Math.min(...values) : current - variation;
+  const rawMax = hasMovement ? Math.max(...values) : current + variation;
   const padding = Math.max((rawMax - rawMin) * 0.18, variation * 0.25);
   const minimum = rawMin - padding;
   const maximum = rawMax + padding;
@@ -98,6 +99,10 @@ export default function PortfolioChart({ userId, totalValue }: { userId: string;
   const firstValue = displayPoints[0]?.totalValue ?? totalValue;
   const change = totalValue - firstValue;
   const hasHistory = points.length > 1;
+  const hasMovement = useMemo(
+    () => displayPoints.some((point) => Math.abs(point.totalValue - firstValue) >= 1),
+    [displayPoints, firstValue]
+  );
 
   useLayoutEffect(() => {
     if (!visualRef.current || loading) return;
@@ -152,9 +157,9 @@ export default function PortfolioChart({ userId, totalValue }: { userId: string;
             <svg viewBox={`0 0 100 ${CHART_HEIGHT}`} preserveAspectRatio="none" className="h-56 w-full overflow-visible" role="img" aria-label={`${range} portfolio value chart`}>
               {[7, LINE_Y, 52].map((y) => <path key={y} d={`M0,${y} H100`} stroke="var(--color-border)" strokeDasharray="2 2" strokeOpacity="0.75" strokeWidth="0.35" />)}
               <g ref={visualRef}>
-                {hasHistory && <path d={chart.area} fill="var(--color-primary)" fillOpacity="0.09" />}
-                <path d={chart.line} fill="none" stroke="var(--color-primary)" strokeLinecap="round" strokeLinejoin="round" strokeOpacity={hasHistory ? "1" : "0.82"} strokeWidth={hasHistory ? "1.2" : "1"} vectorEffect="non-scaling-stroke" />
-                {chart.marker && <circle cx={chart.marker.x} cy={chart.marker.y} r="1.15" fill="var(--color-surface)" stroke="var(--color-primary)" strokeWidth="0.75" vectorEffect="non-scaling-stroke" />}
+                {hasMovement && <path d={chart.area} fill="var(--color-primary)" fillOpacity="0.09" />}
+                <path d={chart.line} fill="none" stroke="var(--color-primary)" strokeLinecap="round" strokeLinejoin="round" strokeOpacity={hasMovement ? "1" : "0.82"} strokeWidth={hasMovement ? "1.2" : "1"} vectorEffect="non-scaling-stroke" />
+                {hasMovement && chart.marker && <circle cx={chart.marker.x} cy={chart.marker.y} r="1.15" fill="var(--color-surface)" stroke="var(--color-primary)" strokeWidth="0.75" vectorEffect="non-scaling-stroke" />}
               </g>
             </svg>
           )}
@@ -166,7 +171,7 @@ export default function PortfolioChart({ userId, totalValue }: { userId: string;
         </div>
       </div>
 
-      {!hasHistory && !loading && <p className="mt-5 text-xs leading-relaxed text-muted-foreground">Your starting value is shown as a baseline. Daily IDX EOD valuations will build the history from here.</p>}
+      {!hasMovement && !loading && <p className="mt-5 text-xs leading-relaxed text-muted-foreground">{hasHistory ? "No portfolio-value change between recorded snapshots yet. Daily IDX EOD valuations will extend the history when your holdings move." : "Your starting value is shown as a baseline. Daily IDX EOD valuations will build the history from here."}</p>}
     </section>
   );
 }
