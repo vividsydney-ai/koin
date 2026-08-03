@@ -43,18 +43,38 @@ const OFFICIAL_EOD_SOURCE_URL =
   "https://www.idx.co.id/id-id/data-pasar/ringkasan-perdagangan/ringkasan-saham/";
 
 const COMPANY_NAMES: Record<string, string> = {
+  ADRO: "Alamtri Resources Indonesia Tbk",
+  AKRA: "AKR Corporindo Tbk",
+  AMMN: "Amman Mineral Internasional Tbk",
+  ANTM: "Aneka Tambang Tbk",
+  ASII: "Astra International Tbk",
   BBCA: "Bank Central Asia Tbk",
   BBNI: "Bank Negara Indonesia (Persero) Tbk",
   BBRI: "Bank Rakyat Indonesia Tbk",
   BMRI: "Bank Mandiri (Persero) Tbk",
+  BRIS: "Bank Syariah Indonesia Tbk",
+  BRMS: "Bumi Resources Minerals Tbk",
+  BUMI: "Bumi Resources Tbk",
+  CPIN: "Charoen Pokphand Indonesia Tbk",
   TLKM: "Telkom Indonesia Tbk",
   GOTO: "GoTo Gojek Tokopedia Tbk",
   ICBP: "Indofood CBP Sukses Makmur Tbk",
   INDF: "Indofood Sukses Makmur Tbk",
+  MDKA: "Merdeka Copper Gold Tbk",
+  PANI: "Pantai Indah Kapuk Dua Tbk",
+  PGAS: "Perusahaan Gas Negara Tbk",
+  PTBA: "Bukit Asam Tbk",
+  TINS: "Timah Tbk",
   UNVR: "Unilever Indonesia Tbk",
+  WIFI: "Solusi Sinergi Digital Tbk",
+  XBES: "BNI-AM ETF MSCI ESG Leaders Indonesia",
+  XBLQ: "Batavia Smart Liquid ETF",
+  XISI: "Premier ETF SMinfra18",
   XISR: "Reksa Dana Indeks Syariah Indonesia ETF",
   XIIT: "Premier ETF Indonesia Financial",
   XISC: "Premier ETF Indonesia Consumer",
+  XMLF: "Mandiri ETF LQ45",
+  XPIN: "Bahana ETF Pefindo I-Grade",
 };
 
 function getAdminClient(): SupabaseClient {
