@@ -662,6 +662,93 @@ export type Database = {
           },
         ]
       }
+      daily_focus_chapter_map: {
+        Row: {
+          chapter: string
+          chapter_number: number
+          created_at: string
+        }
+        Insert: {
+          chapter: string
+          chapter_number: number
+          created_at?: string
+        }
+        Update: {
+          chapter?: string
+          chapter_number?: number
+          created_at?: string
+        }
+        Relationships: []
+      }
+      daily_focus_question_history: {
+        Row: {
+          answered_at: string | null
+          challenge_id: string
+          id: string
+          question_id: string
+          shown_at: string
+          topic: string
+          user_id: string
+          was_correct: boolean | null
+        }
+        Insert: {
+          answered_at?: string | null
+          challenge_id: string
+          id?: string
+          question_id: string
+          shown_at?: string
+          topic: string
+          user_id: string
+          was_correct?: boolean | null
+        }
+        Update: {
+          answered_at?: string | null
+          challenge_id?: string
+          id?: string
+          question_id?: string
+          shown_at?: string
+          topic?: string
+          user_id?: string
+          was_correct?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_focus_question_history_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "daily_focus_challenges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "daily_focus_question_history_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "daily_focus_questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "daily_focus_question_history_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "analytics_activation"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "daily_focus_question_history_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "analytics_first_trade"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "daily_focus_question_history_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       daily_focus_questions: {
         Row: {
           body: Json
@@ -2832,6 +2919,32 @@ export type Database = {
           d30_retention_pct: number | null
           d7_active_users: number | null
           d7_retention_pct: number | null
+        }
+        Relationships: []
+      }
+      daily_focus_content_audit: {
+        Row: {
+          active_questions: number | null
+          malformed_root_payloads: number | null
+          missing_locale_variants: number | null
+          unsupported_types: number | null
+        }
+        Relationships: []
+      }
+      daily_focus_operational_metrics: {
+        Row: {
+          active_learners: number | null
+          activity_date: string | null
+          challenges_completed: number | null
+          challenges_exhausted: number | null
+          challenges_started: number | null
+          completion_rate: number | null
+          correct_answers: number | null
+          correctness_rate: number | null
+          incorrect_answers: number | null
+          questions_answered: number | null
+          questions_shown: number | null
+          repeated_question_exposures: number | null
         }
         Relationships: []
       }
