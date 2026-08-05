@@ -53,11 +53,13 @@ import {
 } from "@/components/ContextualHelp";
 import { PortfolioBalances } from "@/components/PortfolioBalances";
 import PortfolioChart from "@/components/PortfolioChart";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 const TradeOnboarding = dynamic(() => import("./TradeOnboarding"));
 const SHARES_PER_LOT = 100;
 export default function TradePage() {
   const { user } = useAuth(true);
+  const { t } = useLocale();
   const [portfolio, setPortfolio] = useState<Portfolio | null>(null);
   const [portfolioHistory, setPortfolioHistory] = useState<
     PortfolioValueSnapshot[]
@@ -255,14 +257,14 @@ export default function TradePage() {
         <header className="mb-6 flex flex-wrap items-start justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              Paper Trading
+              {t("trade.title")}
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Practice IDX orders with virtual money.
+              {t("trade.subtitle")}
             </p>
           </div>
           <p className="rounded-full border border-primary/20 bg-primary/5 px-3 py-2 text-xs font-semibold text-primary">
-            Paper Trading — no real money is used
+            {t("trade.noRealMoney")}
           </p>
         </header>
 
@@ -489,6 +491,7 @@ function OrderCard({
   holdings: Holding[];
   onExecute: () => void;
 }) {
+  const { t } = useLocale();
   const [open, setOpen] = useState(false);
   const matches = instruments
     .filter((instrument) =>
@@ -511,7 +514,7 @@ function OrderCard({
         </SectionIcon>
         <div className="flex items-center">
           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            Place an order
+            {t("trade.placeOrder")}
           </p>
           <ContextualHelp label="Paper Trading order">
             This is a practice order using virtual IDR. It never sends money or
@@ -525,14 +528,14 @@ function OrderCard({
           onClick={() => setTradeType("buy")}
           className={`min-h-11 rounded-lg text-sm font-semibold ${tradeType === "buy" ? "bg-surface text-success shadow-sm" : "text-muted-foreground"}`}
         >
-          Buy
+          {t("trade.buy")}
         </button>
         <button
           type="button"
           onClick={() => setTradeType("sell")}
           className={`min-h-11 rounded-lg text-sm font-semibold ${tradeType === "sell" ? "bg-surface text-danger shadow-sm" : "text-muted-foreground"}`}
         >
-          Sell
+          {t("trade.sell")}
         </button>
       </div>
       <div className="mt-4 space-y-4">
@@ -541,7 +544,7 @@ function OrderCard({
             htmlFor="instrument-search"
             className="block text-sm font-medium text-foreground"
           >
-            Search IDX stocks and ETFs
+            {t("trade.searchStocksEtfs")}
           </label>
           <input
             id="instrument-search"
@@ -564,7 +567,7 @@ function OrderCard({
               }
               if (event.key === "Escape") setOpen(false);
             }}
-            placeholder="Symbol or company name"
+            placeholder={t("trade.searchSymbol")}
             className="mt-1.5 min-h-11 w-full rounded-xl border border-muted bg-background px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary"
           />
           {open && (
@@ -614,7 +617,7 @@ function OrderCard({
                 })
               ) : (
                 <p className="px-3 py-3 text-sm text-muted-foreground">
-                  No IDX instrument matches that search.
+                {t("trade.noMatches")}
                 </p>
               )}
             </div>
@@ -624,10 +627,10 @@ function OrderCard({
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="font-bold text-foreground">
-                {selectedInstrument?.symbol || "Choose an instrument"}
+                {selectedInstrument?.symbol || t("trade.chooseInstrument")}
               </p>
               <p className="max-w-[210px] truncate text-xs text-muted-foreground">
-                {selectedInstrument?.name || "Search the IDX catalogue above"}
+                {selectedInstrument?.name || t("trade.searchCatalogue")}
               </p>
             </div>
             <div className="text-right">
@@ -644,7 +647,7 @@ function OrderCard({
               htmlFor="lots"
               className="block text-sm font-medium text-foreground"
             >
-              Quantity in lots
+              {t("trade.quantityLots")}
             </label>
             <ContextualHelp label="IDX lots">
               IDX shares are bought and sold in lots. One lot equals 100 shares,
@@ -652,7 +655,7 @@ function OrderCard({
             </ContextualHelp>
           </div>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            1 lot = 100 shares · Market order
+            {t("trade.lotHint")}
           </p>
           <input
             id="lots"
@@ -667,27 +670,27 @@ function OrderCard({
           />
           <p className="mt-1 text-xs text-muted-foreground">
             {tradeType === "buy"
-              ? `Max buy: ${maxBuyLots} lots`
-              : `Available: ${maxSellLots} lots`}
+              ? t("trade.maxBuy").replace("{count}", String(maxBuyLots))
+              : t("trade.available").replace("{count}", String(maxSellLots))}
           </p>
         </div>
         <div className="rounded-xl border border-muted/70 bg-background p-3 text-sm">
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Estimated cost</span>
+            <span className="text-muted-foreground">{t("trade.estimatedCost")}</span>
             <span className="font-semibold text-foreground">
               {formatRupiah(estimatedTotal)}
             </span>
           </div>
           <div className="mt-1 flex items-center justify-between">
             <span className="flex items-center text-muted-foreground">
-              Order type
+              {t("trade.orderType")}
               <ContextualHelp label="Market order" align="right">
                 Koinaku fills this simulated order immediately at the latest
                 available closing price shown for this symbol. It is not a live
                 IDX price or a real broker order.
               </ContextualHelp>
             </span>
-            <span className="font-semibold text-foreground">Market</span>
+            <span className="font-semibold text-foreground">{t("trade.market")}</span>
           </div>
         </div>
         {error && (
@@ -710,8 +713,8 @@ function OrderCard({
           className={`min-h-12 w-full rounded-xl px-4 text-sm font-bold text-white shadow-sm transition disabled:opacity-50 ${tradeType === "buy" ? "bg-success hover:bg-success/90" : "bg-danger hover:bg-danger/90"}`}
         >
           {executing
-            ? "Executing…"
-            : `${tradeType === "buy" ? "Buy" : "Sell"} ${symbol || "order"}`}
+            ? t("trade.executing")
+            : t("trade.execute").replace("{action}", tradeType === "buy" ? t("trade.buy") : t("trade.sell")).replace("{symbol}", symbol || "order")}
         </button>
       </div>
     </section>
@@ -729,6 +732,7 @@ function WatchlistCard({
   marketData: MarketData[];
   onEdit: () => void;
 }) {
+  const { t } = useLocale();
   const rows = watchlist.map((entry) => ({
     entry,
     instrument: instruments.find((item) => item.symbol === entry.symbol),
@@ -744,7 +748,7 @@ function WatchlistCard({
             </SectionIcon>
             <div className="flex items-center">
               <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                IDX watchlist
+                {t("trade.watchlist")}
               </p>
               <ContextualHelp label="Watchlist" align="right">
                 A watchlist is only a shortlist of symbols to follow. Adding a
@@ -753,7 +757,7 @@ function WatchlistCard({
             </div>
           </div>
           <p className="mt-1 text-xs text-muted-foreground">
-            Your saved symbols · delayed EOD
+            {t("trade.savedSymbols")}
           </p>
         </div>
         <button
@@ -761,7 +765,7 @@ function WatchlistCard({
           onClick={onEdit}
           className="min-h-11 rounded-xl border border-muted px-3 text-xs font-bold text-primary hover:bg-primary/5"
         >
-          Edit
+          {t("trade.edit")}
         </button>
       </div>
       {rows.length ? (
@@ -790,8 +794,7 @@ function WatchlistCard({
         </div>
       ) : (
         <div className="mt-3 rounded-xl border border-dashed border-muted p-4 text-sm text-muted-foreground">
-          Save symbols you want to follow. Choose Edit to search the IDX
-          catalogue.
+          {t("trade.watchlistEmpty")}
         </div>
       )}
     </section>
@@ -811,6 +814,7 @@ function WatchlistDialog({
   onAdd: (symbol: string) => Promise<void>;
   onRemove: (symbol: string) => Promise<void>;
 }) {
+  const { t } = useLocale();
   const [query, setQuery] = useState("");
   const [working, setWorking] = useState(false);
   const saved = new Set(watchlist.map((entry) => entry.symbol));
@@ -848,10 +852,10 @@ function WatchlistDialog({
               id="watchlist-title"
               className="text-lg font-bold text-foreground"
             >
-              Edit watchlist
+              {t("trade.editWatchlist")}
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Search an IDX stock or ETF, then add or remove it.
+              {t("trade.editWatchlistBody")}
             </p>
           </div>
           <button
@@ -859,18 +863,18 @@ function WatchlistDialog({
             onClick={onClose}
             className="min-h-11 rounded-xl border border-muted px-3 text-sm font-bold text-foreground"
           >
-            Done
+            {t("trade.done")}
           </button>
         </div>
         <label htmlFor="watchlist-search" className="sr-only">
-          Search symbols to add
+          {t("trade.searchToAdd")}
         </label>
         <input
           id="watchlist-search"
           type="search"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Search symbol or company"
+          placeholder={t("trade.searchCompany")}
           className="mt-5 min-h-11 w-full rounded-xl border border-muted bg-background px-3 text-sm text-foreground outline-none focus:border-primary"
         />
         {query && (
@@ -907,7 +911,7 @@ function WatchlistDialog({
         )}
         <div className="mt-5">
           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            Saved symbols
+            {t("trade.savedSymbolsTitle")}
           </p>
           {watchlist.length ? (
             <div className="mt-2 space-y-1">
@@ -943,7 +947,7 @@ function WatchlistDialog({
             </div>
           ) : (
             <p className="mt-2 text-sm text-muted-foreground">
-              No saved symbols yet.
+              {t("trade.noSavedSymbols")}
             </p>
           )}
         </div>
@@ -961,12 +965,13 @@ function HoldingsCard({
   marketData: MarketData[];
   movements: Record<string, HoldingMovement>;
 }) {
+  const { t } = useLocale();
   if (!holdings.length)
     return (
       <EmptyState
         icon="📊"
-        title="No holdings yet"
-        description="You don't own any stocks. Place your first buy order to start building your paper portfolio."
+        title={t("trade.noHoldings")}
+        description={t("trade.noHoldingsBody")}
       />
     );
   return (
@@ -977,7 +982,7 @@ function HoldingsCard({
         </SectionIcon>
         <div className="flex items-center">
           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            Holdings
+            {t("trade.holdings")}
           </p>
           <ContextualHelp label="Holdings">
             A holding is a stock or ETF in your paper portfolio. The movement
@@ -1014,7 +1019,7 @@ function HoldingsCard({
                   {formatRupiah(holding.averageCost)}
                 </p>
                 <p className="mt-1 text-[11px] text-muted-foreground">
-                  Latest {formatRupiah(price)} · {movement?.isSimulated ? "Simulated EOD" : "IDX EOD"}
+                  {t("trade.latest")} {formatRupiah(price)} · {movement?.isSimulated ? `${t("trade.simulated")} EOD` : t("trade.idxEod")}
                 </p>
               </div>
               <div className="text-right">
@@ -1036,18 +1041,19 @@ function HoldingsCard({
 }
 
 function TradesCard({ trades }: { trades: Trade[] }) {
+  const { t } = useLocale();
   if (!trades.length)
     return (
       <EmptyState
         icon="📝"
-        title="No orders yet"
-        description="Your completed paper-market orders will appear here."
+        title={t("trade.noOrders")}
+        description={t("trade.noOrdersBody")}
       />
     );
   return (
     <section className="rounded-[18px] border border-muted/60 bg-surface p-4 shadow-sm">
       <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-        Recent orders
+        {t("trade.recentOrders")}
       </p>
       <div className="mt-3 space-y-2">
         {trades.slice(0, 20).map((trade) => (
@@ -1079,6 +1085,7 @@ function TradesCard({ trades }: { trades: Trade[] }) {
 }
 
 function DataDisclaimer({ marketData }: { marketData: MarketData[] }) {
+  const { t, locale } = useLocale();
   const latest = marketData
     .map((item) => item.tradeDate)
     .sort()
@@ -1094,10 +1101,10 @@ function DataDisclaimer({ marketData }: { marketData: MarketData[] }) {
           learning rather than a real-world trading decision.
         </ContextualHelp>
       </span>{" "}
-      Latest EOD{" "}
+      {locale === "id" ? "EOD terbaru" : "Latest EOD"}{" "}
       {latest
         ? new Date(`${latest}T00:00:00`).toLocaleDateString("id-ID")
-        : "pending"}
+        : t("trade.dataPending")}
       .
       {simulated
         ? ` ${simulated} displayed quote${simulated === 1 ? " is" : "s are"} simulated because official data was unavailable.`
@@ -1114,17 +1121,18 @@ function QuoteStatus({
   quote?: MarketData;
   className?: string;
 }) {
+  const { t } = useLocale();
   if (!quote)
     return (
       <p className={`text-xs text-muted-foreground ${className}`}>
-        Data pending
+        {t("trade.dataPending")}
       </p>
     );
   return (
     <p
       className={`flex gap-1 text-[11px] ${quote.isSimulated ? "text-warning" : "text-success"} ${className}`}
     >
-      <span>{quote.isSimulated ? "Simulated" : "IDX EOD"}</span>
+      <span>{quote.isSimulated ? t("trade.simulated") : t("trade.idxEod")}</span>
       <span aria-hidden="true">·</span>
       <span>
         {new Date(`${quote.tradeDate}T00:00:00`).toLocaleDateString("id-ID", {

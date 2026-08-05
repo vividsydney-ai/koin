@@ -291,6 +291,49 @@ export interface Dictionary {
   "friends.inviteError": string;
 
   // Trade / price chart
+  "trade.title": string;
+  "trade.subtitle": string;
+  "trade.noRealMoney": string;
+  "trade.placeOrder": string;
+  "trade.watchlist": string;
+  "trade.holdings": string;
+  "trade.recentOrders": string;
+  "trade.edit": string;
+  "trade.done": string;
+  "trade.searchStocksEtfs": string;
+  "trade.searchSymbol": string;
+  "trade.searchCompany": string;
+  "trade.noMatches": string;
+  "trade.chooseInstrument": string;
+  "trade.searchCatalogue": string;
+  "trade.buy": string;
+  "trade.sell": string;
+  "trade.quantityLots": string;
+  "trade.lotHint": string;
+  "trade.maxBuy": string;
+  "trade.available": string;
+  "trade.estimatedCost": string;
+  "trade.orderType": string;
+  "trade.market": string;
+  "trade.execute": string;
+  "trade.executing": string;
+  "trade.noHoldings": string;
+  "trade.noHoldingsBody": string;
+  "trade.noOrders": string;
+  "trade.noOrdersBody": string;
+  "trade.savedSymbols": string;
+  "trade.delayedEod": string;
+  "trade.watchlistBody": string;
+  "trade.watchlistEmpty": string;
+  "trade.editWatchlist": string;
+  "trade.editWatchlistBody": string;
+  "trade.searchToAdd": string;
+  "trade.savedSymbolsTitle": string;
+  "trade.noSavedSymbols": string;
+  "trade.latest": string;
+  "trade.simulated": string;
+  "trade.idxEod": string;
+  "trade.dataPending": string;
   "trade.simulatedPrices": string;
   "trade.simulatedBody": string;
 
@@ -608,6 +651,49 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "friends.inviteError": "Could not invite friend. Try again.",
 
     "trade.simulatedPrices": "Simulated prices",
+    "trade.title": "Paper Trading",
+    "trade.subtitle": "Practice IDX orders with virtual money.",
+    "trade.noRealMoney": "Paper Trading — no real money is used",
+    "trade.placeOrder": "Place an order",
+    "trade.watchlist": "IDX watchlist",
+    "trade.holdings": "Holdings",
+    "trade.recentOrders": "Recent orders",
+    "trade.edit": "Edit",
+    "trade.done": "Done",
+    "trade.searchStocksEtfs": "Search IDX stocks and ETFs",
+    "trade.searchSymbol": "Symbol or company name",
+    "trade.searchCompany": "Search symbol or company",
+    "trade.noMatches": "No IDX instrument matches that search.",
+    "trade.chooseInstrument": "Choose an instrument",
+    "trade.searchCatalogue": "Search the IDX catalogue above",
+    "trade.buy": "Buy",
+    "trade.sell": "Sell",
+    "trade.quantityLots": "Quantity in lots",
+    "trade.lotHint": "1 lot = 100 shares · Market order",
+    "trade.maxBuy": "Max buy: {count} lots",
+    "trade.available": "Available: {count} lots",
+    "trade.estimatedCost": "Estimated cost",
+    "trade.orderType": "Order type",
+    "trade.market": "Market",
+    "trade.execute": "{action} {symbol}",
+    "trade.executing": "Executing…",
+    "trade.noHoldings": "No holdings yet",
+    "trade.noHoldingsBody": "You don't own any stocks. Place your first buy order to start building your paper portfolio.",
+    "trade.noOrders": "No orders yet",
+    "trade.noOrdersBody": "Your completed paper-market orders will appear here.",
+    "trade.savedSymbols": "Your saved symbols · delayed EOD",
+    "trade.delayedEod": "delayed EOD",
+    "trade.watchlistBody": "A watchlist is only a shortlist of symbols to follow. Adding a symbol here does not buy it.",
+    "trade.watchlistEmpty": "Save symbols you want to follow. Choose Edit to search the IDX catalogue.",
+    "trade.editWatchlist": "Edit watchlist",
+    "trade.editWatchlistBody": "Search an IDX stock or ETF, then add or remove it.",
+    "trade.searchToAdd": "Search symbols to add",
+    "trade.savedSymbolsTitle": "Saved symbols",
+    "trade.noSavedSymbols": "No saved symbols yet.",
+    "trade.latest": "Latest",
+    "trade.simulated": "Simulated",
+    "trade.idxEod": "IDX EOD",
+    "trade.dataPending": "Data pending",
     "trade.simulatedBody":
       "some data points are generated when official IDX data is unavailable. For paper-trading practice only.",
     "library.allSources": "All sources",
@@ -914,6 +1000,49 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "friends.inviteError": "Tidak dapat mengundang teman. Coba lagi.",
 
     "trade.simulatedPrices": "Harga simulasi",
+    "trade.title": "Paper Trading",
+    "trade.subtitle": "Latihan order IDX dengan uang virtual.",
+    "trade.noRealMoney": "Paper Trading — tidak menggunakan uang sungguhan",
+    "trade.placeOrder": "Pasang order",
+    "trade.watchlist": "Watchlist IDX",
+    "trade.holdings": "Kepemilikan",
+    "trade.recentOrders": "Order terbaru",
+    "trade.edit": "Edit",
+    "trade.done": "Selesai",
+    "trade.searchStocksEtfs": "Cari saham dan ETF IDX",
+    "trade.searchSymbol": "Simbol atau nama perusahaan",
+    "trade.searchCompany": "Cari simbol atau perusahaan",
+    "trade.noMatches": "Tidak ada instrumen IDX yang cocok dengan pencarian itu.",
+    "trade.chooseInstrument": "Pilih instrumen",
+    "trade.searchCatalogue": "Cari di katalog IDX di atas",
+    "trade.buy": "Beli",
+    "trade.sell": "Jual",
+    "trade.quantityLots": "Jumlah lot",
+    "trade.lotHint": "1 lot = 100 saham · Market order",
+    "trade.maxBuy": "Maks. beli: {count} lot",
+    "trade.available": "Tersedia: {count} lot",
+    "trade.estimatedCost": "Perkiraan biaya",
+    "trade.orderType": "Jenis order",
+    "trade.market": "Market",
+    "trade.execute": "{action} {symbol}",
+    "trade.executing": "Menjalankan…",
+    "trade.noHoldings": "Belum ada kepemilikan",
+    "trade.noHoldingsBody": "Kamu belum memiliki saham. Pasang order beli pertama untuk mulai membangun portofolio latihan.",
+    "trade.noOrders": "Belum ada order",
+    "trade.noOrdersBody": "Order paper market yang selesai akan muncul di sini.",
+    "trade.savedSymbols": "Simbol tersimpan · EOD tertunda",
+    "trade.delayedEod": "EOD tertunda",
+    "trade.watchlistBody": "Watchlist hanya daftar simbol untuk dipantau. Menambahkan simbol tidak berarti membelinya.",
+    "trade.watchlistEmpty": "Simpan simbol yang ingin kamu pantau. Pilih Edit untuk mencari di katalog IDX.",
+    "trade.editWatchlist": "Edit watchlist",
+    "trade.editWatchlistBody": "Cari saham atau ETF IDX, lalu tambahkan atau hapus.",
+    "trade.searchToAdd": "Cari simbol untuk ditambahkan",
+    "trade.savedSymbolsTitle": "Simbol tersimpan",
+    "trade.noSavedSymbols": "Belum ada simbol tersimpan.",
+    "trade.latest": "Terakhir",
+    "trade.simulated": "Simulasi",
+    "trade.idxEod": "EOD IDX",
+    "trade.dataPending": "Data menunggu",
     "trade.simulatedBody":
       "beberapa titik data dibuat saat data resmi IDX tidak tersedia. Hanya untuk latihan paper trading.",
     "library.allSources": "Semua sumber",
