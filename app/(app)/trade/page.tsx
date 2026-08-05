@@ -148,7 +148,10 @@ export default function TradePage() {
 
   const selectInstrument = (instrument: Instrument) => {
     setSymbol(instrument.symbol);
-    setInstrumentQuery(`${instrument.symbol} — ${instrument.name}`);
+    // Keep the combobox value searchable after selection. Rendering the full
+    // "SYMBOL — company" label here makes the filtered catalogue empty on an
+    // exact match because the filter intentionally tokenises symbol/name/type.
+    setInstrumentQuery(instrument.symbol);
     setSuccess(null);
     setError(null);
   };
