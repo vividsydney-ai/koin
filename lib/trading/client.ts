@@ -327,11 +327,7 @@ export interface MarketDataPoint {
   isSimulated: boolean;
 }
 
-/**
- * Daily close history for one symbol, oldest-first. The market_data table is
- * public-read (no RLS — see migration 008), so this uses a plain table select
- * like the other client queries. Used by the Trade page price chart.
- */
+/** Daily close history for one symbol, oldest-first, through the safe RPC boundary. */
 export async function getMarketDataHistory(
   symbol: string,
   days = 30

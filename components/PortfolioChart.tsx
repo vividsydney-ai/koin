@@ -119,9 +119,13 @@ export default function PortfolioChart({
       },
     ];
   }, [points, totalValue]);
+  // The latest mark-to-market point is authoritative for this chart. The
+  // portfolio row may still contain the last trade/snapshot value while a
+  // delayed EOD close has already moved the holdings.
+  const chartTotalValue = points.at(-1)?.totalValue ?? totalValue;
   const chart = useMemo(() => createChartShape(displayPoints), [displayPoints]);
   const firstValue = displayPoints[0]?.totalValue ?? totalValue;
-  const change = totalValue - firstValue;
+  const change = chartTotalValue - firstValue;
   const hasHistory = points.length > 1;
   const hasMovement = useMemo(
     () =>
@@ -182,7 +186,7 @@ export default function PortfolioChart({
             </ContextualHelp>
           </div>
           <p className="mt-3 text-2xl font-bold tracking-tight text-foreground">
-            {formatRupiah(totalValue)}
+            {formatRupiah(chartTotalValue)}
           </p>
           <p
             className={`mt-1 text-sm font-semibold ${getChangeTone(change) === "positive" ? "text-success" : getChangeTone(change) === "negative" ? "text-danger" : "text-muted-foreground"}`}
