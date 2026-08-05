@@ -53,6 +53,7 @@ import {
 } from "@/components/ContextualHelp";
 import { PortfolioBalances } from "@/components/PortfolioBalances";
 import PortfolioChart from "@/components/PortfolioChart";
+import PriceChart from "@/components/PriceChart";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 const TradeOnboarding = dynamic(() => import("./TradeOnboarding"));
@@ -85,6 +86,7 @@ export default function TradePage() {
   const [lotCount, setLotCount] = useState(1);
   const [instrumentQuery, setInstrumentQuery] = useState("");
   const [watchlistOpen, setWatchlistOpen] = useState(false);
+  const [selectedHolding, setSelectedHolding] = useState<Holding | null>(null);
 
   const loadDashboard = useCallback(async () => {
     if (!user) return;
@@ -321,6 +323,7 @@ export default function TradePage() {
                   holdings={holdings}
                   marketData={marketData}
                   movements={holdingMovements}
+                  onSelectHolding={setSelectedHolding}
                 />
                 <TradesCard trades={trades} />
               </main>
@@ -364,6 +367,17 @@ export default function TradePage() {
                 onClose={() => setWatchlistOpen(false)}
                 onAdd={addWatchlistSymbol}
                 onRemove={removeWatchlistSymbol}
+              />
+            )}
+            {selectedHolding && (
+              <HoldingDetailDialog
+                holding={selectedHolding}
+                instrument={instruments.find(
+                  (instrument) => instrument.symbol === selectedHolding.symbol,
+                )}
+                marketData={marketData}
+                movement={holdingMovements[selectedHolding.symbol]}
+                onClose={() => setSelectedHolding(null)}
               />
             )}
           </div>
@@ -502,7 +516,7 @@ function OrderCard({
         .toLowerCase()
         .includes(instrumentQuery.toLowerCase()),
     )
-    .slice(0, 8);
+    .slice(0, instruments.length);
   const holding = holdings.find((item) => item.symbol === symbol);
   const maxBuyLots =
     selectedPrice > 0
@@ -577,8 +591,11 @@ function OrderCard({
             <div
               id="instrument-results"
               role="listbox"
-              className="absolute z-20 mt-1 max-h-72 w-full overflow-y-auto rounded-xl border border-muted bg-surface p-1 shadow-lg"
+              className="absolute z-20 mt-1 max-h-96 w-full overflow-y-auto rounded-xl border border-muted bg-surface p-1 shadow-lg"
             >
+              <p className="px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                {t("trade.catalogueCount").replace("{count}", String(instruments.length))}
+              </p>
               {matches.length ? (
                 matches.map((instrument) => {
                   const quote = marketData.find(
@@ -963,10 +980,12 @@ function HoldingsCard({
   holdings,
   marketData,
   movements,
+  onSelectHolding,
 }: {
   holdings: Holding[];
   marketData: MarketData[];
   movements: Record<string, HoldingMovement>;
+  onSelectHolding: (holding: Holding) => void;
 }) {
   const { t } = useLocale();
   if (!holdings.length)
@@ -1009,9 +1028,11 @@ function HoldingsCard({
               ? "Awaiting prior EOD"
               : `${formatRupiahChange(movement?.change ?? null)} · ${movement.changePercent > 0 ? "+" : ""}${movement.changePercent.toFixed(2)}% today`;
           return (
-            <div
+            <button
+              type="button"
               key={holding.id}
-              className="flex items-center justify-between rounded-xl border border-muted/40 bg-background p-3"
+              onClick={() => onSelectHolding(holding)}
+              className="flex min-h-24 w-full items-center justify-between rounded-xl border border-muted/40 bg-background p-3 text-left transition hover:border-primary/30 hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             >
               <div>
                 <p className="font-semibold text-foreground">
@@ -1024,6 +1045,9 @@ function HoldingsCard({
                 <p className="mt-1 text-[11px] text-muted-foreground">
                   {t("trade.latest")} {formatRupiah(price)} · {movement?.isSimulated ? `${t("trade.simulated")} EOD` : t("trade.idxEod")}
                 </p>
+                <p className="mt-1 text-[11px] font-semibold text-primary">
+                  {t("trade.viewHolding")}
+                </p>
               </div>
               <div className="text-right">
                 <p className="font-semibold text-foreground">
@@ -1035,11 +1059,124 @@ function HoldingsCard({
                   {dailyMovement}
                 </p>
               </div>
-            </div>
+            </button>
           );
         })}
       </div>
     </section>
+  );
+}
+
+function HoldingDetailDialog({
+  holding,
+  instrument,
+  marketData,
+  movement,
+  onClose,
+}: {
+  holding: Holding;
+  instrument?: Instrument;
+  marketData: MarketData[];
+  movement?: HoldingMovement;
+  onClose: () => void;
+}) {
+  const { t } = useLocale();
+  const price =
+    movement?.latestPrice ??
+    marketData.find((item) => item.symbol === holding.symbol)?.closePrice ??
+    holding.currentPrice ??
+    holding.averageCost;
+  const value = holding.shares * price;
+  const changeTone = getChangeTone(movement?.change ?? null);
+  const change =
+    movement?.changePercent === null || movement?.changePercent === undefined
+      ? "—"
+      : `${formatRupiahChange(movement.change ?? null)} · ${movement.changePercent > 0 ? "+" : ""}${movement.changePercent.toFixed(2)}%`;
+
+  return (
+    <div
+      className="fixed inset-0 z-[60] flex items-end bg-foreground/30 p-3 sm:items-center sm:justify-center sm:p-6"
+      role="presentation"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
+      <section
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="holding-detail-title"
+        className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-[18px] bg-surface p-5 shadow-xl sm:p-6"
+      >
+        <header className="flex items-start justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <SectionIcon>
+              <HoldingsIcon />
+            </SectionIcon>
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                {t("trade.holdingDetails")}
+              </p>
+              <h2 id="holding-detail-title" className="mt-1 text-xl font-bold text-foreground">
+                {holding.symbol}
+                <span className="ml-2 text-sm font-medium text-muted-foreground">
+                  {instrument?.name || "IDX instrument"}
+                </span>
+              </h2>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label={t("trade.closeHoldingDetails")}
+            className="min-h-11 min-w-11 rounded-xl border border-muted text-xl text-muted-foreground hover:bg-muted"
+          >
+            ×
+          </button>
+        </header>
+
+        <div className="mt-5 grid gap-3 sm:grid-cols-3">
+          <HoldingMetric label={t("trade.currentValue")} value={formatRupiah(value)} />
+          <HoldingMetric label={t("trade.averageCost")} value={formatRupiah(holding.averageCost)} />
+          <HoldingMetric
+            label={t("trade.dailyMovement")}
+            value={change}
+            tone={changeTone}
+          />
+        </div>
+
+        <div className="mt-5 rounded-xl border border-muted/60 bg-background p-3">
+          <p className="mb-3 text-sm font-bold text-foreground">{t("trade.performance")}</p>
+          <PriceChart symbol={holding.symbol} companyName={instrument?.name} />
+        </div>
+
+        <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
+          {t("trade.holdingChartDisclosure")}
+        </p>
+        <div className="mt-4 rounded-xl border border-primary/15 bg-primary/5 p-3 text-sm leading-relaxed text-muted-foreground">
+          <span className="font-semibold text-foreground">{t("trade.chartLearningTitle")}</span>{" "}
+          {t("trade.chartLearningBody")}
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function HoldingMetric({
+  label,
+  value,
+  tone = "neutral",
+}: {
+  label: string;
+  value: string;
+  tone?: "positive" | "negative" | "neutral";
+}) {
+  return (
+    <div className="rounded-xl border border-muted/60 bg-background p-3">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">{label}</p>
+      <p className={`mt-1 text-base font-bold ${tone === "positive" ? "text-success" : tone === "negative" ? "text-danger" : "text-foreground"}`}>
+        {value}
+      </p>
+    </div>
   );
 }
 

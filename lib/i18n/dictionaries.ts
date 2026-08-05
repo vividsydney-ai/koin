@@ -304,6 +304,7 @@ export interface Dictionary {
   "trade.searchSymbol": string;
   "trade.searchCompany": string;
   "trade.noMatches": string;
+  "trade.catalogueCount": string;
   "trade.chooseInstrument": string;
   "trade.searchCatalogue": string;
   "trade.buy": string;
@@ -334,6 +335,16 @@ export interface Dictionary {
   "trade.simulated": string;
   "trade.idxEod": string;
   "trade.dataPending": string;
+  "trade.viewHolding": string;
+  "trade.holdingDetails": string;
+  "trade.closeHoldingDetails": string;
+  "trade.currentValue": string;
+  "trade.averageCost": string;
+  "trade.dailyMovement": string;
+  "trade.performance": string;
+  "trade.holdingChartDisclosure": string;
+  "trade.chartLearningTitle": string;
+  "trade.chartLearningBody": string;
   "trade.simulatedPrices": string;
   "trade.simulatedBody": string;
 
@@ -664,6 +675,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "trade.searchSymbol": "Symbol or company name",
     "trade.searchCompany": "Search symbol or company",
     "trade.noMatches": "No IDX instrument matches that search.",
+    "trade.catalogueCount": "{count} IDX stocks and ETFs",
     "trade.chooseInstrument": "Choose an instrument",
     "trade.searchCatalogue": "Search the IDX catalogue above",
     "trade.buy": "Buy",
@@ -694,6 +706,16 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "trade.simulated": "Simulated",
     "trade.idxEod": "IDX EOD",
     "trade.dataPending": "Data pending",
+    "trade.viewHolding": "View performance",
+    "trade.holdingDetails": "Holding details",
+    "trade.closeHoldingDetails": "Close holding details",
+    "trade.currentValue": "Current value",
+    "trade.averageCost": "Average cost",
+    "trade.dailyMovement": "Daily movement",
+    "trade.performance": "Price performance",
+    "trade.holdingChartDisclosure": "This chart uses the latest available daily close. Simulated points are clearly labelled; it is for practice, not a live market feed.",
+    "trade.chartLearningTitle": "Chart learning next:",
+    "trade.chartLearningBody": "candlesticks, reverse candles, reading a trend, and placing an order with context.",
     "trade.simulatedBody":
       "some data points are generated when official IDX data is unavailable. For paper-trading practice only.",
     "library.allSources": "All sources",
@@ -1013,6 +1035,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "trade.searchSymbol": "Simbol atau nama perusahaan",
     "trade.searchCompany": "Cari simbol atau perusahaan",
     "trade.noMatches": "Tidak ada instrumen IDX yang cocok dengan pencarian itu.",
+    "trade.catalogueCount": "{count} saham dan ETF IDX",
     "trade.chooseInstrument": "Pilih instrumen",
     "trade.searchCatalogue": "Cari di katalog IDX di atas",
     "trade.buy": "Beli",
@@ -1043,6 +1066,16 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "trade.simulated": "Simulasi",
     "trade.idxEod": "EOD IDX",
     "trade.dataPending": "Data menunggu",
+    "trade.viewHolding": "Lihat kinerja",
+    "trade.holdingDetails": "Detail kepemilikan",
+    "trade.closeHoldingDetails": "Tutup detail kepemilikan",
+    "trade.currentValue": "Nilai saat ini",
+    "trade.averageCost": "Harga rata-rata",
+    "trade.dailyMovement": "Pergerakan harian",
+    "trade.performance": "Kinerja harga",
+    "trade.holdingChartDisclosure": "Grafik ini menggunakan harga penutupan harian terbaru yang tersedia. Titik simulasi diberi label jelas; gunakan untuk latihan, bukan sebagai data pasar langsung.",
+    "trade.chartLearningTitle": "Materi grafik berikutnya:",
+    "trade.chartLearningBody": "candlestick, reverse candle, membaca tren, dan memasang order dengan konteks.",
     "trade.simulatedBody":
       "beberapa titik data dibuat saat data resmi IDX tidak tersedia. Hanya untuk latihan paper trading.",
     "library.allSources": "Semua sumber",

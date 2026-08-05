@@ -78,11 +78,11 @@ function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-md flex-1 pb-24 sm:max-w-2xl lg:max-w-4xl xl:max-w-7xl 2xl:max-w-[1440px]">{children}</main>
+      <main className="mx-auto w-full max-w-md flex-1 pb-[calc(6rem+env(safe-area-inset-bottom))] sm:max-w-2xl lg:max-w-4xl xl:max-w-7xl 2xl:max-w-[1440px]">{children}</main>
 
       <Footer />
 
-      <nav className="fixed bottom-0 left-0 right-0 border-t border-border bg-surface">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-surface/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_16px_rgba(31,35,40,0.06)] backdrop-blur-md">
         <ul className="mx-auto flex w-full max-w-md justify-around sm:max-w-2xl lg:max-w-4xl xl:max-w-7xl 2xl:max-w-[1440px]">
           {NAV_ITEMS.map((item) => {
             const isActive =
