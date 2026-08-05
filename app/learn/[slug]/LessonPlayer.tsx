@@ -6,6 +6,7 @@ import {
   getLessonBySlug,
   getLessonVariants,
   getLessonSources,
+  getLessonVisualBlocks,
   getRecentAttemptVariantIds,
   getLessonStatus,
   getChapterCompletionMilestone,
@@ -19,6 +20,8 @@ import {
 import { useAuth } from "@/lib/auth/use-auth";
 import { QuizEngine } from "@/components/lesson/QuizEngine";
 import { LessonChartVisual } from "@/components/charts/LessonChartVisual";
+import { LessonVisualBlocks } from "@/components/lesson/visuals/LessonVisualBlocks";
+import type { LessonVisualBlock } from "@/lib/lessons/visual-block";
 import {
   validateQuestion,
   applyParameters,
@@ -101,6 +104,7 @@ export default function LessonPlayer({
   const [questionVariants, setQuestionVariants] = useState<ContentVariant[]>([]);
   const [activeQuestion, setActiveQuestion] = useState<ProcessedQuestion | null>(null);
   const [sources, setSources] = useState<LessonSource[]>([]);
+  const [visualBlocks, setVisualBlocks] = useState<LessonVisualBlock[]>([]);
   const [loading, setLoading] = useState(true);
   const [step, setStep] = useState(0);
   const [quizDone, setQuizDone] = useState(false);
@@ -117,7 +121,6 @@ export default function LessonPlayer({
   const [alreadyCompleted, setAlreadyCompleted] = useState(false);
   const [chapterMilestone, setChapterMilestone] = useState<ChapterCompletionMilestone | null>(null);
   const startTimeRef = useRef<number>(0);
-
   useEffect(() => {
     if (!chapterMilestone) return;
     const closeOnEscape = (event: KeyboardEvent) => {
@@ -153,11 +156,12 @@ export default function LessonPlayer({
         const level = user ? await getFinancialLiteracyLevel(user.id) : null;
         if (!mounted) return;
 
-        const [fetchedExampleVariants, explanationData, fetchedQuestionVariants, sourceData, recentInfo, lessonStatus] = await Promise.all([
+        const [fetchedExampleVariants, explanationData, fetchedQuestionVariants, sourceData, visualData, recentInfo, lessonStatus] = await Promise.all([
           getLessonVariants(data.id, "example", level, locale),
           getLessonVariants(data.id, "explanation", level, locale),
           getLessonVariants(data.id, "question", level, locale),
           getLessonSources(data.id),
+          getLessonVisualBlocks(data.id),
           user
             ? getRecentAttemptVariantIds(user.id, data.id)
             : Promise.resolve<RecentAttemptInfo>({ ids: new Set(), lastVariantId: null }),
@@ -201,8 +205,11 @@ export default function LessonPlayer({
         const lastAttemptedType = recentInfo.lastVariantId
           ? questionInfos.find((info) => info.variant.id === recentInfo.lastVariantId)?.question.type ?? null
           : null;
+        const visualAppliedQuestions = visualData.length > 0
+          ? questionInfos.filter((info) => info.variant.topicTag === "visual_applied")
+          : [];
         const selectedQuestionVariant = pickRotatedQuestionVariant(
-          questionInfos,
+          visualAppliedQuestions.length > 0 ? visualAppliedQuestions : questionInfos,
           recentInfo.ids,
           lastAttemptedType,
           `${seed}:q:${Date.now()}`
@@ -253,6 +260,7 @@ export default function LessonPlayer({
         setQuestionVariants(questionVariants);
         setActiveQuestion(processedQuestion);
         setSources(sourceData);
+        setVisualBlocks(visualData);
         setAlreadyCompleted(lessonStatus === "completed");
         setShownVariantIds(new Set(example ? [example.id] : []));
         setShownQuestionVariantIds(new Set(processedQuestion?.variantId ? [processedQuestion.variantId] : []));
@@ -514,6 +522,7 @@ export default function LessonPlayer({
               {step === 1 && (
                 <ConceptStep
                   lesson={lesson}
+                  visualBlocks={visualBlocks}
                   onExplainSimpler={
                     explanationVariants.length > 0
                       ? handleExplainSimpler
@@ -774,9 +783,11 @@ function SectionKicker({
 
 function ConceptStep({
   lesson,
+  visualBlocks,
   onExplainSimpler,
 }: {
   lesson: Lesson;
+  visualBlocks: LessonVisualBlock[];
   onExplainSimpler?: () => ContentVariant | null;
 }) {
   const [simplerVariant, setSimplerVariant] = useState<ContentVariant | null>(null);
@@ -805,6 +816,7 @@ function ConceptStep({
         <div className="mt-4 space-y-3">
           <SectionKicker icon={<LightbulbIcon />} label={t("lesson.theIdea")} tone="primary" />
           <SplitParagraphs text={conceptBody} className="space-y-4" />
+          <LessonVisualBlocks blocks={visualBlocks} locale={locale === "id" ? "id" : "en"} placement="concept" />
           {(lesson.chapter === "Reading Trading Charts" || lesson.chapter === "Decision Analysis Lab") && (
             <LessonChartVisual slug={lesson.slug} advanced={lesson.chapter === "Decision Analysis Lab"} />
           )}

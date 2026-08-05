@@ -31,6 +31,11 @@ import {
   type LessonRecommendation,
 } from "@/lib/adaptive/client";
 import { getDailyFocusChallenge, getLocalTimeZone, type DailyFocusState } from "@/lib/focus/client";
+import {
+  getDueLessonRecallPrompt,
+  submitLessonRecallAnswer,
+  type LessonRecallPrompt,
+} from "@/lib/lessons/recall";
 
 export default function Home() {
   const { user, profile, loading: authLoading } = useAuth(true);
@@ -45,6 +50,7 @@ export default function Home() {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [recommendations, setRecommendations] = useState<LessonRecommendation[]>([]);
   const [dailyFocus, setDailyFocus] = useState<DailyFocusState | null>(null);
+  const [recallPrompt, setRecallPrompt] = useState<LessonRecallPrompt | null>(null);
   const [loading, setLoading] = useState(true);
   const [showProgressCard, setShowProgressCard] = useState(false);
 
@@ -53,7 +59,7 @@ export default function Home() {
     const load = async () => {
       if (!user) return;
       setLoading(true);
-      const [streakData, xpData, kpData, badgeData, lessonData, portfolioData, leaderboardData, focusData] = await Promise.all([
+      const [streakData, xpData, kpData, badgeData, lessonData, portfolioData, leaderboardData, focusData, recallData] = await Promise.all([
         getStreak(user.id),
         getXpSummary(user.id),
         getKoinPointsBalance(user.id),
@@ -62,6 +68,7 @@ export default function Home() {
         getPortfolioSnapshot(user.id),
         getLeaderboardSnippet(user.id),
         getDailyFocusChallenge(getLocalTimeZone()),
+        getDueLessonRecallPrompt(locale),
       ]);
 
       // Refresh adaptive recommendations in the background (inactivity / drawdown checks).
@@ -77,6 +84,7 @@ export default function Home() {
       setPortfolio(portfolioData);
       setLeaderboard(leaderboardData);
       setDailyFocus(focusData);
+      setRecallPrompt(recallData);
       setRecommendations(recommendationData);
       setLoading(false);
     };
@@ -118,6 +126,7 @@ export default function Home() {
             <StreakCard streak={streak} />
             <ContinueLessonCard lesson={continueLesson} />
             <DailyFocusCard focus={dailyFocus} />
+            <LessonRecallCard prompt={recallPrompt} locale={locale} onComplete={() => setRecallPrompt(null)} />
             <RecommendationsCard
               recommendations={recommendations}
               onDismiss={async (id) => {
@@ -152,6 +161,77 @@ export default function Home() {
         />
       )}
     </div>
+  );
+}
+
+function LessonRecallCard({
+  prompt,
+  locale,
+  onComplete,
+}: {
+  prompt: LessonRecallPrompt | null;
+  locale: "en" | "id";
+  onComplete: () => void;
+}) {
+  const [submitting, setSubmitting] = useState(false);
+  const [result, setResult] = useState<{ correct: boolean; explanation: string } | null>(null);
+  if (!prompt) return null;
+
+  const copy = locale === "id"
+    ? {
+        kicker: "Latihan ingatan · opsional",
+        title: "Mari ingat kembali",
+        body: "Coba jawab tanpa membuka pelajaran. Ini tidak memengaruhi XP atau progresmu.",
+        correct: "Tepat.",
+        retry: "Belum tepat — coba lagi.",
+        done: "Selesai",
+      }
+    : {
+        kicker: "Recall practice · optional",
+        title: "A quick check-in",
+        body: "Try this without reopening the lesson. It does not affect XP or progress.",
+        correct: "That’s right.",
+        retry: "Not quite — try again.",
+        done: "Done",
+      };
+
+  const answer = async (optionId: string) => {
+    setSubmitting(true);
+    const submission = await submitLessonRecallAnswer(prompt.id, optionId, locale);
+    setSubmitting(false);
+    if (!submission) return;
+    setResult({ correct: submission.correct, explanation: submission.explanation });
+  };
+
+  return (
+    <article className="rounded-card border border-[var(--rup-gold-200)] bg-[var(--rup-gold-50)] p-5 shadow-sm">
+      <span className="inline-flex rounded-full bg-[var(--rup-gold-100)] px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-[var(--rup-gold-700)]">{copy.kicker}</span>
+      <h3 className="mt-3 font-display text-xl font-bold text-foreground">{copy.title}</h3>
+      <p className="mt-1 text-sm leading-5 text-muted-foreground">{copy.body}</p>
+      <p className="mt-4 text-base font-semibold leading-snug text-foreground">{prompt.question}</p>
+      <div className="mt-3 grid gap-2">
+        {prompt.options.map((option) => (
+          <button
+            key={option.id}
+            type="button"
+            disabled={submitting || result?.correct === true}
+            onClick={() => answer(option.id)}
+            className="min-h-11 rounded-lg border border-[var(--rup-gold-200)] bg-surface px-3 py-2 text-left text-sm font-semibold text-foreground transition-colors hover:border-[var(--rup-gold-400)] hover:bg-[var(--rup-gold-50)] disabled:cursor-default disabled:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+      {result && (
+        <div className={`mt-3 rounded-lg px-3 py-3 text-sm ${result.correct ? "bg-success/10 text-success" : "bg-surface text-foreground"}`}>
+          <p className="font-bold">{result.correct ? copy.correct : copy.retry}</p>
+          {result.explanation && <p className="mt-1 leading-snug">{result.explanation}</p>}
+        </div>
+      )}
+      {result?.correct && (
+        <button type="button" onClick={onComplete} className="mt-3 min-h-11 rounded-lg bg-primary px-4 text-sm font-bold text-primary-foreground">{copy.done}</button>
+      )}
+    </article>
   );
 }
 

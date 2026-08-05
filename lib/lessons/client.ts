@@ -5,6 +5,7 @@ import type { QuizQuestion } from "./question";
 import { orderCurriculumLessons, curriculumChapterNumber, curriculumLessonRank } from "./curriculum";
 import { requiresChapterMission } from "./mastery";
 import { completeChapterMissionSchema } from "@/lib/schemas/lessons";
+import { parseLessonVisualBlock, type LessonVisualBlock } from "./visual-block";
 
 /**
  * Fallback chapter mapping by topic slug. Once the `topics.chapter` column is
@@ -168,6 +169,36 @@ export interface LessonSource {
   synopsisId: string | null;
   relevanceBlurb: string | null;
   relevanceBlurbId: string | null;
+}
+
+export async function getLessonVisualBlocks(lessonId: string): Promise<LessonVisualBlock[]> {
+  const { data, error } = await supabase
+    .from("lesson_visual_blocks")
+    .select("id, lesson_id, placement, block_type, display_order, data_status, content, is_published")
+    .eq("lesson_id", lessonId)
+    .eq("is_published", true)
+    .order("placement", { ascending: true })
+    .order("display_order", { ascending: true });
+
+  if (error) {
+    console.error("getLessonVisualBlocks error:", error.message);
+    return [];
+  }
+
+  return (data ?? [])
+    .map((block) =>
+      parseLessonVisualBlock({
+        id: block.id,
+        lessonId: block.lesson_id,
+        placement: block.placement,
+        blockType: block.block_type,
+        displayOrder: block.display_order,
+        dataStatus: block.data_status,
+        content: block.content,
+        isPublished: block.is_published,
+      })
+    )
+    .filter((block): block is LessonVisualBlock => block !== null);
 }
 
 export async function getLessonBySlug(slug: string): Promise<Lesson | null> {

@@ -12,31 +12,6 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
       account_deletion_requests: {
@@ -1453,6 +1428,122 @@ export type Database = {
           },
         ]
       }
+      lesson_recall_prompts: {
+        Row: {
+          attempt_count: number
+          completed_at: string | null
+          created_at: string
+          dismissed_at: string | null
+          due_at: string
+          first_attempt_correct: boolean | null
+          id: string
+          last_attempt_correct: boolean | null
+          lesson_id: string
+          recall_question_id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          attempt_count?: number
+          completed_at?: string | null
+          created_at?: string
+          dismissed_at?: string | null
+          due_at: string
+          first_attempt_correct?: boolean | null
+          id?: string
+          last_attempt_correct?: boolean | null
+          lesson_id: string
+          recall_question_id: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          attempt_count?: number
+          completed_at?: string | null
+          created_at?: string
+          dismissed_at?: string | null
+          due_at?: string
+          first_attempt_correct?: boolean | null
+          id?: string
+          last_attempt_correct?: boolean | null
+          lesson_id?: string
+          recall_question_id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_recall_prompts_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_recall_prompts_recall_question_id_fkey"
+            columns: ["recall_question_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_recall_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lesson_recall_questions: {
+        Row: {
+          correct_option: string
+          created_at: string
+          explanation_en: string
+          explanation_id: string
+          id: string
+          is_active: boolean
+          lesson_id: string
+          options_en: Json
+          options_id: Json
+          question_en: string
+          question_id: string
+          updated_at: string
+        }
+        Insert: {
+          correct_option: string
+          created_at?: string
+          explanation_en: string
+          explanation_id: string
+          id?: string
+          is_active?: boolean
+          lesson_id: string
+          options_en: Json
+          options_id: Json
+          question_en: string
+          question_id: string
+          updated_at?: string
+        }
+        Update: {
+          correct_option?: string
+          created_at?: string
+          explanation_en?: string
+          explanation_id?: string
+          id?: string
+          is_active?: boolean
+          lesson_id?: string
+          options_en?: Json
+          options_id?: Json
+          question_en?: string
+          question_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_recall_questions_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: true
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lesson_reviews: {
         Row: {
           approved_to_publish: boolean | null
@@ -1698,6 +1789,92 @@ export type Database = {
           },
           {
             foreignKeyName: "lesson_versions_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lesson_visual_block_sources: {
+        Row: {
+          citation_label: string | null
+          created_at: string
+          id: string
+          source_id: string
+          visual_block_id: string
+        }
+        Insert: {
+          citation_label?: string | null
+          created_at?: string
+          id?: string
+          source_id: string
+          visual_block_id: string
+        }
+        Update: {
+          citation_label?: string | null
+          created_at?: string
+          id?: string
+          source_id?: string
+          visual_block_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_visual_block_sources_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "sources"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_visual_block_sources_visual_block_id_fkey"
+            columns: ["visual_block_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_visual_blocks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lesson_visual_blocks: {
+        Row: {
+          block_type: string
+          content: Json
+          created_at: string
+          data_status: string
+          display_order: number
+          id: string
+          is_published: boolean
+          lesson_id: string
+          placement: string
+          updated_at: string
+        }
+        Insert: {
+          block_type: string
+          content: Json
+          created_at?: string
+          data_status: string
+          display_order?: number
+          id?: string
+          is_published?: boolean
+          lesson_id: string
+          placement: string
+          updated_at?: string
+        }
+        Update: {
+          block_type?: string
+          content?: Json
+          created_at?: string
+          data_status?: string
+          display_order?: number
+          id?: string
+          is_published?: boolean
+          lesson_id?: string
+          placement?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_visual_blocks_lesson_id_fkey"
             columns: ["lesson_id"]
             isOneToOne: false
             referencedRelation: "lessons"
@@ -3005,6 +3182,10 @@ export type Database = {
         }
         Returns: Json
       }
+      dismiss_lesson_recall_prompt: {
+        Args: { p_prompt_id: string }
+        Returns: undefined
+      }
       ensure_daily_focus_challenge:
         | {
             Args: { p_user_id: string }
@@ -3104,6 +3285,18 @@ export type Database = {
         | { Args: never; Returns: Json }
         | { Args: { p_time_zone: string }; Returns: Json }
         | { Args: { p_locale: string; p_time_zone: string }; Returns: Json }
+      get_due_lesson_recall_prompt: {
+        Args: never
+        Returns: {
+          due_at: string
+          lesson_id: string
+          options_en: Json
+          options_id: Json
+          prompt_id: string
+          question_en: string
+          question_id: string
+        }[]
+      }
       get_latest_market_data: {
         Args: never
         Returns: {
@@ -3118,7 +3311,24 @@ export type Database = {
           volume: number
         }[]
       }
+      get_market_data_history: {
+        Args: { p_days?: number; p_symbol: string }
+        Returns: {
+          close_price: number
+          is_simulated: boolean
+          trade_date: string
+        }[]
+      }
       get_portfolio_value_history: {
+        Args: { p_days?: number; p_user_id: string }
+        Returns: {
+          cash_balance: number
+          holdings_value: number
+          snapshot_date: string
+          total_value: number
+        }[]
+      }
+      get_portfolio_value_history_marked: {
         Args: { p_days?: number; p_user_id: string }
         Returns: {
           cash_balance: number
@@ -3193,6 +3403,10 @@ export type Database = {
             }
             Returns: Json
           }
+      submit_lesson_recall_answer: {
+        Args: { p_answer: string; p_prompt_id: string }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never
@@ -3321,9 +3535,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {},
   },
