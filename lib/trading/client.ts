@@ -336,19 +336,17 @@ export async function getMarketDataHistory(
   symbol: string,
   days = 30
 ): Promise<MarketDataPoint[]> {
-  const { data, error } = await supabase
-    .from("market_data")
-    .select("trade_date, close_price, is_simulated")
-    .eq("symbol", symbol)
-    .order("trade_date", { ascending: false })
-    .limit(days);
+  const { data, error } = await supabase.rpc("get_market_data_history", {
+    p_symbol: symbol.trim().toUpperCase(),
+    p_days: days,
+  });
 
   if (error) {
     console.error("getMarketDataHistory error:", error.message);
     return [];
   }
 
-  return (data ?? [])
+  return (data as Array<Record<string, unknown>> ?? [])
     .map((row) => ({
       date: String(row.trade_date),
       close: Number(row.close_price),
