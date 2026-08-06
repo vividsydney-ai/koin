@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
+import { normalizeAnswer } from "@/lib/lessons/question";
 
 interface QuizOption {
   label: string;
@@ -51,15 +52,19 @@ export function MultipleChoiceContent({
 }: MultipleChoiceContentProps) {
   const [selected, setSelected] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
+  const canonicalCorrectOption = options.find(
+    (option) => normalizeAnswer(option.value) === normalizeAnswer(correctValue),
+  );
+  const canonicalCorrectValue = canonicalCorrectOption?.value ?? correctValue;
 
   const handleSelect = (value: string) => {
     if (showResult) return;
     setSelected(value);
     setShowResult(true);
-    onComplete?.(value === correctValue, value);
+    onComplete?.(normalizeAnswer(value) === normalizeAnswer(correctValue), value);
   };
 
-  const isCorrect = selected === correctValue;
+  const isCorrect = selected !== null && normalizeAnswer(selected) === normalizeAnswer(correctValue);
 
   return (
     <>
@@ -74,7 +79,7 @@ export function MultipleChoiceContent({
       <div className="mt-4 grid gap-3">
         {options.map((option) => {
           const status =
-            showResult && option.value === correctValue
+            showResult && normalizeAnswer(option.value) === normalizeAnswer(correctValue)
               ? "correct"
               : showResult && option.value === selected
                 ? "wrong"
@@ -112,7 +117,7 @@ export function MultipleChoiceContent({
       </div>
 
       {showResult && (
-        <Explanation isCorrect={isCorrect} text={explanation} correctAnswer={correctValue} />
+        <Explanation isCorrect={isCorrect} text={explanation} correctAnswer={canonicalCorrectValue} />
       )}
     </>
   );

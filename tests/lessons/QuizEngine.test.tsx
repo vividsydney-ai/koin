@@ -22,6 +22,23 @@ describe("QuizEngine", () => {
     expect(screen.getByText("Because.")).toBeInTheDocument();
   });
 
+  it("accepts a punctuation-only answer label difference without marking it wrong", () => {
+    const question: ProcessedQuestion = {
+      ...base,
+      type: "multiple_choice",
+      question: "Which channel should you verify?",
+      options: ["The official channel", "A forwarded screenshot"],
+      answer: "The official channel.",
+    };
+    const onComplete = vi.fn();
+    render(<QuizEngine question={question} seed="normalised-answer" onComplete={onComplete} />);
+
+    fireEvent.click(screen.getByText("The official channel"));
+
+    expect(onComplete).toHaveBeenCalledWith(true);
+    expect(screen.queryByText(/Correct answer/)).not.toBeInTheDocument();
+  });
+
   it("renders true_false and reports incorrect answer", () => {
     const question: ProcessedQuestion = {
       ...base,
@@ -94,7 +111,6 @@ describe("QuizEngine", () => {
     // Initial order from seededShuffle("quiz:ord", ["B","A","C"]) is ["B","C","A"].
     const itemB = screen.getByText("B");
     const itemC = screen.getByText("C");
-    const _itemA = screen.getByText("A");
 
     // Swap B and C -> ["C","B","A"], then C and A -> ["A","B","C"].
     fireEvent.click(itemB);

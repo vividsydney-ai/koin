@@ -106,6 +106,17 @@ describe("question", () => {
       expect(validateQuestion(body)).toBeNull();
     });
 
+    it("rejects a multiple-choice answer that is not selectable", () => {
+      expect(validateQuestion({
+        type: "multiple_choice",
+        question: "Which channel should you verify?",
+        options: ["The official channel", "A forwarded screenshot"],
+        answer: "The official receiving account and current provider instructions",
+        explanation: "Verify the official channel.",
+        parameters: {},
+      })).toBeNull();
+    });
+
     it("rejects an unknown question type", () => {
       const body = {
         type: "unknown" as const,

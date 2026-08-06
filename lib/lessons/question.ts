@@ -148,7 +148,20 @@ export function validateQuestion(body: unknown): QuizQuestion | null {
     console.error("validateQuestion error:", parsed.error.flatten());
     return null;
   }
+  if (parsed.data.type === "multiple_choice" && !hasVisibleAnswerOption(parsed.data.options, parsed.data.answer)) {
+    console.error("validateQuestion error: multiple-choice answer is not one of its visible options");
+    return null;
+  }
+  if (parsed.data.type === "case_study" && !hasVisibleAnswerOption(parsed.data.followUp.options, parsed.data.followUp.answer)) {
+    console.error("validateQuestion error: case-study answer is not one of its visible follow-up options");
+    return null;
+  }
   return parsed.data;
+}
+
+function hasVisibleAnswerOption(options: string[], answer: string): boolean {
+  const expected = normalizeAnswer(answer);
+  return options.some((option) => normalizeAnswer(option) === expected);
 }
 
 /** Convert older content payloads into the richer mechanics the current player supports. */
