@@ -22,13 +22,14 @@ import {
 interface QuizEngineProps {
   question: ProcessedQuestion;
   seed: string;
+  displayAttempt?: number;
   onComplete?: (correct: boolean) => void;
   onAnswer?: QuizCompletion;
 }
 
 export type QuizCompletion = (correct: boolean, response?: string | boolean) => void;
 
-export function QuizEngine({ question, seed, onComplete, onAnswer }: QuizEngineProps) {
+export function QuizEngine({ question, seed, displayAttempt = 0, onComplete, onAnswer }: QuizEngineProps) {
   const forwardCompletion: QuizCompletion = (correct, response) => {
     onComplete?.(correct);
     onAnswer?.(correct, response);
@@ -36,7 +37,7 @@ export function QuizEngine({ question, seed, onComplete, onAnswer }: QuizEngineP
   const { t } = useLocale();
   switch (question.type) {
     case "multiple_choice":
-      return <MultipleChoice question={question} seed={seed} onComplete={forwardCompletion} />;
+      return <MultipleChoice question={question} seed={seed} displayAttempt={displayAttempt} onComplete={forwardCompletion} />;
     case "true_false":
       return <TrueFalse question={question} onComplete={forwardCompletion} />;
     case "swipe_yes_no":
@@ -50,7 +51,7 @@ export function QuizEngine({ question, seed, onComplete, onAnswer }: QuizEngineP
     case "matching":
       return <Matching question={question} seed={seed} onComplete={forwardCompletion} />;
     case "case_study":
-      return <CaseStudy question={question} seed={seed} onComplete={forwardCompletion} />;
+      return <CaseStudy question={question} seed={seed} displayAttempt={displayAttempt} onComplete={forwardCompletion} />;
     case "chart_interpretation":
       return <ChartInterpretation question={question} onComplete={forwardCompletion} />;
     default:
@@ -118,16 +119,21 @@ function ChartInterpretation({
 function MultipleChoice({
   question,
   seed,
+  displayAttempt,
   onComplete,
 }: {
   question: MultipleChoiceQuestion;
   seed: string;
+  displayAttempt: number;
   onComplete?: (correct: boolean) => void;
 }) {
   const options = useMemo(
-    () =>
-      seededShuffle(`${seed}:mc`, question.options).map((label) => ({ label, value: label })),
-    [question.options, seed]
+    () => {
+      const shuffled = seededShuffle(`${seed}:mc`, question.options);
+      const offset = shuffled.length > 0 ? displayAttempt % shuffled.length : 0;
+      return [...shuffled.slice(offset), ...shuffled.slice(0, offset)].map((label) => ({ label, value: label }));
+    },
+    [question.options, seed, displayAttempt]
   );
 
   return (
@@ -513,19 +519,24 @@ function Matching({
 function CaseStudy({
   question,
   seed,
+  displayAttempt,
   onComplete,
 }: {
   question: CaseStudyQuestion;
   seed: string;
+  displayAttempt: number;
   onComplete?: (correct: boolean) => void;
 }) {
   const followUpOptions = useMemo(
-    () =>
-      seededShuffle(`${seed}:cs`, question.followUp.options).map((label) => ({
+    () => {
+      const shuffled = seededShuffle(`${seed}:cs`, question.followUp.options);
+      const offset = shuffled.length > 0 ? displayAttempt % shuffled.length : 0;
+      return [...shuffled.slice(offset), ...shuffled.slice(0, offset)].map((label) => ({
         label,
         value: label,
-      })),
-    [question.followUp.options, seed]
+      }));
+    },
+    [question.followUp.options, seed, displayAttempt]
   );
 
   return (

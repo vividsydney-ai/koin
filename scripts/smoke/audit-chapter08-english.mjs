@@ -100,7 +100,7 @@ async function main() {
       exampleVisuals: exampleVisuals.length,
     };
     if (validEnglish.length < 2) failures.push(`${lesson.slug}: needs at least 2 valid English questions; found ${validEnglish.length}`);
-    if (applied.length < 2) failures.push(`${lesson.slug}: needs at least 2 visual-applied English questions; found ${applied.length}`);
+    if (applied.length < 3) failures.push(`${lesson.slug}: needs at least 3 visual-applied English questions; found ${applied.length}`);
     if (weakAppliedMultipleChoice.length > 0) failures.push(`${lesson.slug}: visual-applied multiple-choice question has fewer than 4 options`);
     if (EXPECTED_EXAMPLE_VISUALS.has(lesson.slug) && exampleVisuals.length === 0) failures.push(`${lesson.slug}: expected an example-step visual`);
     if (bilingual.length < validEnglish.length) failures.push(`${lesson.slug}: ${validEnglish.length - bilingual.length} English question(s) have no Indonesian payload`);

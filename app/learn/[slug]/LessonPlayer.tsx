@@ -118,6 +118,7 @@ export default function LessonPlayer({
   const [quizDone, setQuizDone] = useState(false);
   const [quizCorrect, setQuizCorrect] = useState<boolean | null>(null);
   const [quizResults, setQuizResults] = useState<boolean[]>([]);
+  const [quizDisplayAttempt, setQuizDisplayAttempt] = useState(0);
   const [completionResult, setCompletionResult] = useState<CompletionResult | null>(null);
   const [completing, setCompleting] = useState(false);
   const [completionError, setCompletionError] = useState<string | null>(null);
@@ -148,6 +149,7 @@ export default function LessonPlayer({
       setQuizDone(false);
       setQuizCorrect(null);
       setQuizResults([]);
+      setQuizDisplayAttempt(0);
       setCompletionResult(null);
       setCompletionError(null);
       setShowSummary(false);
@@ -424,6 +426,7 @@ export default function LessonPlayer({
         setQuizDone(false);
         setQuizCorrect(null);
         setActiveQuestion(processed);
+        setQuizDisplayAttempt((attempt) => attempt + 1);
         setShownQuestionVariantIds((prev) => new Set([...prev, variant.id]));
         return processed;
       }
@@ -557,6 +560,7 @@ export default function LessonPlayer({
               {step === 3 && (
                 <QuizStep
                   question={activeQuestion}
+                  displayAttempt={quizDisplayAttempt}
                   requiredChecks={lessonCheckCount(chapterNumber)}
                   onComplete={(results) => {
                     setQuizDone(true);
@@ -578,8 +582,9 @@ export default function LessonPlayer({
                   }}
                   onAnotherQuestion={handleAnotherQuestion}
                   canShowAnotherQuestion={
-                    getPracticeQuestionVariants(questionVariants, visualBlocks.length > 0)
-                      .filter((v) => validateQuestion(v.body) && v.id !== activeQuestion?.variantId).length > 0
+                    getValidatedQuestionVariants(
+                      getPracticeQuestionVariants(questionVariants, visualBlocks.length > 0),
+                    ).length > 0
                   }
                 />
               )}
@@ -965,12 +970,14 @@ function ExampleStep({
 
 function QuizStep({
   question,
+  displayAttempt,
   onComplete,
   onAnotherQuestion,
   canShowAnotherQuestion,
   requiredChecks,
 }: {
   question: ProcessedQuestion | null;
+  displayAttempt: number;
   onComplete: (results: boolean[]) => void;
   onAnotherQuestion?: () => ProcessedQuestion | null;
   canShowAnotherQuestion?: boolean;
@@ -996,6 +1003,7 @@ function QuizStep({
   }
 
   const seed = question.variantId ?? "legacy";
+  const displayKey = `${seed}:display:${displayAttempt}`;
   const completedChecks = results.filter(Boolean).length;
   const retryingWrongAnswer = results.at(-1) === false;
   const nextActionLabel =
@@ -1015,9 +1023,10 @@ function QuizStep({
       </div>
 
       <QuizEngine
-        key={question.variantId ?? "legacy"}
+        key={displayKey}
         question={question}
         seed={seed}
+        displayAttempt={displayAttempt}
         onComplete={(correct) => {
           const nextResults = [...results, correct];
           setResults(nextResults);

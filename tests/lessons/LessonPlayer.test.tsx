@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
 import type { ReactNode } from "react";
 import LessonPlayer from "@/app/learn/[slug]/LessonPlayer";
 import * as lessonsClient from "@/lib/lessons/client";
@@ -321,6 +321,48 @@ describe("LessonPlayer", () => {
 
     await waitFor(() => expect(screen.getByText("Applied question two")).toBeInTheDocument(), { timeout: 2000 });
     expect(screen.queryByText("Unrelated legacy question")).not.toBeInTheDocument();
+  });
+
+  it("can repeat an exhausted variant and reshuffles its choices on each display", async () => {
+    const singleAppliedQuestion: ContentVariant[] = [{
+      id: "single-applied",
+      variantType: "question",
+      body: {
+        type: "multiple_choice",
+        question: "Which answer should be read carefully?",
+        options: ["A", "B", "C", "D"],
+        answer: "A",
+        explanation: "Read the whole choice.",
+        parameters: {},
+      },
+      difficulty: "intermediate",
+      topicTag: "visual_applied",
+    }];
+
+    vi.mocked(lessonsClient.getLessonVisualBlocks).mockResolvedValue([visualBlock]);
+    vi.mocked(lessonsClient.getLessonVariants).mockImplementation(async (_lessonId, variantType) => {
+      if (variantType === "example") return exampleVariants;
+      if (variantType === "question") return singleAppliedQuestion;
+      if (variantType === "explanation") return [];
+      return [];
+    });
+
+    render(<LessonPlayer slug="test-lesson" chapterNumber={8} />);
+
+    await waitFor(() => expect(screen.queryByText("Loading lesson…")).not.toBeInTheDocument(), { timeout: 2000 });
+    fireEvent.click(screen.getByText("Continue"));
+    fireEvent.click(screen.getByText("Continue"));
+    fireEvent.click(screen.getByText("Continue"));
+
+    await waitFor(() => expect(screen.getByText("Which answer should be read carefully?")).toBeInTheDocument(), { timeout: 2000 });
+    const quizCard = () => within(screen.getByRole("article"));
+    const firstOrder = quizCard().getAllByRole("button").map((button) => button.textContent?.replace("✓", "").replace("✕", "").trim());
+    fireEvent.click(screen.getByRole("button", { name: "A" }));
+    fireEvent.click(screen.getByRole("button", { name: "Next check" }));
+
+    await waitFor(() => expect(screen.getByText("Which answer should be read carefully?")).toBeInTheDocument(), { timeout: 2000 });
+    const secondOrder = quizCard().getAllByRole("button").map((button) => button.textContent?.replace("✓", "").replace("✕", "").trim());
+    expect(secondOrder).not.toEqual(firstOrder);
   });
 
   it("in Indonesian locale shows a different example when clicking Lihat contoh lain", async () => {
