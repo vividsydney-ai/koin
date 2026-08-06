@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import LessonPlayer from "@/app/learn/[slug]/LessonPlayer";
 import * as lessonsClient from "@/lib/lessons/client";
 import type { Lesson, ContentVariant, LessonSource } from "@/lib/lessons/client";
+import type { LessonVisualBlock } from "@/lib/lessons/visual-block";
 import { dictionaries } from "@/lib/i18n/dictionaries";
 import type { Locale } from "@/lib/i18n/types";
 
@@ -14,6 +15,8 @@ vi.mock("@/lib/lessons/client", async () => {
     getLessonBySlug: vi.fn(),
     getLessonVariants: vi.fn(),
     getLessonSources: vi.fn(),
+    getLessonVisualBlocks: vi.fn(),
+    getLessonStatus: vi.fn(),
     getRecentAttemptVariantIds: vi.fn(),
     seededIndex: vi.fn(),
   };
@@ -114,10 +117,58 @@ const questionVariants: ContentVariant[] = [
   },
 ];
 
+const visualBlock: LessonVisualBlock = {
+  id: "00000000-0000-0000-0000-000000000010",
+  lessonId: "lesson1",
+  placement: "concept",
+  displayOrder: 0,
+  dataStatus: "illustrative",
+  isPublished: true,
+  blockType: "comparison",
+  content: {
+    en: {
+      title: "Evidence boundary",
+      altText: "A comparison of observed facts and unsupported conclusions.",
+      disclosure: "Illustrative learning example.",
+      payload: {
+        leftTitle: "Observed",
+        rightTitle: "Unknown",
+        rows: [{ left: "A value changed.", right: "What happens next." }],
+      },
+    },
+    id: {
+      title: "Batas bukti",
+      altText: "Perbandingan fakta teramati dan kesimpulan yang belum didukung.",
+      disclosure: "Contoh pembelajaran ilustratif.",
+      payload: {
+        leftTitle: "Teramati",
+        rightTitle: "Belum diketahui",
+        rows: [{ left: "Nilai berubah.", right: "Apa yang terjadi berikutnya." }],
+      },
+    },
+  },
+};
+
+const exampleVisualBlock: LessonVisualBlock = {
+  ...visualBlock,
+  id: "00000000-0000-0000-0000-000000000011",
+  placement: "example",
+};
+
 describe("LessonPlayer", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockLocale.mockReturnValue("en");
+    Object.defineProperty(window, "matchMedia", {
+      configurable: true,
+      value: vi.fn().mockReturnValue({
+        matches: false,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+      }),
+    });
     vi.mocked(lessonsClient.getLessonBySlug).mockResolvedValue(baseLesson);
     vi.mocked(lessonsClient.getLessonVariants).mockImplementation(async (_lessonId, variantType) => {
       if (variantType === "example") return exampleVariants;
@@ -126,6 +177,8 @@ describe("LessonPlayer", () => {
       return [];
     });
     vi.mocked(lessonsClient.getLessonSources).mockResolvedValue([] as LessonSource[]);
+    vi.mocked(lessonsClient.getLessonVisualBlocks).mockResolvedValue([]);
+    vi.mocked(lessonsClient.getLessonStatus).mockResolvedValue(null);
     vi.mocked(lessonsClient.getRecentAttemptVariantIds).mockResolvedValue({ ids: new Set(), lastVariantId: null });
     vi.mocked(lessonsClient.seededIndex).mockReturnValue(0);
   });
@@ -142,6 +195,33 @@ describe("LessonPlayer", () => {
 
     expect(screen.getByText("Contoh utama")).toBeInTheDocument();
     expect(screen.getByLabelText("See another example")).toBeInTheDocument();
+  });
+
+  it("renders an example visual inside How this plays out", async () => {
+    vi.mocked(lessonsClient.getLessonVisualBlocks).mockResolvedValue([exampleVisualBlock]);
+    render(<LessonPlayer slug="test-lesson" />);
+
+    await waitFor(() => expect(screen.queryByText("Loading lesson…")).not.toBeInTheDocument(), { timeout: 2000 });
+    fireEvent.click(screen.getByText("Continue"));
+    fireEvent.click(screen.getByText("Continue"));
+
+    await waitFor(() => expect(screen.getByText("How this plays out")).toBeInTheDocument(), { timeout: 2000 });
+    expect(screen.getByText("Evidence boundary")).toBeInTheDocument();
+  });
+
+  it("renders the chart-literacy visual for the stock-analysis Part 2 example", async () => {
+    vi.mocked(lessonsClient.getLessonBySlug).mockResolvedValue({
+      ...baseLesson,
+      slug: "stock-analysis-basics-fundamental-vs-technical-part-2",
+    });
+    render(<LessonPlayer slug="stock-analysis-basics-fundamental-vs-technical-part-2" />);
+
+    await waitFor(() => expect(screen.queryByText("Loading lesson…")).not.toBeInTheDocument(), { timeout: 2000 });
+    fireEvent.click(screen.getByText("Continue"));
+    fireEvent.click(screen.getByText("Continue"));
+
+    await waitFor(() => expect(screen.getByText("How this plays out")).toBeInTheDocument(), { timeout: 2000 });
+    expect(screen.getByRole("figure", { name: "Instructional candlestick chart" })).toBeInTheDocument();
   });
 
   it("keeps lesson continuation locked after a wrong check and offers a fresh variant", async () => {
@@ -171,6 +251,76 @@ describe("LessonPlayer", () => {
     fireEvent.click(screen.getByRole("button", { name: "Track spending" }));
 
     expect(screen.getByRole("button", { name: "Continue" })).toBeEnabled();
+  });
+
+  it("keeps Chapter 08 retry questions inside the visual-applied pool", async () => {
+    const appliedQuestions: ContentVariant[] = [
+      {
+        id: "applied-1",
+        variantType: "question",
+        body: {
+          type: "multiple_choice",
+          question: "Applied question one",
+          options: ["Applied answer one", "Other one"],
+          answer: "Applied answer one",
+          explanation: "The first applied explanation.",
+          parameters: {},
+        },
+        difficulty: "intermediate",
+        topicTag: "visual_applied",
+      },
+      {
+        id: "applied-2",
+        variantType: "question",
+        body: {
+          type: "multiple_choice",
+          question: "Applied question two",
+          options: ["Applied answer two", "Other two"],
+          answer: "Applied answer two",
+          explanation: "The second applied explanation.",
+          parameters: {},
+        },
+        difficulty: "intermediate",
+        topicTag: "visual_applied",
+      },
+      {
+        id: "contaminated-1",
+        variantType: "question",
+        body: {
+          type: "multiple_choice",
+          question: "Unrelated legacy question",
+          options: ["Legacy answer", "Other legacy"],
+          answer: "Legacy answer",
+          explanation: "This question is not part of the visual lesson.",
+          parameters: {},
+        },
+        difficulty: "intermediate",
+        topicTag: "legacy-topic",
+      },
+    ];
+
+    vi.mocked(lessonsClient.getLessonVisualBlocks).mockResolvedValue([visualBlock]);
+    vi.mocked(lessonsClient.getLessonVariants).mockImplementation(async (_lessonId, variantType) => {
+      if (variantType === "example") return exampleVariants;
+      if (variantType === "question") return appliedQuestions;
+      if (variantType === "explanation") return [];
+      return [];
+    });
+
+    render(<LessonPlayer slug="test-lesson" chapterNumber={8} />);
+
+    await waitFor(() => expect(screen.queryByText("Loading lesson…")).not.toBeInTheDocument(), { timeout: 2000 });
+    fireEvent.click(screen.getByText("Continue"));
+    fireEvent.click(screen.getByText("Continue"));
+    fireEvent.click(screen.getByText("Continue"));
+    await waitFor(() => expect(screen.getByText("Applied question one")).toBeInTheDocument(), { timeout: 2000 });
+    expect(screen.queryByText("Unrelated legacy question")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByText("Applied answer one"));
+    fireEvent.click(screen.getByRole("button", { name: "Next check" }));
+
+    await waitFor(() => expect(screen.getByText("Applied question two")).toBeInTheDocument(), { timeout: 2000 });
+    expect(screen.queryByText("Unrelated legacy question")).not.toBeInTheDocument();
   });
 
   it("in Indonesian locale shows a different example when clicking Lihat contoh lain", async () => {

@@ -54,6 +54,14 @@ function getValidatedQuestionVariants(variants: ContentVariant[]): ValidatedQues
     .filter((item): item is ValidatedQuestionVariant => item !== null);
 }
 
+function getPracticeQuestionVariants(variants: ContentVariant[], hasVisualBlocks: boolean): ContentVariant[] {
+  if (!hasVisualBlocks) return variants;
+  const visualApplied = variants.filter((variant) => variant.topicTag === "visual_applied");
+  // A visual lesson must have enough applied checks for Chapter 08's mastery
+  // gate before unrelated legacy questions are allowed back into practice.
+  return visualApplied.length >= 2 ? visualApplied : variants;
+}
+
 function pickRotatedQuestionVariant(
   infos: ValidatedQuestionVariant[],
   avoidIds: Set<string>,
@@ -205,11 +213,10 @@ export default function LessonPlayer({
         const lastAttemptedType = recentInfo.lastVariantId
           ? questionInfos.find((info) => info.variant.id === recentInfo.lastVariantId)?.question.type ?? null
           : null;
-        const visualAppliedQuestions = visualData.length > 0
-          ? questionInfos.filter((info) => info.variant.topicTag === "visual_applied")
-          : [];
+        const practiceVariants = getPracticeQuestionVariants(questionVariants, visualData.length > 0);
+        const practiceQuestions = getValidatedQuestionVariants(practiceVariants);
         const selectedQuestionVariant = pickRotatedQuestionVariant(
-          visualAppliedQuestions.length > 0 ? visualAppliedQuestions : questionInfos,
+          practiceQuestions.length > 0 ? practiceQuestions : questionInfos,
           recentInfo.ids,
           lastAttemptedType,
           `${seed}:q:${Date.now()}`
@@ -399,7 +406,9 @@ export default function LessonPlayer({
   const handleAnotherQuestion = (): ProcessedQuestion | null => {
     if (!lesson || questionVariants.length === 0) return null;
 
-    const infos = getValidatedQuestionVariants(questionVariants);
+    const infos = getValidatedQuestionVariants(
+      getPracticeQuestionVariants(questionVariants, visualBlocks.length > 0),
+    );
     const variant = pickRotatedQuestionVariant(
       infos,
       shownQuestionVariantIds,
@@ -535,6 +544,7 @@ export default function LessonPlayer({
                   lesson={lesson}
                   exampleVariant={exampleVariant}
                   exampleVariants={exampleVariants}
+                  visualBlocks={visualBlocks}
                   shownVariantIds={shownVariantIds}
                   onAnotherExample={
                     exampleVariants.length > 0
@@ -568,7 +578,8 @@ export default function LessonPlayer({
                   }}
                   onAnotherQuestion={handleAnotherQuestion}
                   canShowAnotherQuestion={
-                    questionVariants.filter((v) => validateQuestion(v.body) && v.id !== activeQuestion?.variantId).length > 0
+                    getPracticeQuestionVariants(questionVariants, visualBlocks.length > 0)
+                      .filter((v) => validateQuestion(v.body) && v.id !== activeQuestion?.variantId).length > 0
                   }
                 />
               )}
@@ -870,6 +881,7 @@ function ExampleStep({
   lesson,
   exampleVariant,
   exampleVariants,
+  visualBlocks,
   shownVariantIds,
   onAnotherExample,
   onShowAlternate,
@@ -877,6 +889,7 @@ function ExampleStep({
   lesson: Lesson;
   exampleVariant: ContentVariant | null;
   exampleVariants: ContentVariant[];
+  visualBlocks: LessonVisualBlock[];
   shownVariantIds: Set<string>;
   onAnotherExample?: () => ContentVariant | null;
   onShowAlternate?: (variantId: string) => void;
@@ -914,6 +927,10 @@ function ExampleStep({
         <SectionKicker icon={<MapPinIcon />} label={t("lesson.realExample")} tone="info" />
         <SplitParagraphs text={String(displayText ?? "")} className="space-y-4" />
       </div>
+      <LessonVisualBlocks blocks={visualBlocks} locale={locale === "id" ? "id" : "en"} placement="example" />
+      {lesson.slug === "stock-analysis-basics-fundamental-vs-technical-part-2" && (
+        <LessonChartVisual slug={lesson.slug} advanced />
+      )}
       {canShowAnother && !showAlternate && (
         <button
           onClick={handleShowAlternate}
