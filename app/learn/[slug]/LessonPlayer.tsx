@@ -566,6 +566,7 @@ export default function LessonPlayer({
               {step === 3 && (
                 <QuizStep
                   question={activeQuestion}
+                  isFoundation={lesson.slug.startsWith("fz-")}
                   displayAttempt={quizDisplayAttempt}
                   requiredChecks={lessonCheckCount(chapterNumber)}
                   onComplete={(results) => {
@@ -976,6 +977,7 @@ function ExampleStep({
 
 function QuizStep({
   question,
+  isFoundation,
   displayAttempt,
   onComplete,
   onAnotherQuestion,
@@ -983,6 +985,7 @@ function QuizStep({
   requiredChecks,
 }: {
   question: ProcessedQuestion | null;
+  isFoundation: boolean;
   displayAttempt: number;
   onComplete: (results: boolean[]) => void;
   onAnotherQuestion?: () => ProcessedQuestion | null;
@@ -1032,6 +1035,7 @@ function QuizStep({
         key={displayKey}
         question={question}
         seed={seed}
+        showVisualCue={isFoundation}
         displayAttempt={displayAttempt}
         onComplete={(correct) => {
           const nextResults = [...results, correct];

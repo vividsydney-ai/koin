@@ -23,18 +23,20 @@ interface QuizEngineProps {
   question: ProcessedQuestion;
   seed: string;
   displayAttempt?: number;
+  showVisualCue?: boolean;
   onComplete?: (correct: boolean) => void;
   onAnswer?: QuizCompletion;
 }
 
 export type QuizCompletion = (correct: boolean, response?: string | boolean) => void;
 
-export function QuizEngine({ question, seed, displayAttempt = 0, onComplete, onAnswer }: QuizEngineProps) {
+export function QuizEngine({ question, seed, displayAttempt = 0, showVisualCue = false, onComplete, onAnswer }: QuizEngineProps) {
   const forwardCompletion: QuizCompletion = (correct, response) => {
     onComplete?.(correct);
     onAnswer?.(correct, response);
   };
   const { t } = useLocale();
+  const quiz = (() => {
   switch (question.type) {
     case "multiple_choice":
       return <MultipleChoice question={question} seed={seed} displayAttempt={displayAttempt} onComplete={forwardCompletion} />;
@@ -61,6 +63,19 @@ export function QuizEngine({ question, seed, displayAttempt = 0, onComplete, onA
         </div>
       );
   }
+  })();
+  return <>{showVisualCue && <FoundationQuizCue question={question} />}{quiz}</>;
+}
+
+function FoundationQuizCue({ question }: { question: ProcessedQuestion }) {
+  const text = question.question.toLowerCase();
+  const cue = text.includes("inflation") || text.includes("daya beli") || text.includes("basket") || text.includes("keranjang") ? ["🛒", "Rp100k", "→", "🍜 × 4"]
+    : text.includes("interest") || text.includes("bunga") || text.includes("principal") || text.includes("pokok") ? ["💰", "×", "6%", "×", "⏱️"]
+      : text.includes("risk") || text.includes("risiko") || text.includes("loss") || text.includes("rugi") ? ["🤔", "→", "🛟"]
+        : text.includes("scam") || text.includes("penipuan") || text.includes("otp") ? ["🚩", "→", "🔎", "→", "🏛️"]
+          : text.includes("saving") || text.includes("menabung") || text.includes("emergency") || text.includes("darurat") ? ["🏦", "→", "🧰", "→", "🎯"]
+            : ["💡", "→", "✅"];
+  return <div aria-hidden="true" className="mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-primary/15 bg-primary/5 px-3 py-2 text-base font-bold text-primary">{cue.map((item, index) => <span key={`${item}-${index}`}>{item}</span>)}</div>;
 }
 
 function ChartInterpretation({

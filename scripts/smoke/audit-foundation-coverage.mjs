@@ -15,7 +15,6 @@ const requiredSlugs = [
   "fz-assets-vs-liabilities", "fz-risk", "fz-return", "fz-saving-vs-investing",
   "fz-emergency-fund", "fz-needs-vs-wants", "fz-debt", "fz-scam-red-flags",
 ];
-const mascotExclusions = new Set(["fz-risk", "fz-debt", "fz-scam-red-flags"]);
 
 function hasText(value) {
   return typeof value === "string" && value.trim().length > 0;
@@ -46,11 +45,11 @@ async function main() {
   if (lessons.length !== requiredSlugs.length) failures.push(`expected ${requiredSlugs.length} published Foundation lessons, found ${lessons.length}`);
 
   const rolloutBlocks = (blocks ?? []).filter((block) => block.display_order === 10);
-  const mascotBlocks = rolloutBlocks.filter((block) => {
+  const emojiBlocks = rolloutBlocks.filter((block) => {
     const content = block.content;
-    return content && typeof content === "object" && "en" in content && content.en?.mascot;
+    return content && typeof content === "object" && "en" in content && typeof content.en?.icon === "string";
   });
-  if (mascotBlocks.length !== 6) failures.push(`expected 6 mascot moments, found ${mascotBlocks.length}`);
+  if (emojiBlocks.length !== requiredSlugs.length) failures.push(`expected ${requiredSlugs.length} emoji visual cues, found ${emojiBlocks.length}`);
 
   for (const lesson of lessons) {
     const lessonBlocks = rolloutBlocks.filter((block) => block.lesson_id === lesson.id);
@@ -71,7 +70,7 @@ async function main() {
     if (visualApplied < 3) failures.push(`${lesson.slug}: expected at least 3 visual_applied questions, found ${visualApplied}`);
     if (recall < 1) failures.push(`${lesson.slug}: missing active recall question`);
     if (!sourceComplete) failures.push(`${lesson.slug}: primary source metadata incomplete`);
-    if (mascotExclusions.has(lesson.slug) && mascot) failures.push(`${lesson.slug}: mascot is excluded for this sensitive lesson`);
+    if (mascot) failures.push(`${lesson.slug}: mascot data must be removed`);
   }
 
   if (failures.length > 0) {
@@ -81,7 +80,7 @@ async function main() {
     return;
   }
 
-  console.log(`Foundation coverage audit passed for ${lessons.length} lessons, ${(blocks ?? []).length} visuals, and ${mascotBlocks.length} mascot moments.`);
+  console.log(`Foundation coverage audit passed for ${lessons.length} lessons, ${(blocks ?? []).length} visuals, and ${emojiBlocks.length} emoji visual cues.`);
 }
 
 main().catch((error) => {
