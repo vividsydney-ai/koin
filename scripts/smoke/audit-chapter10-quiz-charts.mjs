@@ -10,27 +10,17 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY,
 );
 
-const PRICE_TERMS_EN = /\b(price|candle|body|wick|high|low|open|close|range)\b/i;
-const PRICE_TERMS_ID = /\b(harga|candle|body|wick|high|low|open|close|rentang)\b/i;
 const PRICE_VALUE_PATTERN = /\b\d{1,6}(?:[\s.,-]+\d{1,6})*\b/;
-
-function containsNumericPrice(value) {
-  if (typeof value !== "string") return false;
-  return PRICE_VALUE_PATTERN.test(value);
-}
 
 function optionsContainNumericPrice(options) {
   if (!Array.isArray(options)) return false;
-  return options.some((option) => containsNumericPrice(String(option)));
+  return options.some((option) => PRICE_VALUE_PATTERN.test(String(option)));
 }
 
-function needsChart(payload) {
-  const question = payload?.question ?? "";
-  if (typeof question !== "string") return false;
-  const isPriceTopic = PRICE_TERMS_EN.test(question) || PRICE_TERMS_ID.test(question);
-  if (!isPriceTopic) return false;
-  // Only require a chart when the answer options actually name numeric prices/ranges.
-  return optionsContainNumericPrice(payload.options);
+function needsChart() {
+  // Every Chapter 10 visual_applied question is about reading a chart,
+  // so it should include an illustrative chart.
+  return true;
 }
 
 function hasValidChart(payload) {
@@ -78,7 +68,7 @@ async function main() {
   for (const variant of variants ?? []) {
     const slug = slugById.get(variant.lesson_id) ?? variant.lesson_id;
     for (const [locale, payload] of [["en", variant.body], ["id", variant.body_id]]) {
-      const wantsChart = needsChart(payload);
+      const wantsChart = needsChart();
       const hasChart = hasValidChart(payload);
       const hasScale = hasPriceScale(payload);
 
@@ -94,7 +84,7 @@ async function main() {
       if (wantsChart && !hasChart) {
         failures.push(`${slug}/${locale}: price-related question missing valid chart`);
       }
-      if (wantsChart && hasChart && !hasScale) {
+      if (wantsChart && hasChart && !hasScale && optionsContainNumericPrice(payload?.options)) {
         failures.push(`${slug}/${locale}: price-related question chart missing priceScale`);
       }
     }
