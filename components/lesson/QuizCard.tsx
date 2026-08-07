@@ -95,6 +95,7 @@ export function MultipleChoiceContent({
             accent="core"
             compact={false}
             markers={chart.markers}
+            showPriceScale
           />
         </div>
       )}

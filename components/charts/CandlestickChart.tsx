@@ -19,6 +19,7 @@ export interface CandlestickChartProps {
   accent?: "core" | "advanced";
   animate?: boolean;
   markers?: ChartMarker[];
+  showPriceScale?: boolean;
 }
 
 function formatNumber(value: number) {
@@ -37,11 +38,16 @@ export function CandlestickChart({
   accent = "core",
   animate = true,
   markers,
+  showPriceScale = false,
 }: CandlestickChartProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const width = compact ? 210 : 420;
   const height = compact ? 132 : 230;
-  const padding = compact ? { top: 16, right: 12, bottom: 22, left: 12 } : { top: 24, right: 22, bottom: 34, left: 34 };
+  const basePadding = compact ? { top: 16, right: 12, bottom: 22, left: 12 } : { top: 24, right: 22, bottom: 34, left: 34 };
+  const padding = {
+    ...basePadding,
+    left: showPriceScale && !compact ? Math.max(basePadding.left, 52) : basePadding.left,
+  };
   const values = candles.flatMap((candle) => [candle.low, candle.high]);
   const min = Math.min(...values);
   const max = Math.max(...values);
@@ -115,6 +121,15 @@ export function CandlestickChart({
     })
     .join(" ");
 
+  const priceLevels = showPriceScale && !compact
+    ? Array.from(
+        candles.reduce((set, candle) => {
+          set.add(candle.open).add(candle.high).add(candle.low).add(candle.close);
+          return set;
+        }, new Set<number>())
+      ).sort((a, b) => a - b)
+    : [];
+
   return (
     <div ref={rootRef} className="overflow-hidden rounded-md border border-muted/70 bg-surface p-2" role="figure" aria-label={label}>
       <svg viewBox={`0 0 ${width} ${height}`} className="h-auto w-full" role="img" aria-label={`${label}. ${textualSummary}`}>
@@ -122,6 +137,15 @@ export function CandlestickChart({
         {[0.25, 0.5, 0.75].map((position) => (
           <line key={position} x1={padding.left} x2={width - padding.right} y1={padding.top + plotHeight * position} y2={padding.top + plotHeight * position} stroke="var(--color-muted)" strokeWidth="1" strokeDasharray="3 4" />
         ))}
+        {priceLevels.map((price) => {
+          const py = y(price);
+          return (
+            <g key={`price-${price}`}>
+              <line x1={padding.left - 5} x2={padding.left} y1={py} y2={py} stroke="var(--color-muted-foreground)" strokeWidth="1" />
+              <text x={padding.left - 9} y={py} dy="0.35em" textAnchor="end" fill="var(--color-muted-foreground)" fontSize="10" fontWeight="500">{formatNumber(price)}</text>
+            </g>
+          );
+        })}
         {candles.map((candle, index) => {
           const x = padding.left + step * index + step / 2;
           const positive = candle.close >= candle.open;
