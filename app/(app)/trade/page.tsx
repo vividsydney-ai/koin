@@ -52,7 +52,7 @@ import {
   ContextualHelpProvider,
 } from "@/components/ContextualHelp";
 import { PortfolioBalances } from "@/components/PortfolioBalances";
-import PortfolioChart from "@/components/PortfolioChart";
+import ChartFrame from "@/components/ChartFrame";
 import PriceChart from "@/components/PriceChart";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 
@@ -318,7 +318,15 @@ export default function TradePage() {
                   startingCash={portfolio.startingCash}
                   history={portfolioHistory}
                 />
-                <PortfolioChart userId={user!.id} totalValue={portfolioValue} />
+                <ChartFrame
+                  userId={user!.id}
+                  totalValue={portfolioValue}
+                  dataSource={
+                    marketData.some((item) => item.isSimulated)
+                      ? "simulated"
+                      : "idx_eod"
+                  }
+                />
                 <HoldingsCard
                   holdings={holdings}
                   marketData={marketData}

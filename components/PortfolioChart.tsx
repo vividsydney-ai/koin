@@ -85,9 +85,11 @@ function createChartShape(points: PortfolioValueSnapshot[]): ChartShape {
 export default function PortfolioChart({
   userId,
   totalValue,
+  onRangeChange,
 }: {
   userId: string;
   totalValue: number;
+  onRangeChange?: (range: PortfolioHistoryRange) => void;
 }) {
   const [range, setRange] = useState<PortfolioHistoryRange>("1M");
   const [points, setPoints] = useState<PortfolioValueSnapshot[]>([]);
@@ -205,7 +207,10 @@ export default function PortfolioChart({
               type="button"
               role="tab"
               aria-selected={range === item}
-              onClick={() => setRange(item)}
+              onClick={() => {
+                setRange(item);
+                onRangeChange?.(item);
+              }}
               className={`min-h-10 rounded-lg px-3 text-xs font-bold transition-colors duration-150 ${range === item ? "bg-surface text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
             >
               {item}

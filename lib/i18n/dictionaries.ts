@@ -348,6 +348,27 @@ export interface Dictionary {
   "trade.simulatedPrices": string;
   "trade.simulatedBody": string;
 
+  // Portfolio Data Story (chart chrome)
+  "portfolioStory.title": string;
+  "portfolioStory.disclosure": string;
+  "portfolioStory.insightRoseBy": string;
+  "portfolioStory.insightFellBy": string;
+  "portfolioStory.insightFlat": string;
+  "portfolioStory.insightOverMonth": string;
+  "portfolioStory.insightOverDay": string;
+  "portfolioStory.insightOverYear": string;
+  "portfolioStory.insightOverAll": string;
+  "portfolioStory.chartShapeRose": string;
+  "portfolioStory.chartShapeFell": string;
+  "portfolioStory.chartShapeFlat": string;
+  "portfolioStory.tooltipLabel": string;
+  "portfolioStory.tooltipChange": string;
+  "portfolioStory.loading": string;
+  "portfolioStory.errorTitle": string;
+  "portfolioStory.errorRetry": string;
+  "portfolioStory.emptyTitle": string;
+  "portfolioStory.emptyBody": string;
+
   // Library filters
   "library.allSources": string;
   "library.allTiers": string;
@@ -718,6 +739,27 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "trade.chartLearningBody": "candlesticks, reverse candles, reading a trend, and placing an order with context.",
     "trade.simulatedBody":
       "some data points are generated when official IDX data is unavailable. For paper-trading practice only.",
+    "portfolioStory.title": "Your portfolio story",
+    "portfolioStory.disclosure":
+      "This shows your total paper wealth over time: virtual cash plus the latest value of any stocks or ETFs you own. Not a live market feed.",
+    "portfolioStory.insightRoseBy": "Your portfolio rose by",
+    "portfolioStory.insightFellBy": "Your portfolio fell by",
+    "portfolioStory.insightFlat": "Your portfolio value hasn't changed",
+    "portfolioStory.insightOverMonth": "over the last month.",
+    "portfolioStory.insightOverDay": "today.",
+    "portfolioStory.insightOverYear": "over the last year.",
+    "portfolioStory.insightOverAll": "since you started.",
+    "portfolioStory.chartShapeRose": "Line chart trending upward, ending at",
+    "portfolioStory.chartShapeFell": "Line chart trending downward, ending at",
+    "portfolioStory.chartShapeFlat": "Line chart holding steady at",
+    "portfolioStory.tooltipLabel": "See exact value for",
+    "portfolioStory.tooltipChange": "change since previous point",
+    "portfolioStory.loading": "Loading your portfolio story…",
+    "portfolioStory.errorTitle": "Couldn't load your portfolio story.",
+    "portfolioStory.errorRetry": "Try again",
+    "portfolioStory.emptyTitle": "No history yet",
+    "portfolioStory.emptyBody":
+      "Your portfolio story will build up here after your first trade.",
     "library.allSources": "All sources",
     "library.allTiers": "All tiers",
     "library.allTypes": "All types",
@@ -1078,6 +1120,27 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "trade.chartLearningBody": "candlestick, reverse candle, membaca tren, dan memasang order dengan konteks.",
     "trade.simulatedBody":
       "beberapa titik data dibuat saat data resmi IDX tidak tersedia. Hanya untuk latihan paper trading.",
+    "portfolioStory.title": "Cerita portofoliomu",
+    "portfolioStory.disclosure":
+      "Ini menunjukkan total kekayaan paper trading-mu dari waktu ke waktu: kas virtual ditambah nilai terbaru saham atau ETF yang kamu miliki. Bukan data pasar langsung.",
+    "portfolioStory.insightRoseBy": "Portofoliomu naik sebesar",
+    "portfolioStory.insightFellBy": "Portofoliomu turun sebesar",
+    "portfolioStory.insightFlat": "Nilai portofoliomu belum berubah",
+    "portfolioStory.insightOverMonth": "selama bulan lalu.",
+    "portfolioStory.insightOverDay": "hari ini.",
+    "portfolioStory.insightOverYear": "selama tahun lalu.",
+    "portfolioStory.insightOverAll": "sejak kamu mulai.",
+    "portfolioStory.chartShapeRose": "Grafik garis cenderung naik, berakhir di",
+    "portfolioStory.chartShapeFell": "Grafik garis cenderung turun, berakhir di",
+    "portfolioStory.chartShapeFlat": "Grafik garis stabil di",
+    "portfolioStory.tooltipLabel": "Lihat nilai pasti untuk",
+    "portfolioStory.tooltipChange": "perubahan sejak titik sebelumnya",
+    "portfolioStory.loading": "Memuat cerita portofoliomu…",
+    "portfolioStory.errorTitle": "Gagal memuat cerita portofoliomu.",
+    "portfolioStory.errorRetry": "Coba lagi",
+    "portfolioStory.emptyTitle": "Belum ada riwayat",
+    "portfolioStory.emptyBody":
+      "Cerita portofoliomu akan terbentuk di sini setelah transaksi pertamamu.",
     "library.allSources": "Semua sumber",
     "library.allTiers": "Semua tingkat",
     "library.allTypes": "Semua tipe",
