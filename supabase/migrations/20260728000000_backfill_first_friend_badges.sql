@@ -4,13 +4,9 @@
 
 BEGIN;
 
-DO $$
-BEGIN
-  IF NOT EXISTS (SELECT 1 FROM public.badges WHERE slug = 'first_friend') THEN
-    RAISE EXCEPTION 'KO-214 requires the first_friend badge';
-  END IF;
-END
-$$;
+INSERT INTO public.badges (id, slug, name, name_id, description, description_id, icon, trigger_type, trigger_value)
+SELECT gen_random_uuid(), 'first_friend', 'First Friend', 'Teman Pertama', 'Have a friend accept your invite', 'Undang teman dan dapatkan persetujuan', '🤝', 'social', '{"event": "friend_accepted"}'::jsonb
+WHERE NOT EXISTS (SELECT 1 FROM public.badges WHERE slug = 'first_friend');
 
 CREATE OR REPLACE FUNCTION public.award_first_friend_badge(p_user_id UUID)
 RETURNS VOID
