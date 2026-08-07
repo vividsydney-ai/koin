@@ -23,14 +23,14 @@ interface QuizEngineProps {
   question: ProcessedQuestion;
   seed: string;
   displayAttempt?: number;
-  showVisualCue?: boolean;
+  visualCueChapter?: "foundation" | "money" | "life" | "protect";
   onComplete?: (correct: boolean) => void;
   onAnswer?: QuizCompletion;
 }
 
 export type QuizCompletion = (correct: boolean, response?: string | boolean) => void;
 
-export function QuizEngine({ question, seed, displayAttempt = 0, showVisualCue = false, onComplete, onAnswer }: QuizEngineProps) {
+export function QuizEngine({ question, seed, displayAttempt = 0, visualCueChapter, onComplete, onAnswer }: QuizEngineProps) {
   const forwardCompletion: QuizCompletion = (correct, response) => {
     onComplete?.(correct);
     onAnswer?.(correct, response);
@@ -64,12 +64,15 @@ export function QuizEngine({ question, seed, displayAttempt = 0, showVisualCue =
       );
   }
   })();
-  return <>{showVisualCue && <FoundationQuizCue question={question} />}{quiz}</>;
+  return <>{visualCueChapter && <LessonQuizCue chapter={visualCueChapter} question={question} />}{quiz}</>;
 }
 
-function FoundationQuizCue({ question }: { question: ProcessedQuestion }) {
+function LessonQuizCue({ chapter, question }: { chapter: NonNullable<QuizEngineProps["visualCueChapter"]>; question: ProcessedQuestion }) {
   const text = question.question.toLowerCase();
-  const cue = text.includes("inflation") || text.includes("daya beli") || text.includes("basket") || text.includes("keranjang") ? ["🛒", "Rp100k", "→", "🍜 × 4"]
+  const cue = chapter === "protect" ? (text.includes("phish") || text.includes("otp") ? ["🛑", "→", "🔎", "→", "🏛️"] : ["🚩", "→", "Pause", "→", "Check"])
+    : chapter === "life" ? (text.includes("spend") || text.includes("belanja") ? ["🛒", "→", "⏸️", "→", "🎯"] : ["💵", "→", "🏦", "→", "🎯"])
+    : chapter === "money" ? (text.includes("asset") || text.includes("liabilit") ? ["⚖️", "Assets", "−", "Liabilities"] : text.includes("time") || text.includes("waktu") ? ["⏳", "Now", "→", "Later"] : ["📊", "→", "Compare", "→", "Choose"])
+    : text.includes("inflation") || text.includes("daya beli") || text.includes("basket") || text.includes("keranjang") ? ["🛒", "Rp100k", "→", "🍜 × 4"]
     : text.includes("interest") || text.includes("bunga") || text.includes("principal") || text.includes("pokok") ? ["💰", "×", "6%", "×", "⏱️"]
       : text.includes("risk") || text.includes("risiko") || text.includes("loss") || text.includes("rugi") ? ["🤔", "→", "🛟"]
         : text.includes("scam") || text.includes("penipuan") || text.includes("otp") ? ["🚩", "→", "🔎", "→", "🏛️"]

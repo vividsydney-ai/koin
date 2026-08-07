@@ -566,7 +566,7 @@ export default function LessonPlayer({
               {step === 3 && (
                 <QuizStep
                   question={activeQuestion}
-                  isFoundation={lesson.slug.startsWith("fz-")}
+                  visualCueChapter={lesson.slug.startsWith("fz-") ? "foundation" : lesson.chapter === "Money Basics" ? "money" : lesson.chapter === "Money Life Skills" ? "life" : lesson.chapter === "Protect Yourself" ? "protect" : undefined}
                   displayAttempt={quizDisplayAttempt}
                   requiredChecks={lessonCheckCount(chapterNumber)}
                   onComplete={(results) => {
@@ -977,7 +977,7 @@ function ExampleStep({
 
 function QuizStep({
   question,
-  isFoundation,
+  visualCueChapter,
   displayAttempt,
   onComplete,
   onAnotherQuestion,
@@ -985,7 +985,7 @@ function QuizStep({
   requiredChecks,
 }: {
   question: ProcessedQuestion | null;
-  isFoundation: boolean;
+  visualCueChapter?: "foundation" | "money" | "life" | "protect";
   displayAttempt: number;
   onComplete: (results: boolean[]) => void;
   onAnotherQuestion?: () => ProcessedQuestion | null;
@@ -1035,7 +1035,7 @@ function QuizStep({
         key={displayKey}
         question={question}
         seed={seed}
-        showVisualCue={isFoundation}
+        visualCueChapter={visualCueChapter}
         displayAttempt={displayAttempt}
         onComplete={(correct) => {
           const nextResults = [...results, correct];
