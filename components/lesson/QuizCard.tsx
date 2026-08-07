@@ -3,10 +3,17 @@
 import { useState } from "react";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { normalizeAnswer } from "@/lib/lessons/question";
+import { CandlestickChart } from "@/components/charts/CandlestickChart";
+import type { ChartMarker } from "@/components/charts/CandlestickChart";
 
 interface QuizOption {
   label: string;
   value: string;
+}
+
+interface QuizChart {
+  candles: { open: number; high: number; low: number; close: number; label?: string }[];
+  markers?: ChartMarker[];
 }
 
 export interface MultipleChoiceContentProps {
@@ -16,6 +23,7 @@ export interface MultipleChoiceContentProps {
   explanation: string;
   onComplete?: (correct: boolean, response?: string) => void;
   kicker?: string;
+  chart?: QuizChart;
 }
 
 function ListIcon({ className }: { className?: string }) {
@@ -49,7 +57,9 @@ export function MultipleChoiceContent({
   explanation,
   onComplete,
   kicker = "Multiple choice",
+  chart,
 }: MultipleChoiceContentProps) {
+  const { locale } = useLocale();
   const [selected, setSelected] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
   const canonicalCorrectOption = options.find(
@@ -75,6 +85,19 @@ export function MultipleChoiceContent({
         </span>
       )}
       <h3 className={`text-lg font-semibold leading-snug text-foreground ${kicker ? "mt-3" : ""}`}>{question}</h3>
+
+      {chart && (
+        <div className="mt-4">
+          <CandlestickChart
+            candles={chart.candles}
+            label={locale === "id" ? "Grafik latihan" : "Practice chart"}
+            caption={locale === "id" ? "Harga ilustratif untuk pembelajaran saja." : "Illustrative prices for learning only."}
+            accent="core"
+            compact={false}
+            markers={chart.markers}
+          />
+        </div>
+      )}
 
       <div className="mt-4 grid gap-3">
         {options.map((option) => {

@@ -4,6 +4,13 @@ import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import type { Candlestick } from "@/lib/lessons/question";
 
+export interface ChartMarker {
+  number: number;
+  candleIndex: number;
+  position: "high" | "low" | "open" | "close" | "bodyTop" | "bodyBottom" | "bodyCenter";
+  side?: "left" | "right";
+}
+
 export interface CandlestickChartProps {
   candles: Candlestick[];
   label: string;
@@ -11,6 +18,7 @@ export interface CandlestickChartProps {
   compact?: boolean;
   accent?: "core" | "advanced";
   animate?: boolean;
+  markers?: ChartMarker[];
 }
 
 function formatNumber(value: number) {
@@ -28,6 +36,7 @@ export function CandlestickChart({
   compact = false,
   accent = "core",
   animate = true,
+  markers,
 }: CandlestickChartProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const width = compact ? 210 : 420;
@@ -61,6 +70,44 @@ export function CandlestickChart({
     return () => context.revert();
   }, [animate, candles]);
 
+  const markerRadius = compact ? 8 : 10;
+  const markerOffset = compact ? 10 : 14;
+
+  function getMarkerCoordinates(marker: ChartMarker): { x: number; y: number } | null {
+    const candle = candles[marker.candleIndex];
+    if (!candle) return null;
+    const cx = padding.left + step * marker.candleIndex + step / 2;
+    const side = marker.side ?? "right";
+    let py: number;
+    switch (marker.position) {
+      case "high":
+        py = y(candle.high);
+        break;
+      case "low":
+        py = y(candle.low);
+        break;
+      case "open":
+        py = y(candle.open);
+        break;
+      case "close":
+        py = y(candle.close);
+        break;
+      case "bodyTop":
+        py = y(Math.max(candle.open, candle.close));
+        break;
+      case "bodyBottom":
+        py = y(Math.min(candle.open, candle.close));
+        break;
+      case "bodyCenter":
+        py = (y(Math.max(candle.open, candle.close)) + y(Math.min(candle.open, candle.close))) / 2;
+        break;
+      default:
+        return null;
+    }
+    const mx = side === "left" ? cx - bodyWidth / 2 - markerOffset : cx + bodyWidth / 2 + markerOffset;
+    return { x: mx, y: py };
+  }
+
   const textualSummary = candles
     .map((candle, index) => {
       const direction = candle.close > candle.open ? "up" : candle.close < candle.open ? "down" : "flat";
@@ -86,6 +133,16 @@ export function CandlestickChart({
               <line x1={x} x2={x} y1={y(candle.high)} y2={y(candle.low)} stroke={fill} strokeWidth={compact ? 2 : 3} strokeLinecap="round" />
               <rect x={x - bodyWidth / 2} y={bodyTop} width={bodyWidth} height={Math.max(3, bodyBottom - bodyTop)} rx="2" fill={fill} />
               {!compact && <text x={x} y={height - 12} textAnchor="middle" fill="var(--color-muted-foreground)" fontSize="10">{candle.label ?? index + 1}</text>}
+            </g>
+          );
+        })}
+        {markers?.map((marker) => {
+          const coords = getMarkerCoordinates(marker);
+          if (!coords) return null;
+          return (
+            <g key={`marker-${marker.number}`} className="candle-marker">
+              <circle cx={coords.x} cy={coords.y} r={markerRadius} fill={chartAccent} />
+              <text x={coords.x} y={coords.y} dy="0.35em" textAnchor="middle" fill="white" fontSize={compact ? 9 : 11} fontWeight="bold">{marker.number}</text>
             </g>
           );
         })}

@@ -23,7 +23,13 @@ WITH blocks(slug, placement, block_type, display_order, data_status, content) AS
           "chart": {
             "candles": [{"open": 100, "high": 116, "low": 94, "close": 109, "label": "Practice"}],
             "accent": "core",
-            "compact": false
+            "compact": false,
+            "markers": [
+              {"number": 1, "candleIndex": 0, "position": "high", "side": "left"},
+              {"number": 2, "candleIndex": 0, "position": "low", "side": "right"},
+              {"number": 3, "candleIndex": 0, "position": "bodyBottom", "side": "left"},
+              {"number": 4, "candleIndex": 0, "position": "bodyTop", "side": "right"}
+            ]
           },
           "annotations": [
             {"number": 1, "label": "High", "detail": "The highest price reached during this period."},
@@ -43,7 +49,13 @@ WITH blocks(slug, placement, block_type, display_order, data_status, content) AS
           "chart": {
             "candles": [{"open": 100, "high": 116, "low": 94, "close": 109, "label": "Latihan"}],
             "accent": "core",
-            "compact": false
+            "compact": false,
+            "markers": [
+              {"number": 1, "candleIndex": 0, "position": "high", "side": "left"},
+              {"number": 2, "candleIndex": 0, "position": "low", "side": "right"},
+              {"number": 3, "candleIndex": 0, "position": "bodyBottom", "side": "left"},
+              {"number": 4, "candleIndex": 0, "position": "bodyTop", "side": "right"}
+            ]
           },
           "annotations": [
             {"number": 1, "label": "High", "detail": "Harga tertinggi yang tercapai dalam periode ini."},
@@ -70,7 +82,12 @@ WITH blocks(slug, placement, block_type, display_order, data_status, content) AS
               {"open": 114, "high": 120, "low": 92, "close": 100, "label": "Down"}
             ],
             "accent": "core",
-            "compact": false
+            "compact": false,
+            "markers": [
+              {"number": 1, "candleIndex": 0, "position": "bodyCenter", "side": "left"},
+              {"number": 2, "candleIndex": 0, "position": "high", "side": "right"},
+              {"number": 3, "candleIndex": 0, "position": "low", "side": "left"}
+            ]
           },
           "annotations": [
             {"number": 1, "label": "Body", "detail": "The range between the open and close prices."},
@@ -92,7 +109,12 @@ WITH blocks(slug, placement, block_type, display_order, data_status, content) AS
               {"open": 114, "high": 120, "low": 92, "close": 100, "label": "Turun"}
             ],
             "accent": "core",
-            "compact": false
+            "compact": false,
+            "markers": [
+              {"number": 1, "candleIndex": 0, "position": "bodyCenter", "side": "left"},
+              {"number": 2, "candleIndex": 0, "position": "high", "side": "right"},
+              {"number": 3, "candleIndex": 0, "position": "low", "side": "left"}
+            ]
           },
           "annotations": [
             {"number": 1, "label": "Body", "detail": "Rentang antara harga open dan close."},
@@ -299,7 +321,11 @@ WITH blocks(slug, placement, block_type, display_order, data_status, content) AS
               {"open": 113, "high": 119, "low": 110, "close": 111, "label": "5"}
             ],
             "accent": "core",
-            "compact": false
+            "compact": false,
+            "markers": [
+              {"number": 1, "candleIndex": 0, "position": "low", "side": "left"},
+              {"number": 2, "candleIndex": 3, "position": "high", "side": "right"}
+            ]
           },
           "annotations": [
             {"number": 1, "label": "Support zone", "detail": "An area where price has repeatedly paused or bounced."},
@@ -323,7 +349,11 @@ WITH blocks(slug, placement, block_type, display_order, data_status, content) AS
               {"open": 113, "high": 119, "low": 110, "close": 111, "label": "5"}
             ],
             "accent": "core",
-            "compact": false
+            "compact": false,
+            "markers": [
+              {"number": 1, "candleIndex": 0, "position": "low", "side": "left"},
+              {"number": 2, "candleIndex": 3, "position": "high", "side": "right"}
+            ]
           },
           "annotations": [
             {"number": 1, "label": "Zona support", "detail": "Area tempat harga berulang kali berhenti atau memantul."},
@@ -509,14 +539,22 @@ WITH applied_questions(slug, body, body_id) AS (
       "question": "Looking at the practice candle, what was the highest price reached?",
       "options": ["116", "109", "100", "94"],
       "answer": "116",
-      "explanation": "The high is the top of the upper wick. On this candle the high is 116."
+      "explanation": "The high is the top of the upper wick. On this candle the high is 116.",
+      "chart": {
+        "candles": [{"open": 100, "high": 116, "low": 94, "close": 109, "label": "Practice"}],
+        "markers": [{"number": 1, "candleIndex": 0, "position": "high", "side": "left"}]
+      }
     }$block$::jsonb, $block${
       "type": "multiple_choice",
       "difficulty": "beginner",
       "question": "Melihat candle latihan, berapa harga tertinggi yang tercapai?",
       "options": ["116", "109", "100", "94"],
       "answer": "116",
-      "explanation": "High adalah puncak wick atas. Pada candle ini high-nya 116."
+      "explanation": "High adalah puncak wick atas. Pada candle ini high-nya 116.",
+      "chart": {
+        "candles": [{"open": 100, "high": 116, "low": 94, "close": 109, "label": "Latihan"}],
+        "markers": [{"number": 1, "candleIndex": 0, "position": "high", "side": "left"}]
+      }
     }$block$::jsonb),
     ('chart-ohcl-basics', $block${
       "type": "multiple_choice",
@@ -524,14 +562,22 @@ WITH applied_questions(slug, body, body_id) AS (
       "question": "Which price tells you where the period ended?",
       "options": ["Close", "Open", "High", "Low"],
       "answer": "Close",
-      "explanation": "The close is the last traded price of the period."
+      "explanation": "The close is the last traded price of the period.",
+      "chart": {
+        "candles": [{"open": 100, "high": 116, "low": 94, "close": 109, "label": "Practice"}],
+        "markers": [{"number": 1, "candleIndex": 0, "position": "close", "side": "right"}]
+      }
     }$block$::jsonb, $block${
       "type": "multiple_choice",
       "difficulty": "beginner",
       "question": "Harga mana yang menunjukkan di mana periode berakhir?",
       "options": ["Close", "Open", "High", "Low"],
       "answer": "Close",
-      "explanation": "Close adalah harga transaksi terakhir dalam periode."
+      "explanation": "Close adalah harga transaksi terakhir dalam periode.",
+      "chart": {
+        "candles": [{"open": 100, "high": 116, "low": 94, "close": 109, "label": "Latihan"}],
+        "markers": [{"number": 1, "candleIndex": 0, "position": "close", "side": "right"}]
+      }
     }$block$::jsonb),
     ('chart-ohcl-basics', $block${
       "type": "multiple_choice",
@@ -539,14 +585,28 @@ WITH applied_questions(slug, body, body_id) AS (
       "question": "The distance from 94 to 116 on the candle represents what?",
       "options": ["The full trading range", "Only the body", "The opening price", "The guaranteed future range"],
       "answer": "The full trading range",
-      "explanation": "The range from low (94) to high (116) shows every price touched during the period."
+      "explanation": "The range from low (94) to high (116) shows every price touched during the period.",
+      "chart": {
+        "candles": [{"open": 100, "high": 116, "low": 94, "close": 109, "label": "Practice"}],
+        "markers": [
+          {"number": 1, "candleIndex": 0, "position": "low", "side": "left"},
+          {"number": 2, "candleIndex": 0, "position": "high", "side": "right"}
+        ]
+      }
     }$block$::jsonb, $block${
       "type": "multiple_choice",
       "difficulty": "beginner",
       "question": "Jarak dari 94 ke 116 pada candle mewakili apa?",
       "options": ["Rentang perdagangan penuh", "Hanya body", "Harga pembukaan", "Rentang masa depan yang dijamin"],
       "answer": "Rentang perdagangan penuh",
-      "explanation": "Rentang dari low (94) ke high (116) menunjukkan setiap harga yang tersentuh selama periode."
+      "explanation": "Rentang dari low (94) ke high (116) menunjukkan setiap harga yang tersentuh selama periode.",
+      "chart": {
+        "candles": [{"open": 100, "high": 116, "low": 94, "close": 109, "label": "Latihan"}],
+        "markers": [
+          {"number": 1, "candleIndex": 0, "position": "low", "side": "left"},
+          {"number": 2, "candleIndex": 0, "position": "high", "side": "right"}
+        ]
+      }
     }$block$::jsonb),
 
     -- Lesson 2: Body and wick
@@ -556,14 +616,28 @@ WITH applied_questions(slug, body, body_id) AS (
       "question": "In the Up candle, the body runs from which prices?",
       "options": ["100 to 114", "92 to 120", "102 to 110", "94 to 116"],
       "answer": "100 to 114",
-      "explanation": "The body is the range between open (100) and close (114)."
+      "explanation": "The body is the range between open (100) and close (114).",
+      "chart": {
+        "candles": [{"open": 100, "high": 120, "low": 92, "close": 114, "label": "Up"}],
+        "markers": [
+          {"number": 1, "candleIndex": 0, "position": "bodyBottom", "side": "left"},
+          {"number": 2, "candleIndex": 0, "position": "bodyTop", "side": "right"}
+        ]
+      }
     }$block$::jsonb, $block${
       "type": "multiple_choice",
       "difficulty": "beginner",
       "question": "Pada candle Naik, body berada di rentang harga mana?",
       "options": ["100 sampai 114", "92 sampai 120", "102 sampai 110", "94 sampai 116"],
       "answer": "100 sampai 114",
-      "explanation": "Body adalah rentang antara open (100) dan close (114)."
+      "explanation": "Body adalah rentang antara open (100) dan close (114).",
+      "chart": {
+        "candles": [{"open": 100, "high": 120, "low": 92, "close": 114, "label": "Naik"}],
+        "markers": [
+          {"number": 1, "candleIndex": 0, "position": "bodyBottom", "side": "left"},
+          {"number": 2, "candleIndex": 0, "position": "bodyTop", "side": "right"}
+        ]
+      }
     }$block$::jsonb),
     ('chart-body-and-wick', $block${
       "type": "multiple_choice",
@@ -571,14 +645,22 @@ WITH applied_questions(slug, body, body_id) AS (
       "question": "What does the upper wick show?",
       "options": ["Price was rejected from that high", "The close price", "The only traded price", "A guaranteed reversal"],
       "answer": "Price was rejected from that high",
-      "explanation": "The wick above the body marks prices reached but not held before the close."
+      "explanation": "The wick above the body marks prices reached but not held before the close.",
+      "chart": {
+        "candles": [{"open": 100, "high": 120, "low": 92, "close": 114, "label": "Up"}],
+        "markers": [{"number": 1, "candleIndex": 0, "position": "high", "side": "left"}]
+      }
     }$block$::jsonb, $block${
       "type": "multiple_choice",
       "difficulty": "beginner",
       "question": "Apa yang ditunjukkan oleh wick atas?",
       "options": ["Harga ditolak dari high tersebut", "Harga close", "Satu-satunya harga yang diperdagangkan", "Pembalikan yang dijamin"],
       "answer": "Harga ditolak dari high tersebut",
-      "explanation": "Wick di atas body menandai harga yang tersentuh tetapi tidak bertahan sebelum close."
+      "explanation": "Wick di atas body menandai harga yang tersentuh tetapi tidak bertahan sebelum close.",
+      "chart": {
+        "candles": [{"open": 100, "high": 120, "low": 92, "close": 114, "label": "Naik"}],
+        "markers": [{"number": 1, "candleIndex": 0, "position": "high", "side": "left"}]
+      }
     }$block$::jsonb),
     ('chart-body-and-wick', $block${
       "type": "multiple_choice",

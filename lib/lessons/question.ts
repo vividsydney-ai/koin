@@ -48,6 +48,15 @@ export const multipleChoiceSchema = baseQuestionSchema.extend({
   type: z.literal("multiple_choice"),
   options: z.array(z.string().min(1)).min(2),
   answer: z.string().min(1),
+  chart: z.object({
+    candles: z.array(candlestickSchema).min(1),
+    markers: z.array(z.object({
+      number: z.number().int().min(1).max(99),
+      candleIndex: z.number().int().min(0),
+      position: z.enum(["high", "low", "open", "close", "bodyTop", "bodyBottom", "bodyCenter"]),
+      side: z.enum(["left", "right"]).optional(),
+    })).optional(),
+  }).optional(),
 });
 
 export const trueFalseSchema = baseQuestionSchema.extend({

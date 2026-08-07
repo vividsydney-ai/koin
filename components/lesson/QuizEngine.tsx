@@ -142,6 +142,7 @@ function MultipleChoice({
       options={options}
       correctValue={question.answer}
       explanation={question.explanation}
+      chart={question.chart}
       onComplete={onComplete}
     />
   );

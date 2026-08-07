@@ -115,6 +115,7 @@ function AnnotatedData({ block, payload, locale }: { block: LessonVisualBlock; p
               caption={block.dataStatus === "illustrative" ? interfaceCopy[locale].illustrative : undefined}
               accent={chart.accent ?? "core"}
               compact={chart.compact ?? false}
+              markers={chart.markers}
             />
           </div>
         </section>
@@ -175,6 +176,7 @@ function Comparison({ payload }: { payload: ComparisonPayload }) {
                   label={item.title}
                   accent={item.chart.accent ?? "core"}
                   compact={item.chart.compact ?? true}
+                  markers={item.chart.markers}
                 />
               </div>
               {item.footnote && <p className="border-t border-muted px-4 py-2 text-xs text-muted-foreground">{item.footnote}</p>}
@@ -210,6 +212,7 @@ function Process({ payload }: { payload: ProcessPayload }) {
             label={payload.steps[0]?.title ?? "Process"}
             accent={payload.chart.accent ?? "core"}
             compact={payload.chart.compact ?? false}
+            markers={payload.chart.markers}
           />
         </div>
       )}

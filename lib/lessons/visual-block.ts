@@ -27,10 +27,18 @@ const candlestickSchema = z.object({
   message: "Candlestick high/low must contain open and close",
 });
 
+const chartMarkerSchema = z.object({
+  number: z.number().int().min(1).max(99),
+  candleIndex: z.number().int().min(0),
+  position: z.enum(["high", "low", "open", "close", "bodyTop", "bodyBottom", "bodyCenter"]),
+  side: z.enum(["left", "right"]).optional(),
+});
+
 const annotatedDataChartSchema = z.object({
   candles: z.array(candlestickSchema).min(1),
   accent: z.enum(["core", "advanced"]).optional(),
   compact: z.boolean().optional(),
+  markers: z.array(chartMarkerSchema).optional(),
 });
 
 const comparisonItemSchema = z.object({
