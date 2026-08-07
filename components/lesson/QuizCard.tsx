@@ -14,6 +14,7 @@ interface QuizOption {
 interface QuizChart {
   candles: { open: number; high: number; low: number; close: number; label?: string }[];
   markers?: ChartMarker[];
+  priceScale?: number[];
 }
 
 export interface MultipleChoiceContentProps {
@@ -96,6 +97,7 @@ export function MultipleChoiceContent({
             compact={false}
             markers={chart.markers}
             showPriceScale
+            priceScale={chart.priceScale}
           />
         </div>
       )}

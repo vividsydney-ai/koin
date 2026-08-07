@@ -20,6 +20,7 @@ export interface CandlestickChartProps {
   animate?: boolean;
   markers?: ChartMarker[];
   showPriceScale?: boolean;
+  priceScale?: number[];
 }
 
 function formatNumber(value: number) {
@@ -39,6 +40,7 @@ export function CandlestickChart({
   animate = true,
   markers,
   showPriceScale = false,
+  priceScale,
 }: CandlestickChartProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const width = compact ? 210 : 420;
@@ -121,14 +123,24 @@ export function CandlestickChart({
     })
     .join(" ");
 
-  const priceLevels = showPriceScale && !compact
+  const rawPriceLevels = showPriceScale && !compact
     ? Array.from(
         candles.reduce((set, candle) => {
           set.add(candle.open).add(candle.high).add(candle.low).add(candle.close);
+          (priceScale ?? []).forEach((value) => set.add(value));
           return set;
         }, new Set<number>())
       ).sort((a, b) => a - b)
     : [];
+
+  const minLabelSpacing = 14;
+  const priceLevels: { price: number; y: number; offset: number }[] = [];
+  for (const price of rawPriceLevels) {
+    const py = y(price);
+    const last = priceLevels[priceLevels.length - 1];
+    const offset = last && Math.abs(py - last.y) < minLabelSpacing ? -last.offset : 0;
+    priceLevels.push({ price, y: py, offset });
+  }
 
   return (
     <div ref={rootRef} className="overflow-hidden rounded-md border border-muted/70 bg-surface p-2" role="figure" aria-label={label}>
@@ -137,12 +149,32 @@ export function CandlestickChart({
         {[0.25, 0.5, 0.75].map((position) => (
           <line key={position} x1={padding.left} x2={width - padding.right} y1={padding.top + plotHeight * position} y2={padding.top + plotHeight * position} stroke="var(--color-muted)" strokeWidth="1" strokeDasharray="3 4" />
         ))}
-        {priceLevels.map((price) => {
-          const py = y(price);
+        {priceLevels.map(({ price, y: py, offset }) => {
+          const lineOpacity = Math.abs(price - Math.round(price)) < 0.001 ? 0.45 : 0.25;
           return (
             <g key={`price-${price}`}>
+              <line
+                x1={padding.left}
+                x2={width - padding.right}
+                y1={py}
+                y2={py}
+                stroke="var(--color-muted-foreground)"
+                strokeWidth="1"
+                strokeDasharray="2 3"
+                opacity={lineOpacity}
+              />
               <line x1={padding.left - 5} x2={padding.left} y1={py} y2={py} stroke="var(--color-muted-foreground)" strokeWidth="1" />
-              <text x={padding.left - 9} y={py} dy="0.35em" textAnchor="end" fill="var(--color-muted-foreground)" fontSize="10" fontWeight="500">{formatNumber(price)}</text>
+              <text
+                x={padding.left - 9}
+                y={py}
+                dy={offset === 0 ? "0.35em" : offset > 0 ? "0.85em" : "-0.15em"}
+                textAnchor="end"
+                fill="var(--color-muted-foreground)"
+                fontSize="10"
+                fontWeight="500"
+              >
+                {formatNumber(price)}
+              </text>
             </g>
           );
         })}

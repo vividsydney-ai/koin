@@ -12,10 +12,25 @@ const supabase = createClient(
 
 const PRICE_TERMS_EN = /\b(price|candle|body|wick|high|low|open|close|range)\b/i;
 const PRICE_TERMS_ID = /\b(harga|candle|body|wick|high|low|open|close|rentang)\b/i;
+const PRICE_VALUE_PATTERN = /\b\d{1,6}(?:[\s.,-]+\d{1,6})*\b/;
 
-function needsChart(question) {
+function containsNumericPrice(value) {
+  if (typeof value !== "string") return false;
+  return PRICE_VALUE_PATTERN.test(value);
+}
+
+function optionsContainNumericPrice(options) {
+  if (!Array.isArray(options)) return false;
+  return options.some((option) => containsNumericPrice(String(option)));
+}
+
+function needsChart(payload) {
+  const question = payload?.question ?? "";
   if (typeof question !== "string") return false;
-  return PRICE_TERMS_EN.test(question) || PRICE_TERMS_ID.test(question);
+  const isPriceTopic = PRICE_TERMS_EN.test(question) || PRICE_TERMS_ID.test(question);
+  if (!isPriceTopic) return false;
+  // Only require a chart when the answer options actually name numeric prices/ranges.
+  return optionsContainNumericPrice(payload.options);
 }
 
 function hasValidChart(payload) {
@@ -30,6 +45,11 @@ function hasValidChart(payload) {
     candle.high >= Math.max(candle.open, candle.close) &&
     candle.low <= Math.min(candle.open, candle.close)
   );
+}
+
+function hasPriceScale(payload) {
+  const priceScale = payload?.chart?.priceScale;
+  return Array.isArray(priceScale) && priceScale.length > 0 && priceScale.every((p) => typeof p === "number");
 }
 
 async function main() {
@@ -58,20 +78,24 @@ async function main() {
   for (const variant of variants ?? []) {
     const slug = slugById.get(variant.lesson_id) ?? variant.lesson_id;
     for (const [locale, payload] of [["en", variant.body], ["id", variant.body_id]]) {
-      const question = payload?.question ?? "";
-      const wantsChart = needsChart(question);
+      const wantsChart = needsChart(payload);
       const hasChart = hasValidChart(payload);
+      const hasScale = hasPriceScale(payload);
 
       rows.push({
         slug,
         locale,
-        question: question.slice(0, 60),
+        question: String(payload?.question ?? "").slice(0, 60),
         wantsChart: wantsChart ? "yes" : "no",
         hasChart: hasChart ? "yes" : "no",
+        hasPriceScale: hasScale ? "yes" : "no",
       });
 
       if (wantsChart && !hasChart) {
         failures.push(`${slug}/${locale}: price-related question missing valid chart`);
+      }
+      if (wantsChart && hasChart && !hasScale) {
+        failures.push(`${slug}/${locale}: price-related question chart missing priceScale`);
       }
     }
   }
