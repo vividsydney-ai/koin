@@ -11,6 +11,7 @@ import {
   type WorkedExamplePayload,
   visualBlockCopy,
 } from "@/lib/lessons/visual-block";
+import { CandlestickChart } from "@/components/charts/CandlestickChart";
 
 const interfaceCopy = {
   en: { showAll: "Show all", illustrative: "Illustrative learning example" },
@@ -99,29 +100,49 @@ function VisualBlock({ block, locale }: { block: LessonVisualBlock; locale: Visu
 }
 
 function AnnotatedData({ block, payload, locale }: { block: LessonVisualBlock; payload: AnnotatedDataPayload; locale: VisualBlockLocale }) {
+  const chart = payload.chart;
   return (
     <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(15rem,0.78fr)] lg:items-start">
-      <section aria-label={payload.quoteTitle} className="overflow-hidden rounded-[var(--radius-xl)] border border-[var(--rup-blue-200)] bg-surface shadow-sm">
-        <div className="border-b border-[var(--rup-blue-100)] bg-[var(--rup-blue-50)] px-4 py-3">
-          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-secondary">{payload.quoteTitle}</p>
-          <div className="mt-1 flex items-end justify-between gap-3">
-            <strong className="font-display text-2xl leading-none text-foreground">{payload.price}</strong>
-            {payload.change && <span className="text-xs font-bold text-success">{payload.change}</span>}
+      {chart ? (
+        <section aria-label={payload.quoteTitle} className="overflow-hidden rounded-[var(--radius-xl)] border border-muted bg-surface shadow-sm">
+          <div className="border-b border-muted bg-surface-raised px-4 py-3">
+            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-secondary">{payload.quoteTitle}</p>
           </div>
-        </div>
-        <dl className="divide-y divide-muted">
-          {payload.fields.map((field) => (
-            <div key={field.label} className="grid grid-cols-[minmax(0,1fr)_auto] gap-3 px-4 py-3">
-              <dt className="text-xs font-bold text-foreground">{field.label}</dt>
-              <dd className="text-right">
-                <span className="block text-sm font-bold text-foreground">{field.value}</span>
-                <span className="mt-0.5 block text-[11px] leading-snug text-muted-foreground">{field.note}</span>
-              </dd>
+          <div className="p-3">
+            <CandlestickChart
+              candles={chart.candles}
+              label={payload.quoteTitle}
+              caption={block.dataStatus === "illustrative" ? interfaceCopy[locale].illustrative : undefined}
+              accent={chart.accent ?? "core"}
+              compact={chart.compact ?? false}
+            />
+          </div>
+        </section>
+      ) : (
+        <section aria-label={payload.quoteTitle} className="overflow-hidden rounded-[var(--radius-xl)] border border-[var(--rup-blue-200)] bg-surface shadow-sm">
+          <div className="border-b border-[var(--rup-blue-100)] bg-[var(--rup-blue-50)] px-4 py-3">
+            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-secondary">{payload.quoteTitle}</p>
+            <div className="mt-1 flex items-end justify-between gap-3">
+              {payload.price && <strong className="font-display text-2xl leading-none text-foreground">{payload.price}</strong>}
+              {payload.change && <span className="text-xs font-bold text-success">{payload.change}</span>}
             </div>
-          ))}
-        </dl>
-      </section>
-      <ol className="grid gap-2.5" aria-label={locale === "id" ? "Legenda kutipan" : "Quote legend"}>
+          </div>
+          {payload.fields && (
+            <dl className="divide-y divide-muted">
+              {payload.fields.map((field) => (
+                <div key={field.label} className="grid grid-cols-[minmax(0,1fr)_auto] gap-3 px-4 py-3">
+                  <dt className="text-xs font-bold text-foreground">{field.label}</dt>
+                  <dd className="text-right">
+                    <span className="block text-sm font-bold text-foreground">{field.value}</span>
+                    <span className="mt-0.5 block text-[11px] leading-snug text-muted-foreground">{field.note}</span>
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          )}
+        </section>
+      )}
+      <ol className="grid gap-2.5" aria-label={locale === "id" ? "Legenda visual" : "Visual legend"}>
         {payload.annotations.map((annotation) => (
           <li key={annotation.number} data-guided-legend className="grid grid-cols-[1.7rem_minmax(0,1fr)] items-start gap-2.5 rounded-lg border border-muted bg-surface-raised px-3 py-2.5">
             <span className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-bold text-white">{annotation.number}</span>
@@ -132,19 +153,44 @@ function AnnotatedData({ block, payload, locale }: { block: LessonVisualBlock; p
           </li>
         ))}
       </ol>
-      {block.dataStatus === "illustrative" && <p className="sr-only">{interfaceCopy[locale].illustrative}</p>}
+      {block.dataStatus === "illustrative" && !chart && <p className="sr-only">{interfaceCopy[locale].illustrative}</p>}
     </div>
   );
 }
 
 function Comparison({ payload }: { payload: ComparisonPayload }) {
+  if (payload.items) {
+    return (
+      <div data-guided-evidence className="space-y-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {payload.items.map((item) => (
+            <div key={item.title} className="overflow-hidden rounded-[var(--radius-xl)] border border-muted bg-surface">
+              <div className="border-b border-muted bg-surface-raised px-4 py-3">
+                <h4 className="text-sm font-bold text-foreground">{item.title}</h4>
+                {item.subtitle && <p className="mt-0.5 text-xs text-muted-foreground">{item.subtitle}</p>}
+              </div>
+              <div className="p-3">
+                <CandlestickChart
+                  candles={item.chart.candles}
+                  label={item.title}
+                  accent={item.chart.accent ?? "core"}
+                  compact={item.chart.compact ?? true}
+                />
+              </div>
+              {item.footnote && <p className="border-t border-muted px-4 py-2 text-xs text-muted-foreground">{item.footnote}</p>}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
   return (
     <div data-guided-evidence className="overflow-hidden rounded-[var(--radius-xl)] border border-muted bg-surface">
       <div className="grid grid-cols-2 border-b border-muted">
         <h4 className="bg-success/5 px-4 py-3 text-sm font-bold text-success">{payload.leftTitle}</h4>
         <h4 className="bg-[var(--rup-gold-50)] px-4 py-3 text-sm font-bold text-[var(--rup-gold-700)]">{payload.rightTitle}</h4>
       </div>
-      {payload.rows.map((row) => (
+      {payload.rows && payload.rows.map((row) => (
         <div key={row.left} className="grid grid-cols-2 divide-x divide-muted border-b border-muted last:border-b-0">
           <p className="px-4 py-3 text-sm leading-snug text-foreground">{row.left}</p>
           <p className="px-4 py-3 text-sm leading-snug text-muted-foreground">{row.right}</p>
@@ -155,7 +201,21 @@ function Comparison({ payload }: { payload: ComparisonPayload }) {
 }
 
 function Process({ payload }: { payload: ProcessPayload }) {
-  return <ol className="space-y-3">{payload.steps.map((step, index) => <li key={step.title} className="flex gap-3"><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-white">{index + 1}</span><span><strong className="block text-sm text-foreground">{step.title}</strong><span className="text-sm text-muted-foreground">{step.description}</span></span></li>)}</ol>;
+  return (
+    <div className="space-y-4">
+      {payload.chart && (
+        <div data-guided-evidence className="overflow-hidden rounded-[var(--radius-xl)] border border-muted bg-surface p-3">
+          <CandlestickChart
+            candles={payload.chart.candles}
+            label={payload.steps[0]?.title ?? "Process"}
+            accent={payload.chart.accent ?? "core"}
+            compact={payload.chart.compact ?? false}
+          />
+        </div>
+      )}
+      <ol className="space-y-3">{payload.steps.map((step, index) => <li key={step.title} className="flex gap-3"><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-white">{index + 1}</span><span><strong className="block text-sm text-foreground">{step.title}</strong><span className="text-sm text-muted-foreground">{step.description}</span></span></li>)}</ol>
+    </div>
+  );
 }
 
 function WorkedExample({ payload }: { payload: WorkedExamplePayload }) {

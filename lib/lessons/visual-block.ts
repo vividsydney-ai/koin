@@ -17,20 +17,52 @@ const annotationSchema = z.object({
   detail: textSchema,
 });
 
+const candlestickSchema = z.object({
+  open: z.number(),
+  high: z.number(),
+  low: z.number(),
+  close: z.number(),
+  label: z.string().trim().min(1).optional(),
+}).refine((candle) => candle.high >= Math.max(candle.open, candle.close) && candle.low <= Math.min(candle.open, candle.close), {
+  message: "Candlestick high/low must contain open and close",
+});
+
+const annotatedDataChartSchema = z.object({
+  candles: z.array(candlestickSchema).min(1),
+  accent: z.enum(["core", "advanced"]).optional(),
+  compact: z.boolean().optional(),
+});
+
+const comparisonItemSchema = z.object({
+  title: textSchema,
+  subtitle: optionalTextSchema,
+  chart: annotatedDataChartSchema,
+  footnote: optionalTextSchema,
+});
+
 const annotatedDataPayloadSchema = z.object({
   quoteTitle: textSchema,
-  price: textSchema,
+  price: optionalTextSchema,
   change: optionalTextSchema,
-  fields: z.array(z.object({ label: textSchema, value: textSchema, note: textSchema })).min(1),
+  fields: z.array(z.object({ label: textSchema, value: textSchema, note: textSchema })).optional(),
   annotations: z.array(annotationSchema).min(1),
+  chart: annotatedDataChartSchema.optional(),
+}).refine((payload) => payload.fields !== undefined || payload.chart !== undefined, {
+  message: "annotated_data must include either fields or a chart",
+  path: ["fields"],
 });
 const comparisonPayloadSchema = z.object({
   leftTitle: textSchema,
   rightTitle: textSchema,
-  rows: z.array(z.object({ left: textSchema, right: textSchema })).min(1),
+  rows: z.array(z.object({ left: textSchema, right: textSchema })).min(1).optional(),
+  items: z.array(comparisonItemSchema).min(1).optional(),
+}).refine((payload) => payload.rows !== undefined || payload.items !== undefined, {
+  message: "comparison must include either rows or chart items",
+  path: ["rows"],
 });
 const processPayloadSchema = z.object({
   steps: z.array(z.object({ title: textSchema, description: textSchema })).min(1),
+  chart: annotatedDataChartSchema.optional(),
 });
 const workedExamplePayloadSchema = z.object({
   inputs: z.array(z.object({ label: textSchema, value: textSchema })).min(1),
