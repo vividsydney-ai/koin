@@ -12,6 +12,7 @@ import {
   visualBlockCopy,
 } from "@/lib/lessons/visual-block";
 import { CandlestickChart } from "@/components/charts/CandlestickChart";
+import { MascotMoment } from "@/components/lesson/visuals/MascotMoment";
 
 const interfaceCopy = {
   en: { showAll: "Show all", illustrative: "Illustrative learning example" },
@@ -84,7 +85,8 @@ export function LessonVisualBlocks({
 function VisualBlock({ block, locale }: { block: LessonVisualBlock; locale: VisualBlockLocale }) {
   const copy = visualBlockCopy(block, locale);
   return (
-    <article className="rounded-card border border-primary/20 bg-surface p-4 shadow-sm sm:p-5">
+    <article className="relative rounded-card border border-primary/20 bg-surface p-4 shadow-sm sm:p-5">
+      {copy.mascot && <MascotMoment role={copy.mascot.role} altText={copy.mascot.altText} />}
       {copy.eyebrow && <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-primary">{copy.eyebrow}</p>}
       <h3 className="mt-1.5 font-display text-xl font-bold text-foreground">{copy.title}</h3>
       {copy.disclosure && <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{copy.disclosure}</p>}
