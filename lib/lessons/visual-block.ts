@@ -83,6 +83,10 @@ const copySchema = z.object({
   eyebrow: optionalTextSchema,
   disclosure: optionalTextSchema,
   altText: textSchema,
+  mascot: z.object({
+    role: z.enum(["coach", "celebrate", "think", "explore"]),
+    altText: textSchema,
+  }).optional(),
   payload: z.unknown(),
 });
 
