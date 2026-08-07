@@ -57,6 +57,12 @@ function getValidatedQuestionVariants(variants: ContentVariant[]): ValidatedQues
 function getPracticeQuestionVariants(variants: ContentVariant[], hasVisualBlocks: boolean): ContentVariant[] {
   if (!hasVisualBlocks) return variants;
   const visualApplied = variants.filter((variant) => variant.topicTag === "visual_applied");
+  // When a visual lesson has several applied checks, blend in the remaining
+  // question variants so the practice pool is large enough to avoid repeats.
+  if (visualApplied.length >= 3) {
+    const nonVisual = variants.filter((variant) => variant.topicTag !== "visual_applied");
+    return [...visualApplied, ...nonVisual];
+  }
   // A visual lesson must have enough applied checks for Chapter 08's mastery
   // gate before unrelated legacy questions are allowed back into practice.
   return visualApplied.length >= 2 ? visualApplied : variants;
