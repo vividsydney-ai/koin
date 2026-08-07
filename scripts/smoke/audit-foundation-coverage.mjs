@@ -32,7 +32,7 @@ async function main() {
 
   const lessonIds = lessons.map((lesson) => lesson.id);
   const [{ data: blocks, error: blockError }, { data: variants, error: variantError }, { data: recalls, error: recallError }, { data: links, error: linkError }] = await Promise.all([
-    supabase.from("lesson_visual_blocks").select("lesson_id, content, is_published").in("lesson_id", lessonIds).eq("is_published", true),
+    supabase.from("lesson_visual_blocks").select("lesson_id, display_order, content, is_published").in("lesson_id", lessonIds).eq("is_published", true),
     supabase.from("content_variants").select("lesson_id").in("lesson_id", lessonIds).eq("variant_type", "question").eq("topic_tag", "visual_applied").eq("is_active", true),
     supabase.from("lesson_recall_questions").select("lesson_id, is_active").in("lesson_id", lessonIds).eq("is_active", true),
     supabase.from("lesson_sources").select("lesson_id, is_primary, sources(url, synopsis, synopsis_id, relevance_blurb, relevance_blurb_id)").in("lesson_id", lessonIds).eq("is_primary", true),
@@ -45,23 +45,27 @@ async function main() {
   const failures = [];
   if (lessons.length !== requiredSlugs.length) failures.push(`expected ${requiredSlugs.length} published Foundation lessons, found ${lessons.length}`);
 
-  const mascotBlocks = (blocks ?? []).filter((block) => {
+  const rolloutBlocks = (blocks ?? []).filter((block) => block.display_order === 10);
+  const mascotBlocks = rolloutBlocks.filter((block) => {
     const content = block.content;
     return content && typeof content === "object" && "en" in content && content.en?.mascot;
   });
   if (mascotBlocks.length !== 6) failures.push(`expected 6 mascot moments, found ${mascotBlocks.length}`);
 
   for (const lesson of lessons) {
-    const lessonBlocks = (blocks ?? []).filter((block) => block.lesson_id === lesson.id);
+    const lessonBlocks = rolloutBlocks.filter((block) => block.lesson_id === lesson.id);
     const visualApplied = (variants ?? []).filter((variant) => variant.lesson_id === lesson.id).length;
     const recall = (recalls ?? []).filter((item) => item.lesson_id === lesson.id).length;
-    const source = (links ?? []).find((link) => link.lesson_id === lesson.id)?.sources;
     const content = lessonBlocks[0]?.content;
     const mascot = content && typeof content === "object" && "en" in content ? content.en?.mascot : null;
-    const sourceComplete = source
-      && /^https?:\/\//i.test(String(source.url ?? ""))
+    const sources = (links ?? [])
+      .filter((link) => link.lesson_id === lesson.id)
+      .flatMap((link) => Array.isArray(link.sources) ? link.sources : link.sources ? [link.sources] : []);
+    const sourceComplete = sources.some((source) => (
+      /^https?:\/\//i.test(String(source.url ?? ""))
       && hasText(source.synopsis) && hasText(source.synopsis_id)
-      && hasText(source.relevance_blurb) && hasText(source.relevance_blurb_id);
+      && hasText(source.relevance_blurb) && hasText(source.relevance_blurb_id)
+    ));
 
     if (lessonBlocks.length < 1) failures.push(`${lesson.slug}: missing published visual block`);
     if (visualApplied < 3) failures.push(`${lesson.slug}: expected at least 3 visual_applied questions, found ${visualApplied}`);
