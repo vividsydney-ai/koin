@@ -1,0 +1,5 @@
+Contact: mailto:hello@koinaku.com
+Preferred-Languages: en, id
+Policy: https://web.koinaku.com/privacy
+Canonical: https://web.koinaku.com/.well-known/security.txt
+Expires: 2027-07-21T00:00:00Z

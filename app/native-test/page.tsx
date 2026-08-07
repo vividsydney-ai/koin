@@ -1,17 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { shareContent } from "@/lib/native/share";
 import { initPushNotifications } from "@/lib/native/push-notifications";
 import { Capacitor } from "@capacitor/core";
 
 export default function NativeTestPage() {
-  const [platform, setPlatform] = useState<string>("web");
+  const platform = Capacitor.getPlatform();
   const [status, setStatus] = useState<string>("Ready");
-
-  useEffect(() => {
-    setPlatform(Capacitor.getPlatform());
-  }, []);
 
   const handleShare = async () => {
     try {
@@ -53,14 +49,14 @@ export default function NativeTestPage() {
         <div className="space-y-3">
           <button
             onClick={handleShare}
-            className="w-full touch-target rounded-radius-md bg-primary px-4 py-3 text-primary-foreground font-medium"
+            className="w-full touch-target rounded-md bg-primary px-4 py-3 text-primary-foreground font-medium"
           >
             Test Share Sheet
           </button>
 
           <button
             onClick={handlePushPermission}
-            className="w-full touch-target rounded-radius-md bg-surface border border-muted px-4 py-3 text-foreground font-medium"
+            className="w-full touch-target rounded-md bg-surface border border-muted px-4 py-3 text-foreground font-medium"
           >
             Test Push Notification Permission
           </button>

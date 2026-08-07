@@ -1,0 +1,12 @@
+[build]
+  command = "pnpm build"
+
+[build.environment]
+  NODE_VERSION = "20"
+  PNPM_VERSION = "10"
+  # Next.js runtime plugin handles serverless builds; no static export.
+
+# web.koinaku.com is served by Vercel (see .vercel/project.json and vercel.json).
+# This Netlify site is a fallback but is currently paused due to account build
+# credits. Production deploys go through `vercel --prod` on the web-koinaku branch.
+# Cron jobs are defined in vercel.json and run on Vercel.

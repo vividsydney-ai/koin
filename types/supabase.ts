@@ -12,33 +12,54 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
+      account_deletion_requests: {
+        Row: {
+          cancelled_at: string | null
+          requested_at: string
+          scheduled_for: string
+          token_hash: string
+          user_id: string
+        }
+        Insert: {
+          cancelled_at?: string | null
+          requested_at?: string
+          scheduled_for: string
+          token_hash: string
+          user_id: string
+        }
+        Update: {
+          cancelled_at?: string | null
+          requested_at?: string
+          scheduled_for?: string
+          token_hash?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "account_deletion_requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "analytics_activation"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "account_deletion_requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "analytics_first_trade"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "account_deletion_requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       analytics_events: {
         Row: {
           created_at: string | null
@@ -65,6 +86,20 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "analytics_events_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "analytics_activation"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "analytics_events_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "analytics_first_trade"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "analytics_events_user_id_fkey"
             columns: ["user_id"]
@@ -188,6 +223,78 @@ export type Database = {
             foreignKeyName: "certificates_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: true
+            referencedRelation: "analytics_activation"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "certificates_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "analytics_first_trade"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "certificates_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chapter_mission_attempts: {
+        Row: {
+          attempt_number: number
+          chapter_number: number
+          completed_at: string | null
+          created_at: string
+          id: string
+          max_score: number
+          passed: boolean
+          score: number
+          user_id: string
+        }
+        Insert: {
+          attempt_number: number
+          chapter_number: number
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          max_score: number
+          passed: boolean
+          score: number
+          user_id: string
+        }
+        Update: {
+          attempt_number?: number
+          chapter_number?: number
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          max_score?: number
+          passed?: boolean
+          score?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chapter_mission_attempts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "analytics_activation"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "chapter_mission_attempts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "analytics_first_trade"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "chapter_mission_attempts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -224,6 +331,20 @@ export type Database = {
             foreignKeyName: "cohort_memberships_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "analytics_activation"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "cohort_memberships_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "analytics_first_trade"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "cohort_memberships_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -252,6 +373,20 @@ export type Database = {
           name?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "cohorts_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "analytics_activation"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "cohorts_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "analytics_first_trade"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "cohorts_created_by_fkey"
             columns: ["created_by"]
@@ -297,6 +432,20 @@ export type Database = {
             foreignKeyName: "content_flags_flagged_by_fkey"
             columns: ["flagged_by"]
             isOneToOne: false
+            referencedRelation: "analytics_activation"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "content_flags_flagged_by_fkey"
+            columns: ["flagged_by"]
+            isOneToOne: false
+            referencedRelation: "analytics_first_trade"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "content_flags_flagged_by_fkey"
+            columns: ["flagged_by"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -319,6 +468,7 @@ export type Database = {
       content_variants: {
         Row: {
           body: Json
+          body_id: Json | null
           created_at: string | null
           difficulty: string | null
           id: string
@@ -331,6 +481,7 @@ export type Database = {
         }
         Insert: {
           body: Json
+          body_id?: Json | null
           created_at?: string | null
           difficulty?: string | null
           id?: string
@@ -343,6 +494,7 @@ export type Database = {
         }
         Update: {
           body?: Json
+          body_id?: Json | null
           created_at?: string | null
           difficulty?: string | null
           id?: string
@@ -393,6 +545,407 @@ export type Database = {
             foreignKeyName: "daily_checkins_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "analytics_activation"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "daily_checkins_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "analytics_first_trade"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "daily_checkins_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      daily_focus_challenges: {
+        Row: {
+          challenge_date: string
+          completed_at: string | null
+          correct_answers: number
+          created_at: string
+          focus_remaining: number
+          id: string
+          max_focus: number
+          questions: Json
+          questions_answered: number
+          refill_used: boolean
+          status: string
+          time_zone: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          challenge_date: string
+          completed_at?: string | null
+          correct_answers?: number
+          created_at?: string
+          focus_remaining: number
+          id?: string
+          max_focus: number
+          questions: Json
+          questions_answered?: number
+          refill_used?: boolean
+          status?: string
+          time_zone?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          challenge_date?: string
+          completed_at?: string | null
+          correct_answers?: number
+          created_at?: string
+          focus_remaining?: number
+          id?: string
+          max_focus?: number
+          questions?: Json
+          questions_answered?: number
+          refill_used?: boolean
+          status?: string
+          time_zone?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_focus_challenges_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "analytics_activation"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "daily_focus_challenges_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "analytics_first_trade"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "daily_focus_challenges_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      daily_focus_chapter_map: {
+        Row: {
+          chapter: string
+          chapter_number: number
+          created_at: string
+        }
+        Insert: {
+          chapter: string
+          chapter_number: number
+          created_at?: string
+        }
+        Update: {
+          chapter?: string
+          chapter_number?: number
+          created_at?: string
+        }
+        Relationships: []
+      }
+      daily_focus_question_history: {
+        Row: {
+          answered_at: string | null
+          challenge_id: string
+          id: string
+          question_id: string
+          shown_at: string
+          topic: string
+          user_id: string
+          was_correct: boolean | null
+        }
+        Insert: {
+          answered_at?: string | null
+          challenge_id: string
+          id?: string
+          question_id: string
+          shown_at?: string
+          topic: string
+          user_id: string
+          was_correct?: boolean | null
+        }
+        Update: {
+          answered_at?: string | null
+          challenge_id?: string
+          id?: string
+          question_id?: string
+          shown_at?: string
+          topic?: string
+          user_id?: string
+          was_correct?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_focus_question_history_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "daily_focus_challenges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "daily_focus_question_history_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "daily_focus_questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "daily_focus_question_history_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "analytics_activation"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "daily_focus_question_history_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "analytics_first_trade"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "daily_focus_question_history_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      daily_focus_questions: {
+        Row: {
+          body: Json
+          chapter: string
+          created_at: string
+          difficulty: string
+          id: string
+          is_active: boolean
+          topic: string
+          type: string
+        }
+        Insert: {
+          body: Json
+          chapter: string
+          created_at?: string
+          difficulty: string
+          id: string
+          is_active?: boolean
+          topic: string
+          type: string
+        }
+        Update: {
+          body?: Json
+          chapter?: string
+          created_at?: string
+          difficulty?: string
+          id?: string
+          is_active?: boolean
+          topic?: string
+          type?: string
+        }
+        Relationships: []
+      }
+      faq_entries: {
+        Row: {
+          answer_en: string
+          answer_id: string
+          created_at: string
+          display_order: number
+          entry_key: string
+          id: string
+          is_published: boolean
+          question_en: string
+          question_id: string
+          section_id: string
+          updated_at: string
+        }
+        Insert: {
+          answer_en: string
+          answer_id: string
+          created_at?: string
+          display_order: number
+          entry_key: string
+          id?: string
+          is_published?: boolean
+          question_en: string
+          question_id: string
+          section_id: string
+          updated_at?: string
+        }
+        Update: {
+          answer_en?: string
+          answer_id?: string
+          created_at?: string
+          display_order?: number
+          entry_key?: string
+          id?: string
+          is_published?: boolean
+          question_en?: string
+          question_id?: string
+          section_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "faq_entries_section_id_fkey"
+            columns: ["section_id"]
+            isOneToOne: false
+            referencedRelation: "faq_sections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      faq_pages: {
+        Row: {
+          created_at: string
+          is_published: boolean
+          notice_en: string
+          notice_id: string
+          page_key: string
+          subtitle_en: string
+          subtitle_id: string
+          title_en: string
+          title_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          is_published?: boolean
+          notice_en: string
+          notice_id: string
+          page_key: string
+          subtitle_en: string
+          subtitle_id: string
+          title_en: string
+          title_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          is_published?: boolean
+          notice_en?: string
+          notice_id?: string
+          page_key?: string
+          subtitle_en?: string
+          subtitle_id?: string
+          title_en?: string
+          title_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      faq_sections: {
+        Row: {
+          created_at: string
+          display_order: number
+          eyebrow_en: string | null
+          eyebrow_id: string | null
+          id: string
+          is_published: boolean
+          is_roadmap: boolean
+          page_key: string
+          section_key: string
+          title_en: string
+          title_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_order: number
+          eyebrow_en?: string | null
+          eyebrow_id?: string | null
+          id?: string
+          is_published?: boolean
+          is_roadmap?: boolean
+          page_key: string
+          section_key: string
+          title_en: string
+          title_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          eyebrow_en?: string | null
+          eyebrow_id?: string | null
+          id?: string
+          is_published?: boolean
+          is_roadmap?: boolean
+          page_key?: string
+          section_key?: string
+          title_en?: string
+          title_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "faq_sections_page_key_fkey"
+            columns: ["page_key"]
+            isOneToOne: false
+            referencedRelation: "faq_pages"
+            referencedColumns: ["page_key"]
+          },
+        ]
+      }
+      focus_profiles: {
+        Row: {
+          fourth_focus_unlocked_at: string | null
+          max_focus: number
+          mission_week_start: string | null
+          missions_completed_this_week: number
+          time_zone: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          fourth_focus_unlocked_at?: string | null
+          max_focus?: number
+          mission_week_start?: string | null
+          missions_completed_this_week?: number
+          time_zone?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          fourth_focus_unlocked_at?: string | null
+          max_focus?: number
+          mission_week_start?: string | null
+          missions_completed_this_week?: number
+          time_zone?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "focus_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "analytics_activation"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "focus_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "analytics_first_trade"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "focus_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -427,6 +980,20 @@ export type Database = {
           uses_count?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "friend_invites_inviter_id_fkey"
+            columns: ["inviter_id"]
+            isOneToOne: false
+            referencedRelation: "analytics_activation"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "friend_invites_inviter_id_fkey"
+            columns: ["inviter_id"]
+            isOneToOne: false
+            referencedRelation: "analytics_first_trade"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "friend_invites_inviter_id_fkey"
             columns: ["inviter_id"]
@@ -466,8 +1033,36 @@ export type Database = {
             foreignKeyName: "friendships_addressee_id_fkey"
             columns: ["addressee_id"]
             isOneToOne: false
+            referencedRelation: "analytics_activation"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "friendships_addressee_id_fkey"
+            columns: ["addressee_id"]
+            isOneToOne: false
+            referencedRelation: "analytics_first_trade"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "friendships_addressee_id_fkey"
+            columns: ["addressee_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "friendships_requester_id_fkey"
+            columns: ["requester_id"]
+            isOneToOne: false
+            referencedRelation: "analytics_activation"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "friendships_requester_id_fkey"
+            columns: ["requester_id"]
+            isOneToOne: false
+            referencedRelation: "analytics_first_trade"
+            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "friendships_requester_id_fkey"
@@ -522,6 +1117,45 @@ export type Database = {
           },
         ]
       }
+      instruments: {
+        Row: {
+          created_at: string
+          exchange: string
+          id: string
+          instrument_type: string
+          is_active: boolean
+          lot_size: number
+          name: string
+          source_url: string
+          symbol: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          exchange?: string
+          id?: string
+          instrument_type: string
+          is_active?: boolean
+          lot_size?: number
+          name: string
+          source_url: string
+          symbol: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          exchange?: string
+          id?: string
+          instrument_type?: string
+          is_active?: boolean
+          lot_size?: number
+          name?: string
+          source_url?: string
+          symbol?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       koin_point_balances: {
         Row: {
           current_balance: number
@@ -542,6 +1176,20 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "koin_point_balances_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "analytics_activation"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "koin_point_balances_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "analytics_first_trade"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "koin_point_balances_user_id_fkey"
             columns: ["user_id"]
@@ -580,6 +1228,20 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "koin_point_transactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "analytics_activation"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "koin_point_transactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "analytics_first_trade"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "koin_point_transactions_user_id_fkey"
             columns: ["user_id"]
@@ -639,6 +1301,20 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "lessons"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_attempts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "analytics_activation"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "lesson_attempts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "analytics_first_trade"
+            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "lesson_attempts_user_id_fkey"
@@ -733,7 +1409,137 @@ export type Database = {
             foreignKeyName: "lesson_progress_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "analytics_activation"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "lesson_progress_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "analytics_first_trade"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "lesson_progress_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lesson_recall_prompts: {
+        Row: {
+          attempt_count: number
+          completed_at: string | null
+          created_at: string
+          dismissed_at: string | null
+          due_at: string
+          first_attempt_correct: boolean | null
+          id: string
+          last_attempt_correct: boolean | null
+          lesson_id: string
+          recall_question_id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          attempt_count?: number
+          completed_at?: string | null
+          created_at?: string
+          dismissed_at?: string | null
+          due_at: string
+          first_attempt_correct?: boolean | null
+          id?: string
+          last_attempt_correct?: boolean | null
+          lesson_id: string
+          recall_question_id: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          attempt_count?: number
+          completed_at?: string | null
+          created_at?: string
+          dismissed_at?: string | null
+          due_at?: string
+          first_attempt_correct?: boolean | null
+          id?: string
+          last_attempt_correct?: boolean | null
+          lesson_id?: string
+          recall_question_id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_recall_prompts_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_recall_prompts_recall_question_id_fkey"
+            columns: ["recall_question_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_recall_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lesson_recall_questions: {
+        Row: {
+          correct_option: string
+          created_at: string
+          explanation_en: string
+          explanation_id: string
+          id: string
+          is_active: boolean
+          lesson_id: string
+          options_en: Json
+          options_id: Json
+          question_en: string
+          question_id: string
+          updated_at: string
+        }
+        Insert: {
+          correct_option: string
+          created_at?: string
+          explanation_en: string
+          explanation_id: string
+          id?: string
+          is_active?: boolean
+          lesson_id: string
+          options_en: Json
+          options_id: Json
+          question_en: string
+          question_id: string
+          updated_at?: string
+        }
+        Update: {
+          correct_option?: string
+          created_at?: string
+          explanation_en?: string
+          explanation_id?: string
+          id?: string
+          is_active?: boolean
+          lesson_id?: string
+          options_en?: Json
+          options_id?: Json
+          question_en?: string
+          question_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_recall_questions_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: true
+            referencedRelation: "lessons"
             referencedColumns: ["id"]
           },
         ]
@@ -884,7 +1690,9 @@ export type Database = {
         Row: {
           ai_assist_context: string | null
           common_mistake: string | null
+          common_mistake_id: string | null
           concept_body: string | null
+          concept_body_id: string | null
           created_at: string | null
           created_by: string | null
           id: string
@@ -892,20 +1700,25 @@ export type Database = {
           is_published: boolean | null
           lesson_id: string
           quiz_data: Json | null
+          quiz_data_id: Json | null
           review_status: string | null
           reviewed_at: string | null
           reviewed_by: string | null
           summary: string | null
+          summary_id: string | null
           title: string
           title_id: string
           updated_at: string | null
           version_number: number
           why_this_matters: string | null
+          why_this_matters_id: string | null
         }
         Insert: {
           ai_assist_context?: string | null
           common_mistake?: string | null
+          common_mistake_id?: string | null
           concept_body?: string | null
+          concept_body_id?: string | null
           created_at?: string | null
           created_by?: string | null
           id?: string
@@ -913,20 +1726,25 @@ export type Database = {
           is_published?: boolean | null
           lesson_id: string
           quiz_data?: Json | null
+          quiz_data_id?: Json | null
           review_status?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           summary?: string | null
+          summary_id?: string | null
           title: string
           title_id: string
           updated_at?: string | null
           version_number: number
           why_this_matters?: string | null
+          why_this_matters_id?: string | null
         }
         Update: {
           ai_assist_context?: string | null
           common_mistake?: string | null
+          common_mistake_id?: string | null
           concept_body?: string | null
+          concept_body_id?: string | null
           created_at?: string | null
           created_by?: string | null
           id?: string
@@ -934,17 +1752,34 @@ export type Database = {
           is_published?: boolean | null
           lesson_id?: string
           quiz_data?: Json | null
+          quiz_data_id?: Json | null
           review_status?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           summary?: string | null
+          summary_id?: string | null
           title?: string
           title_id?: string
           updated_at?: string | null
           version_number?: number
           why_this_matters?: string | null
+          why_this_matters_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "lesson_versions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "analytics_activation"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "lesson_versions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "analytics_first_trade"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "lesson_versions_created_by_fkey"
             columns: ["created_by"]
@@ -961,11 +1796,99 @@ export type Database = {
           },
         ]
       }
+      lesson_visual_block_sources: {
+        Row: {
+          citation_label: string | null
+          created_at: string
+          id: string
+          source_id: string
+          visual_block_id: string
+        }
+        Insert: {
+          citation_label?: string | null
+          created_at?: string
+          id?: string
+          source_id: string
+          visual_block_id: string
+        }
+        Update: {
+          citation_label?: string | null
+          created_at?: string
+          id?: string
+          source_id?: string
+          visual_block_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_visual_block_sources_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "sources"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_visual_block_sources_visual_block_id_fkey"
+            columns: ["visual_block_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_visual_blocks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lesson_visual_blocks: {
+        Row: {
+          block_type: string
+          content: Json
+          created_at: string
+          data_status: string
+          display_order: number
+          id: string
+          is_published: boolean
+          lesson_id: string
+          placement: string
+          updated_at: string
+        }
+        Insert: {
+          block_type: string
+          content: Json
+          created_at?: string
+          data_status: string
+          display_order?: number
+          id?: string
+          is_published?: boolean
+          lesson_id: string
+          placement: string
+          updated_at?: string
+        }
+        Update: {
+          block_type?: string
+          content?: Json
+          created_at?: string
+          data_status?: string
+          display_order?: number
+          id?: string
+          is_published?: boolean
+          lesson_id?: string
+          placement?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_visual_blocks_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lessons: {
         Row: {
           ai_assist_context: string | null
           common_mistake: string | null
+          common_mistake_id: string | null
           concept_body: string | null
+          concept_body_id: string | null
           created_at: string | null
           difficulty: string
           estimated_minutes: number | null
@@ -976,22 +1899,27 @@ export type Database = {
           lesson_number: number
           prerequisite_lesson_id: string | null
           quiz_data: Json | null
+          quiz_data_id: Json | null
           review_status: string | null
           reviewed_at: string | null
           reviewed_by: string | null
           slug: string
           summary: string | null
+          summary_id: string | null
           title: string
           title_id: string
           topic_id: string | null
           updated_at: string | null
           why_this_matters: string | null
+          why_this_matters_id: string | null
           xp_reward: number
         }
         Insert: {
           ai_assist_context?: string | null
           common_mistake?: string | null
+          common_mistake_id?: string | null
           concept_body?: string | null
+          concept_body_id?: string | null
           created_at?: string | null
           difficulty: string
           estimated_minutes?: number | null
@@ -1002,22 +1930,27 @@ export type Database = {
           lesson_number: number
           prerequisite_lesson_id?: string | null
           quiz_data?: Json | null
+          quiz_data_id?: Json | null
           review_status?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           slug: string
           summary?: string | null
+          summary_id?: string | null
           title: string
           title_id: string
           topic_id?: string | null
           updated_at?: string | null
           why_this_matters?: string | null
+          why_this_matters_id?: string | null
           xp_reward?: number
         }
         Update: {
           ai_assist_context?: string | null
           common_mistake?: string | null
+          common_mistake_id?: string | null
           concept_body?: string | null
+          concept_body_id?: string | null
           created_at?: string | null
           difficulty?: string
           estimated_minutes?: number | null
@@ -1028,16 +1961,19 @@ export type Database = {
           lesson_number?: number
           prerequisite_lesson_id?: string | null
           quiz_data?: Json | null
+          quiz_data_id?: Json | null
           review_status?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           slug?: string
           summary?: string | null
+          summary_id?: string | null
           title?: string
           title_id?: string
           topic_id?: string | null
           updated_at?: string | null
           why_this_matters?: string | null
+          why_this_matters_id?: string | null
           xp_reward?: number
         }
         Relationships: [
@@ -1091,6 +2027,7 @@ export type Database = {
           created_at: string | null
           high_price: number | null
           id: string
+          is_simulated: boolean
           low_price: number | null
           open_price: number | null
           source_url: string | null
@@ -1104,6 +2041,7 @@ export type Database = {
           created_at?: string | null
           high_price?: number | null
           id?: string
+          is_simulated?: boolean
           low_price?: number | null
           open_price?: number | null
           source_url?: string | null
@@ -1117,6 +2055,7 @@ export type Database = {
           created_at?: string | null
           high_price?: number | null
           id?: string
+          is_simulated?: boolean
           low_price?: number | null
           open_price?: number | null
           source_url?: string | null
@@ -1168,7 +2107,59 @@ export type Database = {
             foreignKeyName: "notifications_queue_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "analytics_activation"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "notifications_queue_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "analytics_first_trade"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "notifications_queue_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      portfolio_value_snapshots: {
+        Row: {
+          cash_balance: number
+          created_at: string
+          holdings_value: number
+          id: string
+          portfolio_id: string
+          snapshot_date: string
+          total_value: number
+        }
+        Insert: {
+          cash_balance: number
+          created_at?: string
+          holdings_value: number
+          id?: string
+          portfolio_id: string
+          snapshot_date: string
+          total_value: number
+        }
+        Update: {
+          cash_balance?: number
+          created_at?: string
+          holdings_value?: number
+          id?: string
+          portfolio_id?: string
+          snapshot_date?: string
+          total_value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portfolio_value_snapshots_portfolio_id_fkey"
+            columns: ["portfolio_id"]
+            isOneToOne: false
+            referencedRelation: "portfolios"
             referencedColumns: ["id"]
           },
         ]
@@ -1176,6 +2167,7 @@ export type Database = {
       portfolios: {
         Row: {
           cash_balance: number
+          chest_viewed_at: string | null
           created_at: string | null
           graduated_at: string | null
           graduation_multiplier: number | null
@@ -1183,11 +2175,13 @@ export type Database = {
           starting_cash: number
           status: string | null
           total_value: number
+          unlock_claimed_at: string | null
           updated_at: string | null
           user_id: string
         }
         Insert: {
           cash_balance?: number
+          chest_viewed_at?: string | null
           created_at?: string | null
           graduated_at?: string | null
           graduation_multiplier?: number | null
@@ -1195,11 +2189,13 @@ export type Database = {
           starting_cash?: number
           status?: string | null
           total_value?: number
+          unlock_claimed_at?: string | null
           updated_at?: string | null
           user_id: string
         }
         Update: {
           cash_balance?: number
+          chest_viewed_at?: string | null
           created_at?: string | null
           graduated_at?: string | null
           graduation_multiplier?: number | null
@@ -1207,10 +2203,25 @@ export type Database = {
           starting_cash?: number
           status?: string | null
           total_value?: number
+          unlock_claimed_at?: string | null
           updated_at?: string | null
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "portfolios_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "analytics_activation"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "portfolios_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "analytics_first_trade"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "portfolios_user_id_fkey"
             columns: ["user_id"]
@@ -1226,10 +2237,13 @@ export type Database = {
           avatar_url: string | null
           created_at: string | null
           display_name: string
-          financial_goal: string | null
+          financial_goal: string[] | null
+          financial_literacy_level: string | null
           id: string
+          onboarding_assessment_completed: boolean | null
           onboarding_completed: boolean | null
           preferred_language: string | null
+          subscription_tier: string
           updated_at: string | null
           username: string | null
         }
@@ -1238,10 +2252,13 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string | null
           display_name: string
-          financial_goal?: string | null
+          financial_goal?: string[] | null
+          financial_literacy_level?: string | null
           id: string
+          onboarding_assessment_completed?: boolean | null
           onboarding_completed?: boolean | null
           preferred_language?: string | null
+          subscription_tier?: string
           updated_at?: string | null
           username?: string | null
         }
@@ -1250,10 +2267,13 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string | null
           display_name?: string
-          financial_goal?: string | null
+          financial_goal?: string[] | null
+          financial_literacy_level?: string | null
           id?: string
+          onboarding_assessment_completed?: boolean | null
           onboarding_completed?: boolean | null
           preferred_language?: string | null
+          subscription_tier?: string
           updated_at?: string | null
           username?: string | null
         }
@@ -1320,10 +2340,14 @@ export type Database = {
           localization_notes: string | null
           organization: string
           publication_year: number | null
+          relevance_blurb: string | null
+          relevance_blurb_id: string | null
           source_code: string
           source_tier: number
           source_type: string
           status: string | null
+          synopsis: string | null
+          synopsis_id: string | null
           title: string
           trust_notes: string | null
           url: string | null
@@ -1338,10 +2362,14 @@ export type Database = {
           localization_notes?: string | null
           organization: string
           publication_year?: number | null
+          relevance_blurb?: string | null
+          relevance_blurb_id?: string | null
           source_code: string
           source_tier: number
           source_type: string
           status?: string | null
+          synopsis?: string | null
+          synopsis_id?: string | null
           title: string
           trust_notes?: string | null
           url?: string | null
@@ -1356,10 +2384,14 @@ export type Database = {
           localization_notes?: string | null
           organization?: string
           publication_year?: number | null
+          relevance_blurb?: string | null
+          relevance_blurb_id?: string | null
           source_code?: string
           source_tier?: number
           source_type?: string
           status?: string | null
+          synopsis?: string | null
+          synopsis_id?: string | null
           title?: string
           trust_notes?: string | null
           url?: string | null
@@ -1389,6 +2421,20 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "streak_events_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "analytics_activation"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "streak_events_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "analytics_first_trade"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "streak_events_user_id_fkey"
             columns: ["user_id"]
@@ -1428,6 +2474,20 @@ export type Database = {
             foreignKeyName: "streaks_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: true
+            referencedRelation: "analytics_activation"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "streaks_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "analytics_first_trade"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "streaks_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -1435,6 +2495,7 @@ export type Database = {
       }
       topics: {
         Row: {
+          chapter: string | null
           color: string | null
           created_at: string | null
           display_order: number | null
@@ -1445,6 +2506,7 @@ export type Database = {
           slug: string
         }
         Insert: {
+          chapter?: string | null
           color?: string | null
           created_at?: string | null
           display_order?: number | null
@@ -1455,6 +2517,7 @@ export type Database = {
           slug: string
         }
         Update: {
+          chapter?: string | null
           color?: string | null
           created_at?: string | null
           display_order?: number | null
@@ -1541,6 +2604,20 @@ export type Database = {
             foreignKeyName: "user_badges_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "analytics_activation"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "user_badges_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "analytics_first_trade"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "user_badges_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -1553,6 +2630,7 @@ export type Database = {
           id: string
           lesson_id: string
           reason: string
+          reason_id: string | null
           trigger_id: string | null
           user_id: string
         }
@@ -1562,6 +2640,7 @@ export type Database = {
           id?: string
           lesson_id: string
           reason: string
+          reason_id?: string | null
           trigger_id?: string | null
           user_id: string
         }
@@ -1571,6 +2650,7 @@ export type Database = {
           id?: string
           lesson_id?: string
           reason?: string
+          reason_id?: string | null
           trigger_id?: string | null
           user_id?: string
         }
@@ -1588,6 +2668,20 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "lesson_triggers"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_lesson_recommendations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "analytics_activation"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "user_lesson_recommendations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "analytics_first_trade"
+            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "user_lesson_recommendations_user_id_fkey"
@@ -1641,6 +2735,20 @@ export type Database = {
             foreignKeyName: "user_mastery_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "analytics_activation"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "user_mastery_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "analytics_first_trade"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "user_mastery_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -1679,6 +2787,20 @@ export type Database = {
             foreignKeyName: "user_risk_profiles_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: true
+            referencedRelation: "analytics_activation"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "user_risk_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "analytics_first_trade"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "user_risk_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -1686,30 +2808,93 @@ export type Database = {
       }
       user_settings: {
         Row: {
+          assessment_answers: Json | null
+          assessment_score: number | null
+          cohort_alerts_enabled: boolean
+          foundation_zero_required: boolean | null
+          friend_alerts_enabled: boolean
+          locale: string
           notifications_enabled: boolean | null
+          paper_chest_viewed_at: string | null
+          privacy_accepted_at: string | null
+          privacy_version: string | null
           show_on_leaderboard: boolean | null
+          starting_lesson_id: string | null
           streak_reminder_time: string | null
+          streak_reminders_enabled: boolean
+          terms_accepted_at: string | null
+          terms_version: string | null
+          trade_onboarding_completed: boolean | null
           updated_at: string | null
           user_id: string
           weekly_report_enabled: boolean | null
         }
         Insert: {
+          assessment_answers?: Json | null
+          assessment_score?: number | null
+          cohort_alerts_enabled?: boolean
+          foundation_zero_required?: boolean | null
+          friend_alerts_enabled?: boolean
+          locale?: string
           notifications_enabled?: boolean | null
+          paper_chest_viewed_at?: string | null
+          privacy_accepted_at?: string | null
+          privacy_version?: string | null
           show_on_leaderboard?: boolean | null
+          starting_lesson_id?: string | null
           streak_reminder_time?: string | null
+          streak_reminders_enabled?: boolean
+          terms_accepted_at?: string | null
+          terms_version?: string | null
+          trade_onboarding_completed?: boolean | null
           updated_at?: string | null
           user_id: string
           weekly_report_enabled?: boolean | null
         }
         Update: {
+          assessment_answers?: Json | null
+          assessment_score?: number | null
+          cohort_alerts_enabled?: boolean
+          foundation_zero_required?: boolean | null
+          friend_alerts_enabled?: boolean
+          locale?: string
           notifications_enabled?: boolean | null
+          paper_chest_viewed_at?: string | null
+          privacy_accepted_at?: string | null
+          privacy_version?: string | null
           show_on_leaderboard?: boolean | null
+          starting_lesson_id?: string | null
           streak_reminder_time?: string | null
+          streak_reminders_enabled?: boolean
+          terms_accepted_at?: string | null
+          terms_version?: string | null
+          trade_onboarding_completed?: boolean | null
           updated_at?: string | null
           user_id?: string
           weekly_report_enabled?: boolean | null
         }
         Relationships: [
+          {
+            foreignKeyName: "user_settings_starting_lesson_id_fkey"
+            columns: ["starting_lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_settings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "analytics_activation"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "user_settings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "analytics_first_trade"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "user_settings_user_id_fkey"
             columns: ["user_id"]
@@ -1739,6 +2924,20 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "watchlists_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "analytics_activation"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "watchlists_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "analytics_first_trade"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "watchlists_user_id_fkey"
             columns: ["user_id"]
@@ -1784,6 +2983,20 @@ export type Database = {
             foreignKeyName: "weekly_leaderboard_snapshots_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "analytics_activation"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "weekly_leaderboard_snapshots_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "analytics_first_trade"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "weekly_leaderboard_snapshots_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -1819,6 +3032,20 @@ export type Database = {
             foreignKeyName: "xp_events_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "analytics_activation"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "xp_events_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "analytics_first_trade"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "xp_events_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -1826,10 +3053,360 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      analytics_activation: {
+        Row: {
+          activated_24h: boolean | null
+          activated_7d: boolean | null
+          first_lesson_started_at: string | null
+          signup_date: string | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
+      analytics_dau: {
+        Row: {
+          active_users: number | null
+          day: string | null
+        }
+        Relationships: []
+      }
+      analytics_first_trade: {
+        Row: {
+          first_trade_at: string | null
+          hours_to_first_trade: number | null
+          signup_date: string | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
+      analytics_lesson_completion: {
+        Row: {
+          day: string | null
+          lessons_completed: number | null
+          lessons_started: number | null
+          unique_users_completed: number | null
+        }
+        Relationships: []
+      }
+      analytics_retention: {
+        Row: {
+          cohort_size: number | null
+          cohort_week: string | null
+          d30_active_users: number | null
+          d30_retention_pct: number | null
+          d7_active_users: number | null
+          d7_retention_pct: number | null
+        }
+        Relationships: []
+      }
+      daily_focus_content_audit: {
+        Row: {
+          active_questions: number | null
+          malformed_root_payloads: number | null
+          missing_locale_variants: number | null
+          unsupported_types: number | null
+        }
+        Relationships: []
+      }
+      daily_focus_operational_metrics: {
+        Row: {
+          active_learners: number | null
+          activity_date: string | null
+          challenges_completed: number | null
+          challenges_exhausted: number | null
+          challenges_started: number | null
+          completion_rate: number | null
+          correct_answers: number | null
+          correctness_rate: number | null
+          incorrect_answers: number | null
+          questions_answered: number | null
+          questions_shown: number | null
+          repeated_question_exposures: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      [_ in never]: never
+      accept_friend_invite: {
+        Args: { p_invite_code: string; p_user_id: string }
+        Returns: Json
+      }
+      add_friend_by_qr: { Args: { p_scanned_user_id: string }; Returns: Json }
+      assert_focus_time_zone: { Args: { p_time_zone: string }; Returns: string }
+      award_first_friend_badge: {
+        Args: { p_user_id: string }
+        Returns: undefined
+      }
+      award_koin_points: {
+        Args: {
+          p_amount: number
+          p_description?: string
+          p_source_id?: string
+          p_source_type: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
+      check_adaptive_triggers: { Args: never; Returns: undefined }
+      check_graduation: { Args: { p_user_id: string }; Returns: Json }
+      check_in_streak: { Args: { p_user_id: string }; Returns: Json }
+      claim_paper_portfolio: { Args: { p_user_id: string }; Returns: Json }
+      complete_chapter_mission: {
+        Args: { p_answers: Json; p_chapter_number: number }
+        Returns: Json
+      }
+      complete_lesson: {
+        Args: {
+          p_answers_json: Json
+          p_lesson_id: string
+          p_max_score: number
+          p_quiz_correct: boolean
+          p_score: number
+          p_time_spent_seconds: number
+          p_user_id: string
+        }
+        Returns: Json
+      }
+      create_cohort: {
+        Args: { p_name: string; p_user_id: string }
+        Returns: Json
+      }
+      create_friend_invite: { Args: { p_user_id: string }; Returns: Json }
+      daily_focus_response: {
+        Args: {
+          p_answer_correct?: boolean
+          p_challenge: Database["public"]["Tables"]["daily_focus_challenges"]["Row"]
+          p_correct_answer?: Json
+          p_explanation?: string
+          p_profile: Database["public"]["Tables"]["focus_profiles"]["Row"]
+        }
+        Returns: Json
+      }
+      dismiss_lesson_recall_prompt: {
+        Args: { p_prompt_id: string }
+        Returns: undefined
+      }
+      ensure_daily_focus_challenge:
+        | {
+            Args: { p_user_id: string }
+            Returns: {
+              challenge_date: string
+              completed_at: string | null
+              correct_answers: number
+              created_at: string
+              focus_remaining: number
+              id: string
+              max_focus: number
+              questions: Json
+              questions_answered: number
+              refill_used: boolean
+              status: string
+              time_zone: string
+              updated_at: string
+              user_id: string
+            }
+            SetofOptions: {
+              from: "*"
+              to: "daily_focus_challenges"
+              isOneToOne: true
+              isSetofReturn: false
+            }
+          }
+        | {
+            Args: { p_time_zone: string; p_user_id: string }
+            Returns: {
+              challenge_date: string
+              completed_at: string | null
+              correct_answers: number
+              created_at: string
+              focus_remaining: number
+              id: string
+              max_focus: number
+              questions: Json
+              questions_answered: number
+              refill_used: boolean
+              status: string
+              time_zone: string
+              updated_at: string
+              user_id: string
+            }
+            SetofOptions: {
+              from: "*"
+              to: "daily_focus_challenges"
+              isOneToOne: true
+              isSetofReturn: false
+            }
+          }
+        | {
+            Args: { p_locale: string; p_time_zone: string; p_user_id: string }
+            Returns: {
+              challenge_date: string
+              completed_at: string | null
+              correct_answers: number
+              created_at: string
+              focus_remaining: number
+              id: string
+              max_focus: number
+              questions: Json
+              questions_answered: number
+              refill_used: boolean
+              status: string
+              time_zone: string
+              updated_at: string
+              user_id: string
+            }
+            SetofOptions: {
+              from: "*"
+              to: "daily_focus_challenges"
+              isOneToOne: true
+              isSetofReturn: false
+            }
+          }
+      evaluate_adaptive_triggers: {
+        Args: { p_user_id: string }
+        Returns: undefined
+      }
+      execute_trade: {
+        Args: {
+          p_lot_count: number
+          p_symbol: string
+          p_trade_type: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
+      focus_week_start:
+        | { Args: { p_timestamp?: string }; Returns: string }
+        | {
+            Args: { p_time_zone: string; p_timestamp: string }
+            Returns: string
+          }
+      get_daily_focus_challenge:
+        | { Args: never; Returns: Json }
+        | { Args: { p_time_zone: string }; Returns: Json }
+        | { Args: { p_locale: string; p_time_zone: string }; Returns: Json }
+      get_due_lesson_recall_prompt: {
+        Args: never
+        Returns: {
+          due_at: string
+          lesson_id: string
+          options_en: Json
+          options_id: Json
+          prompt_id: string
+          question_en: string
+          question_id: string
+        }[]
+      }
+      get_latest_market_data: {
+        Args: never
+        Returns: {
+          close_price: number
+          company_name: string
+          id: string
+          is_simulated: boolean
+          recorded_at: string
+          source_url: string
+          symbol: string
+          trade_date: string
+          volume: number
+        }[]
+      }
+      get_market_data_history: {
+        Args: { p_days?: number; p_symbol: string }
+        Returns: {
+          close_price: number
+          is_simulated: boolean
+          trade_date: string
+        }[]
+      }
+      get_portfolio_value_history: {
+        Args: { p_days?: number; p_user_id: string }
+        Returns: {
+          cash_balance: number
+          holdings_value: number
+          snapshot_date: string
+          total_value: number
+        }[]
+      }
+      get_portfolio_value_history_marked: {
+        Args: { p_days?: number; p_user_id: string }
+        Returns: {
+          cash_balance: number
+          holdings_value: number
+          snapshot_date: string
+          total_value: number
+        }[]
+      }
+      get_public_profile: { Args: { p_user_id: string }; Returns: Json }
+      get_streak_reminder_candidates: {
+        Args: { p_current_time: string }
+        Returns: {
+          current_streak_days: number
+          display_name: string
+          email: string
+          streak_status: string
+          user_id: string
+        }[]
+      }
+      get_weekly_leaderboard: {
+        Args: { p_scope: string; p_user_id: string }
+        Returns: Json
+      }
+      invite_friend_to_cohort: {
+        Args: { p_cohort_id: string; p_friend_id: string; p_user_id: string }
+        Returns: Json
+      }
+      join_cohort_by_code: {
+        Args: { p_invite_code: string; p_user_id: string }
+        Returns: Json
+      }
+      mark_paper_chest_viewed: {
+        Args: { p_user_id: string }
+        Returns: undefined
+      }
+      recompute_streak_status: { Args: { p_user_id: string }; Returns: Json }
+      record_paper_portfolio_snapshot: {
+        Args: { p_portfolio_id: string; p_snapshot_date?: string }
+        Returns: undefined
+      }
+      refill_daily_focus:
+        | { Args: never; Returns: Json }
+        | { Args: { p_time_zone: string }; Returns: Json }
+        | { Args: { p_locale: string; p_time_zone: string }; Returns: Json }
+      refresh_paper_portfolio_values: {
+        Args: { p_snapshot_date?: string }
+        Returns: undefined
+      }
+      seed_next_market_data: {
+        Args: { p_trade_date?: string }
+        Returns: {
+          close_price: number
+          symbol: string
+        }[]
+      }
+      submit_daily_focus_answer:
+        | { Args: { p_answer: Json; p_question_index: number }; Returns: Json }
+        | {
+            Args: {
+              p_answer: Json
+              p_question_index: number
+              p_time_zone: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              p_answer: Json
+              p_locale: string
+              p_question_index: number
+              p_time_zone: string
+            }
+            Returns: Json
+          }
+      submit_lesson_recall_answer: {
+        Args: { p_answer: string; p_prompt_id: string }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never
@@ -1958,9 +3535,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {},
   },

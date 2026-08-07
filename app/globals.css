@@ -1,45 +1,145 @@
 @import "tailwindcss";
 
 :root {
-  --color-primary: #01696f;
-  --color-primary-foreground: #ffffff;
-  --color-background: #f7f6f2;
+  /* Koinaku v2.0 design system — Rupiah-inspired, Indonesian-first */
+
+  /* Full color ramps (for manual use and component overrides) */
+  --rup-red-50: #fdf0f1; --rup-red-100: #f9d5d7; --rup-red-200: #f2aeb1; --rup-red-300: #e97d82;
+  --rup-red-400: #d94e54; --rup-red-500: #c41f26; --rup-red-600: #a1191e; --rup-red-700: #7e1317;
+  --rup-red-800: #5c0d10; --rup-red-900: #3c080a; --rup-red-950: #1f0405;
+
+  --rup-blue-50: #eef5f9; --rup-blue-100: #d2e5f0; --rup-blue-200: #a8cfde; --rup-blue-300: #78b3c9;
+  --rup-blue-400: #3f90ad; --rup-blue-500: #0a6f90; --rup-blue-600: #085c78; --rup-blue-700: #064a5f;
+  --rup-blue-800: #043746; --rup-blue-900: #03252f; --rup-blue-950: #011419;
+
+  --rup-green-50: #f0f8f3; --rup-green-100: #d5ecdb; --rup-green-200: #abd9b7; --rup-green-300: #7bc28e;
+  --rup-green-400: #48a964; --rup-green-500: #1e8a4c; --rup-green-600: #18723e; --rup-green-700: #125a31;
+  --rup-green-800: #0d4224; --rup-green-900: #082c18; --rup-green-950: #04170c;
+
+  --rup-purple-50: #f4f0f3; --rup-purple-100: #e6d9e2; --rup-purple-200: #ccb5c5; --rup-purple-300: #ad8ba4;
+  --rup-purple-400: #8b5b7f; --rup-purple-500: #6b2d5c; --rup-purple-600: #5a264d; --rup-purple-700: #481f3e;
+  --rup-purple-800: #36172f; --rup-purple-900: #251020; --rup-purple-950: #140812;
+
+  --rup-brown-50: #f5f2f0; --rup-brown-100: #ebe4dd; --rup-brown-200: #d9cbbb; --rup-brown-300: #c3ad95;
+  --rup-brown-400: #aa8c6b; --rup-brown-500: #8e6e4b; --rup-brown-600: #745a3e; --rup-brown-700: #5b4731;
+  --rup-brown-800: #423324; --rup-brown-900: #2b2117; --rup-brown-950: #17120c;
+
+  --rup-grey-50: #f7f7f7; --rup-grey-100: #ececed; --rup-grey-200: #dbdcdd; --rup-grey-300: #c4c6c7;
+  --rup-grey-400: #a8abac; --rup-grey-500: #8d9193; --rup-grey-600: #737779; --rup-grey-700: #5a5d5f;
+  --rup-grey-800: #424445; --rup-grey-900: #2c2d2e; --rup-grey-950: #171818;
+
+  --rup-gold-50: #faf7ef; --rup-gold-100: #f4ecd8; --rup-gold-200: #e9d9b2; --rup-gold-300: #dbc388;
+  --rup-gold-400: #cbab59; --rup-gold-500: #b8992e; --rup-gold-600: #997e26; --rup-gold-700: #7a641e;
+  --rup-gold-800: #5a4a16; --rup-gold-900: #3e3517; --rup-gold-950: #231e0d;
+
+  --rup-orbit-50: #f5f1ff; --rup-orbit-100: #ebe3ff; --rup-orbit-200: #d9caff; --rup-orbit-300: #bda5ff;
+  --rup-orbit-400: #9b78fb; --rup-orbit-500: #6f4af0; --rup-orbit-600: #5b38ce; --rup-orbit-700: #45308f;
+  --rup-orbit-800: #31245e; --rup-orbit-900: #1f1937; --rup-orbit-950: #100b24;
+
+  /* Semantic tokens */
+  /* Primary is Orbit Purple (design system v4). Red is reserved for danger/destructive
+     only — never reused as the primary action color. See koinaku-design-system-v4. */
+  --color-primary: var(--rup-orbit-500);
+  --color-primary-50: var(--rup-orbit-50); --color-primary-100: var(--rup-orbit-100); --color-primary-200: var(--rup-orbit-200);
+  --color-primary-300: var(--rup-orbit-300); --color-primary-400: var(--rup-orbit-400); --color-primary-500: var(--rup-orbit-500);
+  --color-primary-600: var(--rup-orbit-600); --color-primary-700: var(--rup-orbit-700); --color-primary-800: var(--rup-orbit-800);
+  --color-primary-900: var(--rup-orbit-900); --color-primary-950: var(--rup-orbit-950);
+
+  --color-secondary: var(--rup-blue-500);
+  --color-secondary-50: var(--rup-blue-50); --color-secondary-100: var(--rup-blue-100); --color-secondary-200: var(--rup-blue-200);
+  --color-secondary-300: var(--rup-blue-300); --color-secondary-400: var(--rup-blue-400); --color-secondary-500: var(--rup-blue-500);
+  --color-secondary-600: var(--rup-blue-600); --color-secondary-700: var(--rup-blue-700); --color-secondary-800: var(--rup-blue-800);
+  --color-secondary-900: var(--rup-blue-900); --color-secondary-950: var(--rup-blue-950);
+
+  --color-success: var(--rup-green-500);
+  --color-warning: var(--rup-gold-500);
+  --color-danger: var(--rup-red-500);
+  --color-info: var(--rup-blue-500);
+  --color-accent: var(--rup-purple-500);
+
+  --color-background: #faf8f5;
+  --color-background-warm: #f5f2ed;
   --color-surface: #ffffff;
-  --color-muted: #f0efea;
-  --color-foreground: #1a1a1a;
-  --color-muted-foreground: #6b6b6b;
-  --color-success: #16a34a;
-  --color-warning: #f59e0b;
-  --color-danger: #dc2626;
-  --color-info: #2563eb;
-  --color-streak: #f97316;
-  --color-xp: #01696f;
-  --color-koin-points: #eab308;
-  --radius-default: 0.5rem;
-  --radius-md: 0.75rem;
-  --radius-lg: 1rem;
+  --color-surface-raised: #faf7f2;
+  --color-surface-inset: #f0ece5;
+  --color-muted: #f0ece5;
+
+  --color-foreground: var(--rup-grey-950);
+  --color-muted-foreground: var(--rup-grey-600);
+  --color-inverse: #ffffff;
+
+  --color-streak: var(--rup-gold-500);
+  --color-xp: var(--rup-blue-500);
+  --color-koin-points: var(--rup-gold-500);
+
+  /* Radius */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-card: 1.125rem; /* 18px — dedicated card radius, sits between xl and 2xl */
+  --radius-2xl: 1.5rem;
+  --radius-3xl: 2rem;
+  --radius-full: 9999px;
+
+  /* Easing */
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(23, 24, 24, 0.08), 0 1px 2px rgba(23, 24, 24, 0.04);
+  --shadow-md: 0 4px 12px rgba(23, 24, 24, 0.10), 0 2px 4px rgba(23, 24, 24, 0.06);
+  --shadow-lg: 0 12px 32px rgba(23, 24, 24, 0.14), 0 4px 8px rgba(23, 24, 24, 0.08);
+  --shadow-lift: 0 24px 56px rgba(69, 48, 143, 0.22); /* modals, sheets, dialogs — tinted to primary */
+  --shadow-focus-ring: 0 0 0 3px rgba(111, 74, 240, 0.28);
+
+  /* Brand gradient — wordmark sweep, icon/illustration use only. Never gradient text. */
+  --gradient-brand: linear-gradient(135deg, #6b4cfa 0%, #893da7 35%, #a62e55 68%, #c41f02 100%);
+
+  /* Z-index scale — every stacked layer pulls from here, never an arbitrary number */
+  --z-dropdown: 10;
+  --z-sticky: 20;
+  --z-drawer: 30;
+  --z-modal-backdrop: 35;
+  --z-modal: 40;
+  --z-toast: 50;
+  --z-tooltip: 60;
 }
 
 @theme inline {
   --color-primary: var(--color-primary);
-  --color-primary-foreground: var(--color-primary-foreground);
+  --color-primary-foreground: var(--color-inverse);
+  --color-secondary: var(--color-secondary);
+  --color-secondary-foreground: var(--color-inverse);
   --color-background: var(--color-background);
   --color-surface: var(--color-surface);
+  --color-surface-raised: var(--color-surface-raised);
+  --color-surface-inset: var(--color-surface-inset);
   --color-muted: var(--color-muted);
+  --color-border: var(--color-muted);
+  --color-border-strong: var(--rup-grey-300);
+  --color-border-subtle: var(--rup-grey-100);
   --color-foreground: var(--color-foreground);
   --color-muted-foreground: var(--color-muted-foreground);
   --color-success: var(--color-success);
   --color-warning: var(--color-warning);
   --color-danger: var(--color-danger);
   --color-info: var(--color-info);
+  --color-accent: var(--color-accent);
   --color-streak: var(--color-streak);
   --color-xp: var(--color-xp);
   --color-koin-points: var(--color-koin-points);
-  --radius-default: var(--radius-default);
+  --radius-sm: var(--radius-sm);
   --radius-md: var(--radius-md);
   --radius-lg: var(--radius-lg);
-  --font-sans: "Satoshi", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Cabinet Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --radius-xl: var(--radius-xl);
+  --radius-card: var(--radius-card);
+  --radius-full: var(--radius-full);
+  --background-image-brand: var(--gradient-brand);
+  --font-sans: var(--font-satoshi), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-cabinet), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
 }
 
 body {
@@ -47,10 +147,57 @@ body {
   color: var(--color-foreground);
   font-family: var(--font-sans);
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Minimum touch target helper */
 .touch-target {
   min-height: 44px;
   min-width: 44px;
+}
+
+.step-enter {
+  animation: stepEnter 320ms var(--ease-out-quart) both;
+}
+
+@keyframes stepEnter {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.chapter-confetti-piece {
+  top: -1rem;
+  animation: chapterConfetti 1.25s var(--ease-out-quart) both;
+}
+
+@keyframes chapterConfetti {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, -0.5rem, 0) rotate(0deg);
+  }
+  12% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(1.5rem, 13rem, 0) rotate(300deg);
+  }
+}
+
+/* Smooth reduced-motion-aware transitions */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

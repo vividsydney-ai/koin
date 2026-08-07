@@ -87,6 +87,7 @@ DESIGN.md
 HANDOFF.md
 identity.md
 KIMI_HANDOFF.md
+MEMORY.md
 RULES.md
 SCHEMA.md
 VERIFIER.md
@@ -95,6 +96,7 @@ PRD.md
 PRODUCT.md
 VISION.md
 TASKS.md
+STATE.md
 ADL.md
 RECURRING.md
 ui-lift.md
@@ -102,6 +104,7 @@ CURRICULUM-*.md
 *curriculum*.mjs
 *curriculum*.sql
 *lessons*.csv
+daily-focus-quiz-bank-review-*.csv
 all-lessons-*.csv
 reorganized-curriculum-*.csv
 create-linear-issues.mjs

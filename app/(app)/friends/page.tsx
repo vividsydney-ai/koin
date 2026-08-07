@@ -1,9 +1,1079 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
+import QRCode from "qrcode";
+import jsQR from "jsqr";
+import { useSearchParams } from "next/navigation";
+import { useAuth } from "@/lib/auth/use-auth";
+import { addFriendByQr, getFriends, type Friend } from "@/lib/friends/client";
+import { getWeeklyLeaderboard, type WeeklyLeaderboard } from "@/lib/home/client";
+import {
+  createCohort,
+  joinCohortByCode,
+  getCohorts,
+  inviteFriendToCohort,
+  type Cohort,
+} from "@/lib/cohorts/client";
+import { EmptyState } from "@/components/EmptyState";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
+
 export default function FriendsPage() {
+  const { t } = useLocale();
+  const { user, profile, loading: authLoading } = useAuth(true);
+  const searchParams = useSearchParams();
+  const [friends, setFriends] = useState<Friend[]>([]);
+  const [cohorts, setCohorts] = useState<Cohort[]>([]);
+  const [leaderboard, setLeaderboard] = useState<WeeklyLeaderboard | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
+  const [cohortCodeInput, setCohortCodeInput] = useState(() =>
+    (searchParams.get("cohort") ?? "").toUpperCase()
+  );
+  const [cohortMessage, setCohortMessage] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      if (!user) return;
+      setLoading(true);
+      const [friendsData, leaderboardData, cohortsData] = await Promise.all([
+        getFriends(user.id),
+        getWeeklyLeaderboard(user.id, "friends"),
+        getCohorts(user.id),
+      ]);
+      if (!mounted) return;
+      setFriends(friendsData);
+      setLeaderboard(leaderboardData);
+      setCohorts(cohortsData);
+      setLoading(false);
+    };
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, [user]);
+
+  const handleFriendAdded = async () => {
+    if (!user) return;
+    const friendsData = await getFriends(user.id);
+    setFriends(friendsData);
+  };
+
+  const handleJoinCohort = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user || !cohortCodeInput.trim()) return;
+    setCohortMessage(null);
+    const result = await joinCohortByCode(user.id, cohortCodeInput.trim());
+    if (result) {
+      setCohortMessage(result.alreadyMember ? t("friends.alreadyMember") : t("friends.joinedCohort"));
+      setCohortCodeInput("");
+      const cohortsData = await getCohorts(user.id);
+      setCohorts(cohortsData);
+    } else {
+      setCohortMessage(t("friends.cohortNotFound"));
+    }
+  };
+
+  const isLoading = authLoading || loading;
+  const acceptedFriends = friends.filter((f) => f.status === "accepted");
+  const pendingFriends = friends.filter((f) => f.status === "pending");
+
   return (
-    <div className="flex min-h-[60vh] items-center justify-center p-6">
-      <h1 className="text-2xl font-display font-bold text-foreground">Friends</h1>
+    <main className="min-h-screen bg-background p-5 pb-32">
+      <header className="mb-6">
+        <p className="text-sm text-muted-foreground">{t("friends.inviteBody")}</p>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">{t("friends.inviteTitle")}</h1>
+      </header>
+
+      {isLoading ? (
+        <div className="space-y-3">
+          <div className="h-32 animate-pulse rounded-card bg-muted" />
+          <div className="h-24 animate-pulse rounded-card bg-muted" />
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+          <div className="space-y-5">
+            <InviteCard
+              userId={user?.id ?? ""}
+              displayName={profile?.display_name ?? "Learner"}
+              avatarUrl={profile?.avatar_url ?? null}
+              onFriendAdded={handleFriendAdded}
+              message={message}
+              setMessage={setMessage}
+            />
+
+            {pendingFriends.length > 0 && (
+              <section>
+                <h2 className="mb-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                  {t("friends.pending")}
+                </h2>
+                <div className="space-y-2">
+                  {pendingFriends.map((friend) => (
+                    <FriendRow key={friend.userId} friend={friend} />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            <section>
+              <h2 className="mb-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                {t("friends.friendsTitle")}
+              </h2>
+              {acceptedFriends.length === 0 ? (
+                <EmptyState
+                  icon="👥"
+                  title={t("friends.friendsTitle")}
+                  description={t("friends.inviteBody")}
+                />
+              ) : (
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  {acceptedFriends.map((friend) => (
+                    <FriendRow key={friend.userId} friend={friend} />
+                  ))}
+                </div>
+              )}
+            </section>
+          </div>
+
+          <div className="space-y-5">
+            {leaderboard && (
+              <section>
+                <h2 className="mb-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                  {t("friends.weeklyLeaderboard")}
+                </h2>
+                <LeaderboardSection title={t("home.weeklyXp")} entries={leaderboard.xp} valueKey="xpThisWeek" />
+                <LeaderboardSection title={t("home.koinPoints")} entries={leaderboard.koinPoints} valueKey="koinPointsThisWeek" />
+              </section>
+            )}
+
+            <CohortSection
+              userId={user?.id ?? ""}
+              cohorts={cohorts}
+              acceptedFriends={acceptedFriends}
+              subscriptionTier={profile?.subscription_tier ?? "free"}
+              codeInput={cohortCodeInput}
+              onCodeChange={setCohortCodeInput}
+              onJoin={handleJoinCohort}
+              onCohortsChange={setCohorts}
+              message={cohortMessage}
+            />
+          </div>
+        </div>
+      )}
+    </main>
+  );
+}
+
+function InviteCard({
+  userId,
+  displayName,
+  avatarUrl,
+  onFriendAdded,
+  message,
+  setMessage,
+}: {
+  userId: string;
+  displayName: string;
+  avatarUrl: string | null;
+  onFriendAdded: () => void;
+  message: string | null;
+  setMessage: (value: string | null) => void;
+}) {
+  const { t } = useLocale();
+  const [qrSvg, setQrSvg] = useState<string | null>(null);
+  const [scannerOpen, setScannerOpen] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
+
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
+  const inviteUrl = `${origin}/friends/accept?user=${encodeURIComponent(userId)}`;
+
+  useEffect(() => {
+    if (!userId) return;
+    let cancelled = false;
+    QRCode.toString(inviteUrl, {
+      type: "svg",
+      width: 200,
+      margin: 2,
+      errorCorrectionLevel: "M",
+      color: {
+        dark: "#171818",
+        light: "#ffffff",
+      },
+    }).then((svg) => {
+      if (!cancelled) setQrSvg(svg);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [inviteUrl, userId]);
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(inviteUrl);
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleShare = async () => {
+    const shareData = {
+      title: t("friends.inviteTitle"),
+      text: `${displayName} ${t("friends.acceptBody")}`,
+      url: inviteUrl,
+    };
+    if (navigator.canShare && navigator.canShare(shareData)) {
+      try {
+        await navigator.share(shareData);
+      } catch {
+        // User cancelled or share failed.
+      }
+    } else {
+      await handleCopyLink();
+    }
+  };
+
+  const extractUserIdFromScan = (raw: string): string | null => {
+    if (!raw) return null;
+    // Deep-link URL like https://web.koinaku.com/friends/accept?user=<uuid>
+    try {
+      const url = new URL(raw);
+      const user = url.searchParams.get("user");
+      if (user) return user;
+    } catch {
+      // Not a URL — treat as raw user id.
+    }
+    return raw.trim();
+  };
+
+  const handleScanResult = async (scanned: string) => {
+    setMessage(null);
+    const scannedUserId = extractUserIdFromScan(scanned);
+    if (!scannedUserId) {
+      setMessage("Could not read invite. Try again.");
+      return;
+    }
+    const result = await addFriendByQr(scannedUserId);
+    if (result) {
+      setMessage(result.status === "accepted" ? t("friends.accepted") : t("friends.requestSent"));
+      await onFriendAdded();
+    } else {
+      setMessage(t("friends.userNotFound"));
+    }
+  };
+
+  const initials = displayName
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
+  return (
+    <div className="rounded-card border border-muted bg-surface p-4 shadow-sm">
+      <div className="flex items-center gap-3">
+        {avatarUrl ? (
+          <img src={avatarUrl} alt="" className="h-12 w-12 rounded-full object-cover" />
+        ) : (
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--color-primary)_10%,var(--color-surface))] text-base font-bold text-primary">
+            {initials || "?"}
+          </div>
+        )}
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-foreground">{displayName}</p>
+          <p className="text-xs text-muted-foreground">{t("friends.inviteBody")}</p>
+        </div>
+      </div>
+
+      <div className="mt-4 flex flex-col items-center gap-4">
+        <div className="rounded-md bg-white p-3 shadow-sm">
+          {qrSvg ? (
+            <div
+              className="h-44 w-44"
+              aria-label={`QR code for ${displayName}`}
+              dangerouslySetInnerHTML={{ __html: qrSvg }}
+            />
+          ) : (
+            <div className="flex h-44 w-44 items-center justify-center rounded-md bg-muted">
+              <span className="text-xs text-muted-foreground">{t("profile.loading")}</span>
+            </div>
+          )}
+        </div>
+
+        <div className="flex w-full gap-2">
+          <button
+            onClick={handleShare}
+            className="flex flex-1 items-center justify-center gap-2 rounded-md bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-[0.98]"
+          >
+            <ShareIcon className="h-4 w-4" />
+            {t("friends.share")}
+          </button>
+          <button
+            onClick={() => setScannerOpen(true)}
+            className="flex flex-1 items-center justify-center gap-2 rounded-md border border-muted bg-surface px-5 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted/20 active:scale-[0.98]"
+          >
+            <ScanIcon className="h-4 w-4" />
+            {t("friends.scanQr")}
+          </button>
+        </div>
+        <button
+          onClick={handleCopyLink}
+          className="flex w-full items-center justify-center gap-2 rounded-md border border-muted bg-background px-5 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted/20 active:scale-[0.98]"
+        >
+          <CopyIcon className="h-4 w-4" />
+          {linkCopied ? t("friends.linkCopied") : t("friends.copyLink")}
+        </button>
+      </div>
+
+      {message && (
+        <p
+          className={`mt-4 text-center text-xs ${
+            message.includes(t("friends.accepted")) || message.includes(t("friends.requestSent"))
+              ? "text-success"
+              : "text-danger"
+          }`}
+        >
+          {message}
+        </p>
+      )}
+
+      {scannerOpen && (
+        <QrScannerModal
+          onClose={() => setScannerOpen(false)}
+          onScan={async (id) => {
+            setScannerOpen(false);
+            await handleScanResult(id);
+          }}
+        />
+      )}
     </div>
+  );
+}
+
+function QrScannerModal({ onClose, onScan }: { onClose: () => void; onScan: (userId: string) => void }) {
+  const { t } = useLocale();
+  const origin = typeof window !== "undefined" ? window.location.origin : "https://web.koinaku.com";
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const rafRef = useRef<number | null>(null);
+  const isCameraSupported =
+    typeof navigator !== "undefined" && !!navigator.mediaDevices?.getUserMedia;
+  const [cameraError, setCameraError] = useState<string | null>(
+    isCameraSupported ? null : t("friends.cameraNotAvailable")
+  );
+  const [manualInput, setManualInput] = useState("");
+
+  useEffect(() => {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    if (!video || !canvas || !isCameraSupported) return;
+
+    const constraints: MediaStreamConstraints = {
+      video: { facingMode: "environment" },
+    };
+
+    navigator.mediaDevices
+      .getUserMedia(constraints)
+      .then((stream) => {
+        streamRef.current = stream;
+        video.srcObject = stream;
+        void video.play();
+
+        const ctx = canvas.getContext("2d", { willReadFrequently: true });
+        if (!ctx) return;
+
+        const tick = () => {
+          if (video.readyState === video.HAVE_ENOUGH_DATA) {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const code = jsQR(imageData.data, imageData.width, imageData.height, {
+              inversionAttempts: "dontInvert",
+            });
+            if (code?.data) {
+              onScan(code.data);
+              return;
+            }
+          }
+          rafRef.current = requestAnimationFrame(tick);
+        };
+
+        rafRef.current = requestAnimationFrame(tick);
+      })
+      .catch(() => {
+        setCameraError(t("friends.cameraError"));
+      });
+
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      streamRef.current?.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    };
+  }, [onScan, isCameraSupported]);
+
+  const handleManualSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!manualInput.trim()) return;
+    onScan(manualInput.trim());
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-modal flex flex-col bg-background/95 p-4 backdrop-blur-sm"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Scan QR code"
+    >
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-bold text-foreground">{t("friends.scanQrTitle")}</h3>
+        <button
+          onClick={onClose}
+          className="rounded-md px-3 py-1.5 text-sm font-semibold text-muted-foreground active:opacity-70"
+          aria-label={t("friends.close")}
+        >
+          {t("friends.close")}
+        </button>
+      </div>
+
+      <div className="mt-4 flex flex-1 flex-col items-center justify-center gap-4">
+        <div className="relative w-full max-w-sm overflow-hidden rounded-card bg-black shadow-lg">
+          <video ref={videoRef} className="h-auto w-full" muted playsInline />
+          <canvas ref={canvasRef} className="sr-only" />
+          <div className="pointer-events-none absolute inset-0 rounded-card border-2 border-primary/40" />
+        </div>
+
+        {cameraError && (
+          <div className="w-full max-w-sm rounded-md bg-surface-inset p-3 text-center">
+            <p className="text-xs text-danger">{cameraError}</p>
+          </div>
+        )}
+
+        <form onSubmit={handleManualSubmit} className="w-full max-w-sm space-y-2">
+          <label htmlFor="manual-invite-link" className="block text-xs font-medium text-muted-foreground">
+            {t("friends.pasteInviteLink")}
+          </label>
+          <div className="flex gap-2">
+            <input
+              id="manual-invite-link"
+              type="text"
+              value={manualInput}
+              onChange={(e) => setManualInput(e.target.value)}
+              placeholder={`${origin}/friends/accept?user=...`}
+              className="flex-1 rounded-md border border-muted bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
+            />
+            <button
+              type="submit"
+              disabled={!manualInput.trim()}
+              className="rounded-md bg-foreground px-4 py-2 text-sm font-semibold text-background disabled:opacity-50 active:opacity-90"
+            >
+              {t("friends.add")}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function CohortSection({
+  userId,
+  cohorts,
+  acceptedFriends,
+  subscriptionTier,
+  codeInput,
+  onCodeChange,
+  onJoin,
+  onCohortsChange,
+  message,
+}: {
+  userId: string;
+  cohorts: Cohort[];
+  acceptedFriends: Friend[];
+  subscriptionTier: string;
+  codeInput: string;
+  onCodeChange: (value: string) => void;
+  onJoin: (e: React.FormEvent) => void;
+  onCohortsChange: (cohorts: Cohort[]) => void;
+  message: string | null;
+}) {
+  const { t, locale } = useLocale();
+  const [createOpen, setCreateOpen] = useState(false);
+  const [newCohortName, setNewCohortName] = useState("");
+  const [createMessage, setCreateMessage] = useState<string | null>(null);
+  const [creating, setCreating] = useState(false);
+  const createdCount = cohorts.filter((c) => c.isCreator).length;
+  const isPro = subscriptionTier === "pro";
+  const cohortLimit = isPro ? 10 : 1;
+  const canCreateMore = createdCount < cohortLimit;
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!userId || !newCohortName.trim() || !canCreateMore) return;
+    setCreateMessage(null);
+    setCreating(true);
+    const result = await createCohort(userId, newCohortName.trim());
+    if (result) {
+      setNewCohortName("");
+      setCreateOpen(false);
+      const cohortsData = await getCohorts(userId);
+      onCohortsChange(cohortsData);
+    } else {
+      setCreateMessage(isPro ? t("friends.cohortLimitPro") : t("friends.cohortLimitFree"));
+    }
+    setCreating(false);
+  };
+
+  return (
+    <section>
+      <h2 className="mb-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+        {t("friends.cohorts")}
+      </h2>
+      <div className="rounded-card border border-muted bg-surface p-4 shadow-sm">
+        {!createOpen ? (
+          <>
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-muted-foreground">{t("friends.joinCohort")}</p>
+              <button
+                onClick={() => setCreateOpen(true)}
+                disabled={!canCreateMore}
+                className="rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground transition-opacity hover:opacity-90 active:opacity-80 disabled:opacity-50"
+              >
+                {t("friends.createCohort")}
+              </button>
+            </div>
+            <form onSubmit={onJoin} className="mt-3 flex gap-2">
+              <input
+                type="text"
+                value={codeInput}
+                onChange={(e) => onCodeChange(e.target.value.toUpperCase())}
+                placeholder={t("friends.cohortCode")}
+                className="flex-1 rounded-md border border-muted bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
+              />
+              <button
+                type="submit"
+                disabled={!codeInput.trim()}
+                className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50 active:opacity-90"
+              >
+                {t("friends.join")}
+              </button>
+            </form>
+          </>
+        ) : (
+          <form onSubmit={handleCreate} className="space-y-3">
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-semibold text-foreground">{t("friends.createCohort")}</p>
+              <button
+                type="button"
+                onClick={() => setCreateOpen(false)}
+                className="text-xs font-medium text-muted-foreground underline hover:text-foreground"
+              >
+                {t("friends.cancel")}
+              </button>
+            </div>
+            <input
+              type="text"
+              value={newCohortName}
+              onChange={(e) => setNewCohortName(e.target.value)}
+              placeholder={t("friends.cohortName")}
+              maxLength={60}
+              className="w-full rounded-md border border-muted bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
+            />
+            {!canCreateMore && (
+              <p className="text-xs text-warning">
+                {isPro ? t("friends.cohortLimitPro") : t("friends.cohortLimitFree")}
+              </p>
+            )}
+            <button
+              type="submit"
+              disabled={!newCohortName.trim() || creating || !canCreateMore}
+              className="w-full rounded-md bg-primary py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-50 active:opacity-90"
+            >
+              {creating ? t("friends.creating") : t("friends.create")}
+            </button>
+          </form>
+        )}
+
+        {message && (
+          <p
+            className={`mt-2 text-xs ${
+              message.includes(t("friends.joinedCohort")) || message.includes(t("friends.alreadyMember"))
+                ? "text-success"
+                : "text-danger"
+            }`}
+          >
+            {message}
+          </p>
+        )}
+        {createMessage && <p className="mt-2 text-xs text-danger">{createMessage}</p>}
+
+        {cohorts.length > 0 && (
+          <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
+            {cohorts.map((cohort) => (
+              <CohortCard
+                key={cohort.id}
+                userId={userId}
+                cohort={cohort}
+                acceptedFriends={acceptedFriends}
+                onCohortsChange={onCohortsChange}
+                locale={locale === "id" ? "id-ID" : "en-US"}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function CohortCard({
+  userId,
+  cohort,
+  acceptedFriends,
+  onCohortsChange,
+  locale,
+}: {
+  userId: string;
+  cohort: Cohort;
+  acceptedFriends: Friend[];
+  onCohortsChange: (cohorts: Cohort[]) => void;
+  locale: string;
+}) {
+  const { t } = useLocale();
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
+  const inviteUrl = cohort.inviteCode ? `${origin}/friends?cohort=${encodeURIComponent(cohort.inviteCode)}` : "";
+  const [codeCopied, setCodeCopied] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
+  const [inviteOpen, setInviteOpen] = useState(false);
+
+  const handleCopyCode = async () => {
+    if (!cohort.inviteCode) return;
+    try {
+      await navigator.clipboard.writeText(cohort.inviteCode);
+      setCodeCopied(true);
+      setTimeout(() => setCodeCopied(false), 2000);
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleCopyLink = async () => {
+    if (!inviteUrl) return;
+    try {
+      await navigator.clipboard.writeText(inviteUrl);
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+    } catch {
+      // ignore
+    }
+  };
+
+  return (
+    <div className="rounded-md bg-surface-inset px-3 py-2">
+      <p className="text-sm font-semibold text-foreground">{cohort.name}</p>
+      <div className="flex items-center justify-between">
+        <p className="text-[10px] text-muted-foreground">
+          {t("friends.joinedAt").replace("{date}", new Date(cohort.joinedAt).toLocaleDateString(locale))}
+        </p>
+        {cohort.inviteCode && (
+          <p className="text-[10px] font-mono text-muted-foreground">{cohort.inviteCode}</p>
+        )}
+      </div>
+      {cohort.isCreator && cohort.inviteCode && (
+        <div className="mt-2 flex flex-wrap gap-2">
+          <button
+            onClick={handleCopyCode}
+            className="inline-flex items-center gap-1 rounded-md border border-muted bg-background px-2 py-1.5 text-[10px] font-semibold text-foreground transition-colors hover:bg-muted/20 active:scale-[0.98]"
+          >
+            <CopyIcon className="h-3 w-3" />
+            {codeCopied ? t("friends.linkCopied") : t("friends.copyInviteCode")}
+          </button>
+          <button
+            onClick={handleCopyLink}
+            className="inline-flex items-center gap-1 rounded-md border border-muted bg-background px-2 py-1.5 text-[10px] font-semibold text-foreground transition-colors hover:bg-muted/20 active:scale-[0.98]"
+          >
+            <LinkIcon className="h-3 w-3" />
+            {linkCopied ? t("friends.inviteLinkCopied") : t("friends.copyInviteLink")}
+          </button>
+          <button
+            onClick={() => setInviteOpen(true)}
+            className="inline-flex items-center gap-1 rounded-md bg-primary px-2 py-1.5 text-[10px] font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-[0.98]"
+          >
+            <UserPlusIcon className="h-3 w-3" />
+            {t("friends.inviteFriend")}
+          </button>
+        </div>
+      )}
+
+      {inviteOpen && (
+        <InviteFriendModal
+          userId={userId}
+          cohort={cohort}
+          acceptedFriends={acceptedFriends}
+          onClose={() => setInviteOpen(false)}
+          onCohortsChange={onCohortsChange}
+        />
+      )}
+    </div>
+  );
+}
+
+function InviteFriendModal({
+  userId,
+  cohort,
+  acceptedFriends,
+  onClose,
+  onCohortsChange,
+}: {
+  userId: string;
+  cohort: Cohort;
+  acceptedFriends: Friend[];
+  onClose: () => void;
+  onCohortsChange: (cohorts: Cohort[]) => void;
+}) {
+  const { t } = useLocale();
+  const [statusByFriendId, setStatusByFriendId] = useState<Record<string, "idle" | "inviting" | "invited" | "already" | "error">>({});
+
+  const handleInvite = async (friend: Friend) => {
+    if (statusByFriendId[friend.userId] === "inviting") return;
+    setStatusByFriendId((prev) => ({ ...prev, [friend.userId]: "inviting" }));
+    const result = await inviteFriendToCohort(userId, friend.userId, cohort.id);
+    if (result) {
+      setStatusByFriendId((prev) => ({
+        ...prev,
+        [friend.userId]: result.alreadyMember ? "already" : "invited",
+      }));
+      const cohortsData = await getCohorts(userId);
+      onCohortsChange(cohortsData);
+    } else {
+      setStatusByFriendId((prev) => ({ ...prev, [friend.userId]: "error" }));
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-modal flex flex-col bg-background/95 p-4 backdrop-blur-sm"
+      role="dialog"
+      aria-modal="true"
+      aria-label={t("friends.inviteFriendToCohort")}
+    >
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-bold text-foreground">{t("friends.inviteFriendToCohort")}</h3>
+          <p className="text-xs text-muted-foreground">{cohort.name}</p>
+        </div>
+        <button
+          onClick={onClose}
+          className="rounded-md px-3 py-1.5 text-sm font-semibold text-muted-foreground active:opacity-70"
+          aria-label={t("friends.close")}
+        >
+          {t("friends.close")}
+        </button>
+      </div>
+
+      <div className="mt-4 flex-1 overflow-y-auto">
+        {acceptedFriends.length === 0 ? (
+          <p className="text-sm text-muted-foreground">{t("friends.inviteBody")}</p>
+        ) : (
+          <div className="space-y-2">
+            {acceptedFriends.map((friend) => {
+              const status = statusByFriendId[friend.userId] ?? "idle";
+              return (
+                <div
+                  key={friend.userId}
+                  className="flex items-center gap-3 rounded-card border border-muted bg-surface p-3 shadow-sm"
+                >
+                  {friend.avatarUrl ? (
+                    <img src={friend.avatarUrl} alt="" className="h-10 w-10 rounded-full object-cover" />
+                  ) : (
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--color-primary)_10%,var(--color-surface))] text-sm font-bold text-primary">
+                      {friend.displayName
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")
+                        .slice(0, 2)
+                        .toUpperCase() || "?"}
+                    </div>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-foreground">{friend.displayName}</p>
+                  </div>
+                  <button
+                    onClick={() => handleInvite(friend)}
+                    disabled={status === "inviting" || status === "invited" || status === "already"}
+                    className="rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground disabled:opacity-50 active:opacity-90"
+                  >
+                    {status === "inviting"
+                      ? t("friends.creating")
+                      : status === "invited"
+                        ? t("friends.invitedFriend")
+                        : status === "already"
+                          ? t("friends.alreadyInCohort")
+                          : status === "error"
+                            ? t("friends.inviteError")
+                            : t("friends.inviteFriend")}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+type LeaderboardRow = {
+  rank: number;
+  displayName: string;
+  xpThisWeek?: number;
+  koinPointsThisWeek?: number;
+  isCurrentUser: boolean;
+};
+
+// Top-3 rank tints — color-mix against surface per DESIGN.md (never raw -50 backgrounds).
+const RANK_TIER_STYLES: Record<number, { badge: string; label: string }> = {
+  1: {
+    badge:
+      "bg-[color-mix(in_srgb,var(--rup-gold-500)_22%,var(--color-surface))] text-[var(--rup-gold-700)]",
+    label: "gold",
+  },
+  2: {
+    badge:
+      "bg-[color-mix(in_srgb,var(--rup-grey-500)_18%,var(--color-surface))] text-[var(--rup-grey-700)]",
+    label: "silver",
+  },
+  3: {
+    badge:
+      "bg-[color-mix(in_srgb,var(--rup-brown-400)_24%,var(--color-surface))] text-[var(--rup-brown-700)]",
+    label: "bronze",
+  },
+};
+
+function leaderboardInitials(name: string): string {
+  const initials = name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+  return initials || "?";
+}
+
+function LeaderboardSection({
+  title,
+  entries,
+  valueKey,
+}: {
+  title: string;
+  entries: LeaderboardRow[];
+  valueKey: "xpThisWeek" | "koinPointsThisWeek";
+}) {
+  const { t } = useLocale();
+  if (entries.length === 0) return null;
+
+  const valueColor = valueKey === "koinPointsThisWeek" ? "text-koin-points" : "text-xp";
+
+  return (
+    <div className="mt-3 rounded-card border border-muted bg-surface p-4 shadow-sm">
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-primary">
+        <TrophyIcon className="h-3.5 w-3.5" />
+        {title}
+      </span>
+      <ol className="mt-3 space-y-1">
+        {entries.map((entry) => {
+          const tier = RANK_TIER_STYLES[entry.rank];
+          return (
+            <li
+              key={entry.rank + entry.displayName}
+              data-rank={entry.rank}
+              data-tier={tier?.label}
+              data-current-user={entry.isCurrentUser || undefined}
+              className={`flex min-h-11 items-center gap-3 rounded-md px-2 py-1.5 ${
+                entry.isCurrentUser
+                  ? "bg-[color-mix(in_srgb,var(--color-primary)_8%,var(--color-surface))]"
+                  : ""
+              }`}
+            >
+              <span
+                className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+                  tier ? tier.badge : "bg-muted text-muted-foreground"
+                }`}
+                aria-label={`Rank ${entry.rank}`}
+              >
+                {entry.rank}
+              </span>
+              <span
+                aria-hidden="true"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--color-primary)_10%,var(--color-surface))] text-xs font-bold text-primary"
+              >
+                {leaderboardInitials(entry.displayName)}
+              </span>
+              <span
+                className={`flex-1 truncate text-sm ${
+                  entry.isCurrentUser ? "font-semibold text-foreground" : "text-foreground"
+                }`}
+              >
+                {entry.displayName}
+                {entry.isCurrentUser && (
+                  <span className="ml-1.5 text-xs font-medium text-primary">{t("friends.you")}</span>
+                )}
+              </span>
+              <span className={`text-sm font-semibold tabular-nums ${valueColor}`}>
+                {(entry[valueKey] ?? 0).toLocaleString("id-ID")}
+                {valueKey === "xpThisWeek" ? ` ${t("home.weeklyXp")}` : ""}
+              </span>
+            </li>
+          );
+        })}
+      </ol>
+    </div>
+  );
+}
+
+function FriendRow({ friend }: { friend: Friend }) {
+  const { t } = useLocale();
+  const statusText =
+    friend.status === "pending"
+      ? friend.isRequester
+        ? t("friends.requestSentStatus")
+        : t("friends.requestReceived")
+      : t("friends.friend");
+  const initials = friend.displayName
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
+  return (
+    <div className="flex items-center gap-3 rounded-card border border-muted bg-surface p-3 shadow-sm">
+      {friend.avatarUrl ? (
+        <img src={friend.avatarUrl} alt="" className="h-10 w-10 rounded-full object-cover" />
+      ) : (
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--color-primary)_10%,var(--color-surface))] text-sm font-bold text-primary">
+          {initials || "?"}
+        </div>
+      )}
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-semibold text-foreground">{friend.displayName}</p>
+        <p className="text-xs text-muted-foreground">{statusText}</p>
+      </div>
+    </div>
+  );
+}
+
+function ShareIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="18" cy="5" r="3" />
+      <circle cx="6" cy="12" r="3" />
+      <circle cx="18" cy="19" r="3" />
+      <path d="m8.6 10.5 6.8-4" />
+      <path d="m8.6 13.5 6.8 4" />
+    </svg>
+  );
+}
+
+function ScanIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M3 7V5a2 2 0 0 1 2-2h2" />
+      <path d="M17 3h2a2 2 0 0 1 2 2v2" />
+      <path d="M21 17v2a2 2 0 0 1-2 2h-2" />
+      <path d="M7 21H5a2 2 0 0 1-2-2v-2" />
+      <path d="M3 12h18" />
+    </svg>
+  );
+}
+
+function CopyIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+      <path d="M5 15V5a2 2 0 0 1 2-2h10" />
+    </svg>
+  );
+}
+
+function TrophyIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M6 9H4a2 2 0 0 1-2-2V5h6" />
+      <path d="M18 9h2a2 2 0 0 0 2-2V5h-6" />
+      <path d="M6 9v7a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V9" />
+      <path d="M12 18v3" />
+      <path d="M9 21h6" />
+    </svg>
+  );
+}
+
+function LinkIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+    </svg>
+  );
+}
+
+function UserPlusIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+      <circle cx="8.5" cy="7" r="4" />
+      <line x1="20" y1="8" x2="20" y2="14" />
+      <line x1="23" y1="11" x2="17" y2="11" />
+    </svg>
   );
 }

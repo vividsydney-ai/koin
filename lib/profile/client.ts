@@ -1,4 +1,6 @@
 import { supabase } from "@/lib/auth/client";
+import * as profileService from "@/lib/services/profile";
+
 import type { Database } from "@/types/supabase";
 
 export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
@@ -19,41 +21,127 @@ export async function getProfile(userId: string): Promise<Profile | null> {
   return data;
 }
 
+export async function getUserSettings(userId: string): Promise<UserSettings | null> {
+  const { data, error } = await supabase
+    .from("user_settings")
+    .select("*")
+    .eq("user_id", userId)
+    .single();
+
+  if (error) {
+    console.error("getUserSettings error:", error.message);
+    return null;
+  }
+
+  return data;
+}
+
+export type UserLearningPath = {
+  foundationZeroRequired: boolean;
+  startingLessonId: string | null;
+  assessmentScore: number | null;
+};
+
+export async function getUserLearningPath(userId: string): Promise<UserLearningPath> {
+  const { data, error } = await supabase
+    .from("user_settings")
+    .select("foundation_zero_required, starting_lesson_id, assessment_score")
+    .eq("user_id", userId)
+    .single();
+
+  if (error || !data) {
+    console.error("getUserLearningPath error:", error?.message);
+    return {
+      foundationZeroRequired: true,
+      startingLessonId: null,
+      assessmentScore: null,
+    };
+  }
+
+  return {
+    foundationZeroRequired: data.foundation_zero_required ?? true,
+    startingLessonId: data.starting_lesson_id ?? null,
+    assessmentScore: data.assessment_score ?? null,
+  };
+}
+
+export async function getFinancialLiteracyLevel(
+  userId: string
+): Promise<FinancialLiteracyLevel | null> {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("financial_literacy_level")
+    .eq("id", userId)
+    .single();
+
+  if (error) {
+    console.error("getFinancialLiteracyLevel error:", error.message);
+    return null;
+  }
+
+  const value = data?.financial_literacy_level;
+  if (value === "beginner" || value === "intermediate" || value === "advanced") {
+    return value;
+  }
+  return null;
+}
+
+export async function getFinancialGoals(userId: string): Promise<string[] | null> {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("financial_goal")
+    .eq("id", userId)
+    .single();
+
+  if (error) {
+    console.error("getFinancialGoals error:", error.message);
+    return null;
+  }
+
+  const value = data?.financial_goal;
+  if (Array.isArray(value)) {
+    return value.filter((g): g is string => typeof g === "string");
+  }
+  return null;
+}
+
+export async function updateProfile(input: {
+  userId: string;
+  displayName: string;
+  notificationsEnabled: boolean;
+}): Promise<{ error?: string }> {
+  const result = await profileService.updateProfile(input);
+  if (!result.ok) {
+    console.error("updateProfile error:", result.error.message);
+    return { error: result.error.message };
+  }
+  return {};
+}
+
+export type FinancialLiteracyLevel = "beginner" | "intermediate" | "advanced";
+
+export type OnboardingAssessmentResult = {
+  level: FinancialLiteracyLevel;
+  score: number;
+  maxScore: number;
+  correctByDifficulty: Record<FinancialLiteracyLevel, number>;
+  answers: Record<string, boolean>;
+  wrongRemediationSlugs: string[];
+};
+
 export async function completeOnboarding(input: {
   userId: string;
   displayName: string;
   ageRange: string;
-  financialGoal: string;
+  financialGoals: string[];
   notificationsEnabled: boolean;
+  financialLiteracyLevel?: FinancialLiteracyLevel;
+  assessmentResult?: OnboardingAssessmentResult;
 }): Promise<{ error?: string }> {
-  const { error: profileError } = await supabase
-    .from("profiles")
-    .update({
-      display_name: input.displayName,
-      age_range: input.ageRange,
-      financial_goal: input.financialGoal,
-      onboarding_completed: true,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", input.userId);
-
-  if (profileError) {
-    console.error("completeOnboarding profile error:", profileError.message);
-    return { error: profileError.message };
+  const result = await profileService.completeOnboarding(input);
+  if (!result.ok) {
+    console.error("completeOnboarding error:", result.error.message);
+    return { error: result.error.message };
   }
-
-  const { error: settingsError } = await supabase
-    .from("user_settings")
-    .update({
-      notifications_enabled: input.notificationsEnabled,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("user_id", input.userId);
-
-  if (settingsError) {
-    console.error("completeOnboarding settings error:", settingsError.message);
-    return { error: settingsError.message };
-  }
-
   return {};
 }

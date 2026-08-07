@@ -1,0 +1,10 @@
+# Local operations and private review material must never be uploaded as a build input.
+security-audit-2026-08.md
+STATE.md
+TASKS.md
+HANDOFF.md
+KIMI_HANDOFF.md
+progress.md
+loop-state.md
+docs/
+.env*
