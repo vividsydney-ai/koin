@@ -66,6 +66,9 @@ export default function TradePage() {
   const [portfolioHistory, setPortfolioHistory] = useState<
     PortfolioValueSnapshot[]
   >([]);
+  const [priorCloseSnapshot, setPriorCloseSnapshot] = useState<
+    PortfolioValueSnapshot | undefined
+  >(undefined);
   const [holdings, setHoldings] = useState<Holding[]>([]);
   const [holdingMovements, setHoldingMovements] = useState<
     Record<string, HoldingMovement>
@@ -104,14 +107,40 @@ export default function TradePage() {
         status.canTrade ? getWatchlist(user.id) : Promise.resolve([]),
       ]);
       const history = p ? await getPortfolioValueHistory(user.id, "1M") : [];
-      const movementEntries = await Promise.all(
-        h.map(async (holding) => [
-          holding.symbol,
-          getHoldingMovement(await getMarketDataHistory(holding.symbol, 2)),
-        ] as const),
+      const histories = await Promise.all(
+        h.map(async (holding) => ({
+          symbol: holding.symbol,
+          history: await getMarketDataHistory(holding.symbol, 2),
+        })),
       );
+      const movementEntries = histories.map(({ symbol, history }) => [
+        symbol,
+        getHoldingMovement(history),
+      ] as const);
+
+      let priorDate: string | null = null;
+      let priorHoldingsValue = 0;
+      for (const { symbol, history } of histories) {
+        const previous = history.at(-2);
+        if (!previous) continue;
+        const holding = h.find((item) => item.symbol === symbol);
+        if (!holding) continue;
+        priorHoldingsValue += holding.shares * previous.close;
+        if (!priorDate || previous.date > priorDate) priorDate = previous.date;
+      }
+      const priorCloseSnapshot =
+        p && priorDate
+          ? {
+              date: priorDate,
+              cashBalance: p.cashBalance,
+              holdingsValue: priorHoldingsValue,
+              totalValue: p.cashBalance + priorHoldingsValue,
+            }
+          : undefined;
+
       setPortfolio(p);
       setPortfolioHistory(history);
+      setPriorCloseSnapshot(priorCloseSnapshot);
       setHoldings(h);
       setHoldingMovements(Object.fromEntries(movementEntries));
       setTrades(t);
@@ -332,6 +361,7 @@ export default function TradePage() {
                       ? "simulated"
                       : "idx_eod"
                   }
+                  priorCloseSnapshot={priorCloseSnapshot}
                 />
                 <HoldingsCard
                   holdings={holdings}

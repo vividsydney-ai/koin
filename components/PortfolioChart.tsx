@@ -103,10 +103,12 @@ function createChartShape(points: PortfolioValueSnapshot[]): ChartShape {
 export default function PortfolioChart({
   userId,
   totalValue,
+  priorCloseSnapshot,
   onRangeChange,
 }: {
   userId: string;
   totalValue: number;
+  priorCloseSnapshot?: PortfolioValueSnapshot;
   onRangeChange?: (range: PortfolioHistoryRange) => void;
 }) {
   const { t } = useLocale();
@@ -136,7 +138,19 @@ export default function PortfolioChart({
 
   const today = new Date().toISOString().slice(0, 10);
   const displayPoints = useMemo<PortfolioValueSnapshot[]>(() => {
-    if (points.length === 0) {
+    let working = points;
+    if (priorCloseSnapshot) {
+      if (working.length === 0) {
+        working = [priorCloseSnapshot];
+      } else if (
+        working.length === 1 &&
+        priorCloseSnapshot.date < working[0].date
+      ) {
+        working = [priorCloseSnapshot, working[0]];
+      }
+    }
+
+    if (working.length === 0) {
       return [
         {
           date: today,
@@ -146,10 +160,10 @@ export default function PortfolioChart({
         },
       ];
     }
-    const last = points.at(-1)!;
+    const last = working.at(-1)!;
     if (last.date !== today && Math.abs(totalValue - last.totalValue) >= 1) {
       return [
-        ...points,
+        ...working,
         {
           date: today,
           cashBalance: last.cashBalance,
@@ -158,8 +172,8 @@ export default function PortfolioChart({
         },
       ];
     }
-    return points;
-  }, [points, totalValue, today]);
+    return working;
+  }, [points, priorCloseSnapshot, totalValue, today]);
 
   const chartTotalValue = displayPoints.at(-1)?.totalValue ?? totalValue;
   const chart = useMemo(() => createChartShape(displayPoints), [displayPoints]);

@@ -124,10 +124,12 @@ export default function ChartFrame({
   userId,
   totalValue,
   dataSource,
+  priorCloseSnapshot,
 }: {
   userId: string;
   totalValue: number;
   dataSource: ChartDataSource;
+  priorCloseSnapshot?: PortfolioValueSnapshot;
 }) {
   const { t } = useLocale();
   const [snapshots, setSnapshots] = useState<PortfolioValueSnapshot[] | null>(null);
@@ -159,10 +161,22 @@ export default function ChartFrame({
     };
   }, [userId, attempt, range]);
 
+  const mergedSnapshots = useMemo<PortfolioValueSnapshot[] | null>(() => {
+    if (!snapshots) return null;
+    if (
+      priorCloseSnapshot &&
+      snapshots.length > 0 &&
+      priorCloseSnapshot.date < snapshots[0].date
+    ) {
+      return [priorCloseSnapshot, ...snapshots];
+    }
+    return snapshots;
+  }, [snapshots, priorCloseSnapshot]);
+
   const description = useMemo(() => {
-    if (!snapshots || snapshots.length === 0) return null;
-    const first = snapshots[0].totalValue;
-    const last = snapshots.at(-1)!.totalValue;
+    if (!mergedSnapshots || mergedSnapshots.length === 0) return null;
+    const first = mergedSnapshots[0].totalValue;
+    const last = mergedSnapshots.at(-1)!.totalValue;
     const change = last - first;
     const shapeKey =
       Math.abs(change) < 1
@@ -171,7 +185,7 @@ export default function ChartFrame({
           ? "portfolioStory.chartShapeRose"
           : "portfolioStory.chartShapeFell";
     return `${t(shapeKey)} ${formatRupiah(last)}.`;
-  }, [snapshots, t]);
+  }, [mergedSnapshots, t]);
 
   return (
     <section className="space-y-3" aria-label={t("portfolioStory.title")}>
@@ -183,6 +197,7 @@ export default function ChartFrame({
       <PortfolioChart
         userId={userId}
         totalValue={totalValue}
+        priorCloseSnapshot={priorCloseSnapshot}
         onRangeChange={setRange}
       />
 
@@ -209,7 +224,7 @@ export default function ChartFrame({
         </div>
       )}
 
-      {status !== "error" && snapshots !== null && snapshots.length === 0 && (
+      {status !== "error" && mergedSnapshots !== null && mergedSnapshots.length === 0 && (
         <div className="rounded-xl border border-muted/60 bg-muted/40 p-3 text-xs text-muted-foreground">
           <p className="font-semibold text-foreground">
             {t("portfolioStory.emptyTitle")}
@@ -218,10 +233,10 @@ export default function ChartFrame({
         </div>
       )}
 
-      {status !== "error" && snapshots !== null && snapshots.length > 0 && (
+      {status !== "error" && mergedSnapshots !== null && mergedSnapshots.length > 0 && (
         <>
-          <InsightCard snapshots={snapshots} range={range} />
-          <AgentActionCard snapshots={snapshots} dataSource={dataSource} />
+          <InsightCard snapshots={mergedSnapshots} range={range} />
+          <AgentActionCard snapshots={mergedSnapshots} dataSource={dataSource} />
         </>
       )}
 
