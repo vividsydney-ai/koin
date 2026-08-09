@@ -25,6 +25,32 @@ export type CurriculumLesson = {
  * so Learn, lesson-player counters, and next-lesson navigation agree.
  */
 export const CURRICULUM_LESSON_ORDER: Record<string, readonly string[]> = {
+  "Money Basics": [
+    "value-and-purchasing-power",
+    "inflation-101",
+    "understanding-risk",
+    "time-value-of-money",
+    "net-worth-know-your-financial-position",
+    "net-worth-know-your-financial-position-part-2",
+  ],
+  "Money Life Skills": [
+    "budgeting-101",
+    "pay-yourself-first",
+    "spending-traps",
+    "behavioral-bias-intro",
+    "banking-basics-choosing-the-right-account",
+    "banking-basics-choosing-the-right-account-part-2",
+    "digital-wallets-qris-safe-and-smart-usage",
+    "digital-wallets-qris-safe-and-smart-usage-part-2",
+  ],
+  "Protect Yourself": [
+    "too-good-to-be-true",
+    "check-ojk-license",
+    "phishing-social-engineering",
+    "mlm-pyramid-red-flags",
+    "insurance-basics-bpjs-vs-private-insurance",
+    "insurance-basics-bpjs-vs-private-insurance-part-2",
+  ],
   "Investing in Indonesia": [
     "what-is-a-stock",
     "idx-basics-101",
