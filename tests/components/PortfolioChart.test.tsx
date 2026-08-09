@@ -105,4 +105,41 @@ describe("PortfolioChart", () => {
       expect(screen.queryByTestId("chart-tooltip")).not.toBeInTheDocument();
     });
   });
+
+  it("injects a prior-close point when history has only one snapshot so daily movement shows", async () => {
+    mockGetHistory.mockResolvedValue([
+      {
+        date: "2026-08-02",
+        cashBalance: 9_790_000,
+        holdingsValue: 210_000,
+        totalValue: 10_000_000,
+      },
+    ]);
+
+    renderChart(
+      <PortfolioChart
+        userId="u1"
+        totalValue={10_000_000}
+        priorCloseSnapshot={{
+          date: "2026-08-01",
+          cashBalance: 9_790_000,
+          holdingsValue: 205_000,
+          totalValue: 9_995_000,
+        }}
+      />,
+    );
+
+    const svg = await screen.findByRole("img", {
+      name: /portfolio value chart/i,
+    });
+    svg.getBoundingClientRect = () =>
+      ({ left: 0, top: 0, width: 100, height: 60 }) as DOMRect;
+
+    fireEvent.mouseMove(svg, { clientX: 100, clientY: 30 });
+
+    const tooltip = await screen.findByTestId("chart-tooltip");
+    expect(tooltip).toHaveTextContent("2 Agu");
+    expect(tooltip).toHaveTextContent("Rp 10.000.000");
+    expect(tooltip).toHaveTextContent("+0,1% from starting point");
+  });
 });

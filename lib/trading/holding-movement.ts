@@ -3,6 +3,7 @@ import type { MarketDataPoint } from "@/lib/trading/client";
 export type HoldingMovement = {
   latestPrice: number | null;
   previousPrice: number | null;
+  previousDate: string | null;
   change: number | null;
   changePercent: number | null;
   tradeDate: string | null;
@@ -18,6 +19,7 @@ export function getHoldingMovement(
     return {
       latestPrice: null,
       previousPrice: null,
+      previousDate: null,
       change: null,
       changePercent: null,
       tradeDate: null,
@@ -30,6 +32,7 @@ export function getHoldingMovement(
   return {
     latestPrice: latest.close,
     previousPrice,
+    previousDate: previous?.date ?? null,
     change,
     changePercent:
       change === null || previousPrice === null || previousPrice === 0
