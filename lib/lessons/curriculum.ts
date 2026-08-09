@@ -10,6 +10,11 @@ export const CURRICULUM_CHAPTER_ORDER = [
   "Cryptocurrency 101",
   "Reading Trading Charts",
   "Decision Analysis Lab",
+  "Decision Quality Under Uncertainty",
+  "Personal Finance Operations",
+  "Evidence-Based Investing Decisions",
+  "Ownership, Enterprise & Income Quality",
+  "Bias-Resistant Decisions & Resilience",
 ] as const;
 
 export type CurriculumLesson = {
@@ -84,11 +89,14 @@ export function curriculumLessonRank(lesson: Pick<CurriculumLesson, "chapter" | 
   return rank >= 0 ? rank : lesson.lessonNumber;
 }
 
+/** Canonical zero-based chapter number: Foundation is 00 and Bias is 15. */
 export function curriculumChapterNumber(chapter: string | null): number | null {
   if (!chapter) return null;
   const index = CURRICULUM_CHAPTER_ORDER.indexOf(chapter as (typeof CURRICULUM_CHAPTER_ORDER)[number]);
-  return index === -1 ? null : index + 1;
+  return index === -1 ? null : index;
 }
+
+export const curriculumChapterDisplayNumber = curriculumChapterNumber;
 
 export function orderCurriculumLessons<T extends CurriculumLesson>(lessons: T[]): T[] {
   return [...lessons].sort((a, b) => {
