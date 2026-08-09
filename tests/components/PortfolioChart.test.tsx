@@ -115,7 +115,7 @@ describe("PortfolioChart", () => {
         totalValue: 10_000_000,
       },
       {
-        date: "2026-07-15",
+        date: "2026-07-31",
         cashBalance: 5_000_000,
         holdingsValue: 5_500_000,
         totalValue: 10_500_000,
@@ -160,7 +160,7 @@ describe("PortfolioChart", () => {
     fireEvent.mouseMove(svg, { clientX: 100, clientY: 30 });
 
     const tooltip = await screen.findByTestId("chart-tooltip");
-    expect(tooltip).toHaveTextContent("2 Agu");
+    expect(tooltip).toHaveTextContent("2 Aug");
     expect(tooltip).toHaveTextContent("Rp 10.000.000");
     expect(tooltip).toHaveTextContent("+0,1% from starting point");
   });
