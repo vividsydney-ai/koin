@@ -136,15 +136,15 @@ describe("ChartFrame", () => {
     expect(initialInsight).toHaveTextContent(/rose by/i);
     expect(screen.getByRole("status")).toHaveTextContent(/trending upward/i);
 
-    fireEvent.click(screen.getByRole("tab", { name: "1Y" }));
+    fireEvent.click(screen.getByRole("tab", { name: "3M" }));
 
     await waitFor(() => {
-      expect(mockGetHistory).toHaveBeenCalledWith("u1", "1Y");
+      expect(mockGetHistory).toHaveBeenCalledWith("u1", "3M");
     });
 
     const updatedInsight = await screen.findByTestId("insight-card");
     await waitFor(() => expect(updatedInsight).toHaveTextContent(/fell by/i));
-    expect(updatedInsight).toHaveTextContent(/over the last year/i);
+    expect(updatedInsight).toHaveTextContent(/over the last 3 months/i);
     expect(screen.getByRole("status")).toHaveTextContent(/trending downward/i);
   });
 
@@ -158,10 +158,10 @@ describe("ChartFrame", () => {
 
     await screen.findByTestId("insight-card");
 
-    fireEvent.click(screen.getByRole("tab", { name: "1D" }));
+    fireEvent.click(screen.getByRole("tab", { name: "3M" }));
 
     await waitFor(() => {
-      expect(mockGetHistory).toHaveBeenCalledWith("u1", "1D");
+      expect(mockGetHistory).toHaveBeenCalledWith("u1", "3M");
     });
 
     expect(screen.getByTestId("insight-card")).toHaveTextContent(/rose by/i);

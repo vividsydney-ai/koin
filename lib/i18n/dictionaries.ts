@@ -356,14 +356,18 @@ export interface Dictionary {
   "portfolioStory.insightFellBy": string;
   "portfolioStory.insightFlat": string;
   "portfolioStory.insightOverMonth": string;
-  "portfolioStory.insightOverDay": string;
-  "portfolioStory.insightOverYear": string;
+  "portfolioStory.insightOver3M": string;
+  "portfolioStory.insightOver6M": string;
   "portfolioStory.insightOverAll": string;
   "portfolioStory.chartShapeRose": string;
   "portfolioStory.chartShapeFell": string;
   "portfolioStory.chartShapeFlat": string;
   "portfolioStory.tooltipFromStart": string;
   "portfolioStory.tooltipDisclosure": string;
+  "portfolioStory.subtitleOver1M": string;
+  "portfolioStory.subtitleOver3M": string;
+  "portfolioStory.subtitleOver6M": string;
+  "portfolioStory.subtitleOverAll": string;
   "portfolioStory.loading": string;
   "portfolioStory.errorTitle": string;
   "portfolioStory.errorRetry": string;
@@ -753,14 +757,18 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "portfolioStory.insightFellBy": "Your portfolio fell by",
     "portfolioStory.insightFlat": "Your portfolio value hasn't changed",
     "portfolioStory.insightOverMonth": "over the last month.",
-    "portfolioStory.insightOverDay": "today.",
-    "portfolioStory.insightOverYear": "over the last year.",
+    "portfolioStory.insightOver3M": "over the last 3 months.",
+    "portfolioStory.insightOver6M": "over the last 6 months.",
     "portfolioStory.insightOverAll": "since you started.",
     "portfolioStory.chartShapeRose": "Line chart trending upward, ending at",
     "portfolioStory.chartShapeFell": "Line chart trending downward, ending at",
     "portfolioStory.chartShapeFlat": "Line chart holding steady at",
     "portfolioStory.tooltipFromStart": "from starting point",
     "portfolioStory.tooltipDisclosure": "Simulated value, calculated once daily",
+    "portfolioStory.subtitleOver1M": "over the last month",
+    "portfolioStory.subtitleOver3M": "over the last 3 months",
+    "portfolioStory.subtitleOver6M": "over the last 6 months",
+    "portfolioStory.subtitleOverAll": "since you started",
     "portfolioStory.loading": "Loading your portfolio story…",
     "portfolioStory.errorTitle": "Couldn't load your portfolio story.",
     "portfolioStory.errorRetry": "Try again",
@@ -1141,14 +1149,18 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "portfolioStory.insightFellBy": "Portofoliomu turun sebesar",
     "portfolioStory.insightFlat": "Nilai portofoliomu belum berubah",
     "portfolioStory.insightOverMonth": "selama bulan lalu.",
-    "portfolioStory.insightOverDay": "hari ini.",
-    "portfolioStory.insightOverYear": "selama tahun lalu.",
+    "portfolioStory.insightOver3M": "selama 3 bulan terakhir.",
+    "portfolioStory.insightOver6M": "selama 6 bulan terakhir.",
     "portfolioStory.insightOverAll": "sejak kamu mulai.",
     "portfolioStory.chartShapeRose": "Grafik garis cenderung naik, berakhir di",
     "portfolioStory.chartShapeFell": "Grafik garis cenderung turun, berakhir di",
     "portfolioStory.chartShapeFlat": "Grafik garis stabil di",
     "portfolioStory.tooltipFromStart": "dari titik awal",
     "portfolioStory.tooltipDisclosure": "Nilai simulasi, dihitung 1x/hari",
+    "portfolioStory.subtitleOver1M": "selama bulan lalu",
+    "portfolioStory.subtitleOver3M": "selama 3 bulan terakhir",
+    "portfolioStory.subtitleOver6M": "selama 6 bulan terakhir",
+    "portfolioStory.subtitleOverAll": "sejak kamu mulai",
     "portfolioStory.loading": "Memuat cerita portofoliomu…",
     "portfolioStory.errorTitle": "Gagal memuat cerita portofoliomu.",
     "portfolioStory.errorRetry": "Coba lagi",

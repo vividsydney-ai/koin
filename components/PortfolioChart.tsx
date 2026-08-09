@@ -3,6 +3,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ContextualHelp } from "@/components/ContextualHelp";
+import { SourceBadge, type ChartDataSource } from "@/components/SourceBadge";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import {
   formatRupiah,
@@ -15,7 +16,15 @@ import {
   type PortfolioValueSnapshot,
 } from "@/lib/trading/client";
 
-const RANGES: PortfolioHistoryRange[] = ["1D", "1M", "1Y", "All"];
+const RANGES: PortfolioHistoryRange[] = ["1M", "3M", "6M", "All"];
+
+const SUBTITLE_OVER_RANGE_KEY: Record<PortfolioHistoryRange, string> = {
+  "1M": "portfolioStory.subtitleOver1M",
+  "3M": "portfolioStory.subtitleOver3M",
+  "6M": "portfolioStory.subtitleOver6M",
+  All: "portfolioStory.subtitleOverAll",
+};
+
 const compact = new Intl.NumberFormat("id-ID", {
   notation: "compact",
   maximumFractionDigits: 1,
@@ -40,6 +49,13 @@ function formatDate(date: string) {
     day: "numeric",
     month: "short",
   });
+}
+
+function formatTickDate(date: string) {
+  const d = new Date(`${date}T00:00:00`);
+  const month = d.toLocaleDateString("id-ID", { month: "short" });
+  const week = Math.ceil(d.getDate() / 7);
+  return `${month} W${week}`;
 }
 
 function formatPercentChange(change: number, base: number): string {
@@ -100,14 +116,49 @@ function createChartShape(points: PortfolioValueSnapshot[]): ChartShape {
   };
 }
 
+type Tick = { label: string; x: number };
+
+function generateTicks(points: PortfolioValueSnapshot[], count = 5): Tick[] {
+  if (points.length === 0) return [];
+  if (points.length === 1) return [{ label: formatTickDate(points[0].date), x: 0 }];
+  if (points.length <= count) {
+    return points.map((point, index) => ({
+      label: formatTickDate(point.date),
+      x: (index / (points.length - 1)) * 100,
+    }));
+  }
+
+  const ticks: Tick[] = [];
+  const used = new Set<string>();
+  for (let i = 0; i < count; i += 1) {
+    const target = Math.round(((i + 1) / (count + 1)) * (points.length - 1));
+    let index = target;
+    while (index < points.length) {
+      const label = formatTickDate(points[index].date);
+      if (!used.has(label)) {
+        ticks.push({
+          label,
+          x: (index / (points.length - 1)) * 100,
+        });
+        used.add(label);
+        break;
+      }
+      index += 1;
+    }
+  }
+  return ticks;
+}
+
 export default function PortfolioChart({
   userId,
   totalValue,
+  dataSource = "simulated",
   priorCloseSnapshot,
   onRangeChange,
 }: {
   userId: string;
   totalValue: number;
+  dataSource?: ChartDataSource;
   priorCloseSnapshot?: PortfolioValueSnapshot;
   onRangeChange?: (range: PortfolioHistoryRange) => void;
 }) {
@@ -187,6 +238,10 @@ export default function PortfolioChart({
       ),
     [displayPoints, firstValue],
   );
+  const ticks = useMemo(
+    () => generateTicks(displayPoints),
+    [displayPoints],
+  );
 
   useLayoutEffect(() => {
     if (!visualRef.current || loading) return;
@@ -225,13 +280,6 @@ export default function PortfolioChart({
   const activeCoord =
     hoverIndex !== null ? chart.coords[hoverIndex] : null;
 
-  const firstDate = formatDate(
-    displayPoints[0]?.date ?? new Date().toISOString().slice(0, 10),
-  );
-  const lastDate = formatDate(
-    displayPoints.at(-1)?.date ?? new Date().toISOString().slice(0, 10),
-  );
-
   return (
     <section
       className="rounded-[18px] border border-muted/60 bg-surface p-5 shadow-sm"
@@ -256,17 +304,20 @@ export default function PortfolioChart({
               end-of-day valuations.
             </ContextualHelp>
           </div>
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            <SourceBadge dataSource={dataSource} />
+          </div>
           <p className="mt-3 text-2xl font-bold tracking-tight text-foreground">
             {formatRupiah(chartTotalValue)}
           </p>
           <p
             className={`mt-1 text-sm font-semibold ${getChangeTone(change) === "positive" ? "text-success" : getChangeTone(change) === "negative" ? "text-danger" : "text-muted-foreground"}`}
           >
-            {formatRupiahChange(change)} {range === "1D" ? "today" : `over ${range}`}
+            {formatRupiahChange(change)} {t(SUBTITLE_OVER_RANGE_KEY[range])}
           </p>
         </div>
         <div
-          className="flex rounded-xl bg-muted p-1"
+          className="inline-flex rounded-full border border-muted/60 p-1"
           role="tablist"
           aria-label="Portfolio chart range"
         >
@@ -280,7 +331,7 @@ export default function PortfolioChart({
                 setRange(item);
                 onRangeChange?.(item);
               }}
-              className={`min-h-10 rounded-lg px-3 text-xs font-bold transition-colors duration-150 ${range === item ? "bg-surface text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+              className={`min-h-8 rounded-full px-3 text-xs font-bold transition-colors duration-150 ${range === item ? "bg-primary/8 text-primary" : "text-muted-foreground hover:text-foreground"}`}
             >
               {item}
             </button>
@@ -347,16 +398,15 @@ export default function PortfolioChart({
                         y1={0}
                         x2={activeCoord.x}
                         y2={CHART_HEIGHT}
-                        stroke="var(--color-primary)"
-                        strokeOpacity={0.35}
-                        strokeWidth={0.5}
-                        strokeDasharray="2 2"
+                        stroke="var(--color-border)"
+                        strokeOpacity={0.6}
+                        strokeWidth="0.5"
                         vectorEffect="non-scaling-stroke"
                       />
                       <circle
                         cx={activeCoord.x}
                         cy={activeCoord.y}
-                        r="1.25"
+                        r="1.4"
                         fill="var(--color-surface)"
                         stroke="var(--color-primary)"
                         strokeWidth="0.75"
@@ -380,20 +430,20 @@ export default function PortfolioChart({
               {activePoint && activeCoord && (
                 <div
                   data-testid="chart-tooltip"
-                  className="pointer-events-none absolute z-10 min-w-[8.5rem] -translate-x-1/2 -translate-y-[115%] rounded-xl border border-muted/60 bg-surface p-2.5 shadow-md"
+                  className="pointer-events-none absolute z-10 min-w-[10rem] -translate-x-1/2 -translate-y-[115%] rounded-xl border border-muted/60 bg-surface p-3 shadow-[0_10px_24px_rgba(43,35,93,0.12)]"
                   style={{
                     left: `${activeCoord.x}%`,
                     top: `${activeCoord.y}%`,
                   }}
                 >
-                  <p className="text-[11px] font-medium text-muted-foreground">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                     {formatDate(activePoint.date)}
                   </p>
-                  <p className="text-sm font-bold text-foreground">
+                  <p className="mt-0.5 text-base font-bold text-foreground">
                     {formatRupiah(activePoint.totalValue)}
                   </p>
                   <p
-                    className={`text-xs font-semibold ${
+                    className={`mt-1 flex items-center gap-1 text-xs font-bold ${
                       getChangeTone(activePoint.totalValue - firstValue) ===
                       "positive"
                         ? "text-success"
@@ -403,25 +453,34 @@ export default function PortfolioChart({
                           : "text-muted-foreground"
                     }`}
                   >
+                    {activePoint.totalValue - firstValue >= 0 ? (
+                      <ArrowUpIcon className="h-3 w-3" />
+                    ) : (
+                      <ArrowDownIcon className="h-3 w-3" />
+                    )}
                     {formatPercentChange(
                       activePoint.totalValue - firstValue,
                       firstValue,
                     )}{" "}
                     {t("portfolioStory.tooltipFromStart")}
                   </p>
-                  <p className="mt-1 text-[10px] leading-snug text-muted-foreground">
+                  <p className="mt-1.5 text-[11px] leading-snug text-muted-foreground">
                     {t("portfolioStory.tooltipDisclosure")}
                   </p>
                 </div>
               )}
             </>
           )}
-          <div className="mt-2 grid grid-cols-3 text-[11px] font-medium text-muted-foreground">
-            <span>{firstDate}</span>
-            <span className="text-center">
-              {hasHistory ? "Portfolio value" : "Starting value"}
-            </span>
-            <span className="text-right">{hasHistory ? lastDate : "Now"}</span>
+          <div className="relative mt-2 h-5 text-[11px] font-medium text-muted-foreground">
+            {ticks.map((tick) => (
+              <span
+                key={tick.label + tick.x}
+                className="absolute -translate-x-1/2"
+                style={{ left: `${tick.x}%` }}
+              >
+                {tick.label}
+              </span>
+            ))}
           </div>
         </div>
       </div>
@@ -452,6 +511,40 @@ function PortfolioIcon() {
       <path d="M4 18h16" />
       <path d="m7 14 3-3 3 2 4-5" />
       <path d="M17 8h-3V5" />
+    </svg>
+  );
+}
+
+function ArrowUpIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M12 19V5" />
+      <path d="m5 12 7-7 7 7" />
+    </svg>
+  );
+}
+
+function ArrowDownIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M12 5v14" />
+      <path d="m5 12 7 7 7-7" />
     </svg>
   );
 }

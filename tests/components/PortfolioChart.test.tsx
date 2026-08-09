@@ -41,7 +41,7 @@ describe("PortfolioChart", () => {
     expect(await screen.findAllByRole("tab")).toHaveLength(4);
   });
 
-  it.each(["1D", "1M", "1Y", "All"] as const)(
+  it.each(["1M", "3M", "6M", "All"] as const)(
     "calls onRangeChange with %s when that tab is clicked, even if already active",
     async (rangeValue) => {
       const onRangeChange = vi.fn();
@@ -62,10 +62,10 @@ describe("PortfolioChart", () => {
   it("moves aria-selected to the clicked tab", async () => {
     renderChart(<PortfolioChart userId="u1" totalValue={10_000_000} />);
 
-    const dayTab = await screen.findByRole("tab", { name: "1D" });
-    fireEvent.click(dayTab);
+    const monthTab = await screen.findByRole("tab", { name: "1M" });
+    fireEvent.click(monthTab);
 
-    expect(dayTab).toHaveAttribute("aria-selected", "true");
+    expect(monthTab).toHaveAttribute("aria-selected", "true");
   });
 
   it("shows a tooltip with date, value and change from the start when hovering the chart", async () => {
@@ -104,6 +104,28 @@ describe("PortfolioChart", () => {
     await waitFor(() => {
       expect(screen.queryByTestId("chart-tooltip")).not.toBeInTheDocument();
     });
+  });
+
+  it("renders distributed month-week ticks below the chart", async () => {
+    mockGetHistory.mockResolvedValue([
+      {
+        date: "2026-07-01",
+        cashBalance: 5_000_000,
+        holdingsValue: 5_000_000,
+        totalValue: 10_000_000,
+      },
+      {
+        date: "2026-07-15",
+        cashBalance: 5_000_000,
+        holdingsValue: 5_500_000,
+        totalValue: 10_500_000,
+      },
+    ]);
+
+    renderChart(<PortfolioChart userId="u1" totalValue={10_500_000} />);
+
+    expect(await screen.findByText("Jul W1")).toBeInTheDocument();
+    expect(screen.getByText("Jul W3")).toBeInTheDocument();
   });
 
   it("injects a prior-close point when history has only one snapshot so daily movement shows", async () => {
