@@ -11,6 +11,7 @@ import dynamic from "next/dynamic";
 import { useAuth } from "@/lib/auth/use-auth";
 import {
   addToWatchlist,
+  calculateLivePortfolioValue,
   executeTrade,
   getHoldings,
   getInstruments,
@@ -146,7 +147,12 @@ export default function TradePage() {
   const canSubmit = Boolean(
     symbol && lotCount > 0 && selectedPrice > 0 && !executing,
   );
-  const portfolioValue = portfolio?.totalValue ?? 0;
+  const livePortfolio = useMemo(
+    () =>
+      portfolio ? calculateLivePortfolioValue(portfolio, holdings, marketData) : null,
+    [portfolio, holdings, marketData],
+  );
+  const portfolioValue = livePortfolio?.totalValue ?? portfolio?.totalValue ?? 0;
 
   const selectInstrument = (instrument: Instrument) => {
     setSymbol(instrument.symbol);
@@ -326,6 +332,7 @@ export default function TradePage() {
                       ? "simulated"
                       : "idx_eod"
                   }
+                  trades={trades}
                 />
                 <HoldingsCard
                   holdings={holdings}

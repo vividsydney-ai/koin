@@ -111,6 +111,40 @@ export async function getPortfolio(userId: string): Promise<Portfolio | null> {
   };
 }
 
+export interface LivePortfolioValue {
+  cashBalance: number;
+  holdingsValue: number;
+  totalValue: number;
+  topHolding: { symbol: string; value: number } | null;
+}
+
+export function calculateLivePortfolioValue(
+  portfolio: Pick<Portfolio, "cashBalance">,
+  holdings: Holding[],
+  marketData: MarketData[],
+): LivePortfolioValue {
+  let holdingsValue = 0;
+  let topHolding: LivePortfolioValue["topHolding"] = null;
+
+  for (const holding of holdings) {
+    const quote = marketData.find((row) => row.symbol === holding.symbol);
+    const price = quote?.closePrice ?? holding.currentPrice ?? holding.averageCost;
+    const value = holding.shares * price;
+    holdingsValue += value;
+
+    if (!topHolding || value > topHolding.value) {
+      topHolding = { symbol: holding.symbol, value };
+    }
+  }
+
+  return {
+    cashBalance: portfolio.cashBalance,
+    holdingsValue,
+    totalValue: portfolio.cashBalance + holdingsValue,
+    topHolding,
+  };
+}
+
 export async function getInstruments(): Promise<Instrument[]> {
   const { data, error } = await supabase
     .from("instruments")

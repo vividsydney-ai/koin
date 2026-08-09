@@ -12,6 +12,7 @@ import {
   getPortfolioValueHistory,
   type PortfolioHistoryRange,
   type PortfolioValueSnapshot,
+  type Trade,
 } from "@/lib/trading/client";
 
 const RANGES: PortfolioHistoryRange[] = ["1D", "1M", "1Y", "All"];
@@ -85,10 +86,12 @@ function createChartShape(points: PortfolioValueSnapshot[]): ChartShape {
 export default function PortfolioChart({
   userId,
   totalValue,
+  trades = [],
   onRangeChange,
 }: {
   userId: string;
   totalValue: number;
+  trades?: Trade[];
   onRangeChange?: (range: PortfolioHistoryRange) => void;
 }) {
   const [range, setRange] = useState<PortfolioHistoryRange>("1M");
@@ -102,6 +105,9 @@ export default function PortfolioChart({
       .then((history) => {
         if (active) setPoints(history);
       })
+      .catch(() => {
+        if (active) setPoints([]);
+      })
       .finally(() => {
         if (active) setLoading(false);
       });
@@ -110,25 +116,43 @@ export default function PortfolioChart({
     };
   }, [range, totalValue, userId]);
 
+  const today = new Date().toISOString().slice(0, 10);
   const displayPoints = useMemo<PortfolioValueSnapshot[]>(() => {
-    if (points.length > 0) return points;
-    return [
-      {
-        date: new Date().toISOString().slice(0, 10),
-        cashBalance: totalValue,
-        holdingsValue: 0,
-        totalValue,
-      },
-    ];
-  }, [points, totalValue]);
+    if (points.length === 0) {
+      return [
+        {
+          date: today,
+          cashBalance: totalValue,
+          holdingsValue: 0,
+          totalValue,
+        },
+      ];
+    }
+    const last = points.at(-1)!;
+    // If the latest recorded point is stale relative to the live mark-to-market
+    // total passed from the Trade page, append a synthetic today point so the
+    // line and headline both reach the current value.
+    if (last.date !== today && Math.abs(totalValue - last.totalValue) >= 1) {
+      return [
+        ...points,
+        {
+          date: today,
+          cashBalance: last.cashBalance,
+          holdingsValue: Math.max(totalValue - last.cashBalance, 0),
+          totalValue,
+        },
+      ];
+    }
+    return points;
+  }, [points, totalValue, today]);
   // The latest mark-to-market point is authoritative for this chart. The
   // portfolio row may still contain the last trade/snapshot value while a
   // delayed EOD close has already moved the holdings.
-  const chartTotalValue = points.at(-1)?.totalValue ?? totalValue;
+  const chartTotalValue = displayPoints.at(-1)?.totalValue ?? totalValue;
   const chart = useMemo(() => createChartShape(displayPoints), [displayPoints]);
   const firstValue = displayPoints[0]?.totalValue ?? totalValue;
   const change = chartTotalValue - firstValue;
-  const hasHistory = points.length > 1;
+  const hasHistory = displayPoints.length > 1;
   const hasMovement = useMemo(
     () =>
       displayPoints.some(
@@ -136,6 +160,20 @@ export default function PortfolioChart({
       ),
     [displayPoints, firstValue],
   );
+
+  const tradeMarkerXs = useMemo(() => {
+    if (displayPoints.length < 2 || trades.length === 0) return [];
+    const pointDates = new Set(displayPoints.map((point) => point.date));
+    const positions: number[] = [];
+    for (const trade of trades) {
+      const tradeDate = trade.createdAt.slice(0, 10);
+      if (!pointDates.has(tradeDate)) continue;
+      const index = displayPoints.findIndex((point) => point.date === tradeDate);
+      if (index === -1) continue;
+      positions.push((index / (displayPoints.length - 1)) * 100);
+    }
+    return positions;
+  }, [displayPoints, trades]);
 
   useLayoutEffect(() => {
     if (!visualRef.current || loading) return;
@@ -267,6 +305,20 @@ export default function PortfolioChart({
                   strokeWidth={hasMovement ? "1.2" : "1"}
                   vectorEffect="non-scaling-stroke"
                 />
+                {tradeMarkerXs.map((x, index) => (
+                  <line
+                    key={`trade-${index}`}
+                    x1={x}
+                    y1={0}
+                    x2={x}
+                    y2={CHART_HEIGHT}
+                    stroke="var(--color-primary)"
+                    strokeOpacity={0.35}
+                    strokeWidth={0.5}
+                    strokeDasharray="2 1"
+                    vectorEffect="non-scaling-stroke"
+                  />
+                ))}
                 {hasMovement && chart.marker && (
                   <circle
                     cx={chart.marker.x}

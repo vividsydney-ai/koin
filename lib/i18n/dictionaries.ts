@@ -332,6 +332,7 @@ export interface Dictionary {
   "trade.savedSymbolsTitle": string;
   "trade.noSavedSymbols": string;
   "trade.latest": string;
+  "trade.dataSource": string;
   "trade.simulated": string;
   "trade.idxEod": string;
   "trade.dataPending": string;
@@ -368,6 +369,11 @@ export interface Dictionary {
   "portfolioStory.errorRetry": string;
   "portfolioStory.emptyTitle": string;
   "portfolioStory.emptyBody": string;
+  "portfolioStory.explainChange": string;
+  "portfolioStory.agentTitle": string;
+  "portfolioStory.agentBody": string;
+  "portfolioStory.buyAnnotation": string;
+  "portfolioStory.sellAnnotation": string;
 
   // Library filters
   "library.allSources": string;
@@ -724,6 +730,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "trade.savedSymbolsTitle": "Saved symbols",
     "trade.noSavedSymbols": "No saved symbols yet.",
     "trade.latest": "Latest",
+    "trade.dataSource": "Data source",
     "trade.simulated": "Simulated",
     "trade.idxEod": "IDX EOD",
     "trade.dataPending": "Data pending",
@@ -760,6 +767,12 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "portfolioStory.emptyTitle": "No history yet",
     "portfolioStory.emptyBody":
       "Your portfolio story will build up here after your first trade.",
+    "portfolioStory.explainChange": "Explain this change",
+    "portfolioStory.agentTitle": "What changed",
+    "portfolioStory.agentBody":
+      "This panel shows the facts behind the chart. It can explain what is visible, but it cannot place trades or change your portfolio.",
+    "portfolioStory.buyAnnotation": "You bought here",
+    "portfolioStory.sellAnnotation": "You sold here",
     "library.allSources": "All sources",
     "library.allTiers": "All tiers",
     "library.allTypes": "All types",
@@ -1105,6 +1118,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "trade.savedSymbolsTitle": "Simbol tersimpan",
     "trade.noSavedSymbols": "Belum ada simbol tersimpan.",
     "trade.latest": "Terakhir",
+    "trade.dataSource": "Sumber data",
     "trade.simulated": "Simulasi",
     "trade.idxEod": "EOD IDX",
     "trade.dataPending": "Data menunggu",
@@ -1141,6 +1155,12 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "portfolioStory.emptyTitle": "Belum ada riwayat",
     "portfolioStory.emptyBody":
       "Cerita portofoliomu akan terbentuk di sini setelah transaksi pertamamu.",
+    "portfolioStory.explainChange": "Jelaskan perubahan ini",
+    "portfolioStory.agentTitle": "Apa yang berubah",
+    "portfolioStory.agentBody":
+      "Panel ini menampilkan fakta di balik grafik. Ia dapat menjelaskan apa yang terlihat, tetapi tidak dapat melakukan transaksi atau mengubah portofoliomu.",
+    "portfolioStory.buyAnnotation": "Kamu beli di sini",
+    "portfolioStory.sellAnnotation": "Kamu jual di sini",
     "library.allSources": "Semua sumber",
     "library.allTiers": "Semua tingkat",
     "library.allTypes": "Semua tipe",

@@ -8,6 +8,7 @@ import {
   getPortfolioValueHistory,
   type PortfolioHistoryRange,
   type PortfolioValueSnapshot,
+  type Trade,
 } from "@/lib/trading/client";
 
 export type ChartDataSource = "simulated" | "idx_eod";
@@ -135,14 +136,117 @@ export function ChartTooltip({
   );
 }
 
+function TradeAnnotationList({ trades }: { trades: Trade[] }) {
+  const { t } = useLocale();
+  if (trades.length === 0) return null;
+
+  const sorted = [...trades].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  );
+
+  return (
+    <div className="space-y-2">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+        {t("portfolioStory.agentTitle")}
+      </p>
+      <ul className="space-y-2">
+        {sorted.map((trade) => (
+          <li
+            key={trade.id}
+            className="flex items-start gap-3 rounded-xl bg-muted/40 px-3 py-2 text-sm"
+          >
+            <span
+              className={`mt-0.5 h-2 w-2 shrink-0 rounded-full ${
+                trade.tradeType === "buy" ? "bg-success" : "bg-danger"
+              }`}
+              aria-hidden="true"
+            />
+            <span className="text-foreground">
+              <span className="font-semibold">
+                {trade.tradeType === "buy"
+                  ? t("portfolioStory.buyAnnotation")
+                  : t("portfolioStory.sellAnnotation")}
+              </span>
+              {" — "}
+              {trade.lotCount} lot {trade.symbol}, {formatChartDate(trade.createdAt.slice(0, 10))}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function AgentActionCard({
+  snapshots,
+  dataSource,
+}: {
+  snapshots: PortfolioValueSnapshot[];
+  dataSource: ChartDataSource;
+}) {
+  const { t } = useLocale();
+  const [open, setOpen] = useState(false);
+  const first = snapshots[0]?.totalValue;
+  const last = snapshots.at(-1)?.totalValue;
+  const change = first !== undefined && last !== undefined ? last - first : 0;
+
+  return (
+    <div className="rounded-xl border border-muted/60 bg-muted/30 p-3">
+      <button
+        type="button"
+        onClick={() => setOpen((prev) => !prev)}
+        className="flex min-h-11 w-full items-center justify-between gap-3 text-sm font-semibold text-foreground"
+        aria-expanded={open}
+      >
+        <span className="inline-flex items-center gap-2">
+          <SparkleIcon className="h-4 w-4 text-primary" />
+          {t("portfolioStory.explainChange")}
+        </span>
+        <span aria-hidden="true">{open ? "−" : "+"}</span>
+      </button>
+      {open && (
+        <div className="mt-2 space-y-2 border-t border-muted/60 pt-3 text-sm text-muted-foreground">
+          <p>{t("portfolioStory.agentBody")}</p>
+          <ul className="space-y-1">
+            <li>
+              <span className="font-medium text-foreground">{t("home.portfolio")}:</span>{" "}
+              {last !== undefined ? formatRupiah(last) : "—"}
+            </li>
+            <li>
+              <span className="font-medium text-foreground">
+                {change >= 0 ? t("portfolioStory.insightRoseBy") : t("portfolioStory.insightFellBy")}:
+              </span>{" "}
+              {formatRupiah(Math.abs(change))}
+            </li>
+            <li>
+              <span className="font-medium text-foreground">{t("trade.dataSource")}:</span>{" "}
+              {dataSource === "simulated" ? t("trade.simulated") : t("trade.idxEod")}
+            </li>
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SparkleIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 2 14.5 9.5H22l-6 4.5 2.5 7.5-6.5-5-6.5 5 2.5-7.5-6-4.5h7.5z" />
+    </svg>
+  );
+}
+
 export default function ChartFrame({
   userId,
   totalValue,
   dataSource,
+  trades = [],
 }: {
   userId: string;
   totalValue: number;
   dataSource: ChartDataSource;
+  trades?: Trade[];
 }) {
   const { t } = useLocale();
   const [snapshots, setSnapshots] = useState<PortfolioValueSnapshot[] | null>(null);
@@ -198,6 +302,7 @@ export default function ChartFrame({
       <PortfolioChart
         userId={userId}
         totalValue={totalValue}
+        trades={trades}
         onRangeChange={setRange}
       />
 
@@ -237,6 +342,8 @@ export default function ChartFrame({
         <>
           <InsightCard snapshots={snapshots} range={range} />
           <ChartTooltip snapshots={snapshots} />
+          <TradeAnnotationList trades={trades} />
+          <AgentActionCard snapshots={snapshots} dataSource={dataSource} />
         </>
       )}
 
