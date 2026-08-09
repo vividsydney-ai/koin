@@ -2,6 +2,10 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { ContextualHelpProvider } from "@/components/ContextualHelp";
 
+vi.mock("@/lib/auth/client", () => ({
+  supabase: {},
+}));
+
 vi.mock("@/lib/trading/client", () => ({
   getPortfolioValueHistory: vi.fn(),
 }));
