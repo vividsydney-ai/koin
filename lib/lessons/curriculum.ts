@@ -51,6 +51,13 @@ export const CURRICULUM_LESSON_ORDER: Record<string, readonly string[]> = {
     "insurance-basics-bpjs-vs-private-insurance",
     "insurance-basics-bpjs-vs-private-insurance-part-2",
   ],
+  "Plan Your Money": [
+    "emergency-fund-101",
+    "goal-setting-101",
+    "building-financial-plan",
+    "retirement-planning-bpjs-dplk-and-starting-early",
+    "retirement-planning-start-early-compounding",
+  ],
   "Investing in Indonesia": [
     "what-is-a-stock",
     "idx-basics-101",
