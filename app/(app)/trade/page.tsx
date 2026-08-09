@@ -332,7 +332,6 @@ export default function TradePage() {
                       ? "simulated"
                       : "idx_eod"
                   }
-                  trades={trades}
                 />
                 <HoldingsCard
                   holdings={holdings}

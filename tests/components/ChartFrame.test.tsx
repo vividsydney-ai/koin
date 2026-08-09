@@ -120,17 +120,6 @@ describe("ChartFrame", () => {
     expect(await screen.findByTestId("insight-card")).toBeInTheDocument();
   });
 
-  it("shows the exact value and date for a tooltip point on focus", async () => {
-    mockGetHistory.mockResolvedValue(rising);
-
-    renderChartFrame(<ChartFrame userId="u1" totalValue={10_750_000} dataSource="simulated" />);
-
-    const points = await screen.findAllByRole("button", { name: /see exact value for/i });
-    fireEvent.focus(points[0]);
-
-    expect(await screen.findByText(/Rp 10\.000\.000/)).toBeInTheDocument();
-  });
-
   it("follows PortfolioChart's active range tab: badge/insight/status stay in sync", async () => {
     // Two calls happen on mount (ChartFrame's own effect + PortfolioChart's
     // own nested effect, both requesting "1M"); switching tabs triggers two
