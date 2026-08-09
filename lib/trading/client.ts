@@ -83,7 +83,7 @@ export interface PortfolioValueSnapshot {
   totalValue: number;
 }
 
-export type PortfolioHistoryRange = "1D" | "1M" | "1Y" | "All";
+export type PortfolioHistoryRange = "1M" | "3M" | "6M" | "All";
 
 export async function getPortfolio(userId: string): Promise<Portfolio | null> {
   const { data, error } = await supabase
@@ -207,9 +207,9 @@ export async function removeFromWatchlist(userId: string, symbol: string): Promi
 }
 
 const HISTORY_RANGE_DAYS: Record<PortfolioHistoryRange, number | null> = {
-  "1D": 1,
   "1M": 31,
-  "1Y": 366,
+  "3M": 92,
+  "6M": 183,
   All: null,
 };
 

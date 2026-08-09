@@ -4,35 +4,19 @@ import { useEffect, useMemo, useState } from "react";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { formatRupiah } from "@/lib/formatters/rupiah";
 import PortfolioChart from "@/components/PortfolioChart";
+import { type ChartDataSource } from "@/components/SourceBadge";
 import {
   getPortfolioValueHistory,
   type PortfolioHistoryRange,
   type PortfolioValueSnapshot,
 } from "@/lib/trading/client";
 
-export type ChartDataSource = "simulated" | "idx_eod";
-
 const INSIGHT_OVER_RANGE_KEY: Record<PortfolioHistoryRange, string> = {
-  "1D": "portfolioStory.insightOverDay",
   "1M": "portfolioStory.insightOverMonth",
-  "1Y": "portfolioStory.insightOverYear",
+  "3M": "portfolioStory.insightOver3M",
+  "6M": "portfolioStory.insightOver6M",
   All: "portfolioStory.insightOverAll",
 };
-
-export function SourceBadge({ dataSource }: { dataSource: ChartDataSource }) {
-  const { t } = useLocale();
-  const isSimulated = dataSource === "simulated";
-  return (
-    <span
-      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
-        isSimulated ? "bg-warning/10 text-warning" : "bg-success/10 text-success"
-      }`}
-    >
-      <span aria-hidden="true">{isSimulated ? "●" : "✓"}</span>
-      {isSimulated ? t("trade.simulated") : t("trade.idxEod")}
-    </span>
-  );
-}
 
 export function InsightCard({
   snapshots,
@@ -189,14 +173,12 @@ export default function ChartFrame({
 
   return (
     <section className="space-y-3" aria-label={t("portfolioStory.title")}>
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="sr-only">{t("portfolioStory.title")}</h2>
-        <SourceBadge dataSource={dataSource} />
-      </div>
+      <h2 className="sr-only">{t("portfolioStory.title")}</h2>
 
       <PortfolioChart
         userId={userId}
         totalValue={totalValue}
+        dataSource={dataSource}
         priorCloseSnapshot={priorCloseSnapshot}
         onRangeChange={setRange}
       />
