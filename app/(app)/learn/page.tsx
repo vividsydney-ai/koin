@@ -109,11 +109,11 @@ export default function LearnPage() {
             chapter.topics.some((topic) => topic.lessons.some((lesson) => lesson.id === firstUnlockedIncomplete.id))
           )
           : chapterData.find((chapter) => {
-              const number = chapter.displayOrder + 1;
+              const missionNumber = chapter.displayOrder + 1;
               return (
-                number >= 7 &&
-                number <= 9 &&
-                !passedMissions.has(number) &&
+                missionNumber >= 7 &&
+                missionNumber <= 9 &&
+                !passedMissions.has(missionNumber) &&
                 chapter.topics.flatMap((topic) => topic.lessons).every(
                   (lesson) => derived[lesson.id] === "completed"
                 )
@@ -309,9 +309,10 @@ function ChapterCard({
     0
   );
   const isComplete = completedCount === chapter.lessonCount && chapter.lessonCount > 0;
-  const chapterNumber = chapter.displayOrder + 1;
-  const isAdvancedTrack = chapterNumber >= 11;
-  const needsMission = chapterNumber >= 7 && chapterNumber <= 11;
+  const displayNumber = chapter.displayOrder;
+  const missionNumber = displayNumber + 1;
+  const isAdvancedTrack = missionNumber >= 11;
+  const needsMission = missionNumber >= 7 && missionNumber <= 11;
   const isMastered = isComplete && (!needsMission || missionPassed);
   const isLocked = chapter.topics
     .flatMap((topic) => topic.lessons)
@@ -335,7 +336,7 @@ function ChapterCard({
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <h2 className="font-semibold text-foreground">
-              <span className={isAdvancedTrack ? "text-secondary" : undefined}>{String(chapterNumber).padStart(2, "0")}</span> - {localizedChapterTitle(chapter.title, t)}
+              <span className={isAdvancedTrack ? "text-secondary" : undefined}>{String(displayNumber).padStart(2, "0")}</span> - {localizedChapterTitle(chapter.title, t)}
             </h2>
             {isMastered && <CheckIconMini className="h-4 w-4 text-success" />}
           </div>

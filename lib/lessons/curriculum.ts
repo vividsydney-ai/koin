@@ -10,6 +10,11 @@ export const CURRICULUM_CHAPTER_ORDER = [
   "Cryptocurrency 101",
   "Reading Trading Charts",
   "Decision Analysis Lab",
+  "Decision Quality Under Uncertainty",
+  "Personal Finance Operations",
+  "Evidence-Based Investing Decisions",
+  "Ownership, Enterprise & Income Quality",
+  "Bias-Resistant Decisions & Resilience",
 ] as const;
 
 export type CurriculumLesson = {
@@ -84,10 +89,23 @@ export function curriculumLessonRank(lesson: Pick<CurriculumLesson, "chapter" | 
   return rank >= 0 ? rank : lesson.lessonNumber;
 }
 
-export function curriculumChapterNumber(chapter: string | null): number | null {
+/**
+ * Learner-facing chapter labels begin at Foundation 00. Keep this separate
+ * from the legacy one-based mission identifiers stored in the database.
+ */
+export function curriculumChapterDisplayNumber(chapter: string | null): number | null {
   if (!chapter) return null;
   const index = CURRICULUM_CHAPTER_ORDER.indexOf(chapter as (typeof CURRICULUM_CHAPTER_ORDER)[number]);
-  return index === -1 ? null : index + 1;
+  return index === -1 ? null : index;
+}
+
+/**
+ * One-based identifier used by existing chapter-mission URLs and records.
+ * Do not use this value for the learner-facing chapter label.
+ */
+export function curriculumChapterNumber(chapter: string | null): number | null {
+  const displayNumber = curriculumChapterDisplayNumber(chapter);
+  return displayNumber === null ? null : displayNumber + 1;
 }
 
 export function orderCurriculumLessons<T extends CurriculumLesson>(lessons: T[]): T[] {

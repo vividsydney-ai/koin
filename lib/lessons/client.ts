@@ -2,7 +2,12 @@ import { supabase } from "@/lib/auth/client";
 import type { Locale } from "@/lib/i18n/types";
 import type { LessonStatus } from "./gating";
 import type { QuizQuestion } from "./question";
-import { orderCurriculumLessons, curriculumChapterNumber, curriculumLessonRank } from "./curriculum";
+import {
+  orderCurriculumLessons,
+  curriculumChapterDisplayNumber,
+  curriculumChapterNumber,
+  curriculumLessonRank,
+} from "./curriculum";
 import { requiresChapterMission } from "./mastery";
 import { completeChapterMissionSchema } from "@/lib/schemas/lessons";
 import { parseLessonVisualBlock, type LessonVisualBlock } from "./visual-block";
@@ -657,28 +662,8 @@ export interface Chapter {
   completedCount: number;
 }
 
-const CHAPTER_ORDER = [
-  "Foundation",
-  "Money Basics",
-  "Money Life Skills",
-  "Protect Yourself",
-  "Let's Talk About Debt",
-  "Plan Your Money",
-  "Grow Your Money",
-  "Investing in Indonesia",
-  "Cryptocurrency 101",
-  "Reading Trading Charts",
-  "Decision Analysis Lab",
-  "Decision Quality Under Uncertainty",
-  "Personal Finance Operations",
-  "Evidence-Based Investing Decisions",
-  "Ownership, Enterprise & Income Quality",
-  "Bias-Resistant Decisions & Resilience",
-];
-
 function chapterDisplayOrder(title: string): number {
-  const index = CHAPTER_ORDER.indexOf(title);
-  return index === -1 ? Number.MAX_SAFE_INTEGER : index;
+  return curriculumChapterDisplayNumber(title) ?? Number.MAX_SAFE_INTEGER;
 }
 
 function lessonDisplayOrder(lesson: { slug: string; lesson_number: number }, chapter: string): number {
