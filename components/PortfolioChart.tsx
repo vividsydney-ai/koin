@@ -3,6 +3,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ContextualHelp } from "@/components/ContextualHelp";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 import {
   formatRupiah,
   formatRupiahChange,
@@ -12,7 +13,6 @@ import {
   getPortfolioValueHistory,
   type PortfolioHistoryRange,
   type PortfolioValueSnapshot,
-  type Trade,
 } from "@/lib/trading/client";
 
 const RANGES: PortfolioHistoryRange[] = ["1D", "1M", "1Y", "All"];
@@ -26,6 +26,7 @@ const LINE_Y = 29;
 type ChartShape = {
   line: string;
   area: string;
+  coords: { x: number; y: number }[];
   marker?: { x: number; y: number };
   axisValues: number[];
 };
@@ -39,6 +40,17 @@ function formatDate(date: string) {
     day: "numeric",
     month: "short",
   });
+}
+
+function formatPercentChange(change: number, base: number): string {
+  if (base === 0) return "0.0%";
+  const pct = (change / base) * 100;
+  const formatted = new Intl.NumberFormat("id-ID", {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  }).format(Math.abs(pct));
+  if (Math.abs(pct) < 0.05) return "0.0%";
+  return `${change > 0 ? "+" : change < 0 ? "-" : ""}${formatted}%`;
 }
 
 function createChartShape(points: PortfolioValueSnapshot[]): ChartShape {
@@ -58,6 +70,10 @@ function createChartShape(points: PortfolioValueSnapshot[]): ChartShape {
     return {
       line: `M0,${LINE_Y} L100,${LINE_Y}`,
       area: "",
+      coords: [
+        { x: 0, y: LINE_Y },
+        { x: 100, y: LINE_Y },
+      ],
       axisValues,
     };
   }
@@ -78,6 +94,7 @@ function createChartShape(points: PortfolioValueSnapshot[]): ChartShape {
   return {
     line,
     area: `${line} L100,${CHART_HEIGHT - 2} L0,${CHART_HEIGHT - 2} Z`,
+    coords,
     marker: coords.at(-1) ?? { x: 100, y: LINE_Y },
     axisValues,
   };
@@ -86,17 +103,18 @@ function createChartShape(points: PortfolioValueSnapshot[]): ChartShape {
 export default function PortfolioChart({
   userId,
   totalValue,
-  trades = [],
   onRangeChange,
 }: {
   userId: string;
   totalValue: number;
-  trades?: Trade[];
   onRangeChange?: (range: PortfolioHistoryRange) => void;
 }) {
+  const { t } = useLocale();
   const [range, setRange] = useState<PortfolioHistoryRange>("1M");
   const [points, setPoints] = useState<PortfolioValueSnapshot[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
   const visualRef = useRef<SVGGElement>(null);
 
   useEffect(() => {
@@ -129,9 +147,6 @@ export default function PortfolioChart({
       ];
     }
     const last = points.at(-1)!;
-    // If the latest recorded point is stale relative to the live mark-to-market
-    // total passed from the Trade page, append a synthetic today point so the
-    // line and headline both reach the current value.
     if (last.date !== today && Math.abs(totalValue - last.totalValue) >= 1) {
       return [
         ...points,
@@ -145,9 +160,7 @@ export default function PortfolioChart({
     }
     return points;
   }, [points, totalValue, today]);
-  // The latest mark-to-market point is authoritative for this chart. The
-  // portfolio row may still contain the last trade/snapshot value while a
-  // delayed EOD close has already moved the holdings.
+
   const chartTotalValue = displayPoints.at(-1)?.totalValue ?? totalValue;
   const chart = useMemo(() => createChartShape(displayPoints), [displayPoints]);
   const firstValue = displayPoints[0]?.totalValue ?? totalValue;
@@ -160,20 +173,6 @@ export default function PortfolioChart({
       ),
     [displayPoints, firstValue],
   );
-
-  const tradeMarkerXs = useMemo(() => {
-    if (displayPoints.length < 2 || trades.length === 0) return [];
-    const pointDates = new Set(displayPoints.map((point) => point.date));
-    const positions: number[] = [];
-    for (const trade of trades) {
-      const tradeDate = trade.createdAt.slice(0, 10);
-      if (!pointDates.has(tradeDate)) continue;
-      const index = displayPoints.findIndex((point) => point.date === tradeDate);
-      if (index === -1) continue;
-      positions.push((index / (displayPoints.length - 1)) * 100);
-    }
-    return positions;
-  }, [displayPoints, trades]);
 
   useLayoutEffect(() => {
     if (!visualRef.current || loading) return;
@@ -193,6 +192,24 @@ export default function PortfolioChart({
     });
     return () => media.revert();
   }, [chart.line, loading, range]);
+
+  const handleMouseMove = (event: React.MouseEvent<SVGSVGElement>) => {
+    if (!svgRef.current || displayPoints.length < 2) return;
+    const rect = svgRef.current.getBoundingClientRect();
+    const ratio = Math.min(
+      Math.max((event.clientX - rect.left) / rect.width, 0),
+      1,
+    );
+    const index = Math.round(ratio * (displayPoints.length - 1));
+    setHoverIndex(index);
+  };
+
+  const handleMouseLeave = () => setHoverIndex(null);
+
+  const activePoint =
+    hoverIndex !== null ? displayPoints[hoverIndex] : null;
+  const activeCoord =
+    hoverIndex !== null ? chart.coords[hoverIndex] : null;
 
   const firstDate = formatDate(
     displayPoints[0]?.date ?? new Date().toISOString().slice(0, 10),
@@ -266,72 +283,124 @@ export default function PortfolioChart({
             <span key={value}>{formatAxis(value)}</span>
           ))}
         </div>
-        <div>
+        <div className="relative">
           {loading ? (
             <div className="h-56 animate-pulse rounded-xl bg-muted" />
           ) : (
-            <svg
-              viewBox={`0 0 100 ${CHART_HEIGHT}`}
-              preserveAspectRatio="none"
-              className="h-56 w-full overflow-visible"
-              role="img"
-              aria-label={`${range} portfolio value chart`}
-            >
-              {[7, LINE_Y, 52].map((y) => (
-                <path
-                  key={y}
-                  d={`M0,${y} H100`}
-                  stroke="var(--color-border)"
-                  strokeDasharray="2 2"
-                  strokeOpacity="0.75"
-                  strokeWidth="0.35"
-                />
-              ))}
-              <g ref={visualRef}>
-                {hasMovement && (
+            <>
+              <svg
+                ref={svgRef}
+                viewBox={`0 0 100 ${CHART_HEIGHT}`}
+                preserveAspectRatio="none"
+                className="h-56 w-full overflow-visible"
+                role="img"
+                aria-label={`${range} portfolio value chart`}
+                onMouseMove={handleMouseMove}
+                onMouseLeave={handleMouseLeave}
+              >
+                {[7, LINE_Y, 52].map((y) => (
                   <path
-                    d={chart.area}
-                    fill="var(--color-primary)"
-                    fillOpacity="0.09"
-                  />
-                )}
-                <path
-                  d={chart.line}
-                  fill="none"
-                  stroke="var(--color-primary)"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeOpacity={hasMovement ? "1" : "0.82"}
-                  strokeWidth={hasMovement ? "1.2" : "1"}
-                  vectorEffect="non-scaling-stroke"
-                />
-                {tradeMarkerXs.map((x, index) => (
-                  <line
-                    key={`trade-${index}`}
-                    x1={x}
-                    y1={0}
-                    x2={x}
-                    y2={CHART_HEIGHT}
-                    stroke="var(--color-primary)"
-                    strokeOpacity={0.35}
-                    strokeWidth={0.5}
-                    strokeDasharray="2 1"
-                    vectorEffect="non-scaling-stroke"
+                    key={y}
+                    d={`M0,${y} H100`}
+                    stroke="var(--color-border)"
+                    strokeDasharray="2 2"
+                    strokeOpacity="0.75"
+                    strokeWidth="0.35"
                   />
                 ))}
-                {hasMovement && chart.marker && (
-                  <circle
-                    cx={chart.marker.x}
-                    cy={chart.marker.y}
-                    r="1.15"
-                    fill="var(--color-surface)"
+                <g ref={visualRef}>
+                  {hasMovement && (
+                    <path
+                      d={chart.area}
+                      fill="var(--color-primary)"
+                      fillOpacity="0.09"
+                    />
+                  )}
+                  <path
+                    d={chart.line}
+                    fill="none"
                     stroke="var(--color-primary)"
-                    strokeWidth="0.75"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeOpacity={hasMovement ? "1" : "0.82"}
+                    strokeWidth={hasMovement ? "1.2" : "1"}
                     vectorEffect="non-scaling-stroke"
                   />
-                )}
-              </g>
-            </svg>
+                  {activeCoord && (
+                    <>
+                      <line
+                        x1={activeCoord.x}
+                        y1={0}
+                        x2={activeCoord.x}
+                        y2={CHART_HEIGHT}
+                        stroke="var(--color-primary)"
+                        strokeOpacity={0.35}
+                        strokeWidth={0.5}
+                        strokeDasharray="2 2"
+                        vectorEffect="non-scaling-stroke"
+                      />
+                      <circle
+                        cx={activeCoord.x}
+                        cy={activeCoord.y}
+                        r="1.25"
+                        fill="var(--color-surface)"
+                        stroke="var(--color-primary)"
+                        strokeWidth="0.75"
+                        vectorEffect="non-scaling-stroke"
+                      />
+                    </>
+                  )}
+                  {hasMovement && chart.marker && (
+                    <circle
+                      cx={chart.marker.x}
+                      cy={chart.marker.y}
+                      r="1.15"
+                      fill="var(--color-surface)"
+                      stroke="var(--color-primary)"
+                      strokeWidth="0.75"
+                      vectorEffect="non-scaling-stroke"
+                    />
+                  )}
+                </g>
+              </svg>
+              {activePoint && activeCoord && (
+                <div
+                  data-testid="chart-tooltip"
+                  className="pointer-events-none absolute z-10 min-w-[8.5rem] -translate-x-1/2 -translate-y-[115%] rounded-xl border border-muted/60 bg-surface p-2.5 shadow-md"
+                  style={{
+                    left: `${activeCoord.x}%`,
+                    top: `${activeCoord.y}%`,
+                  }}
+                >
+                  <p className="text-[11px] font-medium text-muted-foreground">
+                    {formatDate(activePoint.date)}
+                  </p>
+                  <p className="text-sm font-bold text-foreground">
+                    {formatRupiah(activePoint.totalValue)}
+                  </p>
+                  <p
+                    className={`text-xs font-semibold ${
+                      getChangeTone(activePoint.totalValue - firstValue) ===
+                      "positive"
+                        ? "text-success"
+                        : getChangeTone(activePoint.totalValue - firstValue) ===
+                            "negative"
+                          ? "text-danger"
+                          : "text-muted-foreground"
+                    }`}
+                  >
+                    {formatPercentChange(
+                      activePoint.totalValue - firstValue,
+                      firstValue,
+                    )}{" "}
+                    {t("portfolioStory.tooltipFromStart")}
+                  </p>
+                  <p className="mt-1 text-[10px] leading-snug text-muted-foreground">
+                    {t("portfolioStory.tooltipDisclosure")}
+                  </p>
+                </div>
+              )}
+            </>
           )}
           <div className="mt-2 grid grid-cols-3 text-[11px] font-medium text-muted-foreground">
             <span>{firstDate}</span>

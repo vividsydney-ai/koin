@@ -8,7 +8,6 @@ import {
   getPortfolioValueHistory,
   type PortfolioHistoryRange,
   type PortfolioValueSnapshot,
-  type Trade,
 } from "@/lib/trading/client";
 
 export type ChartDataSource = "simulated" | "idx_eod";
@@ -19,13 +18,6 @@ const INSIGHT_OVER_RANGE_KEY: Record<PortfolioHistoryRange, string> = {
   "1Y": "portfolioStory.insightOverYear",
   All: "portfolioStory.insightOverAll",
 };
-
-function formatChartDate(date: string) {
-  return new Date(`${date}T00:00:00`).toLocaleDateString("id-ID", {
-    day: "numeric",
-    month: "short",
-  });
-}
 
 export function SourceBadge({ dataSource }: { dataSource: ChartDataSource }) {
   const { t } = useLocale();
@@ -65,115 +57,6 @@ export function InsightCard({
     <p className="text-sm font-medium text-foreground" data-testid="insight-card">
       {sentence}
     </p>
-  );
-}
-
-export function ChartTooltip({
-  snapshots,
-}: {
-  snapshots: PortfolioValueSnapshot[];
-}) {
-  const { t } = useLocale();
-  const [activeIndex, setActiveIndex] = useState<number | null>(null);
-
-  // Decimate to at most 8 focusable points so the row reflows to a single
-  // column's width on a 393px phone without horizontal scrolling.
-  const points = useMemo(() => {
-    if (snapshots.length < 2) return [];
-    const step = Math.max(1, Math.ceil(snapshots.length / 8));
-    const decimated = snapshots.filter((_, index) => index % step === 0);
-    const last = snapshots.at(-1)!;
-    if (decimated.at(-1) !== last) decimated.push(last);
-    return decimated;
-  }, [snapshots]);
-
-  if (points.length < 2) return null;
-
-  const clear = (index: number) =>
-    setActiveIndex((current) => (current === index ? null : current));
-  const active = activeIndex !== null ? points[activeIndex] : null;
-  const previous =
-    activeIndex !== null && activeIndex > 0 ? points[activeIndex - 1] : null;
-  const change = active && previous ? active.totalValue - previous.totalValue : null;
-
-  return (
-    <div>
-      <div
-        className="flex flex-wrap gap-1"
-        role="group"
-        aria-label={t("portfolioStory.tooltipLabel")}
-      >
-        {points.map((point, index) => (
-          <button
-            key={point.date}
-            type="button"
-            onFocus={() => setActiveIndex(index)}
-            onMouseEnter={() => setActiveIndex(index)}
-            onBlur={() => clear(index)}
-            onMouseLeave={() => clear(index)}
-            className="min-h-8 shrink-0 rounded-md px-2 text-[11px] font-medium text-muted-foreground hover:bg-muted focus-visible:bg-muted"
-            aria-label={`${t("portfolioStory.tooltipLabel")} ${formatChartDate(point.date)}`}
-          >
-            {formatChartDate(point.date)}
-          </button>
-        ))}
-      </div>
-      <div aria-live="polite" className="min-h-5 text-xs text-muted-foreground">
-        {active && (
-          <span>
-            {formatChartDate(active.date)} · {formatRupiah(active.totalValue)}
-            {change !== null && (
-              <>
-                {" "}
-                · {change >= 0 ? "+" : "-"}
-                {formatRupiah(Math.abs(change))} ({t("portfolioStory.tooltipChange")})
-              </>
-            )}
-          </span>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function TradeAnnotationList({ trades }: { trades: Trade[] }) {
-  const { t } = useLocale();
-  if (trades.length === 0) return null;
-
-  const sorted = [...trades].sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-  );
-
-  return (
-    <div className="space-y-2">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-        {t("portfolioStory.agentTitle")}
-      </p>
-      <ul className="space-y-2">
-        {sorted.map((trade) => (
-          <li
-            key={trade.id}
-            className="flex items-start gap-3 rounded-xl bg-muted/40 px-3 py-2 text-sm"
-          >
-            <span
-              className={`mt-0.5 h-2 w-2 shrink-0 rounded-full ${
-                trade.tradeType === "buy" ? "bg-success" : "bg-danger"
-              }`}
-              aria-hidden="true"
-            />
-            <span className="text-foreground">
-              <span className="font-semibold">
-                {trade.tradeType === "buy"
-                  ? t("portfolioStory.buyAnnotation")
-                  : t("portfolioStory.sellAnnotation")}
-              </span>
-              {" — "}
-              {trade.lotCount} lot {trade.symbol}, {formatChartDate(trade.createdAt.slice(0, 10))}
-            </span>
-          </li>
-        ))}
-      </ul>
-    </div>
   );
 }
 
@@ -241,12 +124,10 @@ export default function ChartFrame({
   userId,
   totalValue,
   dataSource,
-  trades = [],
 }: {
   userId: string;
   totalValue: number;
   dataSource: ChartDataSource;
-  trades?: Trade[];
 }) {
   const { t } = useLocale();
   const [snapshots, setSnapshots] = useState<PortfolioValueSnapshot[] | null>(null);
@@ -302,7 +183,6 @@ export default function ChartFrame({
       <PortfolioChart
         userId={userId}
         totalValue={totalValue}
-        trades={trades}
         onRangeChange={setRange}
       />
 
@@ -341,8 +221,6 @@ export default function ChartFrame({
       {status !== "error" && snapshots !== null && snapshots.length > 0 && (
         <>
           <InsightCard snapshots={snapshots} range={range} />
-          <ChartTooltip snapshots={snapshots} />
-          <TradeAnnotationList trades={trades} />
           <AgentActionCard snapshots={snapshots} dataSource={dataSource} />
         </>
       )}

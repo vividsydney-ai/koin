@@ -362,8 +362,8 @@ export interface Dictionary {
   "portfolioStory.chartShapeRose": string;
   "portfolioStory.chartShapeFell": string;
   "portfolioStory.chartShapeFlat": string;
-  "portfolioStory.tooltipLabel": string;
-  "portfolioStory.tooltipChange": string;
+  "portfolioStory.tooltipFromStart": string;
+  "portfolioStory.tooltipDisclosure": string;
   "portfolioStory.loading": string;
   "portfolioStory.errorTitle": string;
   "portfolioStory.errorRetry": string;
@@ -759,8 +759,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "portfolioStory.chartShapeRose": "Line chart trending upward, ending at",
     "portfolioStory.chartShapeFell": "Line chart trending downward, ending at",
     "portfolioStory.chartShapeFlat": "Line chart holding steady at",
-    "portfolioStory.tooltipLabel": "See exact value for",
-    "portfolioStory.tooltipChange": "change since previous point",
+    "portfolioStory.tooltipFromStart": "from starting point",
+    "portfolioStory.tooltipDisclosure": "Simulated value, calculated once daily",
     "portfolioStory.loading": "Loading your portfolio story…",
     "portfolioStory.errorTitle": "Couldn't load your portfolio story.",
     "portfolioStory.errorRetry": "Try again",
@@ -1147,8 +1147,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "portfolioStory.chartShapeRose": "Grafik garis cenderung naik, berakhir di",
     "portfolioStory.chartShapeFell": "Grafik garis cenderung turun, berakhir di",
     "portfolioStory.chartShapeFlat": "Grafik garis stabil di",
-    "portfolioStory.tooltipLabel": "Lihat nilai pasti untuk",
-    "portfolioStory.tooltipChange": "perubahan sejak titik sebelumnya",
+    "portfolioStory.tooltipFromStart": "dari titik awal",
+    "portfolioStory.tooltipDisclosure": "Nilai simulasi, dihitung 1x/hari",
     "portfolioStory.loading": "Memuat cerita portofoliomu…",
     "portfolioStory.errorTitle": "Gagal memuat cerita portofoliomu.",
     "portfolioStory.errorRetry": "Coba lagi",
