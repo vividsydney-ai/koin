@@ -44,17 +44,43 @@ function formatAxis(value: number) {
   return `Rp ${compact.format(value)}`;
 }
 
-function formatDate(date: string) {
-  return new Date(`${date}T00:00:00`).toLocaleDateString("id-ID", {
+const userTimeZone =
+  typeof Intl !== "undefined"
+    ? Intl.DateTimeFormat().resolvedOptions().timeZone
+    : "Asia/Jakarta";
+
+function parseDateUTC(date: string) {
+  const [year, month, day] = date.split("-").map(Number);
+  return new Date(Date.UTC(year, month - 1, day));
+}
+
+function dateParts(date: string, timeZone: string) {
+  const formatter = new Intl.DateTimeFormat("id-ID", {
+    timeZone,
     day: "numeric",
     month: "short",
   });
+  const parts = formatter.formatToParts(parseDateUTC(date));
+  const day = Number(parts.find((part) => part.type === "day")?.value);
+  const month = parts.find((part) => part.type === "month")?.value ?? "";
+  return { day, month };
 }
 
-function formatTickDate(date: string) {
-  const d = new Date(`${date}T00:00:00`);
-  const month = d.toLocaleDateString("id-ID", { month: "short" });
-  const week = Math.ceil(d.getDate() / 7);
+function formatDate(date: string, timeZone = userTimeZone) {
+  const { day, month } = dateParts(date, timeZone);
+  return `${day} ${month}`;
+}
+
+function formatTickDate(
+  date: string,
+  range: PortfolioHistoryRange,
+  timeZone = userTimeZone,
+) {
+  const { day, month } = dateParts(date, timeZone);
+  if (range === "All") {
+    return month;
+  }
+  const week = Math.ceil(day / 7);
   return `${month} W${week}`;
 }
 
@@ -118,34 +144,53 @@ function createChartShape(points: PortfolioValueSnapshot[]): ChartShape {
 
 type Tick = { label: string; x: number };
 
-function generateTicks(points: PortfolioValueSnapshot[], count = 5): Tick[] {
+const TICK_CONFIG: Record<
+  PortfolioHistoryRange,
+  { max: number; minGapDays: number }
+> = {
+  "1M": { max: 4, minGapDays: 7 },
+  "3M": { max: 5, minGapDays: 14 },
+  "6M": { max: 5, minGapDays: 14 },
+  All: { max: 6, minGapDays: 30 },
+};
+
+function generateTicks(
+  points: PortfolioValueSnapshot[],
+  range: PortfolioHistoryRange,
+  timeZone = userTimeZone,
+): Tick[] {
   if (points.length === 0) return [];
-  if (points.length === 1) return [{ label: formatTickDate(points[0].date), x: 0 }];
-  if (points.length <= count) {
+  if (points.length === 1) {
+    return [{ label: formatTickDate(points[0].date, range, timeZone), x: 0 }];
+  }
+
+  const { max, minGapDays } = TICK_CONFIG[range];
+  if (points.length <= max) {
     return points.map((point, index) => ({
-      label: formatTickDate(point.date),
+      label: formatTickDate(point.date, range, timeZone),
       x: (index / (points.length - 1)) * 100,
     }));
   }
 
+  const msPerDay = 86_400_000;
   const ticks: Tick[] = [];
   const used = new Set<string>();
-  for (let i = 0; i < count; i += 1) {
-    const target = Math.round(((i + 1) / (count + 1)) * (points.length - 1));
-    let index = target;
-    while (index < points.length) {
-      const label = formatTickDate(points[index].date);
-      if (!used.has(label)) {
-        ticks.push({
-          label,
-          x: (index / (points.length - 1)) * 100,
-        });
-        used.add(label);
-        break;
-      }
-      index += 1;
-    }
+  let lastTime = -Infinity;
+
+  for (let index = 1; index < points.length - 1; index += 1) {
+    if (ticks.length >= max) break;
+    const time = parseDateUTC(points[index].date).getTime();
+    if ((time - lastTime) / msPerDay < minGapDays) continue;
+    const label = formatTickDate(points[index].date, range, timeZone);
+    if (used.has(label)) continue;
+    ticks.push({
+      label,
+      x: (index / (points.length - 1)) * 100,
+    });
+    used.add(label);
+    lastTime = time;
   }
+
   return ticks;
 }
 
@@ -239,8 +284,8 @@ export default function PortfolioChart({
     [displayPoints, firstValue],
   );
   const ticks = useMemo(
-    () => generateTicks(displayPoints),
-    [displayPoints],
+    () => generateTicks(displayPoints, range),
+    [displayPoints, range],
   );
 
   useLayoutEffect(() => {
