@@ -109,11 +109,11 @@ export default function LearnPage() {
             chapter.topics.some((topic) => topic.lessons.some((lesson) => lesson.id === firstUnlockedIncomplete.id))
           )
           : chapterData.find((chapter) => {
-              const missionNumber = chapter.displayOrder + 1;
+              const chapterNumber = chapter.displayOrder;
               return (
-                missionNumber >= 7 &&
-                missionNumber <= 9 &&
-                !passedMissions.has(missionNumber) &&
+                chapterNumber >= 6 &&
+                chapterNumber <= 8 &&
+                !passedMissions.has(chapterNumber) &&
                 chapter.topics.flatMap((topic) => topic.lessons).every(
                   (lesson) => derived[lesson.id] === "completed"
                 )
@@ -278,7 +278,7 @@ export default function LearnPage() {
               key={chapter.title}
               chapter={chapter}
               derivedProgress={derivedProgress}
-              missionPassed={passedChapterMissions.has(chapter.displayOrder + 1)}
+              missionPassed={passedChapterMissions.has(chapter.displayOrder)}
               isExpanded={expandedChapters.has(chapter.title)}
               onToggle={() => toggleChapter(chapter.title)}
             />
@@ -309,10 +309,9 @@ function ChapterCard({
     0
   );
   const isComplete = completedCount === chapter.lessonCount && chapter.lessonCount > 0;
-  const displayNumber = chapter.displayOrder;
-  const missionNumber = displayNumber + 1;
-  const isAdvancedTrack = missionNumber >= 11;
-  const needsMission = missionNumber >= 7 && missionNumber <= 11;
+  const chapterNumber = chapter.displayOrder;
+  const isAdvancedTrack = chapterNumber >= 10;
+  const needsMission = chapterNumber >= 6 && chapterNumber <= 10;
   const isMastered = isComplete && (!needsMission || missionPassed);
   const isLocked = chapter.topics
     .flatMap((topic) => topic.lessons)
@@ -336,7 +335,7 @@ function ChapterCard({
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <h2 className="font-semibold text-foreground">
-              <span className={isAdvancedTrack ? "text-secondary" : undefined}>{String(displayNumber).padStart(2, "0")}</span> - {localizedChapterTitle(chapter.title, t)}
+              <span className={isAdvancedTrack ? "text-secondary" : undefined}>{String(chapterNumber).padStart(2, "0")}</span> - {localizedChapterTitle(chapter.title, t)}
             </h2>
             {isMastered && <CheckIconMini className="h-4 w-4 text-success" />}
           </div>
@@ -380,7 +379,7 @@ function ChapterCard({
             )}
             {isComplete && needsMission && (
               <Link
-                href={`/learn/mission/${chapter.displayOrder + 1}`}
+                href={`/learn/mission/${chapterNumber}`}
                 className={`mt-2 flex items-center justify-between rounded-md border px-3 py-3 text-sm font-semibold transition-colors ${
                   missionPassed
                     ? "border-success/30 bg-success/5 text-success"

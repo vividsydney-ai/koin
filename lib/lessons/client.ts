@@ -410,7 +410,7 @@ export async function getChapterCompletionMilestone(
   const [lessons, progress] = await Promise.all([getAllLessons(), getLessonProgress(userId)]);
   const completedLesson = lessons.find((lesson) => lesson.id === completedLessonId);
   const chapterNumber = curriculumChapterNumber(completedLesson?.chapter ?? null);
-  if (!completedLesson || !chapterNumber || !progress) return null;
+  if (!completedLesson || chapterNumber === null || !progress) return null;
 
   const chapterLessons = lessons.filter((lesson) => lesson.chapter === completedLesson.chapter);
   const isChapterComplete = chapterLessons.length > 0 && chapterLessons.every(

@@ -112,7 +112,7 @@ describe("home client", () => {
         id: "l1",
         slug: "lesson-1",
         status: "available",
-        chapterNumber: 1,
+        chapterNumber: 0,
         chapterLessonNumber: 1,
       });
     });
@@ -138,7 +138,7 @@ describe("home client", () => {
       expect(result).toMatchObject({
         id: "l4",
         lessonNumber: 104,
-        chapterNumber: 1,
+        chapterNumber: 0,
         chapterLessonNumber: 4,
       });
     });

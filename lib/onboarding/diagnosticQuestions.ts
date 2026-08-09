@@ -170,7 +170,7 @@ export function computeLearningPath(result: AssessmentResult): {
       foundationZeroRequired: false,
       // `money-basics-101` was intentionally unpublished when Foundation 0
       // became the canonical introduction. Start capable learners at the
-      // first published lesson in Chapter 01 instead.
+      // first published Money Basics lesson instead.
       startingLessonSlug: "needs-vs-wants-101",
     };
   }
