@@ -55,7 +55,7 @@ SELECT
   NOW(),
   TRUE
 FROM (VALUES
-  ($TXT$are-you-ready-to-invest$TXT$, $TXT$Are You Ready to Invest?$TXT$, $TXT$Apakah Kamu Sudah Siap Berinvestasi?$TXT$, 129, $TXT$beginner$TXT$, 60, 5, $TXT$Check four personal finance checkpoints before you put money in the market.$TXT$, $TXT$Periksa empat pilar keuangan pribadi sebelum masuk pasar.$TXT$, $TXT$Investing is not the first step. Before you buy any stock, you should have:
+  ($TXT$are-you-ready-to-invest$TXT$, $TXT$Are You Ready to Invest?$TXT$, $TXT$Apakah Kamu Sudah Siap Berinvestasi?$TXT$, 180, $TXT$beginner$TXT$, 60, 5, $TXT$Check four personal finance checkpoints before you put money in the market.$TXT$, $TXT$Periksa empat pilar keuangan pribadi sebelum masuk pasar.$TXT$, $TXT$Investing is not the first step. Before you buy any stock, you should have:
 1. An emergency fund covering 3–6 months of expenses.
 2. No high-interest debt (above ~10% per year).
 3. A time horizon of at least 2 years for the money you invest.
@@ -66,7 +66,7 @@ If any checkpoint fails, fix it first. There is no shame in waiting.$TXT$, $TXT$
 3. Uang yang diinvestasikan tidak dibutuhkan dalam 2 tahun ke depan.
 4. Kamu siap melihat portofolio turun 20% tanpa panik.
 Jika ada yang belum lolos, perbaiki dulu. Tidak apa-apa menunggu.$TXT$, $TXT$Kira has Rp 5M saved, Rp 2M in paylater debt at 24% annual interest, and gets anxious checking prices daily. She pays the debt first.$TXT$, $TXT$Skipping these checks turns investing into gambling with money you cannot afford to lose.$TXT$, $TXT$Melewatkan pemeriksaan ini membuat investasi jadi judi dengan uang yang tidak bisa kamu rugi.$TXT$, $TXT$Investing before building an emergency fund or while carrying high-interest debt.$TXT$, $TXT$Berinvestasi sebelum punya dana darurat atau sambil memegang utang bunga tinggi.$TXT$),
-  ($TXT$bull-bear-market-zoo$TXT$, $TXT$Bull, Bear, and the Market Zoo$TXT$, $TXT$Bull, Bear, dan Kebun Binatang Pasar$TXT$, 130, $TXT$beginner$TXT$, 60, 5, $TXT$Learn simple animal metaphors for market phases without treating them as predictions.$TXT$, $TXT$Kenali metafora hewan untuk fase pasar tanpa menjadikannya ramalan.$TXT$, $TXT$Markets move in phases. People use animals to describe them:
+  ($TXT$bull-bear-market-zoo$TXT$, $TXT$Bull, Bear, and the Market Zoo$TXT$, $TXT$Bull, Bear, dan Kebun Binatang Pasar$TXT$, 181, $TXT$beginner$TXT$, 60, 5, $TXT$Learn simple animal metaphors for market phases without treating them as predictions.$TXT$, $TXT$Kenali metafora hewan untuk fase pasar tanpa menjadikannya ramalan.$TXT$, $TXT$Markets move in phases. People use animals to describe them:
 - Bull market: prices rising, optimism dominant.
 - Bear market: prices falling, pessimism dominant.
 - Sideways market: prices moving in a range, no clear trend.
@@ -75,7 +75,7 @@ A correction is a ~10% drop from a recent high. A crash is a faster, deeper drop
 - Bear market: harga turun, pesimisme dominan.
 - Sideways market: harga bergerak dalam rentang, tidak ada tren jelas.
 Koreksi adalah penurunan ~10% dari level tertinggi terdekat. Crash adalah penurunan lebih cepat dan dalam, biasanya 20% atau lebih. Fase-fase ini normal, bukan darurat.$TXT$, $TXT$In early 2020 the IHSG dropped sharply on COVID news. By 2021 it was recovering. A long-term investor saw both phases as normal volatility.$TXT$, $TXT$Knowing the phase helps you react with context instead of fear.$TXT$, $TXT$Mengetahui fase pasar membantumu bereaksi dengan konteks, bukan takut.$TXT$, $TXT$Thinking one red day means a crash, or one green day means endless gains.$TXT$, $TXT$Menganggap satu hari merah berarti crash, atau satu hari hijau berarti cuan terus.$TXT$),
-  ($TXT$investing-jargon-decoder$TXT$, $TXT$Investing Jargon Decoder$TXT$, $TXT$Dekoder Istilah Investasi$TXT$, 131, $TXT$beginner$TXT$, 65, 6, $TXT$Decode common investing terms so later chapters do not feel intimidating.$TXT$, $TXT$Pecahkan istilah investasi umum agar bab berikutnya tidak menakutkan.$TXT$, $TXT$Investing has its own vocabulary. Here are plain-language meanings for terms you will keep seeing:
+  ($TXT$investing-jargon-decoder$TXT$, $TXT$Investing Jargon Decoder$TXT$, $TXT$Dekoder Istilah Investasi$TXT$, 182, $TXT$beginner$TXT$, 65, 6, $TXT$Decode common investing terms so later chapters do not feel intimidating.$TXT$, $TXT$Pecahkan istilah investasi umum agar bab berikutnya tidak menakutkan.$TXT$, $TXT$Investing has its own vocabulary. Here are plain-language meanings for terms you will keep seeing:
 - Blue chip: a large, well-established company with a stable history.
 - Market cap: total value of a company’s shares (price × shares outstanding).
 - Dividend yield: annual dividend divided by share price, shown as a percentage.
@@ -92,7 +92,7 @@ Koreksi adalah penurunan ~10% dari level tertinggi terdekat. Crash adalah penuru
 - Diversifikasi: menyebarkan uang ke berbagai aset untuk mengurangi risiko.
 - Green investing / ESG: berinvestasi dengan mempertimbangkan faktor lingkungan, sosial, dan tata kelola.
 - Greenwashing: pemasaran yang membuat perusahaan terlihat lebih hijau dari kenyataannya.$TXT$, $TXT$“I’m going long on a blue chip with a decent dividend yield” means buying shares of a large stable company and caring about its cash payouts.$TXT$, $TXT$Jargon separates beginners from confident learners. Decoding it removes intimidation.$TXT$, $TXT$Istilah asing memisahkan pemula dari pelajar percaya diri. Memahaminya menghilangkan rasa takut.$TXT$, $TXT$Assuming a fancy term means a complex strategy, when it is usually simple.$TXT$, $TXT$Menganggap istilah keren berarti strategi rumit, padahal biasanya sederhana.$TXT$),
-  ($TXT$who-can-you-trust$TXT$, $TXT$Who Can You Trust?$TXT$, $TXT$Siapa yang Bisa Kamu Percaya?$TXT$, 132, $TXT$beginner$TXT$, 60, 5, $TXT$Separate regulated sources, verifiable news, and high-risk tips.$TXT$, $TXT$Pisahkan sumber teregulasi, berita yang bisa diverifikasi, dan tips berisiko tinggi.$TXT$, $TXT$Not every source is equal. A simple spectrum:
+  ($TXT$who-can-you-trust$TXT$, $TXT$Who Can You Trust?$TXT$, $TXT$Siapa yang Bisa Kamu Percaya?$TXT$, 183, $TXT$beginner$TXT$, 60, 5, $TXT$Separate regulated sources, verifiable news, and high-risk tips.$TXT$, $TXT$Pisahkan sumber teregulasi, berita yang bisa diverifikasi, dan tips berisiko tinggi.$TXT$, $TXT$Not every source is equal. A simple spectrum:
 - Green (trust): OJK, IDX, KSEI, company IR pages, licensed securities firms.
 - Yellow (verify): financial news outlets and analyst reports with clear disclaimers.
 - Red (avoid): anonymous groups, social media flexers, paid signals, friends-of-friends.
@@ -101,7 +101,7 @@ Red flags: guaranteed returns, pressure to buy now, no explanation, fees to join
 - Kuning (verifikasi): media keuangan dan laporan analis dengan disclaimer jelas.
 - Merah (hindari): grup anonim, pamer kekayaan di medsos, sinyal berbayar, teman dari teman.
 Tanda bahaya: imbal hasil dijamin, dipaksa beli sekarang, tanpa penjelasan, bayar untuk join, kredensial tersembunyi.$TXT$, $TXT$A WhatsApp message says “BUY NOW TARGET 200%” with rocket emojis and asks for a deposit to join. This is red zone.$TXT$, $TXT$Most beginner losses come from acting on tips, not from doing research.$TXT$, $TXT$Kebanyakan kerugian pemula datang dari mengikuti tips, bukan dari riset.$TXT$, $TXT$Treating a loud social media account as expert advice because they post gains.$TXT$, $TXT$Menganggap akun medsos yang berisik sebagai nasihat ahli karena sering posting cuan.$TXT$),
-  ($TXT$where-real-data-lives$TXT$, $TXT$Where Real Data Lives$TXT$, $TXT$Di Mana Data Nyata Berada?$TXT$, 133, $TXT$beginner$TXT$, 65, 6, $TXT$Match your information need to the right Indonesian official source.$TXT$, $TXT$Cocokkan kebutuhan informasimu dengan sumber resmi Indonesia yang tepat.$TXT$, $TXT$When you research a stock, start with primary sources:
+  ($TXT$where-real-data-lives$TXT$, $TXT$Where Real Data Lives$TXT$, $TXT$Di Mana Data Nyata Berada?$TXT$, 184, $TXT$beginner$TXT$, 65, 6, $TXT$Match your information need to the right Indonesian official source.$TXT$, $TXT$Cocokkan kebutuhan informasimu dengan sumber resmi Indonesia yang tepat.$TXT$, $TXT$When you research a stock, start with primary sources:
 - IDX (idx.co.id): current price, market cap, PBV, PER.
 - OJK SIPEBI: company filings, annual reports, public expose transcripts.
 - KSEI: shareholder structure and ownership data (or use the annual report as fallback).
@@ -112,7 +112,7 @@ Third-party opinions come last, after you have read the facts.$TXT$, $TXT$Saat r
 - KSEI: struktur pemegang saham dan data kepemilikan (atau gunakan laporan tahunan sebagai alternatif).
 - Halaman IR perusahaan: laporan tahunan, presentasi, riwayat dividen.
 Pendapat pihak ketiga diakhir setelah membaca fakta.$TXT$, $TXT$For BBRI, you check the current price on IDX, the annual report on OJK SIPEBI, and dividend history on BRI’s IR page.$TXT$, $TXT$Starting with opinions makes you someone else’s exit liquidity.$TXT$, $TXT$Mulai dari opini membuatmu jadi “exit liquidity” orang lain.$TXT$, $TXT$Googling “BBRI target price” and trusting the first blog or forum post.$TXT$, $TXT$Googling “target harga BBRI” dan percaya pada blog atau forum pertama.$TXT$),
-  ($TXT$inside-an-annual-report$TXT$, $TXT$Inside an Annual Report$TXT$, $TXT$Di Dalam Laporan Tahunan$TXT$, 134, $TXT$beginner$TXT$, 65, 6, $TXT$Navigate the main sections of an Indonesian annual report without reading all 200 pages.$TXT$, $TXT$Navigasi bagian utama laporan tahunan Indonesia tanpa baca 200 halaman.$TXT$, $TXT$An annual report looks thick, but you only need six sections:
+  ($TXT$inside-an-annual-report$TXT$, $TXT$Inside an Annual Report$TXT$, $TXT$Di Dalam Laporan Tahunan$TXT$, 185, $TXT$beginner$TXT$, 65, 6, $TXT$Navigate the main sections of an Indonesian annual report without reading all 200 pages.$TXT$, $TXT$Navigasi bagian utama laporan tahunan Indonesia tanpa baca 200 halaman.$TXT$, $TXT$An annual report looks thick, but you only need six sections:
 1. Directors’ letter — what management wants you to believe.
 2. Business overview — what the company does, where, and against whom.
 3. Financial statements — the numbers (income, balance sheet, cash flow).
@@ -127,7 +127,7 @@ Go to the financial statements first, then read the story around them.$TXT$, $TX
 5. Laporan auditor — opini independen: wajar tanpa pengecualian (bersih), wajar dengan pengecualian (waspada), tidak menyatakan pendapat (hindari).
 6. Tata kelola perusahaan — siapa yang menjalankan perusahaan dan transaksi pihak terkait.
 Ke laporan keuangan dulu, baru baca cerita di sekitarnya.$TXT$, $TXT$Kira wants to know if profit is backed by cash. She jumps to the cash flow statement and notes first, not the glossy letter.$TXT$, $TXT$Reading an annual report cover-to-cover wastes time and lets spin influence you first.$TXT$, $TXT$Membaca laporan tahunan dari halaman satu sampai akhir membuang waktu dan membiarkan spin memengaruhi kamu dulu.$TXT$, $TXT$Trusting the directors’ letter and ignoring the auditor’s report.$TXT$, $TXT$Percaya surat direksi dan mengabaikan laporan auditor.$TXT$),
-  ($TXT$three-statements-at-a-glance$TXT$, $TXT$The Three Statements at a Glance$TXT$, $TXT$Tiga Laporan Keuangan dalam Sekali Lihat$TXT$, 135, $TXT$beginner$TXT$, 60, 5, $TXT$Read income statement, balance sheet, and cash flow at a glance.$TXT$, $TXT$Baca laporan laba rugi, neraca, dan arus kas dalam sekali lihat.$TXT$, $TXT$Three statements tell different stories:
+  ($TXT$three-statements-at-a-glance$TXT$, $TXT$The Three Statements at a Glance$TXT$, $TXT$Tiga Laporan Keuangan dalam Sekali Lihat$TXT$, 186, $TXT$beginner$TXT$, 60, 5, $TXT$Read income statement, balance sheet, and cash flow at a glance.$TXT$, $TXT$Baca laporan laba rugi, neraca, dan arus kas dalam sekali lihat.$TXT$, $TXT$Three statements tell different stories:
 - Income statement: Did the company make a profit? Key line = net profit.
 - Balance sheet: What does it own and owe? Key line = total equity.
 - Cash flow statement: Did cash actually move? Key line = operating cash flow.
@@ -136,7 +136,7 @@ Profit is an opinion; cash is harder to fake. A company can report profit while 
 - Neraca: Apa yang dimiliki dan ditanggung? Baris kunci = total ekuitas.
 - Laporan arus kas: Apakah kas benar-benar bergerak? Baris kunci = arus kas operasi.
 Laba adalah opini; kas lebih sulit dipalsukan. Perusahaan bisa melaporkan untung sementara arus kas negatif.$TXT$, $TXT$Company A reports Rp 100B profit but operating cash flow is negative. Company B reports Rp 80B profit with strong operating cash flow. Company B looks healthier.$TXT$, $TXT$Focusing only on profit can hide a company that is not collecting cash.$TXT$, $TXT$Fokus hanya pada laba bisa menyembunyikan perusahaan yang tidak mengumpulkan kas.$TXT$, $TXT$Buying a stock because profit grew while ignoring cash flow and debt.$TXT$, $TXT$Beli saham karena laba tumbuh tapi mengabaikan arus kas dan utang.$TXT$),
-  ($TXT$red-flags-in-the-fine-print$TXT$, $TXT$Red Flags in the Fine Print$TXT$, $TXT$Tanda Bahaya di Dalam Huruf Kecil$TXT$, 136, $TXT$beginner$TXT$, 65, 6, $TXT$Spot five common warning signs in company financials.$TXT$, $TXT$Temukan lima tanda peringatan umum dalam laporan keuangan perusahaan.$TXT$, $TXT$Red flags do not always mean “avoid,” but they mean “ask harder questions.” Common ones:
+  ($TXT$red-flags-in-the-fine-print$TXT$, $TXT$Red Flags in the Fine Print$TXT$, $TXT$Tanda Bahaya di Dalam Huruf Kecil$TXT$, 187, $TXT$beginner$TXT$, 65, 6, $TXT$Spot five common warning signs in company financials.$TXT$, $TXT$Temukan lima tanda peringatan umum dalam laporan keuangan perusahaan.$TXT$, $TXT$Red flags do not always mean “avoid,” but they mean “ask harder questions.” Common ones:
 1. Profit rises while cash flow falls — the company may not be collecting cash.
 2. Debt grows faster than revenue — borrowing to stay afloat.
 3. Auditor qualification or change — the accountant found something.
@@ -151,7 +151,7 @@ Use yellow (research more), orange (proceed with caution), red (avoid until expl
 5. Pergantian manajemen sering — kapten terus berpindah kapal.
 6. Greenwashing — klaim hijau besar tanpa data, verifikasi pihak ketiga, atau pelaporan jelas.
 Gunakan kuning (riset lagi), oranye (hati-hati), merah (hindari sampai dijelaskan).$TXT$, $TXT$Kira sees a stock with rising profit but falling operating cash flow, plus a recent auditor change. She moves it from “buy” to “watch closely.”$TXT$, $TXT$One red flag is a question; three red flags are a warning.$TXT$, $TXT$Satu tanda bahaya adalah pertanyaan; tiga tanda bahaya adalah peringatan.$TXT$, $TXT$Ignoring red flags because the stock is “cheap” or popular online.$TXT$, $TXT$Mengabaikan tanda bahaya karena sahamnya “murah” atau viral di medsos.$TXT$),
-  ($TXT$from-data-to-a-story$TXT$, $TXT$From Data to a Story$TXT$, $TXT$Dari Data ke Cerita$TXT$, 137, $TXT$beginner$TXT$, 60, 5, $TXT$Connect data points into a cautious narrative without confusing correlation and causation.$TXT$, $TXT$Hubungkan titik data menjadi narasi hati-hati tanpa campuradukkan korelasi dan kausalitas.$TXT$, $TXT$Numbers do not tell the whole story; you connect them. Good narrative:
+  ($TXT$from-data-to-a-story$TXT$, $TXT$From Data to a Story$TXT$, $TXT$Dari Data ke Cerita$TXT$, 188, $TXT$beginner$TXT$, 60, 5, $TXT$Connect data points into a cautious narrative without confusing correlation and causation.$TXT$, $TXT$Hubungkan titik data menjadi narasi hati-hati tanpa campuradukkan korelasi dan kausalitas.$TXT$, $TXT$Numbers do not tell the whole story; you connect them. Good narrative:
 - Revenue up 15% → new store openings in Tier-2 cities.
 - Debt down 10% → asset sale, one-time event.
 - Margin compressed → raw material costs rose.
@@ -160,7 +160,7 @@ Beware false connections. Revenue and the CEO’s new car are probably unrelated
 - Utang turun 10% → penjualan aset, peristiwa satu kali.
 - Margin menipis → biaya bahan baku naik.
 Waspadai koneksi palsu. Pendapatan dan mobil baru CEO mungkin tidak berhubungan. Selalu tanya: bukti apa yang bisa membantah cerita ini?$TXT$, $TXT$A bank’s profit grew alongside MSME loan expansion. The supported story: more small-business loans → more interest income → profit up.$TXT$, $TXT$Investors who cannot form a story trade on headlines. Investors who can, trade on reasoning.$TXT$, $TXT$Investor yang tidak bisa membuat cerita trading berdasarkan berita. Investor yang bisa, trading berdasarkan alasan.$TXT$, $TXT$Assuming two events happening together means one caused the other.$TXT$, $TXT$Menganggap dua peristiwa yang terjadi bersama berarti satu menyebabkan yang lain.$TXT$),
-  ($TXT$building-your-first-watchlist$TXT$, $TXT$Building Your First Watchlist$TXT$, $TXT$Membuat Watchlist Pertamamu$TXT$, 138, $TXT$beginner$TXT$, 60, 5, $TXT$Set personal criteria and track stocks in the paper-trading sandbox.$TXT$, $TXT$Tetapkan kriteria pribadi dan pantau saham di sandbox paper trading.$TXT$, $TXT$A watchlist is a list of stocks you are tracking, not buying yet. Good criteria make it a filter, not a gossip list. Examples:
+  ($TXT$building-your-first-watchlist$TXT$, $TXT$Building Your First Watchlist$TXT$, $TXT$Membuat Watchlist Pertamamu$TXT$, 189, $TXT$beginner$TXT$, 60, 5, $TXT$Set personal criteria and track stocks in the paper-trading sandbox.$TXT$, $TXT$Tetapkan kriteria pribadi dan pantau saham di sandbox paper trading.$TXT$, $TXT$A watchlist is a list of stocks you are tracking, not buying yet. Good criteria make it a filter, not a gossip list. Examples:
 - Sector focus you understand.
 - PBV and PER within a reasonable range for the sector.
 - Debt-to-equity under a personal ceiling.
@@ -171,7 +171,7 @@ Waspadai koneksi palsu. Pendapatan dan mobil baru CEO mungkin tidak berhubungan.
 - Debt-to-equity di bawah batas pribadi.
 - Yield dividen minimum atau riwayat untung.
 “Ada yang bilang” bukan kriteria.$TXT$, $TXT$Kira’s watchlist only includes banks with PBV under 2.0, debt-to-equity under 1.0, and at least 3 years of profit. She ignores WhatsApp tips.$TXT$, $TXT$A watchlist turns random tips into deliberate research targets.$TXT$, $TXT$Watchlist mengubah tips acak menjadi target riset yang disengaja.$TXT$, $TXT$Adding a stock because it is trending on social media.$TXT$, $TXT$Menambah saham karena sedang viral di medsos.$TXT$),
-  ($TXT$the-5-minute-research-drill$TXT$, $TXT$The 5-Minute Research Drill$TXT$, $TXT$Drill Riset 5 Menit$TXT$, 139, $TXT$beginner$TXT$, 65, 6, $TXT$Run a quick, disciplined check on any IDX stock.$TXT$, $TXT$Lakukan pemeriksaan cepat dan disiplin untuk saham IDX apa pun.$TXT$, $TXT$You do not need to be a genius. You need a checklist:
+  ($TXT$the-5-minute-research-drill$TXT$, $TXT$The 5-Minute Research Drill$TXT$, $TXT$Drill Riset 5 Menit$TXT$, 190, $TXT$beginner$TXT$, 65, 6, $TXT$Run a quick, disciplined check on any IDX stock.$TXT$, $TXT$Lakukan pemeriksaan cepat dan disiplin untuk saham IDX apa pun.$TXT$, $TXT$You do not need to be a genius. You need a checklist:
 1. Check PBV and PER vs the sector.
 2. Check debt-to-equity.
 3. Check the last 3 years of profit trend.
@@ -184,7 +184,7 @@ If you cannot pass the checklist, pass on the stock. The goal is to find reasons
 4. Cek berita terkini atau pengumuman OJK/IDX.
 5. Bisakah kamu jelaskan dalam satu kalimat mengapa perusahaan ini untung?
 Jika tidak lolos daftar periksa, lewati sahamnya. Tujuannya adalah menemukan alasan untuk menolak.$TXT$, $TXT$For BBCA: PBV/PER reasonable for banking, debt low, profit trend stable, no recent suspension news, business model easy to explain. It passes the drill.$TXT$, $TXT$A quick filter saves you from bad decisions without requiring hours of analysis.$TXT$, $TXT$Filter cepat menyelamatkanmu dari keputusan buruk tanpa perlu analisis berjam-jam.$TXT$, $TXT$Trying to find reasons to buy instead of reasons to say no.$TXT$, $TXT$Mencari alasan untuk beli alih-alih alasan untuk menolak.$TXT$),
-  ($TXT$make-your-case$TXT$, $TXT$Make Your Case$TXT$, $TXT$Buat Argumenmu$TXT$, 140, $TXT$beginner$TXT$, 70, 6, $TXT$Write a simple investment thesis and an invalidation rule before placing a paper trade.$TXT$, $TXT$Tulis tesis investasi sederhana dan aturan pembatalan sebelum melakukan paper trade.$TXT$, $TXT$A thesis turns research into a testable idea. Use three sentences:
+  ($TXT$make-your-case$TXT$, $TXT$Make Your Case$TXT$, $TXT$Buat Argumenmu$TXT$, 191, $TXT$beginner$TXT$, 70, 6, $TXT$Write a simple investment thesis and an invalidation rule before placing a paper trade.$TXT$, $TXT$Tulis tesis investasi sederhana dan aturan pembatalan sebelum melakukan paper trade.$TXT$, $TXT$A thesis turns research into a testable idea. Use three sentences:
 1. I believe [company] will [grow/maintain] because [reason from data].
 2. My evidence is [financial metric / annual report finding / industry trend].
 3. I will reconsider this if [specific event or metric change].
