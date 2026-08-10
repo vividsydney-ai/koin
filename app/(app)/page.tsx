@@ -129,6 +129,8 @@ export default function Home() {
             <LessonRecallCard prompt={recallPrompt} locale={locale} onComplete={() => setRecallPrompt(null)} />
             <RecommendationsCard
               recommendations={recommendations}
+              portfolio={portfolio}
+              missionOutstanding={continueLesson?.kind === "mission"}
               onDismiss={async (id) => {
                 await dismissRecommendation(id);
                 setRecommendations((prev) => prev.filter((r) => r.id !== id));
@@ -493,26 +495,50 @@ function PortfolioCard({ portfolio }: { portfolio: PortfolioSnapshot | null }) {
     );
   }
 
-  const positive = portfolio.totalReturnPct >= 0;
+  const positive = portfolio.totalReturnAmount >= 0;
+  const cashPct = portfolio.totalValue > 0 ? (portfolio.cashBalance / portfolio.totalValue) * 100 : 0;
+  const updatedAt = new Intl.DateTimeFormat(undefined, { day: "numeric", month: "short" }).format(
+    new Date(portfolio.updatedAt)
+  );
 
   return (
-    <StatCard
-      label={t("home.portfolio")}
-      value={`Rp ${portfolio.totalValue.toLocaleString("id-ID")}`}
-      tone={positive ? "success" : "danger"}
-      sublabel={
-        <p className={`mt-1 text-xs font-semibold ${positive ? "text-success" : "text-danger"}`}>
-          {positive ? "+" : ""}
-          {portfolio.totalReturnPct.toFixed(1)}%
-        </p>
-      }
-      aside={
-        <div className="shrink-0 text-right">
-          <p className="text-xs text-muted-foreground">Top holding</p>
-          <p className="text-sm font-semibold text-foreground">{portfolio.topHolding?.symbol ?? "—"}</p>
+    <Link href="/trade" className="block">
+      <article className="rounded-card border border-muted bg-surface p-4 shadow-sm transition-colors hover:bg-muted/20">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              {t("home.portfolioPulse")}
+            </p>
+            <p className="mt-1 text-2xl font-bold tracking-tight text-foreground">
+              Rp {portfolio.totalValue.toLocaleString("id-ID")}
+            </p>
+            <p className={`mt-1 text-xs font-semibold ${positive ? "text-success" : "text-danger"}`}>
+              {positive ? "+" : ""}Rp {Math.abs(portfolio.totalReturnAmount).toLocaleString("id-ID")} ({positive ? "+" : ""}{portfolio.totalReturnPct.toFixed(1)}%)
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-xs text-muted-foreground">{t("home.updated")}</p>
+            <p className="text-sm font-semibold text-foreground">{updatedAt}</p>
+          </div>
         </div>
-      }
-    />
+        <div className="mt-4 grid grid-cols-2 gap-4 border-t border-muted pt-3 text-sm">
+          <div>
+            <p className="text-xs text-muted-foreground">{t("home.cash")}</p>
+            <p className="mt-0.5 font-semibold text-foreground">Rp {portfolio.cashBalance.toLocaleString("id-ID")}</p>
+            <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted" aria-label={`${cashPct.toFixed(0)}% cash`}>
+              <div className="h-full rounded-full bg-primary" style={{ width: `${cashPct}%` }} />
+            </div>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">{t("home.topHolding")}</p>
+            <p className="mt-0.5 font-semibold text-foreground">{portfolio.topHolding?.symbol ?? "—"}</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {portfolio.topHoldingPct === null ? "—" : `${portfolio.topHoldingPct.toFixed(0)}% ${t("home.ofPortfolio")}`}
+            </p>
+          </div>
+        </div>
+      </article>
+    </Link>
   );
 }
 
@@ -602,44 +628,54 @@ function LeaderboardCard({ entries }: { entries: LeaderboardEntry[] }) {
 
 function RecommendationsCard({
   recommendations,
+  portfolio,
+  missionOutstanding,
   onDismiss,
 }: {
   recommendations: LessonRecommendation[];
+  portfolio: PortfolioSnapshot | null;
+  missionOutstanding: boolean;
   onDismiss: (id: string) => void;
 }) {
   const { t } = useLocale();
-  if (recommendations.length === 0) return null;
+  if (missionOutstanding) return null;
+
+  const recommendation = recommendations.find((candidate) => {
+    if (candidate.trigger?.type !== "portfolio_event") return true;
+    const threshold = candidate.trigger.thresholdPct ?? 10;
+    if (candidate.trigger.event === "drawdown") return Boolean(portfolio && portfolio.totalReturnPct <= -threshold);
+    if (candidate.trigger.event === "concentrated_holding") return Boolean(portfolio?.topHoldingPct && portfolio.topHoldingPct > threshold);
+    return true;
+  });
+
+  if (!recommendation) return null;
+  const isPortfolioAction = recommendation.trigger?.type === "portfolio_event";
+  const href = isPortfolioAction ? "/trade" : `/learn/${recommendation.slug}`;
+  const actionLabel = isPortfolioAction ? t("home.reviewPortfolio") : t("learn.startLesson");
 
   return (
-    <div className="space-y-3">
-      {recommendations.map((rec) => (
-        <article key={rec.id} className="rounded-card border border-muted bg-surface p-5 shadow-sm">
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0 flex-1">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-primary">
-                <SparkleIcon className="h-3.5 w-3.5" />
-                {t("home.recommendedForYou")}
-              </span>
-              <h4 className="mt-3 font-display text-base font-bold text-foreground">{rec.title}</h4>
-              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{rec.reason}</p>
-              <Link
-                href={`/learn/${rec.slug}`}
-                className="mt-3 inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline"
-              >
-                {t("learn.startLesson")} <ArrowRightIcon className="h-4 w-4" />
-              </Link>
-            </div>
-            <button
-              onClick={() => onDismiss(rec.id)}
-              className="shrink-0 rounded-md p-2 text-muted-foreground transition-colors hover:bg-muted/30 hover:text-foreground"
-              aria-label={t("home.dismissRecommendation")}
-            >
-              <XIcon className="h-4 w-4" />
-            </button>
-          </div>
-        </article>
-      ))}
-    </div>
+    <article className="rounded-card border border-muted bg-surface p-5 shadow-sm">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-primary">
+            <SparkleIcon className="h-3.5 w-3.5" />
+            {t("home.recommendedForYou")}
+          </span>
+          <h4 className="mt-3 font-display text-base font-bold text-foreground">{recommendation.title}</h4>
+          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{recommendation.reason}</p>
+          <Link href={href} className="mt-3 inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline">
+            {actionLabel} <ArrowRightIcon className="h-4 w-4" />
+          </Link>
+        </div>
+        <button
+          onClick={() => onDismiss(recommendation.id)}
+          className="shrink-0 rounded-md p-2 text-muted-foreground transition-colors hover:bg-muted/30 hover:text-foreground"
+          aria-label={t("home.dismissRecommendation")}
+        >
+          <XIcon className="h-4 w-4" />
+        </button>
+      </div>
+    </article>
   );
 }
 

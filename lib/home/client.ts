@@ -91,8 +91,13 @@ function getChapterPosition(lessons: ContinueLessonRow[], lesson: ContinueLesson
 
 export interface PortfolioSnapshot {
   totalValue: number;
+  totalReturnAmount: number;
   totalReturnPct: number;
+  cashBalance: number;
+  investedValue: number;
   topHolding: { symbol: string; value: number } | null;
+  topHoldingPct: number | null;
+  updatedAt: string;
 }
 
 export interface LeaderboardEntry {
@@ -395,11 +400,25 @@ export async function getPortfolioSnapshot(userId: string): Promise<PortfolioSna
     portfolio.startingCash > 0
       ? ((totalValue - portfolio.startingCash) / portfolio.startingCash) * 100
       : 0;
+  const totalReturnAmount = totalValue - portfolio.startingCash;
+  const updatedAt = [
+    portfolio.updatedAt,
+    ...holdings.map((holding) => holding.lastPriceUpdatedAt),
+    ...marketData.map((quote) => quote.recordedAt),
+  ]
+    .filter((value): value is string => Boolean(value))
+    .sort()
+    .at(-1) ?? portfolio.updatedAt;
 
   return {
     totalValue,
+    totalReturnAmount,
     totalReturnPct,
+    cashBalance: portfolio.cashBalance,
+    investedValue: holdingsValue,
     topHolding,
+    topHoldingPct: topHolding && totalValue > 0 ? (topHolding.value / totalValue) * 100 : null,
+    updatedAt,
   };
 }
 

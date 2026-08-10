@@ -160,6 +160,12 @@ export interface Dictionary {
   "home.streak.frozen": string;
   "home.streak.atRisk": string;
   "home.continueLesson": string;
+  "home.portfolioPulse": string;
+  "home.updated": string;
+  "home.cash": string;
+  "home.topHolding": string;
+  "home.ofPortfolio": string;
+  "home.reviewPortfolio": string;
   "home.moneyMission": string;
   "home.chapterMission": string;
   "home.startTodaysLesson": string;
@@ -562,6 +568,12 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "home.streak.frozen": "Freeze used — you're still in the game.",
     "home.streak.atRisk": "Complete a lesson today to keep it alive.",
     "home.continueLesson": "Continue lesson",
+    "home.portfolioPulse": "Portfolio pulse",
+    "home.updated": "Updated",
+    "home.cash": "Cash",
+    "home.topHolding": "Top holding",
+    "home.ofPortfolio": "of portfolio",
+    "home.reviewPortfolio": "Review portfolio",
     "home.moneyMission": "Money Mission",
     "home.chapterMission": "Chapter {chapterNumber} Money Mission",
     "home.startTodaysLesson": "Start today's lesson",
@@ -958,6 +970,12 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "home.streak.frozen": "Beku digunakan — kamu masih dalam permainan.",
     "home.streak.atRisk": "Selesaikan pelajaran hari ini untuk menjaganya.",
     "home.continueLesson": "Lanjutkan pelajaran",
+    "home.portfolioPulse": "Ringkasan portofolio",
+    "home.updated": "Diperbarui",
+    "home.cash": "Kas",
+    "home.topHolding": "Kepemilikan terbesar",
+    "home.ofPortfolio": "dari portofolio",
+    "home.reviewPortfolio": "Tinjau portofolio",
     "home.moneyMission": "Misi Keuangan",
     "home.chapterMission": "Misi Keuangan Bab {chapterNumber}",
     "home.startTodaysLesson": "Mulai pelajaran hari ini",

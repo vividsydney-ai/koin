@@ -9,6 +9,11 @@ export interface LessonRecommendation {
   reason: string;
   dismissed: boolean;
   createdAt: string;
+  trigger: {
+    type: string;
+    event: string | null;
+    thresholdPct: number | null;
+  } | null;
 }
 
 const ENGLISH_REASON_FALLBACK = "A lesson selected to support your learning journey.";
@@ -20,10 +25,11 @@ export async function getLessonRecommendations(
   const { data, error } = await supabase
     .from("user_lesson_recommendations")
     .select(
-      "id, lesson_id, reason, reason_id, dismissed, created_at, lessons(slug, title, title_id)"
+      "id, lesson_id, reason, reason_id, dismissed, created_at, lessons!inner(slug, title, title_id, is_published), lesson_triggers(trigger_type, condition_json)"
     )
     .eq("user_id", userId)
     .eq("dismissed", false)
+    .eq("lessons.is_published", true)
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -34,6 +40,11 @@ export async function getLessonRecommendations(
   return (
     (data as Record<string, unknown>[])?.map((row) => {
       const lesson = (row.lessons as Record<string, unknown>) ?? {};
+      const trigger = Array.isArray(row.lesson_triggers)
+        ? row.lesson_triggers[0] as Record<string, unknown> | undefined
+        : row.lesson_triggers as Record<string, unknown> | null;
+      const condition = (trigger?.condition_json as Record<string, unknown> | null) ?? null;
+      const threshold = Number(condition?.threshold_pct);
       const englishReason = String(row.reason_id ?? "").trim();
       const englishTitle = String(lesson.title ?? "Recommended lesson");
       const indonesianTitle = String(lesson.title_id ?? "").trim();
@@ -45,6 +56,13 @@ export async function getLessonRecommendations(
         reason: locale === "id" ? String(row.reason ?? "") : englishReason || ENGLISH_REASON_FALLBACK,
         dismissed: Boolean(row.dismissed ?? false),
         createdAt: String(row.created_at ?? new Date().toISOString()),
+        trigger: trigger
+          ? {
+              type: String(trigger.trigger_type ?? ""),
+              event: typeof condition?.event === "string" ? condition.event : null,
+              thresholdPct: Number.isFinite(threshold) ? threshold : null,
+            }
+          : null,
       };
     }) ?? []
   );
