@@ -6,6 +6,7 @@ export const CURRICULUM_CHAPTER_ORDER = [
   "Let's Talk About Debt",
   "Plan Your Money",
   "Grow Your Money",
+  "Know Before Investing",
   "Investing in Indonesia",
   "Cryptocurrency 101",
   "Reading Trading Charts",

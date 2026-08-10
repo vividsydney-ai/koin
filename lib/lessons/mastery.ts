@@ -9,7 +9,7 @@ export function lessonCheckCount(chapterNumber: number | null | undefined): numb
 }
 
 export function requiresChapterMission(chapterNumber: number | null | undefined): boolean {
-  return chapterNumber !== null && chapterNumber !== undefined && chapterNumber >= 6 && chapterNumber <= 10;
+  return chapterNumber !== null && chapterNumber !== undefined && chapterNumber >= 6 && chapterNumber <= 11;
 }
 
 export const CHAPTER_MISSION_QUESTION_COUNT = 3;

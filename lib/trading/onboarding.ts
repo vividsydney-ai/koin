@@ -2,7 +2,7 @@ import { supabase } from "@/lib/auth/client";
 import { ensurePortfolio, type Portfolio } from "@/lib/trading/client";
 
 export const PAPER_TRADING_UNLOCK_CHAPTER = "Investing in Indonesia";
-export const PAPER_TRADING_UNLOCK_CHAPTER_LABEL = "Chapter 07 — Investing in Indonesia";
+export const PAPER_TRADING_UNLOCK_CHAPTER_LABEL = "Chapter 08 — Investing in Indonesia";
 
 export interface TradeOnboardingStatus {
   requiredLessonsCompleted: boolean;

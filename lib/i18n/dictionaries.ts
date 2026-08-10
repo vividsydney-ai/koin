@@ -210,6 +210,7 @@ export interface Dictionary {
   "chapter.letsTalkAboutDebt": string;
   "chapter.planYourMoney": string;
   "chapter.growYourMoney": string;
+  "chapter.knowBeforeInvesting": string;
   "chapter.investingInIndonesia": string;
   "chapter.cryptocurrency101": string;
   "chapter.readingTradingCharts": string;
@@ -614,6 +615,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "chapter.letsTalkAboutDebt": "Let's Talk About Debt",
     "chapter.planYourMoney": "Plan Your Money",
     "chapter.growYourMoney": "Grow Your Money",
+    "chapter.knowBeforeInvesting": "Know Before Investing",
     "chapter.investingInIndonesia": "Investing in Indonesia",
     "chapter.cryptocurrency101": "Cryptocurrency 101",
     "chapter.readingTradingCharts": "Reading Trading Charts",
@@ -1007,6 +1009,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "chapter.letsTalkAboutDebt": "Mari Bicara tentang Utang",
     "chapter.planYourMoney": "Rencanakan Uangmu",
     "chapter.growYourMoney": "Kembangkan Uangmu",
+    "chapter.knowBeforeInvesting": "Ketahui Sebelum Berinvestasi",
     "chapter.investingInIndonesia": "Berinvestasi di Indonesia",
     "chapter.cryptocurrency101": "Dasar-Dasar Kripto",
     "chapter.readingTradingCharts": "Membaca Grafik Trading",

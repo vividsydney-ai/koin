@@ -14,6 +14,7 @@ import {
 import { useAuth } from "@/lib/auth/use-auth";
 import type { Lesson } from "@/lib/lessons/client";
 import { deriveLessonStatuses, getCoreStartIndex, type LessonStatus } from "@/lib/lessons/gating";
+import { requiresChapterMission } from "@/lib/lessons/mastery";
 import { getUserLearningPath, getFinancialGoals, type UserLearningPath } from "@/lib/profile/client";
 import {
   getLessonRecommendations,
@@ -31,6 +32,7 @@ const CHAPTER_TITLE_KEY: Record<string, string> = {
   "Let's Talk About Debt": "chapter.letsTalkAboutDebt",
   "Plan Your Money": "chapter.planYourMoney",
   "Grow Your Money": "chapter.growYourMoney",
+  "Know Before Investing": "chapter.knowBeforeInvesting",
   "Investing in Indonesia": "chapter.investingInIndonesia",
   "Cryptocurrency 101": "chapter.cryptocurrency101",
   "Reading Trading Charts": "chapter.readingTradingCharts",
@@ -111,8 +113,7 @@ export default function LearnPage() {
           : chapterData.find((chapter) => {
               const chapterNumber = chapter.displayOrder;
               return (
-                chapterNumber >= 6 &&
-                chapterNumber <= 8 &&
+                requiresChapterMission(chapterNumber) &&
                 !passedMissions.has(chapterNumber) &&
                 chapter.topics.flatMap((topic) => topic.lessons).every(
                   (lesson) => derived[lesson.id] === "completed"
@@ -310,8 +311,8 @@ function ChapterCard({
   );
   const isComplete = completedCount === chapter.lessonCount && chapter.lessonCount > 0;
   const chapterNumber = chapter.displayOrder;
-  const isAdvancedTrack = chapterNumber >= 10;
-  const needsMission = chapterNumber >= 6 && chapterNumber <= 10;
+  const isAdvancedTrack = chapterNumber >= 11;
+  const needsMission = requiresChapterMission(chapterNumber);
   const isMastered = isComplete && (!needsMission || missionPassed);
   const isLocked = chapter.topics
     .flatMap((topic) => topic.lessons)

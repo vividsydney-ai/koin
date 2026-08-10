@@ -49,6 +49,7 @@ const TOPIC_SLUG_TO_CHAPTER: Record<string, string> = {
   risk_return: "Grow Your Money",
   diversification: "Grow Your Money",
   reksa_dana: "Grow Your Money",
+  know_before_investing: "Know Before Investing",
 
   stocks: "Investing in Indonesia",
   idx_basics: "Investing in Indonesia",
