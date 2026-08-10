@@ -62,17 +62,14 @@ export function getLocalTimeZone(): string {
 function parseState(raw: unknown): DailyFocusState | null {
   if (!raw || typeof raw !== "object") return null;
   const value = raw as Record<string, unknown>;
-  const questions = Array.isArray(value.questions)
-    ? value.questions.filter(
-        (question): question is DailyFocusQuestion =>
-          Boolean(question) &&
-          typeof question === "object" &&
-          supportedQuestionTypes.has(
-            String((question as Record<string, unknown>).type) as DailyFocusQuestion["type"]
-          ) &&
-          typeof (question as Record<string, unknown>).question === "string"
-      )
+  const parsedQuestions = Array.isArray(value.questions)
+    ? value.questions.map(parseQuestion)
     : [];
+
+  // A question with no choices cannot be answered safely. Do not filter it
+  // out: that would shift question indexes away from the server snapshot.
+  if (parsedQuestions.length !== 5 || parsedQuestions.some((question) => question === null)) return null;
+  const questions = parsedQuestions.filter((question): question is DailyFocusQuestion => question !== null);
 
   const status = value.status;
   if (status !== "active" && status !== "completed" && status !== "exhausted") return null;
@@ -96,6 +93,35 @@ function parseState(raw: unknown): DailyFocusState | null {
         ? (value.correct_answer as string | boolean | string[] | Record<string, string>)
         : null,
   };
+}
+
+function parseQuestion(raw: unknown): DailyFocusQuestion | null {
+  if (!raw || typeof raw !== "object") return null;
+  const value = raw as Record<string, unknown>;
+  const type = String(value.type) as DailyFocusQuestion["type"];
+  if (!supportedQuestionTypes.has(type) || typeof value.question !== "string" || !value.question.trim()) return null;
+
+  if (["multiple_choice", "select_all", "word_bank", "ordering", "fill_blank"].includes(type)) {
+    if (!hasStringOptions(value.options)) return null;
+    return { type, question: value.question, options: value.options };
+  }
+
+  if (type === "matching") {
+    if (!hasPairs(value.pairs)) return null;
+    return { type, question: value.question, pairs: value.pairs };
+  }
+
+  return { type, question: value.question };
+}
+
+function hasStringOptions(value: unknown): value is string[] {
+  return Array.isArray(value) && value.length >= 2 && value.every((option) => typeof option === "string" && option.trim().length > 0);
+}
+
+function hasPairs(value: unknown): value is [string, string][] {
+  return Array.isArray(value) && value.length >= 2 && value.every(
+    (pair) => Array.isArray(pair) && pair.length === 2 && pair.every((item) => typeof item === "string" && item.trim().length > 0)
+  );
 }
 
 export async function getDailyFocusChallenge(timeZone = getLocalTimeZone(), locale: Locale = "en"): Promise<DailyFocusState | null> {

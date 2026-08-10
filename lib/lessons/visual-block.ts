@@ -81,6 +81,7 @@ const workedExamplePayloadSchema = z.object({
 const copySchema = z.object({
   title: textSchema,
   eyebrow: optionalTextSchema,
+  icon: z.string().trim().min(1).max(8).optional(),
   disclosure: optionalTextSchema,
   altText: textSchema,
   mascot: z.object({

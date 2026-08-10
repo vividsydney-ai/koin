@@ -11,6 +11,7 @@ import dynamic from "next/dynamic";
 import { useAuth } from "@/lib/auth/use-auth";
 import {
   addToWatchlist,
+  calculateLivePortfolioValue,
   executeTrade,
   getHoldings,
   getInstruments,
@@ -52,7 +53,7 @@ import {
   ContextualHelpProvider,
 } from "@/components/ContextualHelp";
 import { PortfolioBalances } from "@/components/PortfolioBalances";
-import PortfolioChart from "@/components/PortfolioChart";
+import ChartFrame from "@/components/ChartFrame";
 import PriceChart from "@/components/PriceChart";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 
@@ -65,6 +66,9 @@ export default function TradePage() {
   const [portfolioHistory, setPortfolioHistory] = useState<
     PortfolioValueSnapshot[]
   >([]);
+  const [priorCloseSnapshot, setPriorCloseSnapshot] = useState<
+    PortfolioValueSnapshot | undefined
+  >(undefined);
   const [holdings, setHoldings] = useState<Holding[]>([]);
   const [holdingMovements, setHoldingMovements] = useState<
     Record<string, HoldingMovement>
@@ -103,14 +107,40 @@ export default function TradePage() {
         status.canTrade ? getWatchlist(user.id) : Promise.resolve([]),
       ]);
       const history = p ? await getPortfolioValueHistory(user.id, "1M") : [];
-      const movementEntries = await Promise.all(
-        h.map(async (holding) => [
-          holding.symbol,
-          getHoldingMovement(await getMarketDataHistory(holding.symbol, 2)),
-        ] as const),
+      const histories = await Promise.all(
+        h.map(async (holding) => ({
+          symbol: holding.symbol,
+          history: await getMarketDataHistory(holding.symbol, 2),
+        })),
       );
+      const movementEntries = histories.map(({ symbol, history }) => [
+        symbol,
+        getHoldingMovement(history),
+      ] as const);
+
+      let priorDate: string | null = null;
+      let priorHoldingsValue = 0;
+      for (const { symbol, history } of histories) {
+        const previous = history.at(-2);
+        if (!previous) continue;
+        const holding = h.find((item) => item.symbol === symbol);
+        if (!holding) continue;
+        priorHoldingsValue += holding.shares * previous.close;
+        if (!priorDate || previous.date > priorDate) priorDate = previous.date;
+      }
+      const priorCloseSnapshot =
+        p && priorDate
+          ? {
+              date: priorDate,
+              cashBalance: p.cashBalance,
+              holdingsValue: priorHoldingsValue,
+              totalValue: p.cashBalance + priorHoldingsValue,
+            }
+          : undefined;
+
       setPortfolio(p);
       setPortfolioHistory(history);
+      setPriorCloseSnapshot(priorCloseSnapshot);
       setHoldings(h);
       setHoldingMovements(Object.fromEntries(movementEntries));
       setTrades(t);
@@ -146,7 +176,12 @@ export default function TradePage() {
   const canSubmit = Boolean(
     symbol && lotCount > 0 && selectedPrice > 0 && !executing,
   );
-  const portfolioValue = portfolio?.totalValue ?? 0;
+  const livePortfolio = useMemo(
+    () =>
+      portfolio ? calculateLivePortfolioValue(portfolio, holdings, marketData) : null,
+    [portfolio, holdings, marketData],
+  );
+  const portfolioValue = livePortfolio?.totalValue ?? portfolio?.totalValue ?? 0;
 
   const selectInstrument = (instrument: Instrument) => {
     setSymbol(instrument.symbol);
@@ -318,7 +353,16 @@ export default function TradePage() {
                   startingCash={portfolio.startingCash}
                   history={portfolioHistory}
                 />
-                <PortfolioChart userId={user!.id} totalValue={portfolioValue} />
+                <ChartFrame
+                  userId={user!.id}
+                  totalValue={portfolioValue}
+                  dataSource={
+                    marketData.some((item) => item.isSimulated)
+                      ? "simulated"
+                      : "idx_eod"
+                  }
+                  priorCloseSnapshot={priorCloseSnapshot}
+                />
                 <HoldingsCard
                   holdings={holdings}
                   marketData={marketData}

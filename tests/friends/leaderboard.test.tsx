@@ -77,7 +77,7 @@ describe("FriendsPage leaderboard", () => {
     render(<FriendsPage />);
 
     await waitFor(() => {
-      expect(screen.getByText("XP")).toBeInTheDocument();
+      expect(screen.getByText("Weekly XP")).toBeInTheDocument();
     });
     expect(screen.getByText("Koin Points")).toBeInTheDocument();
 
@@ -92,8 +92,10 @@ describe("FriendsPage leaderboard", () => {
     expect(screen.getByText("NS")).toBeInTheDocument();
 
     // Values formatted with id-ID locale (dot thousands separator).
-    expect(screen.getByText("3.120")).toBeInTheDocument();
-    expect(screen.getByText("2.450")).toBeInTheDocument();
+    // The XP score is rendered together with its "Weekly XP" suffix in one
+    // text node, so match on the formatted number rather than exact text.
+    expect(screen.getByText(/3\.120/)).toBeInTheDocument();
+    expect(screen.getByText(/2\.450/)).toBeInTheDocument();
   });
 
   it("applies gold/silver/bronze tiers to top 3 only", async () => {

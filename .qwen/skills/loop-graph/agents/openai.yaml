@@ -1,0 +1,5 @@
+interface:
+  display_name: "Loop+Graph"
+  short_description: "Run Loop Engineering as a graph of parallel subagents"
+policy:
+  allow_implicit_invocation: false

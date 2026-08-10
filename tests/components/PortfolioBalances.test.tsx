@@ -7,7 +7,7 @@ import {
 } from "@/components/PortfolioBalances";
 
 describe("PortfolioBalances", () => {
-  it("uses the previous portfolio snapshot for the daily change", () => {
+  it("uses the latest recorded snapshot as the previous close", () => {
     expect(
       getDailyPortfolioChange(10_125_000, [
         {
@@ -23,7 +23,11 @@ describe("PortfolioBalances", () => {
           totalValue: 10_100_000,
         },
       ]),
-    ).toBe(125_000);
+    ).toBe(25_000);
+  });
+
+  it("returns null for daily change when there is no history", () => {
+    expect(getDailyPortfolioChange(10_000_000, [])).toBeNull();
   });
 
   it("shows balances without repeating the starting grant as a primary metric", () => {
