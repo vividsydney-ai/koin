@@ -85,8 +85,20 @@ function VisualBlock({ block, locale }: { block: LessonVisualBlock; locale: Visu
   const copy = visualBlockCopy(block, locale);
   return (
     <article className="relative rounded-card border border-primary/20 bg-surface p-4 shadow-sm sm:p-5">
-      {copy.eyebrow && <p className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.14em] text-primary">{copy.icon && <span aria-hidden="true" className="text-base leading-none">{copy.icon}</span>}{copy.eyebrow}</p>}
-      <h3 className="mt-1.5 font-display text-xl font-bold text-foreground">{copy.title}</h3>
+      <div className="flex items-start gap-3.5">
+        {copy.icon && (
+          <span
+            aria-hidden="true"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[var(--radius-xl)] border border-primary/15 bg-primary/10 text-2xl leading-none shadow-[0_8px_18px_color-mix(in_srgb,var(--color-primary)_10%,transparent)]"
+          >
+            {copy.icon}
+          </span>
+        )}
+        <div className="min-w-0">
+          {copy.eyebrow && <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-primary">{copy.eyebrow}</p>}
+          <h3 className={`${copy.eyebrow ? "mt-1" : "mt-0.5"} font-display text-xl font-bold leading-snug text-foreground`}>{copy.title}</h3>
+        </div>
+      </div>
       {copy.disclosure && <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{copy.disclosure}</p>}
       <span className="sr-only">{copy.altText}</span>
       <div className="mt-5">
