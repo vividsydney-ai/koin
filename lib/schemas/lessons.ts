@@ -1,4 +1,8 @@
 import { z } from "zod";
+import {
+  CHAPTER_MISSION_END_NUMBER,
+  CHAPTER_MISSION_START_NUMBER,
+} from "@/lib/lessons/mastery";
 
 export const completeLessonSchema = z.object({
   userId: z.string().uuid("Invalid user ID"),
@@ -12,7 +16,11 @@ export const completeLessonSchema = z.object({
 
 export type CompleteLessonInput = z.infer<typeof completeLessonSchema>;
 
-export const chapterMissionRouteSchema = z.coerce.number().int().min(6).max(10);
+export const chapterMissionRouteSchema = z.coerce
+  .number()
+  .int()
+  .min(CHAPTER_MISSION_START_NUMBER)
+  .max(CHAPTER_MISSION_END_NUMBER);
 
 export const chapterMissionAnswerSchema = z.object({
   variantId: z.string().uuid(),

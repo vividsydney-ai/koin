@@ -8,8 +8,21 @@ export function lessonCheckCount(chapterNumber: number | null | undefined): numb
   return 2;
 }
 
+/**
+ * Canonical chapter-mission range. Keep route validation and progression
+ * gating derived from these bounds so a newly required mission cannot be
+ * gated in one surface while rejected in another.
+ */
+export const CHAPTER_MISSION_START_NUMBER = 6;
+export const CHAPTER_MISSION_END_NUMBER = 11;
+
 export function requiresChapterMission(chapterNumber: number | null | undefined): boolean {
-  return chapterNumber !== null && chapterNumber !== undefined && chapterNumber >= 6 && chapterNumber <= 11;
+  return (
+    chapterNumber !== null &&
+    chapterNumber !== undefined &&
+    chapterNumber >= CHAPTER_MISSION_START_NUMBER &&
+    chapterNumber <= CHAPTER_MISSION_END_NUMBER
+  );
 }
 
 export const CHAPTER_MISSION_QUESTION_COUNT = 3;

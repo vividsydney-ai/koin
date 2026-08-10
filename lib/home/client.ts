@@ -43,6 +43,7 @@ export interface RecentBadge {
 }
 
 export interface ContinueLesson {
+  kind?: "lesson";
   id: string;
   slug: string;
   title: string;
@@ -52,6 +53,14 @@ export interface ContinueLesson {
   chapterLessonNumber: number | null;
   status: "available" | "in_progress" | "completed";
 }
+
+export interface ContinueMission {
+  kind: "mission";
+  chapterNumber: number;
+  chapterTitle: string;
+}
+
+export type ContinueDestination = ContinueLesson | ContinueMission;
 
 type ContinueLessonRow = {
   id: string;
@@ -221,7 +230,7 @@ export async function getRecentBadge(userId: string): Promise<RecentBadge | null
   };
 }
 
-export async function getContinueLesson(userId: string): Promise<ContinueLesson | null> {
+export async function getContinueLesson(userId: string): Promise<ContinueDestination | null> {
   const [{ data: lessons, error: lessonsError }, { data: progress, error: progressError }, { data: settings, error: settingsError }] = await Promise.all([
     supabase.from("lessons").select("id, slug, title, title_id, lesson_number, topics(chapter)").eq("is_published", true).order("lesson_number", { ascending: true }),
     supabase.from("lesson_progress").select("lesson_id, status").eq("user_id", userId),
@@ -280,6 +289,18 @@ export async function getContinueLesson(userId: string): Promise<ContinueLesson 
     return passedChapterMissions.has(chapterNumber);
   };
 
+  const missionDestination = (chapterNumber: number, chapterTitle: string): ContinueMission => ({
+    kind: "mission",
+    chapterNumber,
+    chapterTitle,
+  });
+
+  const isChapterComplete = (chapter: string | null) =>
+    Boolean(chapter) &&
+    publishedLessons
+      .filter((lesson) => chapterForLesson(lesson) === chapter)
+      .every((lesson) => progressMap[lesson.id] === "completed");
+
   // Find the first lesson at or after the user's starting point that is in_progress or available.
   for (let i = startIndex; i < publishedLessons.length; i++) {
     const lesson = publishedLessons[i];
@@ -287,7 +308,14 @@ export async function getContinueLesson(userId: string): Promise<ContinueLesson 
     const previousLesson = publishedLessons[i - 1];
     const previousChapter = curriculumChapterNumber(previousLesson?.chapter ?? null);
     const crossesMissionBoundary = previousLesson?.chapter !== lesson.chapter && requiresChapterMission(previousChapter);
-    const missionBlocksProgress = crossesMissionBoundary && !(await hasPassedMission(previousChapter!));
+    const missionBlocksProgress =
+      crossesMissionBoundary &&
+      isChapterComplete(previousLesson?.chapter ?? null) &&
+      !(await hasPassedMission(previousChapter!));
+
+    if (missionBlocksProgress) {
+      return missionDestination(previousChapter!, previousLesson!.chapter!);
+    }
     const previousCompleted =
       !missionBlocksProgress &&
       (i === startIndex || progressMap[previousLesson?.id ?? ""] === "completed");
@@ -315,6 +343,19 @@ export async function getContinueLesson(userId: string): Promise<ContinueLesson 
         status: (status as ContinueLesson["status"]) || "available",
       };
     }
+  }
+
+  // A mission can also be the final required step in the published sequence.
+  // Never report completion while that milestone is still outstanding.
+  const finalLesson = publishedLessons.at(-1);
+  const finalChapterNumber = curriculumChapterNumber(finalLesson?.chapter ?? null);
+  if (
+    finalLesson?.chapter &&
+    isChapterComplete(finalLesson.chapter) &&
+    requiresChapterMission(finalChapterNumber) &&
+    !(await hasPassedMission(finalChapterNumber!))
+  ) {
+    return missionDestination(finalChapterNumber!, finalLesson.chapter);
   }
 
   // All lessons completed.

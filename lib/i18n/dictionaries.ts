@@ -160,6 +160,8 @@ export interface Dictionary {
   "home.streak.frozen": string;
   "home.streak.atRisk": string;
   "home.continueLesson": string;
+  "home.moneyMission": string;
+  "home.chapterMission": string;
   "home.startTodaysLesson": string;
   "home.allLessonsCompleted": string;
   "home.allLessonsCompletedBody": string;
@@ -560,6 +562,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "home.streak.frozen": "Freeze used — you're still in the game.",
     "home.streak.atRisk": "Complete a lesson today to keep it alive.",
     "home.continueLesson": "Continue lesson",
+    "home.moneyMission": "Money Mission",
+    "home.chapterMission": "Chapter {chapterNumber} Money Mission",
     "home.startTodaysLesson": "Start today's lesson",
     "home.allLessonsCompleted": "All lessons completed",
     "home.allLessonsCompletedBody":
@@ -954,6 +958,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "home.streak.frozen": "Beku digunakan — kamu masih dalam permainan.",
     "home.streak.atRisk": "Selesaikan pelajaran hari ini untuk menjaganya.",
     "home.continueLesson": "Lanjutkan pelajaran",
+    "home.moneyMission": "Misi Keuangan",
+    "home.chapterMission": "Misi Keuangan Bab {chapterNumber}",
     "home.startTodaysLesson": "Mulai pelajaran hari ini",
     "home.allLessonsCompleted": "Semua pelajaran selesai",
     "home.allLessonsCompletedBody":

@@ -16,7 +16,7 @@ import {
   type XpSummary,
   type KoinPointsSummary,
   type RecentBadge,
-  type ContinueLesson,
+  type ContinueDestination,
   type PortfolioSnapshot,
   type LeaderboardEntry,
 } from "@/lib/home/client";
@@ -45,7 +45,7 @@ export default function Home() {
   const [xp, setXp] = useState<XpSummary | null>(null);
   const [koinPoints, setKoinPoints] = useState<KoinPointsSummary | null>(null);
   const [recentBadge, setRecentBadge] = useState<RecentBadge | null>(null);
-  const [continueLesson, setContinueLesson] = useState<ContinueLesson | null>(null);
+  const [continueLesson, setContinueLesson] = useState<ContinueDestination | null>(null);
   const [portfolio, setPortfolio] = useState<PortfolioSnapshot | null>(null);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [recommendations, setRecommendations] = useState<LessonRecommendation[]>([]);
@@ -325,7 +325,7 @@ function StreakCard({ streak }: { streak: StreakSummary | null }) {
   );
 }
 
-function ContinueLessonCard({ lesson }: { lesson: ContinueLesson | null }) {
+function ContinueLessonCard({ lesson }: { lesson: ContinueDestination | null }) {
   const { t, locale } = useLocale();
   if (!lesson) {
     return (
@@ -335,6 +335,33 @@ function ContinueLessonCard({ lesson }: { lesson: ContinueLesson | null }) {
         description={t("home.allLessonsCompletedBody")}
         action={{ label: t("home.browseLibrary"), href: "/library" }}
       />
+    );
+  }
+
+  if (lesson.kind === "mission") {
+    return (
+      <Link href={`/learn/mission/${lesson.chapterNumber}`} className="block">
+        <article
+          className="relative overflow-hidden rounded-card border border-primary/30 p-5 shadow-sm transition-colors hover:bg-[color-mix(in_srgb,var(--color-primary)_5%,var(--color-surface))]"
+          style={{ background: "color-mix(in srgb, var(--color-primary) 6%, var(--color-surface))" }}
+        >
+          <div className="relative flex items-center justify-between gap-4">
+            <div className="min-w-0">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-primary">
+                <PlayIcon className="h-3.5 w-3.5" />
+                {t("home.moneyMission")}
+              </span>
+              <h3 className="mt-3 font-display text-xl font-bold text-foreground">
+                {t("home.chapterMission").replace("{chapterNumber}", String(lesson.chapterNumber).padStart(2, "0"))}
+              </h3>
+              <p className="mt-1 text-sm text-muted-foreground">{lesson.chapterTitle}</p>
+            </div>
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm">
+              <ArrowRightIcon className="h-5 w-5" />
+            </span>
+          </div>
+        </article>
+      </Link>
     );
   }
 
