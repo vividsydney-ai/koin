@@ -22,10 +22,19 @@ BEGIN
   INSERT INTO public.daily_focus_chapter_map (chapter, chapter_number)
   VALUES ('Know Before Investing', 7);
 
+  -- Widen the allowed chapter-number range so the 10 -> 11 shift below is valid.
+  ALTER TABLE public.chapter_mission_attempts
+    DROP CONSTRAINT IF EXISTS chapter_mission_attempts_chapter_number_check;
+  ALTER TABLE public.chapter_mission_attempts
+    ADD CONSTRAINT chapter_mission_attempts_chapter_number_check
+    CHECK (chapter_number BETWEEN 6 AND 11);
+
   -- Keep existing mission attempts attached to the same chapter titles after renumbering.
-  UPDATE public.chapter_mission_attempts
-  SET chapter_number = chapter_number + 1
-  WHERE chapter_number BETWEEN 7 AND 10;
+  -- Process from highest to lowest to avoid transient unique-key collisions.
+  UPDATE public.chapter_mission_attempts SET chapter_number = 11 WHERE chapter_number = 10;
+  UPDATE public.chapter_mission_attempts SET chapter_number = 10 WHERE chapter_number = 9;
+  UPDATE public.chapter_mission_attempts SET chapter_number = 9 WHERE chapter_number = 8;
+  UPDATE public.chapter_mission_attempts SET chapter_number = 8 WHERE chapter_number = 7;
 END $$;
 
 -- Bump the Daily Focus unlocked-chapter cap so the new last chapter (16) stays reachable.
@@ -141,14 +150,6 @@ BEGIN
   );
 END;
 $$;
-
--- Allow chapter mission attempts up to the new Decision Analysis Lab number.
-ALTER TABLE public.chapter_mission_attempts
-  DROP CONSTRAINT IF EXISTS chapter_mission_attempts_chapter_number_check;
-
-ALTER TABLE public.chapter_mission_attempts
-  ADD CONSTRAINT chapter_mission_attempts_chapter_number_check
-  CHECK (chapter_number BETWEEN 6 AND 11);
 
 -- Patch user-facing paper-trading labels: Investing in Indonesia is now Chapter 08.
 DO $$
