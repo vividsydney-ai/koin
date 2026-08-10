@@ -136,6 +136,7 @@ export interface Dictionary {
 
   // Quiz engine
   "quiz.correctAnswer": string;
+  "quiz.matchCorrect": string;
   "quiz.chartCheck": string;
   "quiz.chartPracticeLabel": string;
   "quiz.chartPracticeCaption": string;
@@ -535,6 +536,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "focus.refillError": "We could not refill Focus right now.",
 
     "quiz.correctAnswer": "Correct answer:",
+    "quiz.matchCorrect": "Correct match",
     "quiz.chartCheck": "Chart check",
     "quiz.chartPracticeLabel": "Practice candlestick chart",
     "quiz.chartPracticeCaption": "Practice data only — not a price forecast.",
@@ -927,6 +929,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "focus.refillError": "Kami tidak dapat mengisi ulang Focus sekarang.",
 
     "quiz.correctAnswer": "Jawaban benar:",
+    "quiz.matchCorrect": "Pasangan benar",
     "quiz.chartCheck": "Cek grafik",
     "quiz.chartPracticeLabel": "Grafik candlestick untuk latihan",
     "quiz.chartPracticeCaption": "Data latihan saja — bukan perkiraan harga.",
