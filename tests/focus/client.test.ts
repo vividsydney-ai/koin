@@ -30,7 +30,7 @@ describe("Daily Focus client", () => {
           { type: "true_false", question: "Question one" },
           { type: "multiple_choice", question: "Question two", options: ["A", "B"] },
           { type: "select_all", question: "Question three", options: ["A", "B"] },
-          { type: "fill_blank", question: "Question four" },
+          { type: "fill_blank", question: "Question four", options: ["A", "B"] },
           { type: "true_false", question: "Question five" },
         ],
       },
@@ -45,5 +45,34 @@ describe("Daily Focus client", () => {
       type: "select_all",
       question: "Question three",
     });
+  });
+
+  it("does not accept an ordering question when its choices are missing", async () => {
+    rpc.mockResolvedValue({
+      data: {
+        challenge_date: "2026-08-09",
+        max_focus: 3,
+        focus_remaining: 3,
+        questions_answered: 0,
+        correct_answers: 0,
+        status: "active",
+        refill_used: false,
+        missions_completed_this_week: 0,
+        mission_goal: 5,
+        fourth_focus_unlocked: false,
+        questions: [
+          { type: "ordering", question: "Order these from safest to riskiest." },
+          { type: "true_false", question: "Question two" },
+          { type: "true_false", question: "Question three" },
+          { type: "true_false", question: "Question four" },
+          { type: "true_false", question: "Question five" },
+        ],
+      },
+      error: null,
+    });
+
+    const state = await getDailyFocusChallenge("Australia/Sydney");
+
+    expect(state).toBeNull();
   });
 });

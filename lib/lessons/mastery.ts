@@ -4,12 +4,12 @@
  * here.
  */
 export function lessonCheckCount(chapterNumber: number | null | undefined): number {
-  if (!chapterNumber || chapterNumber <= 3) return 1;
+  if (chapterNumber === null || chapterNumber === undefined || chapterNumber <= 2) return 1;
   return 2;
 }
 
 export function requiresChapterMission(chapterNumber: number | null | undefined): boolean {
-  return Boolean(chapterNumber && chapterNumber >= 7 && chapterNumber <= 11);
+  return chapterNumber !== null && chapterNumber !== undefined && chapterNumber >= 6 && chapterNumber <= 11;
 }
 
 export const CHAPTER_MISSION_QUESTION_COUNT = 3;

@@ -13,7 +13,7 @@ export function getDailyPortfolioChange(
   totalValue: number,
   history: PortfolioValueSnapshot[],
 ) {
-  const previous = history.at(-2);
+  const previous = history.at(-1);
   return previous ? totalValue - previous.totalValue : null;
 }
 

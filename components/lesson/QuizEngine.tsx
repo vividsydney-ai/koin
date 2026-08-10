@@ -23,18 +23,20 @@ interface QuizEngineProps {
   question: ProcessedQuestion;
   seed: string;
   displayAttempt?: number;
+  visualCueChapter?: "foundation" | "money" | "life" | "protect";
   onComplete?: (correct: boolean) => void;
   onAnswer?: QuizCompletion;
 }
 
 export type QuizCompletion = (correct: boolean, response?: string | boolean) => void;
 
-export function QuizEngine({ question, seed, displayAttempt = 0, onComplete, onAnswer }: QuizEngineProps) {
+export function QuizEngine({ question, seed, displayAttempt = 0, visualCueChapter, onComplete, onAnswer }: QuizEngineProps) {
   const forwardCompletion: QuizCompletion = (correct, response) => {
     onComplete?.(correct);
     onAnswer?.(correct, response);
   };
   const { t } = useLocale();
+  const quiz = (() => {
   switch (question.type) {
     case "multiple_choice":
       return <MultipleChoice question={question} seed={seed} displayAttempt={displayAttempt} onComplete={forwardCompletion} />;
@@ -61,6 +63,22 @@ export function QuizEngine({ question, seed, displayAttempt = 0, onComplete, onA
         </div>
       );
   }
+  })();
+  return <>{visualCueChapter && <LessonQuizCue chapter={visualCueChapter} question={question} />}{quiz}</>;
+}
+
+function LessonQuizCue({ chapter, question }: { chapter: NonNullable<QuizEngineProps["visualCueChapter"]>; question: ProcessedQuestion }) {
+  const text = question.question.toLowerCase();
+  const cue = chapter === "protect" ? (text.includes("phish") || text.includes("otp") ? ["🛑", "→", "🔎", "→", "🏛️"] : ["🚩", "→", "Pause", "→", "Check"])
+    : chapter === "life" ? (text.includes("spend") || text.includes("belanja") ? ["🛒", "→", "⏸️", "→", "🎯"] : ["💵", "→", "🏦", "→", "🎯"])
+    : chapter === "money" ? (text.includes("asset") || text.includes("liabilit") ? ["⚖️", "Assets", "−", "Liabilities"] : text.includes("time") || text.includes("waktu") ? ["⏳", "Now", "→", "Later"] : ["📊", "→", "Compare", "→", "Choose"])
+    : text.includes("inflation") || text.includes("daya beli") || text.includes("basket") || text.includes("keranjang") ? ["🛒", "Rp100k", "→", "🍜 × 4"]
+    : text.includes("interest") || text.includes("bunga") || text.includes("principal") || text.includes("pokok") ? ["💰", "×", "6%", "×", "⏱️"]
+      : text.includes("risk") || text.includes("risiko") || text.includes("loss") || text.includes("rugi") ? ["🤔", "→", "🛟"]
+        : text.includes("scam") || text.includes("penipuan") || text.includes("otp") ? ["🚩", "→", "🔎", "→", "🏛️"]
+          : text.includes("saving") || text.includes("menabung") || text.includes("emergency") || text.includes("darurat") ? ["🏦", "→", "🧰", "→", "🎯"]
+            : ["💡", "→", "✅"];
+  return <div aria-hidden="true" className="mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-primary/15 bg-primary/5 px-3 py-2 text-base font-bold text-primary">{cue.map((item, index) => <span key={`${item}-${index}`}>{item}</span>)}</div>;
 }
 
 function ChartInterpretation({
@@ -458,46 +476,63 @@ function Matching({
   };
 
   const usedRights = new Set(Object.values(matches).filter(Boolean));
+  const explanation = matchingExplanation(question.explanation);
 
   return (
     <QuizCardShell kicker="Matching" kickerIcon={<LinkIcon />}>
       <h3 className="mt-3 text-lg font-semibold leading-snug text-foreground">{question.question}</h3>
       <p className="mt-2 text-xs text-muted-foreground">{t("quiz.tapDefinition")}</p>
       <div className="mt-4 space-y-3">
-        {leftItems.map((left) => (
-          <div key={left} className="rounded-md border border-muted bg-surface p-4">
-            <div className="mb-2 text-sm font-semibold text-foreground">{left}</div>
-            {matches[left] ? (
-              <button
-                onClick={() => unassign(left)}
-                disabled={showResult}
-                className={`rounded-md border px-3 py-2 text-sm font-semibold transition-colors disabled:cursor-default ${
-                  showResult
-                    ? matches[left] === correctFor(left)
-                      ? "border-success bg-success/10 text-success"
-                      : "border-danger bg-danger/5 text-danger"
-                    : "border-primary bg-primary/10 text-primary hover:bg-primary/20"
-                }`}
-              >
-                {matches[left]}
-              </button>
-            ) : (
-              <div className="flex flex-wrap gap-2">
-                {rightItems
-                  .filter((right) => !usedRights.has(right))
-                  .map((right) => (
-                    <button
-                      key={`${left}-${right}`}
-                      onClick={() => assign(left, right)}
-                      className="rounded-md border border-muted bg-surface px-3 py-2 text-sm font-semibold text-foreground transition-colors hover:border-primary/40 hover:bg-primary/5"
-                    >
-                      {right}
-                    </button>
-                  ))}
-              </div>
-            )}
-          </div>
-        ))}
+        {leftItems.map((left) => {
+          const selected = matches[left];
+          const correct = correctFor(left);
+          const matchIsCorrect = selected === correct;
+          return (
+            <div key={left} className="rounded-md border border-muted bg-surface p-4">
+              <div className="mb-2 text-sm font-semibold text-foreground">{left}</div>
+              {selected ? (
+                <div className="space-y-2">
+                  <button
+                    onClick={() => unassign(left)}
+                    disabled={showResult}
+                    className={`rounded-md border px-3 py-2 text-left text-sm font-semibold transition-colors disabled:cursor-default ${
+                      showResult
+                        ? matchIsCorrect
+                          ? "border-success bg-success/10 text-success"
+                          : "border-danger bg-danger/5 text-danger"
+                        : "border-primary bg-primary/10 text-primary hover:bg-primary/20"
+                    }`}
+                  >
+                    {selected}
+                  </button>
+                  {showResult && matchIsCorrect && (
+                    <p className="text-xs font-semibold text-success">{t("quiz.matchCorrect")}</p>
+                  )}
+                  {showResult && !matchIsCorrect && correct && (
+                    <p className="rounded-md border border-success/25 bg-success/5 px-3 py-2 text-sm font-semibold leading-snug text-foreground" role="status">
+                      <span className="text-success">{t("quiz.correctAnswer")}</span> {correct}
+                      <span className="sr-only"> {left}: {correct}</span>
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {rightItems
+                    .filter((right) => !usedRights.has(right))
+                    .map((right) => (
+                      <button
+                        key={`${left}-${right}`}
+                        onClick={() => assign(left, right)}
+                        className="rounded-md border border-muted bg-surface px-3 py-2 text-sm font-semibold text-foreground transition-colors hover:border-primary/40 hover:bg-primary/5"
+                      >
+                        {right}
+                      </button>
+                    ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
       <button
         onClick={check}
@@ -506,15 +541,14 @@ function Matching({
       >
         {t("quiz.checkAnswer")}
       </button>
-      {showResult && (
-        <Explanation
-          isCorrect={isCorrect}
-          text={question.explanation}
-          correctAnswer={leftItems.map((left) => `${left}: ${correctFor(left) ?? ""}`).join(" · ")}
-        />
-      )}
+      {showResult && explanation && <Explanation isCorrect={isCorrect} text={explanation} />}
     </QuizCardShell>
   );
+}
+
+function matchingExplanation(text: string) {
+  const answerDump = /^(?:correct matches|correct categorization|kategorisasi yang benar|kecocokan yang benar|pertandingan yang benar|pasangan yang benar|cocokan yang benar):/i;
+  return answerDump.test(text.trim()) ? "" : text;
 }
 
 function CaseStudy({

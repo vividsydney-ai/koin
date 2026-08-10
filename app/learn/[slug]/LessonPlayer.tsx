@@ -63,7 +63,7 @@ function getPracticeQuestionVariants(variants: ContentVariant[], hasVisualBlocks
     const nonVisual = variants.filter((variant) => variant.topicTag !== "visual_applied");
     return [...visualApplied, ...nonVisual];
   }
-  // A visual lesson must have enough applied checks for Chapter 08's mastery
+  // A visual lesson must have enough applied checks for the mastery
   // gate before unrelated legacy questions are allowed back into practice.
   return visualApplied.length >= 2 ? visualApplied : variants;
 }
@@ -492,7 +492,7 @@ export default function LessonPlayer({
       <header className="sticky top-0 z-10 border-b border-muted/60 bg-background/90 px-5 py-3 backdrop-blur-md sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
           <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            {chapterNumber && lessonNumber && chapterLessonsCount
+            {chapterNumber !== undefined && lessonNumber && chapterLessonsCount
               ? t("lesson.chapterLabel")
                   .replace("{chapterNumber}", String(chapterNumber).padStart(2, "0"))
                   .replace("{lessonNumber}", String(lessonNumber))
@@ -566,6 +566,7 @@ export default function LessonPlayer({
               {step === 3 && (
                 <QuizStep
                   question={activeQuestion}
+                  visualCueChapter={lesson.slug.startsWith("fz-") ? "foundation" : lesson.chapter === "Money Basics" ? "money" : lesson.chapter === "Money Life Skills" ? "life" : lesson.chapter === "Protect Yourself" ? "protect" : undefined}
                   displayAttempt={quizDisplayAttempt}
                   requiredChecks={lessonCheckCount(chapterNumber)}
                   onComplete={(results) => {
@@ -976,6 +977,7 @@ function ExampleStep({
 
 function QuizStep({
   question,
+  visualCueChapter,
   displayAttempt,
   onComplete,
   onAnotherQuestion,
@@ -983,6 +985,7 @@ function QuizStep({
   requiredChecks,
 }: {
   question: ProcessedQuestion | null;
+  visualCueChapter?: "foundation" | "money" | "life" | "protect";
   displayAttempt: number;
   onComplete: (results: boolean[]) => void;
   onAnotherQuestion?: () => ProcessedQuestion | null;
@@ -1032,6 +1035,7 @@ function QuizStep({
         key={displayKey}
         question={question}
         seed={seed}
+        visualCueChapter={visualCueChapter}
         displayAttempt={displayAttempt}
         onComplete={(correct) => {
           const nextResults = [...results, correct];

@@ -136,6 +136,7 @@ export interface Dictionary {
 
   // Quiz engine
   "quiz.correctAnswer": string;
+  "quiz.matchCorrect": string;
   "quiz.chartCheck": string;
   "quiz.chartPracticeLabel": string;
   "quiz.chartPracticeCaption": string;
@@ -209,6 +210,7 @@ export interface Dictionary {
   "chapter.letsTalkAboutDebt": string;
   "chapter.planYourMoney": string;
   "chapter.growYourMoney": string;
+  "chapter.knowBeforeInvesting": string;
   "chapter.investingInIndonesia": string;
   "chapter.cryptocurrency101": string;
   "chapter.readingTradingCharts": string;
@@ -332,6 +334,7 @@ export interface Dictionary {
   "trade.savedSymbolsTitle": string;
   "trade.noSavedSymbols": string;
   "trade.latest": string;
+  "trade.dataSource": string;
   "trade.simulated": string;
   "trade.idxEod": string;
   "trade.dataPending": string;
@@ -347,6 +350,36 @@ export interface Dictionary {
   "trade.chartLearningBody": string;
   "trade.simulatedPrices": string;
   "trade.simulatedBody": string;
+
+  // Portfolio Data Story (chart chrome)
+  "portfolioStory.title": string;
+  "portfolioStory.disclosure": string;
+  "portfolioStory.insightRoseBy": string;
+  "portfolioStory.insightFellBy": string;
+  "portfolioStory.insightFlat": string;
+  "portfolioStory.insightOverMonth": string;
+  "portfolioStory.insightOver3M": string;
+  "portfolioStory.insightOver6M": string;
+  "portfolioStory.insightOverAll": string;
+  "portfolioStory.chartShapeRose": string;
+  "portfolioStory.chartShapeFell": string;
+  "portfolioStory.chartShapeFlat": string;
+  "portfolioStory.tooltipFromStart": string;
+  "portfolioStory.tooltipDisclosure": string;
+  "portfolioStory.subtitleOver1M": string;
+  "portfolioStory.subtitleOver3M": string;
+  "portfolioStory.subtitleOver6M": string;
+  "portfolioStory.subtitleOverAll": string;
+  "portfolioStory.loading": string;
+  "portfolioStory.errorTitle": string;
+  "portfolioStory.errorRetry": string;
+  "portfolioStory.emptyTitle": string;
+  "portfolioStory.emptyBody": string;
+  "portfolioStory.explainChange": string;
+  "portfolioStory.agentTitle": string;
+  "portfolioStory.agentBody": string;
+  "portfolioStory.buyAnnotation": string;
+  "portfolioStory.sellAnnotation": string;
 
   // Library filters
   "library.allSources": string;
@@ -504,6 +537,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "focus.refillError": "We could not refill Focus right now.",
 
     "quiz.correctAnswer": "Correct answer:",
+    "quiz.matchCorrect": "Correct match",
     "quiz.chartCheck": "Chart check",
     "quiz.chartPracticeLabel": "Practice candlestick chart",
     "quiz.chartPracticeCaption": "Practice data only — not a price forecast.",
@@ -581,6 +615,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "chapter.letsTalkAboutDebt": "Let's Talk About Debt",
     "chapter.planYourMoney": "Plan Your Money",
     "chapter.growYourMoney": "Grow Your Money",
+    "chapter.knowBeforeInvesting": "Know Before Investing",
     "chapter.investingInIndonesia": "Investing in Indonesia",
     "chapter.cryptocurrency101": "Cryptocurrency 101",
     "chapter.readingTradingCharts": "Reading Trading Charts",
@@ -703,6 +738,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "trade.savedSymbolsTitle": "Saved symbols",
     "trade.noSavedSymbols": "No saved symbols yet.",
     "trade.latest": "Latest",
+    "trade.dataSource": "Data source",
     "trade.simulated": "Simulated",
     "trade.idxEod": "IDX EOD",
     "trade.dataPending": "Data pending",
@@ -718,6 +754,37 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "trade.chartLearningBody": "candlesticks, reverse candles, reading a trend, and placing an order with context.",
     "trade.simulatedBody":
       "some data points are generated when official IDX data is unavailable. For paper-trading practice only.",
+    "portfolioStory.title": "Your portfolio story",
+    "portfolioStory.disclosure":
+      "This shows your total paper wealth over time: virtual cash plus the latest value of any stocks or ETFs you own. Not a live market feed.",
+    "portfolioStory.insightRoseBy": "Your portfolio rose by",
+    "portfolioStory.insightFellBy": "Your portfolio fell by",
+    "portfolioStory.insightFlat": "Your portfolio value hasn't changed",
+    "portfolioStory.insightOverMonth": "over the last month.",
+    "portfolioStory.insightOver3M": "over the last 3 months.",
+    "portfolioStory.insightOver6M": "over the last 6 months.",
+    "portfolioStory.insightOverAll": "since you started.",
+    "portfolioStory.chartShapeRose": "Line chart trending upward, ending at",
+    "portfolioStory.chartShapeFell": "Line chart trending downward, ending at",
+    "portfolioStory.chartShapeFlat": "Line chart holding steady at",
+    "portfolioStory.tooltipFromStart": "from starting point",
+    "portfolioStory.tooltipDisclosure": "Simulated value, calculated once daily",
+    "portfolioStory.subtitleOver1M": "over the last month",
+    "portfolioStory.subtitleOver3M": "over the last 3 months",
+    "portfolioStory.subtitleOver6M": "over the last 6 months",
+    "portfolioStory.subtitleOverAll": "since you started",
+    "portfolioStory.loading": "Loading your portfolio story…",
+    "portfolioStory.errorTitle": "Couldn't load your portfolio story.",
+    "portfolioStory.errorRetry": "Try again",
+    "portfolioStory.emptyTitle": "No history yet",
+    "portfolioStory.emptyBody":
+      "Your portfolio story will build up here after your first trade.",
+    "portfolioStory.explainChange": "Explain this change",
+    "portfolioStory.agentTitle": "What changed",
+    "portfolioStory.agentBody":
+      "This panel shows the facts behind the chart. It can explain what is visible, but it cannot place trades or change your portfolio.",
+    "portfolioStory.buyAnnotation": "You bought here",
+    "portfolioStory.sellAnnotation": "You sold here",
     "library.allSources": "All sources",
     "library.allTiers": "All tiers",
     "library.allTypes": "All types",
@@ -864,6 +931,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "focus.refillError": "Kami tidak dapat mengisi ulang Focus sekarang.",
 
     "quiz.correctAnswer": "Jawaban benar:",
+    "quiz.matchCorrect": "Pasangan benar",
     "quiz.chartCheck": "Cek grafik",
     "quiz.chartPracticeLabel": "Grafik candlestick untuk latihan",
     "quiz.chartPracticeCaption": "Data latihan saja — bukan perkiraan harga.",
@@ -941,6 +1009,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "chapter.letsTalkAboutDebt": "Mari Bicara tentang Utang",
     "chapter.planYourMoney": "Rencanakan Uangmu",
     "chapter.growYourMoney": "Kembangkan Uangmu",
+    "chapter.knowBeforeInvesting": "Ketahui Sebelum Berinvestasi",
     "chapter.investingInIndonesia": "Berinvestasi di Indonesia",
     "chapter.cryptocurrency101": "Dasar-Dasar Kripto",
     "chapter.readingTradingCharts": "Membaca Grafik Trading",
@@ -1063,6 +1132,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "trade.savedSymbolsTitle": "Simbol tersimpan",
     "trade.noSavedSymbols": "Belum ada simbol tersimpan.",
     "trade.latest": "Terakhir",
+    "trade.dataSource": "Sumber data",
     "trade.simulated": "Simulasi",
     "trade.idxEod": "EOD IDX",
     "trade.dataPending": "Data menunggu",
@@ -1078,6 +1148,37 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "trade.chartLearningBody": "candlestick, reverse candle, membaca tren, dan memasang order dengan konteks.",
     "trade.simulatedBody":
       "beberapa titik data dibuat saat data resmi IDX tidak tersedia. Hanya untuk latihan paper trading.",
+    "portfolioStory.title": "Cerita portofoliomu",
+    "portfolioStory.disclosure":
+      "Ini menunjukkan total kekayaan paper trading-mu dari waktu ke waktu: kas virtual ditambah nilai terbaru saham atau ETF yang kamu miliki. Bukan data pasar langsung.",
+    "portfolioStory.insightRoseBy": "Portofoliomu naik sebesar",
+    "portfolioStory.insightFellBy": "Portofoliomu turun sebesar",
+    "portfolioStory.insightFlat": "Nilai portofoliomu belum berubah",
+    "portfolioStory.insightOverMonth": "selama bulan lalu.",
+    "portfolioStory.insightOver3M": "selama 3 bulan terakhir.",
+    "portfolioStory.insightOver6M": "selama 6 bulan terakhir.",
+    "portfolioStory.insightOverAll": "sejak kamu mulai.",
+    "portfolioStory.chartShapeRose": "Grafik garis cenderung naik, berakhir di",
+    "portfolioStory.chartShapeFell": "Grafik garis cenderung turun, berakhir di",
+    "portfolioStory.chartShapeFlat": "Grafik garis stabil di",
+    "portfolioStory.tooltipFromStart": "dari titik awal",
+    "portfolioStory.tooltipDisclosure": "Nilai simulasi, dihitung 1x/hari",
+    "portfolioStory.subtitleOver1M": "selama bulan lalu",
+    "portfolioStory.subtitleOver3M": "selama 3 bulan terakhir",
+    "portfolioStory.subtitleOver6M": "selama 6 bulan terakhir",
+    "portfolioStory.subtitleOverAll": "sejak kamu mulai",
+    "portfolioStory.loading": "Memuat cerita portofoliomu…",
+    "portfolioStory.errorTitle": "Gagal memuat cerita portofoliomu.",
+    "portfolioStory.errorRetry": "Coba lagi",
+    "portfolioStory.emptyTitle": "Belum ada riwayat",
+    "portfolioStory.emptyBody":
+      "Cerita portofoliomu akan terbentuk di sini setelah transaksi pertamamu.",
+    "portfolioStory.explainChange": "Jelaskan perubahan ini",
+    "portfolioStory.agentTitle": "Apa yang berubah",
+    "portfolioStory.agentBody":
+      "Panel ini menampilkan fakta di balik grafik. Ia dapat menjelaskan apa yang terlihat, tetapi tidak dapat melakukan transaksi atau mengubah portofoliomu.",
+    "portfolioStory.buyAnnotation": "Kamu beli di sini",
+    "portfolioStory.sellAnnotation": "Kamu jual di sini",
     "library.allSources": "Semua sumber",
     "library.allTiers": "Semua tingkat",
     "library.allTypes": "Semua tipe",

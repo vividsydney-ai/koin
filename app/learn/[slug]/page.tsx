@@ -42,7 +42,7 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
     const chapterLessons = chapter.topics.flatMap((topic) => topic.lessons);
     const position = chapterLessons.findIndex((lesson) => lesson.slug === slug);
     if (position !== -1) {
-      chapterNumber = chapterIndex + 1;
+      chapterNumber = chapterIndex;
       lessonNumber = position + 1;
       chapterLessonsCount = chapterLessons.length;
       break;
