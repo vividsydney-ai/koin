@@ -23,6 +23,7 @@ export default defineConfig({
       "tests/migrations/036_publish_foundation_zero.test.ts",
       "tests/migrations/037_analytics_views.test.ts",
       "tests/migrations/038_streak_reminders.test.ts",
+      "tests/sources/url-verification.test.ts",
     ],
   },
 });

@@ -10,7 +10,7 @@
     "type-check": "tsc --noEmit",
     "test": "pnpm run test:unit",
     "test:unit": "vitest run",
-    "test:live": "vitest run --config vitest.live.config.ts",
+    "test:live": "VITEST_LIVE=1 vitest run --config vitest.live.config.ts",
     "test:migration-history": "node scripts/check-migration-history.mjs",
     "test:clean-worktree": "node scripts/check-clean-worktree.mjs",
     "prepare": "husky",
