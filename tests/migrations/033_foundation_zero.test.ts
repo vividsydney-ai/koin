@@ -10,7 +10,7 @@ const skipReason =
     : null;
 
 describe.runIf(!skipReason)("Foundation 0 mini-track (KO-FOUND-001)", () => {
-  const supabase = createClient(supabaseUrl!, supabaseKey!);
+  const supabase = skipReason ? null : createClient(supabaseUrl!, supabaseKey!);
 
   beforeAll(async () => {
     // Ensure the schema is current by re-running migrations locally.
@@ -18,7 +18,7 @@ describe.runIf(!skipReason)("Foundation 0 mini-track (KO-FOUND-001)", () => {
   });
 
   it("has a foundation_zero topic", async () => {
-    const { data, error } = await supabase
+    const { data, error } = await supabase!
       .from("topics")
       .select("id, slug, display_order")
       .eq("slug", "foundation_zero")
@@ -31,7 +31,7 @@ describe.runIf(!skipReason)("Foundation 0 mini-track (KO-FOUND-001)", () => {
   });
 
   it("has 12 Foundation 0 lessons with lesson_number 101-112", async () => {
-    const { data, error } = await supabase
+    const { data, error } = await supabase!
       .from("lessons")
       .select("slug, lesson_number, topic_id")
       .like("slug", "fz-%")
@@ -45,7 +45,7 @@ describe.runIf(!skipReason)("Foundation 0 mini-track (KO-FOUND-001)", () => {
   });
 
   it("every Foundation 0 lesson has a primary Tier 1 source", async () => {
-    const { data: lessons, error: lessonsError } = await supabase
+    const { data: lessons, error: lessonsError } = await supabase!
       .from("lessons")
       .select("id, slug")
       .like("slug", "fz-%");
@@ -54,7 +54,7 @@ describe.runIf(!skipReason)("Foundation 0 mini-track (KO-FOUND-001)", () => {
     expect(lessons).toHaveLength(12);
 
     for (const lesson of lessons!) {
-      const { data, error } = await supabase
+      const { data, error } = await supabase!
         .from("lesson_sources")
         .select("id, source_id, is_primary")
         .eq("lesson_id", lesson.id)
@@ -68,7 +68,7 @@ describe.runIf(!skipReason)("Foundation 0 mini-track (KO-FOUND-001)", () => {
   });
 
   it("every Foundation 0 lesson has an approved review", async () => {
-    const { data: lessons, error: lessonsError } = await supabase
+    const { data: lessons, error: lessonsError } = await supabase!
       .from("lessons")
       .select("id, slug")
       .like("slug", "fz-%");
@@ -77,7 +77,7 @@ describe.runIf(!skipReason)("Foundation 0 mini-track (KO-FOUND-001)", () => {
     expect(lessons).toHaveLength(12);
 
     for (const lesson of lessons!) {
-      const { data, error } = await supabase
+      const { data, error } = await supabase!
         .from("lesson_reviews")
         .select("approved_to_publish")
         .eq("lesson_id", lesson.id)
@@ -90,7 +90,7 @@ describe.runIf(!skipReason)("Foundation 0 mini-track (KO-FOUND-001)", () => {
   });
 
   it("renumbered main track lessons to contiguous 1-40 with Foundation 0 in 101-112 range", async () => {
-    const { data, error } = await supabase
+    const { data, error } = await supabase!
       .from("lessons")
       .select("lesson_number, slug")
       .not("slug", "like", "fz-%")

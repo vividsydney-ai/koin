@@ -10,14 +10,14 @@ const skipReason =
     : null;
 
 describe.runIf(!skipReason)("Streak reminder infrastructure (KO-NOTIF-001)", () => {
-  const supabase = createClient(supabaseUrl!, supabaseKey!);
+  const supabase = skipReason ? null : createClient(supabaseUrl!, supabaseKey!);
 
   beforeAll(async () => {
     // Tests assume `supabase db reset` has been run or all migrations are applied.
   });
 
   it("exposes get_streak_reminder_candidates RPC", async () => {
-    const { data, error } = await supabase.rpc("get_streak_reminder_candidates", {
+    const { data, error } = await supabase!.rpc("get_streak_reminder_candidates", {
       p_current_time: "23:59:00",
     });
 
