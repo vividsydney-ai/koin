@@ -98,6 +98,30 @@ describe("PortfolioChart", () => {
     });
   });
 
+  it("keeps a touch-selected point visible and uses a true CSS circle marker", async () => {
+    renderChart(<PortfolioChart snapshots={history} range="3M" />);
+
+    const svg = await screen.findByRole("img", { name: /portfolio value chart/i });
+    svg.getBoundingClientRect = () =>
+      ({ left: 0, top: 0, width: 100, height: 60 }) as DOMRect;
+
+    fireEvent.pointerDown(svg, { clientX: 100, clientY: 30, pointerType: "touch" });
+    fireEvent.pointerLeave(svg, { pointerType: "touch" });
+
+    expect(await screen.findByTestId("chart-tooltip")).toHaveTextContent("15 Jul");
+    expect(screen.getByTestId("chart-marker")).toHaveClass("rounded-full");
+    expect(screen.getByTestId("chart-marker")).toHaveClass("h-3");
+    expect(screen.getByTestId("chart-marker")).toHaveClass("w-3");
+  });
+
+  it("labels sparse history and separates Jakarta market date from the viewer timezone", async () => {
+    renderChart(<PortfolioChart snapshots={history} range="6M" />);
+
+    expect(await screen.findByText(/only 14 recorded days are available/i)).toBeInTheDocument();
+    expect(screen.getByText(/market date.*jakarta/i)).toBeInTheDocument();
+    expect(screen.getByText(/your local date.*australia\/sydney|your local date/i)).toBeInTheDocument();
+  });
+
   it("renders distributed month-week ticks below the chart", async () => {
     renderChart(
       <PortfolioChart
