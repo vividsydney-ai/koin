@@ -10,12 +10,12 @@ const skipReason =
     : null;
 
 describe.runIf(!skipReason)("source URL verification", () => {
-  const supabase = createClient(supabaseUrl!, supabaseKey!);
+  const supabase = skipReason ? null : createClient(supabaseUrl!, supabaseKey!);
 
   it(
     "every source URL returns HTTP 2xx",
     async () => {
-      const { data: sources, error } = await supabase
+      const { data: sources, error } = await supabase!
         .from("sources")
         .select("source_code, title, url, status, organization")
         .not("url", "is", null);

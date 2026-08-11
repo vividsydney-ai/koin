@@ -17,6 +17,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -42,6 +44,14 @@ jobs:
       - name: Unit tests
         run: pnpm run test
 
+      - name: Enforce immutable migration history
+        run: pnpm run test:migration-history
+        env:
+          MIGRATION_BASE_REF: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+
+      - name: Verify clean worktree
+        run: pnpm run test:clean-worktree
+
       - name: Audit dependencies
         run: pnpm audit --prod --audit-level=high
 
@@ -51,6 +61,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -80,6 +92,9 @@ jobs:
 
       - name: Run RLS smoke tests
         run: pnpm run test -- tests/security
+
+      - name: Verify clean worktree
+        run: pnpm run test:clean-worktree
 
       - name: Stop Supabase local stack
         if: always()

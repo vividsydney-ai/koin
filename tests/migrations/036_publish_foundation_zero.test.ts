@@ -10,14 +10,14 @@ const skipReason =
     : null;
 
 describe.runIf(!skipReason)("Publish Foundation 0 (KO-FOUND-002)", () => {
-  const supabase = createClient(supabaseUrl!, supabaseKey!);
+  const supabase = skipReason ? null : createClient(supabaseUrl!, supabaseKey!);
 
   beforeAll(async () => {
     // Tests assume `supabase db reset` has been run or all migrations are applied.
   });
 
   it("publishes all 12 Foundation 0 lessons", async () => {
-    const { data, error } = await supabase
+    const { data, error } = await supabase!
       .from("lessons")
       .select("slug, is_published")
       .like("slug", "fz-%");

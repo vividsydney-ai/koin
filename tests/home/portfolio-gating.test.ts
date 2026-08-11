@@ -29,14 +29,23 @@ describe("getPortfolioSnapshot", () => {
 
   it("returns a portfolio snapshot after paper trading is unlocked", async () => {
     getTradeOnboardingStatusMock.mockResolvedValue({ canTrade: true });
-    getPortfolioMock.mockResolvedValue({ startingCash: 10_000_000, cashBalance: 10_000_000 });
+    getPortfolioMock.mockResolvedValue({
+      startingCash: 10_000_000,
+      cashBalance: 10_000_000,
+      updatedAt: "2026-08-11T00:00:00.000Z",
+    });
     getHoldingsMock.mockResolvedValue([]);
     getMarketDataMock.mockResolvedValue([]);
 
     await expect(getPortfolioSnapshot("user-1")).resolves.toEqual({
       totalValue: 10_000_000,
+      totalReturnAmount: 0,
       totalReturnPct: 0,
+      cashBalance: 10_000_000,
+      investedValue: 0,
       topHolding: null,
+      topHoldingPct: null,
+      updatedAt: "2026-08-11T00:00:00.000Z",
     });
   });
 });
