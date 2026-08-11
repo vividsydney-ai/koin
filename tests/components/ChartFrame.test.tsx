@@ -49,10 +49,10 @@ beforeEach(() => {
 });
 
 describe("ChartFrame", () => {
-  it("shows a loading message before the independent history fetch resolves", () => {
+  it("shows a loading message before the canonical history fetch resolves", () => {
     mockGetHistory.mockReturnValue(new Promise(() => {}));
 
-    renderChartFrame(<ChartFrame userId="u1" totalValue={10_750_000} dataSource="simulated" />);
+    renderChartFrame(<ChartFrame userId="u1" dataSource="simulated" />);
 
     expect(screen.getByText(/loading your portfolio story/i)).toBeInTheDocument();
   });
@@ -60,7 +60,7 @@ describe("ChartFrame", () => {
   it("renders the Simulated badge verbatim when dataSource is simulated", async () => {
     mockGetHistory.mockResolvedValue(rising);
 
-    renderChartFrame(<ChartFrame userId="u1" totalValue={10_750_000} dataSource="simulated" />);
+    renderChartFrame(<ChartFrame userId="u1" dataSource="simulated" />);
 
     expect(await screen.findByText("Simulated")).toBeInTheDocument();
   });
@@ -68,7 +68,7 @@ describe("ChartFrame", () => {
   it("renders the IDX EOD badge verbatim when dataSource is idx_eod", async () => {
     mockGetHistory.mockResolvedValue(rising);
 
-    renderChartFrame(<ChartFrame userId="u1" totalValue={10_750_000} dataSource="idx_eod" />);
+    renderChartFrame(<ChartFrame userId="u1" dataSource="idx_eod" />);
 
     expect(await screen.findByText("IDX EOD")).toBeInTheDocument();
   });
@@ -76,7 +76,7 @@ describe("ChartFrame", () => {
   it("shows a factual rose-by insight sentence for a rising period", async () => {
     mockGetHistory.mockResolvedValue(rising);
 
-    renderChartFrame(<ChartFrame userId="u1" totalValue={10_750_000} dataSource="simulated" />);
+    renderChartFrame(<ChartFrame userId="u1" dataSource="simulated" />);
 
     const insight = await screen.findByTestId("insight-card");
     expect(insight).toHaveTextContent(/rose by/i);
@@ -89,7 +89,7 @@ describe("ChartFrame", () => {
       { date: "2026-07-31", cashBalance: 5_000_000, holdingsValue: 5_000_000, totalValue: 10_000_000 },
     ]);
 
-    renderChartFrame(<ChartFrame userId="u1" totalValue={10_000_000} dataSource="simulated" />);
+    renderChartFrame(<ChartFrame userId="u1" dataSource="simulated" />);
 
     const insight = await screen.findByTestId("insight-card");
     expect(insight).toHaveTextContent(/fell by/i);
@@ -98,20 +98,15 @@ describe("ChartFrame", () => {
   it("shows the empty state when there is no history yet", async () => {
     mockGetHistory.mockResolvedValue([]);
 
-    renderChartFrame(<ChartFrame userId="u1" totalValue={0} dataSource="simulated" />);
+    renderChartFrame(<ChartFrame userId="u1" dataSource="simulated" />);
 
     expect(await screen.findByText(/no history yet/i)).toBeInTheDocument();
   });
 
   it("shows an error state with a retry action when the fetch fails, and recovers on retry", async () => {
-    // PortfolioChart (rendered as an untouched sibling inside ChartFrame) calls
-    // the same client function independently, so both initial calls must fail
-    // deterministically before the retry switches the mock to succeed.
-    // No tab is clicked in this test, so `range` never changes and the
-    // range-triggered refetch path below doesn't interact with this flow.
     mockGetHistory.mockRejectedValue(new Error("network down"));
 
-    renderChartFrame(<ChartFrame userId="u1" totalValue={10_750_000} dataSource="simulated" />);
+    renderChartFrame(<ChartFrame userId="u1" dataSource="simulated" />);
 
     const retry = await screen.findByRole("button", { name: /try again/i });
     mockGetHistory.mockResolvedValue(rising);
@@ -120,19 +115,15 @@ describe("ChartFrame", () => {
     expect(await screen.findByTestId("insight-card")).toBeInTheDocument();
   });
 
-  it("follows PortfolioChart's active range tab: badge/insight/status stay in sync", async () => {
-    // Two calls happen on mount (ChartFrame's own effect + PortfolioChart's
-    // own nested effect, both requesting "1M"); switching tabs triggers two
-    // more calls (same pair, now requesting "1Y").
+  it("fetches each selected range once and keeps chart and insight in sync", async () => {
     mockGetHistory
       .mockResolvedValueOnce(rising)
-      .mockResolvedValueOnce(rising)
-      .mockResolvedValueOnce(falling)
       .mockResolvedValueOnce(falling);
 
-    renderChartFrame(<ChartFrame userId="u1" totalValue={10_750_000} dataSource="simulated" />);
+    renderChartFrame(<ChartFrame userId="u1" dataSource="simulated" />);
 
     const initialInsight = await screen.findByTestId("insight-card");
+    expect(mockGetHistory).toHaveBeenCalledTimes(1);
     expect(initialInsight).toHaveTextContent(/rose by/i);
     expect(screen.getByRole("status")).toHaveTextContent(/trending upward/i);
 
@@ -141,6 +132,7 @@ describe("ChartFrame", () => {
     await waitFor(() => {
       expect(mockGetHistory).toHaveBeenCalledWith("u1", "3M");
     });
+    expect(mockGetHistory).toHaveBeenCalledTimes(2);
 
     const updatedInsight = await screen.findByTestId("insight-card");
     await waitFor(() => expect(updatedInsight).toHaveTextContent(/fell by/i));
@@ -151,10 +143,9 @@ describe("ChartFrame", () => {
   it("keeps the previous insight visible (no loading flash) while a range switch is still fetching", async () => {
     mockGetHistory
       .mockResolvedValueOnce(rising)
-      .mockResolvedValueOnce(rising)
       .mockReturnValue(new Promise(() => {}));
 
-    renderChartFrame(<ChartFrame userId="u1" totalValue={10_750_000} dataSource="simulated" />);
+    renderChartFrame(<ChartFrame userId="u1" dataSource="simulated" />);
 
     await screen.findByTestId("insight-card");
 

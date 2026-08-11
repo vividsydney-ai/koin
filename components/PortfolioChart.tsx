@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ContextualHelp } from "@/components/ContextualHelp";
 import { SourceBadge, type ChartDataSource } from "@/components/SourceBadge";
@@ -12,7 +12,6 @@ import {
   getChangeTone,
 } from "@/lib/formatters/rupiah";
 import {
-  getPortfolioValueHistory,
   type PortfolioHistoryRange,
   type PortfolioValueSnapshot,
 } from "@/lib/trading/client";
@@ -253,97 +252,38 @@ function generateTicks(
 }
 
 export default function PortfolioChart({
-  userId,
-  totalValue,
+  snapshots,
+  range,
   dataSource = "simulated",
-  priorCloseSnapshot,
   onRangeChange,
+  loading = false,
 }: {
-  userId: string;
-  totalValue: number;
+  snapshots: PortfolioValueSnapshot[];
+  range: PortfolioHistoryRange;
   dataSource?: ChartDataSource;
-  priorCloseSnapshot?: PortfolioValueSnapshot;
   onRangeChange?: (range: PortfolioHistoryRange) => void;
+  loading?: boolean;
 }) {
   const { locale, t } = useLocale();
-  const [range, setRange] = useState<PortfolioHistoryRange>("1M");
-  const [points, setPoints] = useState<PortfolioValueSnapshot[]>([]);
-  const [loading, setLoading] = useState(true);
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const visualRef = useRef<SVGGElement>(null);
 
-  useEffect(() => {
-    let active = true;
-    getPortfolioValueHistory(userId, range)
-      .then((history) => {
-        if (active) setPoints(history);
-      })
-      .catch(() => {
-        if (active) setPoints([]);
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
-    return () => {
-      active = false;
-    };
-  }, [range, totalValue, userId]);
-
-  const today = new Date().toISOString().slice(0, 10);
-  const displayPoints = useMemo<PortfolioValueSnapshot[]>(() => {
-    let working = points;
-    if (priorCloseSnapshot) {
-      if (working.length === 0) {
-        working = [priorCloseSnapshot];
-      } else if (
-        working.length === 1 &&
-        priorCloseSnapshot.date < working[0].date
-      ) {
-        working = [priorCloseSnapshot, working[0]];
-      }
-    }
-
-    if (working.length === 0) {
-      return [
-        {
-          date: today,
-          cashBalance: totalValue,
-          holdingsValue: 0,
-          totalValue,
-        },
-      ];
-    }
-    const last = working.at(-1)!;
-    if (last.date !== today && Math.abs(totalValue - last.totalValue) >= 1) {
-      return [
-        ...working,
-        {
-          date: today,
-          cashBalance: last.cashBalance,
-          holdingsValue: Math.max(totalValue - last.cashBalance, 0),
-          totalValue,
-        },
-      ];
-    }
-    return working;
-  }, [points, priorCloseSnapshot, totalValue, today]);
-
-  const chartTotalValue = displayPoints.at(-1)?.totalValue ?? totalValue;
-  const chart = useMemo(() => createChartShape(displayPoints), [displayPoints]);
-  const firstValue = displayPoints[0]?.totalValue ?? totalValue;
+  const chartTotalValue = snapshots.at(-1)?.totalValue ?? 0;
+  const chart = useMemo(() => createChartShape(snapshots), [snapshots]);
+  const firstValue = snapshots[0]?.totalValue ?? 0;
   const change = chartTotalValue - firstValue;
-  const hasHistory = displayPoints.length > 1;
+  const hasHistory = snapshots.length > 1;
   const hasMovement = useMemo(
     () =>
-      displayPoints.some(
+      snapshots.some(
         (point) => Math.abs(point.totalValue - firstValue) >= 1,
       ),
-    [displayPoints, firstValue],
+    [snapshots, firstValue],
   );
   const ticks = useMemo(
-    () => generateTicks(displayPoints, range, locale),
-    [displayPoints, range, locale],
+    () => generateTicks(snapshots, range, locale),
+    [snapshots, range, locale],
   );
 
   useLayoutEffect(() => {
@@ -366,20 +306,20 @@ export default function PortfolioChart({
   }, [chart.line, loading, range]);
 
   const handleMouseMove = (event: React.MouseEvent<SVGSVGElement>) => {
-    if (!svgRef.current || displayPoints.length < 2) return;
+    if (!svgRef.current || snapshots.length < 2) return;
     const rect = svgRef.current.getBoundingClientRect();
     const ratio = Math.min(
       Math.max((event.clientX - rect.left) / rect.width, 0),
       1,
     );
-    const index = Math.round(ratio * (displayPoints.length - 1));
+    const index = Math.round(ratio * (snapshots.length - 1));
     setHoverIndex(index);
   };
 
   const handleMouseLeave = () => setHoverIndex(null);
 
   const activePoint =
-    hoverIndex !== null ? displayPoints[hoverIndex] : null;
+    hoverIndex !== null ? snapshots[hoverIndex] : null;
   const activeCoord =
     hoverIndex !== null ? chart.coords[hoverIndex] : null;
 
@@ -430,10 +370,7 @@ export default function PortfolioChart({
               type="button"
               role="tab"
               aria-selected={range === item}
-              onClick={() => {
-                setRange(item);
-                onRangeChange?.(item);
-              }}
+              onClick={() => onRangeChange?.(item)}
               className={`min-h-8 rounded-full px-3 text-xs font-bold transition-colors duration-150 ${range === item ? "bg-primary/8 text-primary" : "text-muted-foreground hover:text-foreground"}`}
             >
               {item}
