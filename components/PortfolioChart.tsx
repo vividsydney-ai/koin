@@ -189,6 +189,42 @@ const TICK_CONFIG: Record<
   All: { count: 6, minGapDays: 30 },
 };
 
+const REQUESTED_RANGE_DAYS: Record<Exclude<PortfolioHistoryRange, "All">, number> = {
+  "1M": 31,
+  "3M": 92,
+  "6M": 183,
+};
+
+function recordedDaySpan(points: PortfolioValueSnapshot[]) {
+  if (points.length < 2) return 0;
+  const first = parseDateInTimeZone(points[0].date, "Asia/Jakarta").getTime();
+  const last = parseDateInTimeZone(points.at(-1)!.date, "Asia/Jakarta").getTime();
+  return Math.max(0, Math.round((last - first) / 86_400_000));
+}
+
+function rangeContext(
+  points: PortfolioValueSnapshot[],
+  range: PortfolioHistoryRange,
+  locale: Locale,
+) {
+  const days = recordedDaySpan(points);
+  const requested = range === "All" ? null : REQUESTED_RANGE_DAYS[range];
+  if (requested === null || days >= requested) return null;
+  return locale === "id"
+    ? `Hanya ${days} hari catatan tersedia. Tampilan ${range} akan bertambah saat valuasi harian tercatat.`
+    : `Only ${days} recorded days are available. The ${range} view will grow as daily valuations are recorded.`;
+}
+
+function freshnessContext(points: PortfolioValueSnapshot[], locale: Locale) {
+  const latest = points.at(-1);
+  if (!latest) return null;
+  const marketDate = formatDate(latest.date, locale, "Asia/Jakarta");
+  const localDate = formatDate(new Date(), locale, userTimeZone);
+  return locale === "id"
+    ? `Tanggal pasar: ${marketDate} (Jakarta) · Tanggal lokal kamu: ${localDate} (${userTimeZone})`
+    : `Market date: ${marketDate} (Jakarta) · Your local date: ${localDate} (${userTimeZone})`;
+}
+
 function generateTicks(
   points: PortfolioValueSnapshot[],
   range: PortfolioHistoryRange,
@@ -266,6 +302,7 @@ export default function PortfolioChart({
 }) {
   const { locale, t } = useLocale();
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+  const [pinnedIndex, setPinnedIndex] = useState<number | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const visualRef = useRef<SVGGElement>(null);
 
@@ -285,6 +322,8 @@ export default function PortfolioChart({
     () => generateTicks(snapshots, range, locale),
     [snapshots, range, locale],
   );
+  const rangeNote = useMemo(() => rangeContext(snapshots, range, locale), [snapshots, range, locale]);
+  const freshnessNote = useMemo(() => freshnessContext(snapshots, locale), [snapshots, locale]);
 
   useLayoutEffect(() => {
     if (!visualRef.current || loading) return;
@@ -305,23 +344,39 @@ export default function PortfolioChart({
     return () => media.revert();
   }, [chart.line, loading, range]);
 
-  const handleMouseMove = (event: React.MouseEvent<SVGSVGElement>) => {
+  const pointIndexFromClientX = (clientX: number) => {
     if (!svgRef.current || snapshots.length < 2) return;
     const rect = svgRef.current.getBoundingClientRect();
     const ratio = Math.min(
-      Math.max((event.clientX - rect.left) / rect.width, 0),
+      Math.max((clientX - rect.left) / rect.width, 0),
       1,
     );
-    const index = Math.round(ratio * (snapshots.length - 1));
-    setHoverIndex(index);
+    return Math.round(ratio * (snapshots.length - 1));
+  };
+
+  const handleMouseMove = (event: React.MouseEvent<SVGSVGElement>) => {
+    const index = pointIndexFromClientX(event.clientX);
+    if (index !== undefined) setHoverIndex(index);
+  };
+
+  const handlePointerMove = (event: React.PointerEvent<SVGSVGElement>) => {
+    if (event.pointerType !== "mouse") return;
+    const index = pointIndexFromClientX(event.clientX);
+    if (index !== undefined) setHoverIndex(index);
+  };
+
+  const handlePointerDown = (event: React.PointerEvent<SVGSVGElement>) => {
+    const index = pointIndexFromClientX(event.clientX);
+    if (index !== undefined && event.pointerType !== "mouse") setPinnedIndex(index);
   };
 
   const handleMouseLeave = () => setHoverIndex(null);
 
   const activePoint =
-    hoverIndex !== null ? snapshots[hoverIndex] : null;
+    (pinnedIndex ?? hoverIndex) !== null ? snapshots[pinnedIndex ?? hoverIndex!] : null;
   const activeCoord =
-    hoverIndex !== null ? chart.coords[hoverIndex] : null;
+    (pinnedIndex ?? hoverIndex) !== null ? chart.coords[pinnedIndex ?? hoverIndex!] : null;
+  const markerCoord = activeCoord ?? (hasMovement ? chart.marker : null);
 
   return (
     <section
@@ -401,7 +456,14 @@ export default function PortfolioChart({
                 role="img"
                 aria-label={`${range} portfolio value chart`}
                 onMouseMove={handleMouseMove}
+                onPointerMove={handlePointerMove}
+                onPointerDown={handlePointerDown}
                 onMouseLeave={handleMouseLeave}
+                onPointerLeave={handleMouseLeave}
+                tabIndex={0}
+                onKeyDown={(event) => {
+                  if (event.key === "Escape") setPinnedIndex(null);
+                }}
               >
                 {[7, LINE_Y, 52].map((y) => (
                   <path
@@ -443,30 +505,21 @@ export default function PortfolioChart({
                         strokeWidth="0.5"
                         vectorEffect="non-scaling-stroke"
                       />
-                      <circle
-                        cx={activeCoord.x}
-                        cy={activeCoord.y}
-                        r="1.4"
-                        fill="var(--color-surface)"
-                        stroke="var(--color-primary)"
-                        strokeWidth="0.75"
-                        vectorEffect="non-scaling-stroke"
-                      />
                     </>
-                  )}
-                  {hasMovement && chart.marker && (
-                    <circle
-                      cx={chart.marker.x}
-                      cy={chart.marker.y}
-                      r="1.15"
-                      fill="var(--color-surface)"
-                      stroke="var(--color-primary)"
-                      strokeWidth="0.75"
-                      vectorEffect="non-scaling-stroke"
-                    />
                   )}
                 </g>
               </svg>
+              {markerCoord && (
+                <span
+                  data-testid="chart-marker"
+                  aria-hidden="true"
+                  className="pointer-events-none absolute z-[1] h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-primary bg-surface shadow-sm"
+                  style={{
+                    left: `${markerCoord.x}%`,
+                    top: `${(markerCoord.y / CHART_HEIGHT) * 100}%`,
+                  }}
+                />
+              )}
               {activePoint && activeCoord && (
                 <div
                   data-testid="chart-tooltip"
@@ -524,6 +577,13 @@ export default function PortfolioChart({
           </div>
         </div>
       </div>
+
+      {rangeNote && (
+        <p className="mt-3 text-xs leading-relaxed text-muted-foreground">{rangeNote}</p>
+      )}
+      {freshnessNote && (
+        <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{freshnessNote}</p>
+      )}
 
       {!hasMovement && !loading && (
         <p className="mt-5 text-xs leading-relaxed text-muted-foreground">
