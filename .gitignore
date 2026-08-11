@@ -129,7 +129,6 @@ scripts/budget-check.sh
 scripts/bug-reconcile.mjs
 scripts/bug-tracker-apps-script.js
 scripts/design-drift-check.sh
-scripts/gate-runner.sh
 scripts/google-sheet-oauth-helper.mjs
 scripts/linear-task-sync.mjs
 scripts/loop-init.sh
