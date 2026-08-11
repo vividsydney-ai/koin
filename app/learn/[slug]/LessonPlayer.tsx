@@ -566,7 +566,7 @@ export default function LessonPlayer({
               {step === 3 && (
                 <QuizStep
                   question={activeQuestion}
-                  visualCueChapter={lesson.slug.startsWith("fz-") ? "foundation" : lesson.chapter === "Money Basics" ? "money" : lesson.chapter === "Money Life Skills" ? "life" : lesson.chapter === "Protect Yourself" ? "protect" : undefined}
+                  visualCueChapter={lesson.slug.startsWith("fz-") ? "foundation" : lesson.chapter === "Money Basics" ? "money" : lesson.chapter === "Money Life Skills" ? "life" : lesson.chapter === "Protect Yourself" ? "protect" : lesson.chapter === "Investing in Indonesia" ? "investing" : undefined}
                   displayAttempt={quizDisplayAttempt}
                   requiredChecks={lessonCheckCount(chapterNumber)}
                   onComplete={(results) => {
@@ -985,7 +985,7 @@ function QuizStep({
   requiredChecks,
 }: {
   question: ProcessedQuestion | null;
-  visualCueChapter?: "foundation" | "money" | "life" | "protect";
+  visualCueChapter?: "foundation" | "money" | "life" | "protect" | "investing";
   displayAttempt: number;
   onComplete: (results: boolean[]) => void;
   onAnotherQuestion?: () => ProcessedQuestion | null;

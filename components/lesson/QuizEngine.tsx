@@ -23,7 +23,7 @@ interface QuizEngineProps {
   question: ProcessedQuestion;
   seed: string;
   displayAttempt?: number;
-  visualCueChapter?: "foundation" | "money" | "life" | "protect";
+  visualCueChapter?: "foundation" | "money" | "life" | "protect" | "investing";
   onComplete?: (correct: boolean) => void;
   onAnswer?: QuizCompletion;
 }
@@ -72,13 +72,18 @@ function LessonQuizCue({ chapter, question }: { chapter: NonNullable<QuizEngineP
   const cue = chapter === "protect" ? (text.includes("phish") || text.includes("otp") ? ["🛑", "→", "🔎", "→", "🏛️"] : ["🚩", "→", "Pause", "→", "Check"])
     : chapter === "life" ? (text.includes("spend") || text.includes("belanja") ? ["🛒", "→", "⏸️", "→", "🎯"] : ["💵", "→", "🏦", "→", "🎯"])
     : chapter === "money" ? (text.includes("asset") || text.includes("liabilit") ? ["⚖️", "Assets", "−", "Liabilities"] : text.includes("time") || text.includes("waktu") ? ["⏳", "Now", "→", "Later"] : ["📊", "→", "Compare", "→", "Choose"])
+    : chapter === "investing" ? (text.includes("tax") || text.includes("pajak") || text.includes("gross") || text.includes("net") || text.includes("kotor") || text.includes("bersih") ? ["📈", "→", "🧾", "→", "💰"]
+      : text.includes("portfolio") || text.includes("allocation") || text.includes("alokasi") || text.includes("liquidity") || text.includes("likuid") ? ["🎯", "→", "⏳", "→", "🧺"]
+        : text.includes("macro") || text.includes("inflation") || text.includes("inflasi") || text.includes("bi rate") || text.includes("bi-rate") || text.includes("exchange rate") || text.includes("nilai tukar") ? ["🌐", "→", "🔎", "→", "⚠️"]
+          : text.includes("quote") || text.includes("volume") || text.includes("stock page") || text.includes("halaman saham") ? ["📊", "→", "👀", "→", "🔎"]
+            : ["🏢", "→", "📈", "→", "⚖️"])
     : text.includes("inflation") || text.includes("daya beli") || text.includes("basket") || text.includes("keranjang") ? ["🛒", "Rp100k", "→", "🍜 × 4"]
     : text.includes("interest") || text.includes("bunga") || text.includes("principal") || text.includes("pokok") ? ["💰", "×", "6%", "×", "⏱️"]
       : text.includes("risk") || text.includes("risiko") || text.includes("loss") || text.includes("rugi") ? ["🤔", "→", "🛟"]
         : text.includes("scam") || text.includes("penipuan") || text.includes("otp") ? ["🚩", "→", "🔎", "→", "🏛️"]
           : text.includes("saving") || text.includes("menabung") || text.includes("emergency") || text.includes("darurat") ? ["🏦", "→", "🧰", "→", "🎯"]
             : ["💡", "→", "✅"];
-  return <div aria-hidden="true" className="mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-primary/15 bg-primary/5 px-3 py-2 text-base font-bold text-primary">{cue.map((item, index) => <span key={`${item}-${index}`}>{item}</span>)}</div>;
+  return <div data-testid="lesson-quiz-cue" aria-hidden="true" className="mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-primary/15 bg-primary/5 px-3 py-2 text-base font-bold text-primary">{cue.map((item, index) => <span key={`${item}-${index}`}>{item}</span>)}</div>;
 }
 
 function ChartInterpretation({
