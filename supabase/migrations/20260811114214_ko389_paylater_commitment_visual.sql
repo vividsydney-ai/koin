@@ -155,7 +155,7 @@ WITH applied(body, body_id) AS (VALUES
     '{"type":"multiple_choice","difficulty":"beginner","question":"Baris struk mana yang membantu melihat bentrokan pembayaran dengan tagihan lain?","options":["Tanggal jatuh tempo","Warna barang","Ulasan penjual","Label tombol checkout"],"answer":"Tanggal jatuh tempo","explanation":"Tanggal jatuh tempo dapat dimasukkan ke kalender dan diperiksa terhadap komitmen lain sebelum mengonfirmasi."}'::jsonb
   ),
   (
-    '{"type":"true_false","difficulty":"beginner","question":"If a checkout shows three instalments, you can decide safely without reading the provider's disclosed late-payment terms.","options":["True","False"],"answer":false,"explanation":"False. The visual says terms are part of the decision because late-payment conditions vary by provider."}'::jsonb,
+    '{"type":"true_false","difficulty":"beginner","question":"If a checkout shows three instalments, you can decide safely without reading the provider''s disclosed late-payment terms.","options":["True","False"],"answer":false,"explanation":"False. The visual says terms are part of the decision because late-payment conditions vary by provider."}'::jsonb,
     '{"type":"true_false","difficulty":"beginner","question":"Jika checkout menunjukkan tiga cicilan, Anda dapat memutuskan dengan aman tanpa membaca ketentuan keterlambatan yang diungkapkan penyedia.","options":["Benar","Salah"],"answer":false,"explanation":"Salah. Visual menyatakan syarat adalah bagian dari keputusan karena kondisi keterlambatan berbeda menurut penyedia."}'::jsonb
   )
 )
