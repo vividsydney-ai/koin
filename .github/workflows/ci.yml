@@ -44,6 +44,12 @@ jobs:
       - name: Unit tests
         run: pnpm run test
 
+      - name: Production build
+        run: pnpm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://ci-build.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-build-anon-key
+
       - name: Enforce immutable migration history
         run: pnpm run test:migration-history
         env:
