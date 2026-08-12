@@ -10,14 +10,12 @@ import {
   getKoinPointsBalance,
   getRecentBadge,
   getContinueLesson,
-  getPortfolioSnapshot,
   getLeaderboardSnippet,
   type StreakSummary,
   type XpSummary,
   type KoinPointsSummary,
   type RecentBadge,
   type ContinueDestination,
-  type PortfolioSnapshot,
   type LeaderboardEntry,
 } from "@/lib/home/client";
 import { ProgressCardModal } from "@/components/ProgressCard";
@@ -46,7 +44,6 @@ export default function Home() {
   const [koinPoints, setKoinPoints] = useState<KoinPointsSummary | null>(null);
   const [recentBadge, setRecentBadge] = useState<RecentBadge | null>(null);
   const [continueLesson, setContinueLesson] = useState<ContinueDestination | null>(null);
-  const [portfolio, setPortfolio] = useState<PortfolioSnapshot | null>(null);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [recommendations, setRecommendations] = useState<LessonRecommendation[]>([]);
   const [dailyFocus, setDailyFocus] = useState<DailyFocusState | null>(null);
@@ -59,13 +56,12 @@ export default function Home() {
     const load = async () => {
       if (!user) return;
       setLoading(true);
-      const [streakData, xpData, kpData, badgeData, lessonData, portfolioData, leaderboardData, focusData, recallData] = await Promise.all([
+      const [streakData, xpData, kpData, badgeData, lessonData, leaderboardData, focusData, recallData] = await Promise.all([
         getStreak(user.id),
         getXpSummary(user.id),
         getKoinPointsBalance(user.id),
         getRecentBadge(user.id),
         getContinueLesson(user.id),
-        getPortfolioSnapshot(user.id),
         getLeaderboardSnippet(user.id),
         getDailyFocusChallenge(getLocalTimeZone()),
         getDueLessonRecallPrompt(locale),
@@ -81,7 +77,6 @@ export default function Home() {
       setKoinPoints(kpData);
       setRecentBadge(badgeData);
       setContinueLesson(lessonData);
-      setPortfolio(portfolioData);
       setLeaderboard(leaderboardData);
       setDailyFocus(focusData);
       setRecallPrompt(recallData);
@@ -129,7 +124,6 @@ export default function Home() {
             <LessonRecallCard prompt={recallPrompt} locale={locale} onComplete={() => setRecallPrompt(null)} />
             <RecommendationsCard
               recommendations={recommendations}
-              portfolio={portfolio}
               missionOutstanding={continueLesson?.kind === "mission"}
               onDismiss={async (id) => {
                 await dismissRecommendation(id);
@@ -137,7 +131,7 @@ export default function Home() {
               }}
             />
             <XpLevelCard xp={xp} />
-            <PortfolioCard portfolio={portfolio} />
+            <PracticeMarketCard />
           </div>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3 lg:grid-cols-1">
@@ -157,7 +151,6 @@ export default function Home() {
             totalXp: xp?.totalXp ?? 0,
             streakDays: streak?.currentStreakDays ?? 0,
             koinPoints: koinPoints?.currentBalance ?? 0,
-            portfolioReturnPct: portfolio?.totalReturnPct ?? 0,
           }}
           onClose={() => setShowProgressCard(false)}
         />
@@ -482,60 +475,19 @@ function RecentBadgeCard({ badge }: { badge: RecentBadge | null }) {
   );
 }
 
-function PortfolioCard({ portfolio }: { portfolio: PortfolioSnapshot | null }) {
-  const { t } = useLocale();
-  if (!portfolio) {
-    return (
-      <EmptyState
-        icon="📈"
-        title={t("home.startPaperTrading")}
-        description={t("home.portfolioEmptyBody")}
-        action={{ label: t("home.goToTrade"), href: "/trade" }}
-      />
-    );
-  }
-
-  const positive = portfolio.totalReturnAmount >= 0;
-  const cashPct = portfolio.totalValue > 0 ? (portfolio.cashBalance / portfolio.totalValue) * 100 : 0;
-  const updatedAt = new Intl.DateTimeFormat(undefined, { day: "numeric", month: "short" }).format(
-    new Date(portfolio.updatedAt)
-  );
-
+function PracticeMarketCard() {
   return (
     <Link href="/trade" className="block">
       <article className="rounded-card border border-muted bg-surface p-4 shadow-sm transition-colors hover:bg-muted/20">
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-              {t("home.portfolioPulse")}
+              Practice Market
             </p>
-            <p className="mt-1 text-2xl font-bold tracking-tight text-foreground">
-              Rp {portfolio.totalValue.toLocaleString("id-ID")}
-            </p>
-            <p className={`mt-1 text-xs font-semibold ${positive ? "text-success" : "text-danger"}`}>
-              {positive ? "+" : ""}Rp {Math.abs(portfolio.totalReturnAmount).toLocaleString("id-ID")} ({positive ? "+" : ""}{portfolio.totalReturnPct.toFixed(1)}%)
-            </p>
+            <p className="mt-1 text-lg font-bold tracking-tight text-foreground">Season 1 is preparing</p>
+            <p className="mt-1 text-sm text-muted-foreground">A fresh simulated account starts when the season opens.</p>
           </div>
-          <div className="text-right">
-            <p className="text-xs text-muted-foreground">{t("home.updated")}</p>
-            <p className="text-sm font-semibold text-foreground">{updatedAt}</p>
-          </div>
-        </div>
-        <div className="mt-4 grid grid-cols-2 gap-4 border-t border-muted pt-3 text-sm">
-          <div>
-            <p className="text-xs text-muted-foreground">{t("home.cash")}</p>
-            <p className="mt-0.5 font-semibold text-foreground">Rp {portfolio.cashBalance.toLocaleString("id-ID")}</p>
-            <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted" aria-label={`${cashPct.toFixed(0)}% cash`}>
-              <div className="h-full rounded-full bg-primary" style={{ width: `${cashPct}%` }} />
-            </div>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground">{t("home.topHolding")}</p>
-            <p className="mt-0.5 font-semibold text-foreground">{portfolio.topHolding?.symbol ?? "—"}</p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              {portfolio.topHoldingPct === null ? "—" : `${portfolio.topHoldingPct.toFixed(0)}% ${t("home.ofPortfolio")}`}
-            </p>
-          </div>
+          <span className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary">Simulated</span>
         </div>
       </article>
     </Link>
@@ -628,30 +580,25 @@ function LeaderboardCard({ entries }: { entries: LeaderboardEntry[] }) {
 
 function RecommendationsCard({
   recommendations,
-  portfolio,
   missionOutstanding,
   onDismiss,
 }: {
   recommendations: LessonRecommendation[];
-  portfolio: PortfolioSnapshot | null;
   missionOutstanding: boolean;
   onDismiss: (id: string) => void;
 }) {
   const { t } = useLocale();
   if (missionOutstanding) return null;
 
-  const recommendation = recommendations.find((candidate) => {
-    if (candidate.trigger?.type !== "portfolio_event") return true;
-    const threshold = candidate.trigger.thresholdPct ?? 10;
-    if (candidate.trigger.event === "drawdown") return Boolean(portfolio && portfolio.totalReturnPct <= -threshold);
-    if (candidate.trigger.event === "concentrated_holding") return Boolean(portfolio?.topHoldingPct && portfolio.topHoldingPct > threshold);
-    return true;
-  });
+  // Legacy portfolio-triggered recommendations are hidden during the clean
+  // Practice Market cutover; they must not leak archived balances into Home. [KO-417]
+  const recommendation = recommendations.find(
+    (candidate) => candidate.trigger?.type !== "portfolio_event",
+  );
 
   if (!recommendation) return null;
-  const isPortfolioAction = recommendation.trigger?.type === "portfolio_event";
-  const href = isPortfolioAction ? "/trade" : `/learn/${recommendation.slug}`;
-  const actionLabel = isPortfolioAction ? t("home.reviewPortfolio") : t("learn.startLesson");
+  const href = `/learn/${recommendation.slug}`;
+  const actionLabel = t("learn.startLesson");
 
   return (
     <article className="rounded-card border border-muted bg-surface p-5 shadow-sm">

@@ -10,7 +10,7 @@ export interface ProgressCardData {
   totalXp: number;
   streakDays: number;
   koinPoints: number;
-  portfolioReturnPct: number;
+  portfolioReturnPct?: number;
 }
 
 interface ProgressCardProps {
@@ -68,7 +68,9 @@ export function ProgressCardModal({ data, onClose }: ProgressCardProps) {
     const stats = [
       { label: "Streak", value: `${data.streakDays}d`, icon: "🔥" },
       { label: "Koin Points", value: data.koinPoints.toLocaleString("id-ID"), icon: "🪙" },
-      { label: "Return", value: `${data.portfolioReturnPct >= 0 ? "+" : ""}${data.portfolioReturnPct.toFixed(1)}%`, icon: "📈" },
+      ...(typeof data.portfolioReturnPct === "number"
+        ? [{ label: "Return", value: `${data.portfolioReturnPct >= 0 ? "+" : ""}${data.portfolioReturnPct.toFixed(1)}%`, icon: "📈" }]
+        : []),
     ];
 
     const startX = 40;

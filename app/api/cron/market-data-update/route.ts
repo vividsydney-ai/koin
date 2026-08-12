@@ -1,20 +1,17 @@
 import { NextResponse } from "next/server";
-import { updateMarketData } from "@/lib/market-data/server";
 
-export async function GET(request: Request) {
-  const authHeader = request.headers.get("Authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+const RETIRED_RESPONSE = {
+  error: "legacy_paper_trading_archived",
+  message:
+    "The legacy Paper Trading market-data updater is retired. Practice Market seasons use their own authored simulation timeline.",
+};
 
-  try {
-    const result = await updateMarketData(undefined, { refreshPortfolioValues: true });
-    return NextResponse.json(result);
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    console.error("market-data-update cron error:", message);
-    return NextResponse.json({ error: message }, { status: 500 });
-  }
+/**
+ * Kept as a deliberate 410 instead of deleting the endpoint so an old Vercel
+ * schedule or manual request can never restart legacy valuations. [KO-417]
+ */
+export async function GET() {
+  return NextResponse.json(RETIRED_RESPONSE, { status: 410 });
 }
 
 export const POST = GET;

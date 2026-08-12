@@ -6,7 +6,6 @@ import Link from "next/link";
 import { useAuth } from "@/lib/auth/use-auth";
 import { signOut } from "@/lib/auth/client";
 import { getUserStats, type UserStats } from "@/lib/gamification/client";
-import { getPortfolioSnapshot, type PortfolioSnapshot } from "@/lib/portfolio/client";
 import { EmptyState } from "@/components/EmptyState";
 import { StatCard } from "@/components/StatCard";
 import { BadgeGrid } from "@/components/BadgeGrid";
@@ -24,7 +23,6 @@ export default function ProfilePage() {
   const { user, profile, loading: authLoading } = useAuth(true);
   const { locale, setLocale, t } = useLocale();
   const [stats, setStats] = useState<UserStats | null>(null);
-  const [portfolio, setPortfolio] = useState<PortfolioSnapshot | null>(null);
   const [dataLoading, setDataLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [displayNameOverride, setDisplayNameOverride] = useState<string | null>(null);
@@ -36,13 +34,9 @@ export default function ProfilePage() {
     let mounted = true;
     const load = async () => {
       setDataLoading(true);
-      const [userStats, snapshot] = await Promise.all([
-        getUserStats(user.id),
-        getPortfolioSnapshot(user.id),
-      ]);
+      const userStats = await getUserStats(user.id);
       if (!mounted) return;
       setStats(userStats);
-      setPortfolio(snapshot);
       setDataLoading(false);
     };
 
@@ -108,31 +102,14 @@ export default function ProfilePage() {
 
           <section className="rounded-lg border border-muted bg-surface p-5">
             <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-              {t("profile.paperPortfolio")}
+              Practice Market
             </h2>
-            {portfolio ? (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">{t("profile.totalValue")}</span>
-                  <span className="text-lg font-bold">Rp {portfolio.totalValue.toLocaleString("id-ID")}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">{t("profile.cash")}</span>
-                  <span>Rp {portfolio.cashBalance.toLocaleString("id-ID")}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">{t("profile.return")}</span>
-                  <span className={portfolio.returnPct >= 0 ? "text-success" : "text-danger"}>
-                    {portfolio.returnPct >= 0 ? "+" : ""}
-                    {portfolio.returnPct.toFixed(2)}%
-                  </span>
-                </div>
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                {t("profile.noPortfolio")}
-              </p>
-            )}
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              Season 1 is preparing. Your new simulated account will begin with the season, after Chapter 08 and Before the Bell onboarding.
+            </p>
+            <Link href="/trade" className="mt-4 inline-flex min-h-11 items-center text-sm font-bold text-primary hover:underline">
+              View Practice Market →
+            </Link>
           </section>
 
           <section>

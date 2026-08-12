@@ -9,10 +9,6 @@
       "schedule": "0 9 * * *"
     },
     {
-      "path": "/api/cron/market-data-update",
-      "schedule": "0 10 * * 1-5"
-    },
-    {
       "path": "/api/cron/account-deletion",
       "schedule": "0 2 * * *"
     }
