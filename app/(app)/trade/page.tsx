@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import PracticeMarketCutover from "@/components/practice-market/PracticeMarketCutover";
+import PracticeMarketSeasonPortfolio from "@/components/practice-market/PracticeMarketSeasonPortfolio";
 import {
   getPracticeMarketCutoverStatus,
   type PracticeMarketCutoverStatus,
@@ -19,6 +20,10 @@ export default function TradePage() {
       active = false;
     };
   }, []);
+
+  if (status?.seasonAccessEnabled) {
+    return <PracticeMarketSeasonPortfolio />;
+  }
 
   return <PracticeMarketCutover status={status} />;
 }
