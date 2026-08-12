@@ -13,8 +13,11 @@ LANGUAGE plpgsql
 SET search_path = public, pg_temp
 AS $$
 BEGIN
-  IF NEW.state IN ('preparing', 'active')
-    AND OLD.state NOT IN ('preparing', 'active')
+  -- This protects only the first release transition. Once a season is live,
+  -- pause/resume or operational transitions must not be blocked merely because
+  -- earlier sessions have naturally elapsed.
+  IF OLD.state = 'draft'
+    AND NEW.state IN ('preparing', 'active')
     AND EXISTS (
       SELECT 1
       FROM public.practice_market_sessions session
@@ -350,7 +353,12 @@ FROM season
 JOIN event_seed ON TRUE
 JOIN public.practice_market_sessions session
   ON session.season_id = season.id AND session.session_number = event_seed.session_number
-ON CONFLICT DO NOTHING;
+WHERE NOT EXISTS (
+  SELECT 1
+  FROM public.practice_market_event_cards existing_card
+  WHERE existing_card.season_id = season.id
+    AND existing_card.session_id = session.id
+);
 
 DO $$
 DECLARE
