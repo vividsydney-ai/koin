@@ -1,7 +1,15 @@
 "use client";
 
-import { useLayoutEffect, useMemo, useRef, useState } from "react";
-import { gsap } from "gsap";
+import { useId, useMemo, useRef, useState } from "react";
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  ReferenceLine,
+  ResponsiveContainer,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { ContextualHelp } from "@/components/ContextualHelp";
 import { SourceBadge, type ChartDataSource } from "@/components/SourceBadge";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
@@ -29,15 +37,14 @@ const compact = new Intl.NumberFormat("id-ID", {
   notation: "compact",
   maximumFractionDigits: 1,
 });
-const CHART_HEIGHT = 60;
-const LINE_Y = 29;
 
-type ChartShape = {
-  line: string;
-  area: string;
-  coords: { x: number; y: number }[];
-  marker?: { x: number; y: number };
-  axisValues: number[];
+const REQUESTED_RANGE_DAYS: Record<
+  Exclude<PortfolioHistoryRange, "All">,
+  number
+> = {
+  "1M": 31,
+  "3M": 92,
+  "6M": 183,
 };
 
 function formatAxis(value: number) {
@@ -70,13 +77,14 @@ function ymdInTimeZone(date: Date, timeZone: string) {
 function parseDateInTimeZone(date: string, timeZone: string) {
   const [year, month, day] = date.split("-").map(Number);
   let candidate = new Date(Date.UTC(year, month - 1, day));
-  for (let i = 0; i < 3; i += 1) {
+  for (let index = 0; index < 3; index += 1) {
     const actual = ymdInTimeZone(candidate, timeZone);
     if (actual === date) return candidate;
-    const [ay, am, ad] = actual.split("-").map(Number);
+    const [actualYear, actualMonth, actualDay] = actual.split("-").map(Number);
     const diffDays =
       Math.floor(
-        Date.UTC(year, month - 1, day) - Date.UTC(ay, am - 1, ad),
+        Date.UTC(year, month - 1, day) -
+          Date.UTC(actualYear, actualMonth - 1, actualDay),
       ) / 86_400_000;
     candidate = new Date(candidate.getTime() + diffDays * 86_400_000);
   }
@@ -106,94 +114,25 @@ function formatDate(
 }
 
 function formatTickDate(
-  date: Date | string,
+  date: string,
   range: PortfolioHistoryRange,
   locale: Locale,
-  timeZone = userTimeZone,
 ) {
-  const { day, month } = dateParts(date, locale, timeZone);
-  if (range === "All") {
-    return month;
-  }
-  const week = Math.ceil(day / 7);
-  return `${month} W${week}`;
+  const { day, month } = dateParts(date, locale, userTimeZone);
+  if (range === "All") return month;
+  return `${month} W${Math.ceil(day / 7)}`;
 }
 
 function formatPercentChange(change: number, base: number): string {
   if (base === 0) return "0.0%";
-  const pct = (change / base) * 100;
+  const percent = (change / base) * 100;
   const formatted = new Intl.NumberFormat("id-ID", {
     minimumFractionDigits: 1,
     maximumFractionDigits: 1,
-  }).format(Math.abs(pct));
-  if (Math.abs(pct) < 0.05) return "0.0%";
+  }).format(Math.abs(percent));
+  if (Math.abs(percent) < 0.05) return "0.0%";
   return `${change > 0 ? "+" : change < 0 ? "-" : ""}${formatted}%`;
 }
-
-function createChartShape(points: PortfolioValueSnapshot[]): ChartShape {
-  const values = points.map((point) => point.totalValue);
-  const current = values.at(-1) ?? 0;
-  const variation = Math.max(Math.abs(current) * 0.015, 1);
-  const hasMovement = values.some((value) => Math.abs(value - current) >= 1);
-  const rawMin = hasMovement ? Math.min(...values) : current - variation;
-  const rawMax = hasMovement ? Math.max(...values) : current + variation;
-  const padding = Math.max((rawMax - rawMin) * 0.18, variation * 0.25);
-  const minimum = rawMin - padding;
-  const maximum = rawMax + padding;
-  const range = Math.max(maximum - minimum, 1);
-  const axisValues = [maximum, (maximum + minimum) / 2, minimum];
-
-  if (points.length < 2) {
-    return {
-      line: `M0,${LINE_Y} L100,${LINE_Y}`,
-      area: "",
-      coords: [
-        { x: 0, y: LINE_Y },
-        { x: 100, y: LINE_Y },
-      ],
-      axisValues,
-    };
-  }
-
-  const coords = points.map((point, index) => {
-    const x = (index / (points.length - 1)) * 100;
-    const y = 4 + ((maximum - point.totalValue) / range) * (CHART_HEIGHT - 12);
-    return { x, y };
-  });
-  let line = `M${coords[0].x},${coords[0].y}`;
-  for (let index = 1; index < coords.length; index += 1) {
-    const previous = coords[index - 1];
-    const currentPoint = coords[index];
-    const midpoint = (previous.x + currentPoint.x) / 2;
-    line += ` C${midpoint},${previous.y} ${midpoint},${currentPoint.y} ${currentPoint.x},${currentPoint.y}`;
-  }
-
-  return {
-    line,
-    area: `${line} L100,${CHART_HEIGHT - 2} L0,${CHART_HEIGHT - 2} Z`,
-    coords,
-    marker: coords.at(-1) ?? { x: 100, y: LINE_Y },
-    axisValues,
-  };
-}
-
-type Tick = { label: string; x: number };
-
-const TICK_CONFIG: Record<
-  PortfolioHistoryRange,
-  { count: number; minGapDays: number }
-> = {
-  "1M": { count: 4, minGapDays: 7 },
-  "3M": { count: 5, minGapDays: 14 },
-  "6M": { count: 5, minGapDays: 14 },
-  All: { count: 6, minGapDays: 30 },
-};
-
-const REQUESTED_RANGE_DAYS: Record<Exclude<PortfolioHistoryRange, "All">, number> = {
-  "1M": 31,
-  "3M": 92,
-  "6M": 183,
-};
 
 function recordedDaySpan(points: PortfolioValueSnapshot[]) {
   if (points.length < 2) return 0;
@@ -225,66 +164,39 @@ function freshnessContext(points: PortfolioValueSnapshot[], locale: Locale) {
     : `Market date: ${marketDate} (Jakarta) · Your local date: ${localDate} (${userTimeZone})`;
 }
 
-function generateTicks(
+function valueDomain(points: PortfolioValueSnapshot[]): [number, number] {
+  const values = points.map((point) => point.totalValue);
+  const current = values.at(-1) ?? 0;
+  const rawMinimum = values.length > 0 ? Math.min(...values) : current;
+  const rawMaximum = values.length > 0 ? Math.max(...values) : current;
+  const spread = Math.max(rawMaximum - rawMinimum, Math.abs(current) * 0.03, 1);
+  return [rawMinimum - spread * 0.18, rawMaximum + spread * 0.18];
+}
+
+function chartPointPosition(
+  index: number,
+  point: PortfolioValueSnapshot,
   points: PortfolioValueSnapshot[],
-  range: PortfolioHistoryRange,
-  locale: Locale,
-  timeZone = userTimeZone,
-): Tick[] {
-  if (points.length === 0) return [];
-  if (points.length === 1) {
-    return [
-      {
-        label: formatTickDate(
-          parseDateInTimeZone(points[0].date, timeZone),
-          range,
-          locale,
-          timeZone,
-        ),
-        x: 0,
-      },
-    ];
-  }
+  domain: [number, number],
+) {
+  const x = points.length < 2 ? 50 : (index / (points.length - 1)) * 100;
+  const y =
+    8 +
+    ((domain[1] - point.totalValue) / Math.max(domain[1] - domain[0], 1)) *
+      72;
+  return { x, y };
+}
 
-  const { count, minGapDays } = TICK_CONFIG[range];
-  const startTime = parseDateInTimeZone(points[0].date, timeZone).getTime();
-  const endTime = parseDateInTimeZone(points.at(-1)!.date, timeZone).getTime();
-  const spanMs = endTime - startTime;
-  const msPerDay = 86_400_000;
-
-  if (spanMs <= 0) {
-    return points.map((point, index) => ({
-      label: formatTickDate(
-        parseDateInTimeZone(point.date, timeZone),
-        range,
-        locale,
-        timeZone,
-      ),
-      x: (index / (points.length - 1)) * 100,
-    }));
-  }
-
-  const ticks: Tick[] = [];
-  const used = new Set<string>();
-  let lastTime = -Infinity;
-
-  for (let i = 1; i <= count; i += 1) {
-    const targetTime = startTime + (i / (count + 1)) * spanMs;
-    const targetDate = new Date(targetTime);
-    const label = formatTickDate(targetDate, range, locale, timeZone);
-
-    if (used.has(label)) continue;
-    if ((targetTime - lastTime) / msPerDay < minGapDays) continue;
-
-    ticks.push({
-      label,
-      x: ((targetTime - startTime) / spanMs) * 100,
-    });
-    used.add(label);
-    lastTime = targetTime;
-  }
-
-  return ticks;
+function pointIndexFromClientX(
+  event: { clientX: number },
+  element: HTMLDivElement | null,
+  pointCount: number,
+) {
+  if (!element || pointCount < 2) return pointCount === 1 ? 0 : null;
+  const rect = element.getBoundingClientRect();
+  if (rect.width <= 0) return null;
+  const ratio = Math.min(Math.max((event.clientX - rect.left) / rect.width, 0), 1);
+  return Math.round(ratio * (pointCount - 1));
 }
 
 export default function PortfolioChart({
@@ -301,82 +213,54 @@ export default function PortfolioChart({
   loading?: boolean;
 }) {
   const { locale, t } = useLocale();
+  const chartRef = useRef<HTMLDivElement>(null);
+  const gradientId = useId().replace(/:/g, "");
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
   const [pinnedIndex, setPinnedIndex] = useState<number | null>(null);
-  const svgRef = useRef<SVGSVGElement>(null);
-  const visualRef = useRef<SVGGElement>(null);
+  const [keyboardIndex, setKeyboardIndex] = useState<number | null>(null);
 
-  const chartTotalValue = snapshots.at(-1)?.totalValue ?? 0;
-  const chart = useMemo(() => createChartShape(snapshots), [snapshots]);
-  const firstValue = snapshots[0]?.totalValue ?? 0;
+  // This is deliberately a one-to-one view of recorded snapshots: no browser
+  // interpolation, no extra current-day point, and no fabricated market data.
+  const chartData = useMemo(() => snapshots, [snapshots]);
+  const domain = useMemo(() => valueDomain(chartData), [chartData]);
+  const chartTotalValue = chartData.at(-1)?.totalValue ?? 0;
+  const firstValue = chartData[0]?.totalValue ?? 0;
   const change = chartTotalValue - firstValue;
-  const hasHistory = snapshots.length > 1;
-  const hasMovement = useMemo(
-    () =>
-      snapshots.some(
-        (point) => Math.abs(point.totalValue - firstValue) >= 1,
-      ),
-    [snapshots, firstValue],
+  const hasHistory = chartData.length > 1;
+  const hasMovement = chartData.some(
+    (point) => Math.abs(point.totalValue - firstValue) >= 1,
   );
-  const ticks = useMemo(
-    () => generateTicks(snapshots, range, locale),
-    [snapshots, range, locale],
+  const rangeNote = useMemo(
+    () => rangeContext(chartData, range, locale),
+    [chartData, range, locale],
   );
-  const rangeNote = useMemo(() => rangeContext(snapshots, range, locale), [snapshots, range, locale]);
-  const freshnessNote = useMemo(() => freshnessContext(snapshots, locale), [snapshots, locale]);
+  const freshnessNote = useMemo(
+    () => freshnessContext(chartData, locale),
+    [chartData, locale],
+  );
+  const selectedIndex = pinnedIndex ?? keyboardIndex ?? hoverIndex;
+  const activePoint = selectedIndex === null ? null : chartData[selectedIndex] ?? null;
+  const markerPosition =
+    activePoint && selectedIndex !== null
+      ? chartPointPosition(selectedIndex, activePoint, chartData, domain)
+      : null;
 
-  useLayoutEffect(() => {
-    if (!visualRef.current || loading) return;
-    const media = gsap.matchMedia();
-    media.add("(prefers-reduced-motion: no-preference)", () => {
-      gsap.fromTo(
-        visualRef.current,
-        { autoAlpha: 0.35, scaleY: 0.98, transformOrigin: "50% 50%" },
-        {
-          autoAlpha: 1,
-          scaleY: 1,
-          duration: 0.22,
-          ease: "power3.out",
-          overwrite: "auto",
-        },
-      );
-    });
-    return () => media.revert();
-  }, [chart.line, loading, range]);
-
-  const pointIndexFromClientX = (clientX: number) => {
-    if (!svgRef.current || snapshots.length < 2) return;
-    const rect = svgRef.current.getBoundingClientRect();
-    const ratio = Math.min(
-      Math.max((clientX - rect.left) / rect.width, 0),
-      1,
-    );
-    return Math.round(ratio * (snapshots.length - 1));
+  const inspectAt = (event: { clientX: number }, pin = false) => {
+    const index = pointIndexFromClientX(event, chartRef.current, chartData.length);
+    if (index === null) return;
+    if (pin) {
+      setPinnedIndex(index);
+      setKeyboardIndex(null);
+    } else {
+      setHoverIndex(index);
+    }
   };
 
-  const handleMouseMove = (event: React.MouseEvent<SVGSVGElement>) => {
-    const index = pointIndexFromClientX(event.clientX);
-    if (index !== undefined) setHoverIndex(index);
+  const clearSelection = () => {
+    setHoverIndex(null);
+    setPinnedIndex(null);
+    setKeyboardIndex(null);
   };
-
-  const handlePointerMove = (event: React.PointerEvent<SVGSVGElement>) => {
-    if (event.pointerType !== "mouse") return;
-    const index = pointIndexFromClientX(event.clientX);
-    if (index !== undefined) setHoverIndex(index);
-  };
-
-  const handlePointerDown = (event: React.PointerEvent<SVGSVGElement>) => {
-    const index = pointIndexFromClientX(event.clientX);
-    if (index !== undefined && event.pointerType !== "mouse") setPinnedIndex(index);
-  };
-
-  const handleMouseLeave = () => setHoverIndex(null);
-
-  const activePoint =
-    (pinnedIndex ?? hoverIndex) !== null ? snapshots[pinnedIndex ?? hoverIndex!] : null;
-  const activeCoord =
-    (pinnedIndex ?? hoverIndex) !== null ? chart.coords[pinnedIndex ?? hoverIndex!] : null;
-  const markerCoord = activeCoord ?? (hasMovement ? chart.marker : null);
 
   return (
     <section
@@ -434,148 +318,157 @@ export default function PortfolioChart({
         </div>
       </div>
 
-      <div
-        className="mt-8 grid grid-cols-[3.75rem_minmax(0,1fr)] gap-x-3"
-        aria-live="polite"
-      >
-        <div className="flex h-56 flex-col justify-between pb-7 text-right text-[11px] font-medium text-muted-foreground">
-          {chart.axisValues.map((value) => (
-            <span key={value}>{formatAxis(value)}</span>
-          ))}
-        </div>
-        <div className="relative">
-          {loading ? (
-            <div className="h-56 animate-pulse rounded-xl bg-muted" />
-          ) : (
-            <>
-              <svg
-                ref={svgRef}
-                viewBox={`0 0 100 ${CHART_HEIGHT}`}
-                preserveAspectRatio="none"
-                className="h-56 w-full overflow-visible"
-                role="img"
-                aria-label={`${range} portfolio value chart`}
-                onMouseMove={handleMouseMove}
-                onPointerMove={handlePointerMove}
-                onPointerDown={handlePointerDown}
-                onMouseLeave={handleMouseLeave}
-                onPointerLeave={handleMouseLeave}
-                tabIndex={0}
-                onKeyDown={(event) => {
-                  if (event.key === "Escape") setPinnedIndex(null);
-                }}
+      <div className="mt-8" aria-live="polite">
+        {loading ? (
+          <div className="h-56 animate-pulse rounded-xl bg-muted" />
+        ) : (
+          <div className="relative h-56 w-full">
+            <div
+              ref={chartRef}
+              data-testid="portfolio-area-chart"
+              data-series="portfolio-value"
+              className="h-full w-full touch-pan-y outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+              role="img"
+              aria-label={`${range} portfolio value chart`}
+              tabIndex={0}
+              onMouseMove={(event) => inspectAt(event)}
+              onMouseLeave={() => setHoverIndex(null)}
+              onPointerDown={(event) => {
+                if (event.pointerType !== "mouse") inspectAt(event, true);
+              }}
+              onPointerLeave={() => setHoverIndex(null)}
+              onKeyDown={(event) => {
+              if (chartData.length === 0) return;
+              if (event.key === "Escape") {
+                clearSelection();
+                return;
+              }
+              if (event.key === "Home") {
+                event.preventDefault();
+                setKeyboardIndex(0);
+                setPinnedIndex(null);
+                return;
+              }
+              if (event.key === "End") {
+                event.preventDefault();
+                setKeyboardIndex(chartData.length - 1);
+                setPinnedIndex(null);
+                return;
+              }
+              if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+                event.preventDefault();
+                const current = selectedIndex ?? 0;
+                const offset = event.key === "ArrowRight" ? 1 : -1;
+                setKeyboardIndex(
+                  Math.min(Math.max(current + offset, 0), chartData.length - 1),
+                );
+                setPinnedIndex(null);
+              }
+              }}
+            >
+              <ResponsiveContainer width="100%" height="100%">
+              <AreaChart
+                accessibilityLayer
+                data={chartData}
+                margin={{ top: 10, right: 12, left: 0, bottom: 0 }}
               >
-                {[7, LINE_Y, 52].map((y) => (
-                  <path
-                    key={y}
-                    d={`M0,${y} H100`}
-                    stroke="var(--color-border)"
-                    strokeDasharray="2 2"
-                    strokeOpacity="0.75"
-                    strokeWidth="0.35"
-                  />
-                ))}
-                <g ref={visualRef}>
-                  {hasMovement && (
-                    <path
-                      d={chart.area}
-                      fill="var(--color-primary)"
-                      fillOpacity="0.09"
-                    />
-                  )}
-                  <path
-                    d={chart.line}
-                    fill="none"
-                    stroke="var(--color-primary)"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeOpacity={hasMovement ? "1" : "0.82"}
-                    strokeWidth={hasMovement ? "1.2" : "1"}
-                    vectorEffect="non-scaling-stroke"
-                  />
-                  {activeCoord && (
-                    <>
-                      <line
-                        x1={activeCoord.x}
-                        y1={0}
-                        x2={activeCoord.x}
-                        y2={CHART_HEIGHT}
-                        stroke="var(--color-border)"
-                        strokeOpacity={0.6}
-                        strokeWidth="0.5"
-                        vectorEffect="non-scaling-stroke"
-                      />
-                    </>
-                  )}
-                </g>
-              </svg>
-              {markerCoord && (
-                <span
-                  data-testid="chart-marker"
-                  aria-hidden="true"
-                  className="pointer-events-none absolute z-[1] h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-primary bg-surface shadow-sm"
-                  style={{
-                    left: `${markerCoord.x}%`,
-                    top: `${(markerCoord.y / CHART_HEIGHT) * 100}%`,
-                  }}
-                />
-              )}
-              {activePoint && activeCoord && (
-                <div
-                  data-testid="chart-tooltip"
-                  className="pointer-events-none absolute z-10 min-w-[10rem] -translate-x-1/2 -translate-y-[115%] rounded-xl border border-muted/60 bg-surface p-3 shadow-[0_10px_24px_rgba(43,35,93,0.12)]"
-                  style={{
-                    left: `${activeCoord.x}%`,
-                    top: `${activeCoord.y}%`,
-                  }}
-                >
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                    {formatDate(activePoint.date, locale)}
-                  </p>
-                  <p className="mt-0.5 text-base font-bold text-foreground">
-                    {formatRupiah(activePoint.totalValue)}
-                  </p>
-                  <p
-                    className={`mt-1 flex items-center gap-1 text-xs font-bold ${
-                      getChangeTone(activePoint.totalValue - firstValue) ===
-                      "positive"
-                        ? "text-success"
-                        : getChangeTone(activePoint.totalValue - firstValue) ===
-                            "negative"
-                          ? "text-danger"
-                          : "text-muted-foreground"
-                    }`}
+                <defs>
+                  <linearGradient
+                    id={`portfolio-area-fill-${gradientId}`}
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
                   >
-                    {activePoint.totalValue - firstValue >= 0 ? (
-                      <ArrowUpIcon className="h-3 w-3" />
-                    ) : (
-                      <ArrowDownIcon className="h-3 w-3" />
-                    )}
-                    {formatPercentChange(
-                      activePoint.totalValue - firstValue,
-                      firstValue,
-                    )}{" "}
-                    {t("portfolioStory.tooltipFromStart")}
-                  </p>
-                  <p className="mt-1.5 text-[11px] leading-snug text-muted-foreground">
-                    {t("portfolioStory.tooltipDisclosure")}
-                  </p>
-                </div>
-              )}
-            </>
-          )}
-          <div className="relative mt-2 h-5 text-[11px] font-medium text-muted-foreground">
-            {ticks.map((tick) => (
+                    <stop offset="5%" stopColor="var(--color-primary)" stopOpacity={0.42} />
+                    <stop offset="95%" stopColor="var(--color-primary)" stopOpacity={0.04} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid
+                  vertical={false}
+                  stroke="var(--color-border)"
+                  strokeDasharray="4 6"
+                  strokeOpacity={0.72}
+                />
+                <XAxis
+                  dataKey="date"
+                  axisLine={false}
+                  tickLine={false}
+                  tickMargin={10}
+                  minTickGap={22}
+                  tick={{ fill: "var(--color-muted-foreground)", fontSize: 11 }}
+                  tickFormatter={(value: string) => formatTickDate(value, range, locale)}
+                />
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tickMargin={8}
+                  width={62}
+                  domain={domain}
+                  tick={{ fill: "var(--color-muted-foreground)", fontSize: 11 }}
+                  tickFormatter={formatAxis}
+                />
+                {chartData.length === 1 && (
+                  <ReferenceLine
+                    y={chartData[0].totalValue}
+                    stroke="var(--color-primary)"
+                    strokeDasharray="4 4"
+                    strokeOpacity={0.72}
+                  />
+                )}
+                <Area
+                  dataKey="totalValue"
+                  type="natural"
+                  name="Portfolio value"
+                  stroke="var(--color-primary)"
+                  strokeWidth={2}
+                  fill={`url(#portfolio-area-fill-${gradientId})`}
+                  isAnimationActive={false}
+                  activeDot={false}
+                  dot={false}
+                />
+              </AreaChart>
+              </ResponsiveContainer>
+            </div>
+
+            {markerPosition && (
               <span
-                key={tick.label + tick.x}
-                className="absolute -translate-x-1/2"
-                style={{ left: `${tick.x}%` }}
+                data-testid="chart-marker"
+                aria-hidden="true"
+                className="pointer-events-none absolute z-[1] size-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-primary bg-surface shadow-sm"
+                style={{ left: `${markerPosition.x}%`, top: `${markerPosition.y}%` }}
+              />
+            )}
+
+            {activePoint && markerPosition && (
+              <div
+                data-testid="chart-tooltip"
+                className="pointer-events-none absolute z-10 min-w-[10rem] -translate-x-1/2 -translate-y-[115%] rounded-xl border border-muted/60 bg-surface p-3 shadow-[0_10px_24px_rgba(43,35,93,0.12)]"
+                style={{ left: `${markerPosition.x}%`, top: `${markerPosition.y}%` }}
               >
-                {tick.label}
-              </span>
-            ))}
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  {formatDate(activePoint.date, locale)}
+                </p>
+                <p className="mt-0.5 text-base font-bold text-foreground">
+                  {formatRupiah(activePoint.totalValue)}
+                </p>
+                <p
+                  className={`mt-1 flex items-center gap-1 text-xs font-bold ${getChangeTone(activePoint.totalValue - firstValue) === "positive" ? "text-success" : getChangeTone(activePoint.totalValue - firstValue) === "negative" ? "text-danger" : "text-muted-foreground"}`}
+                >
+                  {activePoint.totalValue - firstValue >= 0 ? (
+                    <ArrowUpIcon className="h-3 w-3" />
+                  ) : (
+                    <ArrowDownIcon className="h-3 w-3" />
+                  )}
+                  {formatPercentChange(activePoint.totalValue - firstValue, firstValue)} {t("portfolioStory.tooltipFromStart")}
+                </p>
+                <p className="mt-1.5 text-[11px] leading-snug text-muted-foreground">
+                  {t("portfolioStory.tooltipDisclosure")}
+                </p>
+              </div>
+            )}
           </div>
-        </div>
+        )}
       </div>
 
       {rangeNote && (
@@ -588,8 +481,8 @@ export default function PortfolioChart({
       {!hasMovement && !loading && (
         <p className="mt-5 text-xs leading-relaxed text-muted-foreground">
           {hasHistory
-            ? "No portfolio-value change between recorded snapshots yet. Daily IDX EOD valuations will extend the history when your holdings move."
-            : "Your starting value is shown as a baseline. Daily IDX EOD valuations will build the history from here."}
+            ? "No portfolio-value change between recorded snapshots yet. Daily end-of-day valuations will extend the history when your holdings move."
+            : "Your starting value is shown as a baseline. Daily end-of-day valuations will build the history from here."}
         </p>
       )}
     </section>
@@ -618,16 +511,17 @@ function PortfolioIcon() {
 function ArrowUpIcon({ className }: { className?: string }) {
   return (
     <svg
-      className={className}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="2.5"
+      strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
     >
-      <path d="M12 19V5" />
       <path d="m5 12 7-7 7 7" />
+      <path d="M12 19V5" />
     </svg>
   );
 }
@@ -635,16 +529,17 @@ function ArrowUpIcon({ className }: { className?: string }) {
 function ArrowDownIcon({ className }: { className?: string }) {
   return (
     <svg
-      className={className}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="2.5"
+      strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
     >
-      <path d="M12 5v14" />
       <path d="m5 12 7 7 7-7" />
+      <path d="M12 5v14" />
     </svg>
   );
 }

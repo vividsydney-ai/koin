@@ -39,6 +39,31 @@ beforeEach(() => {
       removeEventListener: vi.fn(),
     }),
   });
+
+  class ResizeObserverMock {
+    constructor(private readonly callback: ResizeObserverCallback) {}
+
+    observe(target: Element) {
+      this.callback(
+        [
+          {
+            target,
+            contentRect: {
+              width: 640,
+              height: 224,
+            } as DOMRectReadOnly,
+          } as ResizeObserverEntry,
+        ],
+        this as unknown as ResizeObserver,
+      );
+    }
+
+    unobserve() {}
+
+    disconnect() {}
+  }
+
+  vi.stubGlobal("ResizeObserver", ResizeObserverMock);
 });
 
 describe("PortfolioChart", () => {
@@ -46,6 +71,17 @@ describe("PortfolioChart", () => {
     renderChart(<PortfolioChart snapshots={history} range="1M" />);
 
     expect(await screen.findAllByRole("tab")).toHaveLength(4);
+  });
+
+  it("renders one recorded portfolio-value area with a gradient, grid, and time axis", async () => {
+    renderChart(<PortfolioChart snapshots={history} range="1M" />);
+
+    const chart = await screen.findByTestId("portfolio-area-chart");
+    expect(chart).toHaveAttribute("data-series", "portfolio-value");
+    expect(chart.querySelector("linearGradient[id^='portfolio-area-fill']")).toBeInTheDocument();
+    expect(chart.querySelector(".recharts-cartesian-grid-horizontal")).toBeInTheDocument();
+    expect(screen.getByText("Jul W1")).toBeInTheDocument();
+    expect(screen.getByText("Jul W3")).toBeInTheDocument();
   });
 
   it.each(["1M", "3M", "6M", "All"] as const)(
@@ -78,13 +114,13 @@ describe("PortfolioChart", () => {
   it("shows a tooltip with date, value and change from the start when hovering the chart", async () => {
     renderChart(<PortfolioChart snapshots={history} range="1M" />);
 
-    const svg = await screen.findByRole("img", {
+    const chart = await screen.findByRole("img", {
       name: /portfolio value chart/i,
     });
-    svg.getBoundingClientRect = () =>
-      ({ left: 0, top: 0, width: 100, height: 60 }) as DOMRect;
+    chart.getBoundingClientRect = () =>
+      ({ left: 0, top: 0, width: 200, height: 224 }) as DOMRect;
 
-    fireEvent.mouseMove(svg, { clientX: 100, clientY: 30 });
+    fireEvent.mouseMove(chart, { clientX: 200, clientY: 30 });
 
     const tooltip = await screen.findByTestId("chart-tooltip");
     expect(tooltip).toHaveTextContent("15 Jul");
@@ -92,7 +128,7 @@ describe("PortfolioChart", () => {
     expect(tooltip).toHaveTextContent("+5,0% from starting point");
     expect(tooltip).toHaveTextContent("Simulated value, calculated once daily");
 
-    fireEvent.mouseLeave(svg);
+    fireEvent.mouseLeave(chart);
     await waitFor(() => {
       expect(screen.queryByTestId("chart-tooltip")).not.toBeInTheDocument();
     });
@@ -101,17 +137,29 @@ describe("PortfolioChart", () => {
   it("keeps a touch-selected point visible and uses a true CSS circle marker", async () => {
     renderChart(<PortfolioChart snapshots={history} range="3M" />);
 
-    const svg = await screen.findByRole("img", { name: /portfolio value chart/i });
-    svg.getBoundingClientRect = () =>
-      ({ left: 0, top: 0, width: 100, height: 60 }) as DOMRect;
+    const chart = await screen.findByRole("img", { name: /portfolio value chart/i });
+    chart.getBoundingClientRect = () =>
+      ({ left: 0, top: 0, width: 200, height: 224 }) as DOMRect;
 
-    fireEvent.pointerDown(svg, { clientX: 100, clientY: 30, pointerType: "touch" });
-    fireEvent.pointerLeave(svg, { pointerType: "touch" });
+    fireEvent.pointerDown(chart, { clientX: 200, clientY: 30, pointerType: "touch" });
+    fireEvent.pointerLeave(chart, { pointerType: "touch" });
 
     expect(await screen.findByTestId("chart-tooltip")).toHaveTextContent("15 Jul");
     expect(screen.getByTestId("chart-marker")).toHaveClass("rounded-full");
-    expect(screen.getByTestId("chart-marker")).toHaveClass("h-3");
-    expect(screen.getByTestId("chart-marker")).toHaveClass("w-3");
+    expect(screen.getByTestId("chart-marker")).toHaveClass("size-3");
+  });
+
+  it("lets keyboard users inspect a recorded point and dismiss the selection", async () => {
+    renderChart(<PortfolioChart snapshots={history} range="1M" />);
+
+    const chart = await screen.findByRole("img", { name: /portfolio value chart/i });
+    fireEvent.keyDown(chart, { key: "End" });
+
+    expect(await screen.findByTestId("chart-tooltip")).toHaveTextContent("15 Jul");
+    fireEvent.keyDown(chart, { key: "Escape" });
+    await waitFor(() => {
+      expect(screen.queryByTestId("chart-tooltip")).not.toBeInTheDocument();
+    });
   });
 
   it("labels sparse history and separates Jakarta market date from the viewer timezone", async () => {
@@ -122,7 +170,7 @@ describe("PortfolioChart", () => {
     expect(screen.getByText(/your local date.*australia\/sydney|your local date/i)).toBeInTheDocument();
   });
 
-  it("renders distributed month-week ticks below the chart", async () => {
+  it("uses recorded dates rather than inventing intermediate axis points", async () => {
     renderChart(
       <PortfolioChart
         snapshots={[
@@ -134,7 +182,8 @@ describe("PortfolioChart", () => {
     );
 
     expect(await screen.findByText("Jul W1")).toBeInTheDocument();
-    expect(screen.getByText("Jul W3")).toBeInTheDocument();
+    expect(screen.getAllByText("Jul W5").length).toBeGreaterThan(0);
+    expect(screen.queryByText("Jul W3")).not.toBeInTheDocument();
   });
 
   it("uses only the authoritative snapshots it receives", async () => {
@@ -152,13 +201,12 @@ describe("PortfolioChart", () => {
       />,
     );
 
-    const svg = await screen.findByRole("img", {
+    const chart = await screen.findByRole("img", {
       name: /portfolio value chart/i,
     });
-    svg.getBoundingClientRect = () =>
-      ({ left: 0, top: 0, width: 100, height: 60 }) as DOMRect;
 
-    expect(svg).toHaveAttribute("aria-label", "1M portfolio value chart");
+    expect(chart).toHaveAttribute("aria-label", "1M portfolio value chart");
+    expect(chart).toHaveAttribute("data-series", "portfolio-value");
     expect(screen.getByText("Rp 10.000.000")).toBeInTheDocument();
   });
 });
