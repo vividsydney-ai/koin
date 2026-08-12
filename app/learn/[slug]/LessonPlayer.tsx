@@ -37,6 +37,8 @@ import { StatCard } from "@/components/StatCard";
 import { ReachableLink } from "@/components/sources/ReachableLink";
 import { lessonCheckCount } from "@/lib/lessons/mastery";
 import { getLocalizedSourceUrl } from "@/lib/sources/localized-url";
+import { checkUrlReachability } from "@/lib/sources/reachability";
+import { selectBestAccessibleSources } from "@/lib/sources/fallback";
 
 const STEP_IDS = ["intro", "concept", "example", "quiz", "source"] as const;
 
@@ -1132,9 +1134,46 @@ function SourceStep({
   alreadyCompleted?: boolean;
 }) {
   const { t } = useLocale();
-  const primary = sources.filter((s) => s.relevanceType === "primary" || s.isPrimary);
-  const supporting = sources.filter((s) => s.relevanceType === "supporting" && !s.isPrimary);
-  const furtherReading = sources.filter((s) => s.relevanceType === "further_reading");
+  const [availabilityState, setAvailabilityState] = useState<{
+    key: string;
+    values: Map<string, boolean>;
+  } | null>(null);
+  const sourceKey = sources.map((source) => source.id).join(",");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (sources.length === 0) {
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    Promise.all(
+      sources.map(async (source) => {
+        if (!source.url) return [source.id, false] as const;
+        const result = await checkUrlReachability(source.url, { timeoutMs: 4000, attempts: 1 });
+        return [source.id, result.ok] as const;
+      }),
+    ).then((entries) => {
+      if (!cancelled) setAvailabilityState({ key: sourceKey, values: new Map(entries) });
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [sourceKey, sources]);
+
+  const sourceAvailability = availabilityState?.key === sourceKey ? availabilityState.values : null;
+
+  const selection = sourceAvailability
+    ? selectBestAccessibleSources(sources, sourceAvailability)
+    : { sources: [], bestTier: null, usedFallback: false };
+  const displaySources = selection.sources;
+  const usingFallback = sourceAvailability !== null && selection.usedFallback;
+  const primary = displaySources.filter((s) => s.relevanceType === "primary" || s.isPrimary);
+  const supporting = displaySources.filter((s) => s.relevanceType === "supporting" && !s.isPrimary);
+  const furtherReading = displaySources.filter((s) => s.relevanceType === "further_reading" || (!s.isPrimary && s.relevanceType !== "supporting"));
 
   return (
     <div className="space-y-6">
@@ -1150,8 +1189,21 @@ function SourceStep({
 
       {sources.length === 0 ? (
         <p className="text-sm text-muted-foreground">{t("lesson.noSources")}</p>
+      ) : sourceAvailability === null ? (
+        <p className="rounded-lg border border-muted bg-surface-raised px-4 py-3 text-sm text-muted-foreground" aria-live="polite">
+          {t("lesson.checkingSources")}
+        </p>
+      ) : displaySources.length === 0 ? (
+        <div className="rounded-lg border border-warning/30 bg-warning/5 px-4 py-3 text-sm text-warning" role="status">
+          {t("lesson.sourceUnavailable")}
+        </div>
       ) : (
         <div className="space-y-5">
+          {usingFallback && (
+            <div className="rounded-lg border border-warning/30 bg-warning/5 px-4 py-3 text-sm text-warning" role="status">
+              {t("lesson.sourceFallback")}
+            </div>
+          )}
           {primary.length > 0 && (
             <div className="@container grid grid-cols-1 gap-3">
               <h3 className="col-span-full text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{t("lesson.primarySource")}</h3>
@@ -1246,7 +1298,6 @@ function SourceCard({ source, highlighted = false }: { source: LessonSource; hig
               title={displayTitle}
               ariaLabel={`${t("lesson.readSource")}: ${displayTitle}`}
               linkClassName="inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline"
-              skipCheck={source.sourceTier === 1}
             >
               {t("lesson.readSource")}
               <ArrowRightMiniIcon />
@@ -1324,7 +1375,6 @@ function SourceCard({ source, highlighted = false }: { source: LessonSource; hig
               title={displayTitle}
               ariaLabel={`${t("lesson.readSource")}: ${displayTitle}`}
               linkClassName="inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline"
-              skipCheck={source.sourceTier === 1}
             >
               {t("lesson.readSource")}
               <ExternalLinkIcon />

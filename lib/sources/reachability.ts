@@ -36,8 +36,9 @@ export async function checkUrlReachability(
       clearTimeout(timeout);
 
       const status = response.status;
-      // 403 is treated as reachable because many Indonesian regulator sites block bots.
-      if (status < 400 || status === 403) {
+      // A forbidden response is not a usable source link. Editorial trust does
+      // not change whether a learner can open the source.
+      if (status < 400) {
         return { ok: true, status };
       }
       if (attempt === attempts) {
