@@ -37,6 +37,7 @@ export const candlestickSchema = z.object({
   high: z.number(),
   low: z.number(),
   close: z.number(),
+  volume: z.number().nonnegative().optional(),
   label: z.string().min(1).optional(),
 }).refine((candle) => candle.high >= Math.max(candle.open, candle.close) && candle.low <= Math.min(candle.open, candle.close), {
   message: "Candlestick high/low must contain open and close",

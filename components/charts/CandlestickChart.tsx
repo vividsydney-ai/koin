@@ -46,6 +46,8 @@ export function CandlestickChart({
   const width = compact ? 210 : 420;
   const height = compact ? 132 : 230;
   const basePadding = compact ? { top: 16, right: 12, bottom: 22, left: 12 } : { top: 24, right: 22, bottom: 34, left: 34 };
+  const hasVolume = !compact && candles.some((candle) => typeof candle.volume === "number");
+  const volumeArea = hasVolume ? 42 : 0;
   const padding = {
     ...basePadding,
     left: showPriceScale && !compact ? Math.max(basePadding.left, 52) : basePadding.left,
@@ -54,12 +56,15 @@ export function CandlestickChart({
   const min = Math.min(...values);
   const max = Math.max(...values);
   const range = Math.max(1, max - min);
-  const plotHeight = height - padding.top - padding.bottom;
+  const plotHeight = height - padding.top - padding.bottom - volumeArea;
   const plotWidth = width - padding.left - padding.right;
   const step = plotWidth / Math.max(1, candles.length);
   const bodyWidth = Math.min(compact ? 18 : 26, step * 0.52);
   const y = (value: number) => padding.top + ((max - value) / range) * plotHeight;
   const chartAccent = accent === "advanced" ? "var(--color-secondary)" : "var(--color-primary)";
+  const volumeMax = Math.max(1, ...candles.map((candle) => candle.volume ?? 0));
+  const volumeBase = height - padding.bottom;
+  const volumeHeight = 30;
 
   useEffect(() => {
     if (!animate || !rootRef.current) return;
@@ -119,7 +124,8 @@ export function CandlestickChart({
   const textualSummary = candles
     .map((candle, index) => {
       const direction = candle.close > candle.open ? "up" : candle.close < candle.open ? "down" : "flat";
-      return `${candle.label ?? `Candle ${index + 1}`}: opened ${formatNumber(candle.open)}, high ${formatNumber(candle.high)}, low ${formatNumber(candle.low)}, closed ${formatNumber(candle.close)} (${direction}).`;
+      const volumeText = typeof candle.volume === "number" ? `, volume ${formatNumber(candle.volume)}` : "";
+      return `${candle.label ?? `Candle ${index + 1}`}: opened ${formatNumber(candle.open)}, high ${formatNumber(candle.high)}, low ${formatNumber(candle.low)}, closed ${formatNumber(candle.close)} (${direction}${volumeText}).`;
     })
     .join(" ");
 
@@ -186,6 +192,18 @@ export function CandlestickChart({
           const bodyBottom = y(Math.min(candle.open, candle.close));
           return (
             <g key={`${candle.label ?? "candle"}-${index}`} className="candle-mark">
+              {hasVolume && typeof candle.volume === "number" && (
+                <rect
+                  x={x - bodyWidth / 2}
+                  y={volumeBase - (candle.volume / volumeMax) * volumeHeight}
+                  width={bodyWidth}
+                  height={(candle.volume / volumeMax) * volumeHeight}
+                  rx="1"
+                  fill={fill}
+                  opacity="0.32"
+                  aria-label={`${candle.label ?? `Candle ${index + 1}`} volume ${candle.volume}`}
+                />
+              )}
               <line x1={x} x2={x} y1={y(candle.high)} y2={y(candle.low)} stroke={fill} strokeWidth={compact ? 2 : 3} strokeLinecap="round" />
               <rect x={x - bodyWidth / 2} y={bodyTop} width={bodyWidth} height={Math.max(3, bodyBottom - bodyTop)} rx="2" fill={fill} />
               {!compact && <text x={x} y={height - 12} textAnchor="middle" fill="var(--color-muted-foreground)" fontSize="10">{candle.label ?? index + 1}</text>}
