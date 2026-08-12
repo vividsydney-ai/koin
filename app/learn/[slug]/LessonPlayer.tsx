@@ -68,15 +68,43 @@ function getPracticeQuestionVariants(variants: ContentVariant[], hasVisualBlocks
   return visualApplied.length >= 2 ? visualApplied : variants;
 }
 
+function normalizeQuestionText(value: unknown): string {
+  return String(value ?? "")
+    .toLocaleLowerCase()
+    .normalize("NFKC")
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .trim();
+}
+
+function questionSignature(question: QuizQuestion): string {
+  return [
+    normalizeQuestionText(question.question),
+    normalizeQuestionText(question.answer),
+  ].join("|");
+}
+
 function pickRotatedQuestionVariant(
   infos: ValidatedQuestionVariant[],
   avoidIds: Set<string>,
+  avoidSignatures: Set<string>,
   avoidType: string | null,
+  lastSignature: string | null,
   seed: string
 ): ContentVariant | null {
   if (infos.length === 0) return null;
 
-  let pool = infos.filter((info) => !avoidIds.has(info.variant.id));
+  let pool = infos.filter(
+    (info) =>
+      !avoidIds.has(info.variant.id) &&
+      !avoidSignatures.has(questionSignature(info.question)),
+  );
+
+  // Recent-attempt history may exhaust every distinct question. Preserve the
+  // immediate-repeat guarantee whenever any different signature remains.
+  if (pool.length === 0 && lastSignature) {
+    pool = infos.filter((info) => questionSignature(info.question) !== lastSignature);
+  }
+  if (pool.length === 0) pool = infos.filter((info) => !avoidIds.has(info.variant.id));
   if (pool.length === 0) pool = infos;
 
   if (avoidType) {
@@ -218,15 +246,26 @@ export default function LessonPlayer({
           questionVariants = [...questionVariants, ...baseQuestionVariants];
           questionInfos = getValidatedQuestionVariants(questionVariants);
         }
-        const lastAttemptedType = recentInfo.lastVariantId
-          ? questionInfos.find((info) => info.variant.id === recentInfo.lastVariantId)?.question.type ?? null
+        const lastAttemptedInfo = recentInfo.lastVariantId
+          ? questionInfos.find((info) => info.variant.id === recentInfo.lastVariantId) ?? null
+          : null;
+        const lastAttemptedType = lastAttemptedInfo?.question.type ?? null;
+        const recentSignatures = new Set(
+          questionInfos
+            .filter((info) => recentInfo.ids.has(info.variant.id))
+            .map((info) => questionSignature(info.question)),
+        );
+        const lastAttemptedSignature = lastAttemptedInfo
+          ? questionSignature(lastAttemptedInfo.question)
           : null;
         const practiceVariants = getPracticeQuestionVariants(questionVariants, visualData.length > 0);
         const practiceQuestions = getValidatedQuestionVariants(practiceVariants);
         const selectedQuestionVariant = pickRotatedQuestionVariant(
           practiceQuestions.length > 0 ? practiceQuestions : questionInfos,
           recentInfo.ids,
+          recentSignatures,
           lastAttemptedType,
+          lastAttemptedSignature,
           `${seed}:q:${Date.now()}`
         );
         if (selectedQuestionVariant) {
@@ -420,7 +459,13 @@ export default function LessonPlayer({
     const variant = pickRotatedQuestionVariant(
       infos,
       shownQuestionVariantIds,
+      new Set(
+        infos
+          .filter((info) => shownQuestionVariantIds.has(info.variant.id))
+          .map((info) => questionSignature(info.question)),
+      ),
       activeQuestion?.type ?? null,
+      activeQuestion ? questionSignature(activeQuestion) : null,
       `${seedBase}:quiz:${shownQuestionVariantIds.size}:${Date.now()}`
     );
 

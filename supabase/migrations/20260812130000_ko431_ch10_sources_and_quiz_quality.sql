@@ -1,9 +1,9 @@
--- KO-429: raise Chapter 10 — Reading Trading Charts quiz quality.
+-- KO-431: raise Chapter 10 — Reading Trading Charts quiz quality and source coverage.
 -- Keep the existing chart payloads; replace definition-level prompts and
 -- giveaway distractors with chart-evidence and uncertainty reasoning.
 -- All figures remain illustrative and are not trading instructions.
 
-CREATE TEMP TABLE ko429_revised AS
+CREATE TEMP TABLE ko431_revised AS
 WITH revised(slug, old_en, old_id, question_en, question_id, options_en, options_id, answer_en, answer_id, explanation_en, explanation_id) AS (
   VALUES
   ('chart-ohcl-basics', 'Which price tells you where the period ended?', 'Harga mana yang menunjukkan di mana periode berakhir?', 'A candle opens at 100, trades from 94 to 116, and closes at 109. Which conclusion is directly supported?', 'Sebuah candle dibuka di 100, bergerak antara 94 dan 116, lalu ditutup di 109. Kesimpulan mana yang langsung didukung?', jsonb_build_array('Buyers finished the period above the open; the candle alone does not establish a future trend', 'The next period must close higher', 'The high of 116 was the closing price', 'The candle proves the company is strong'), jsonb_build_array('Pembeli mengakhiri periode di atas open; candle saja tidak menentukan tren berikutnya', 'Periode berikutnya pasti ditutup lebih tinggi', 'High 116 adalah harga penutupan', 'Candle membuktikan perusahaan itu kuat'), 'Buyers finished the period above the open; the candle alone does not establish a future trend', 'Pembeli mengakhiri periode di atas open; candle saja tidak menentukan tren berikutnya', 'The close above the open describes this period''s net direction, but it does not forecast the next period or explain the company.', 'Close di atas open menggambarkan arah bersih periode ini, tetapi tidak meramalkan periode berikutnya atau menjelaskan perusahaan.'),
@@ -48,19 +48,105 @@ BEGIN
   SELECT COUNT(*) INTO matched
   FROM public.content_variants v
   JOIN public.lessons l ON l.id = v.lesson_id
-  JOIN ko429_revised u ON u.slug = l.slug AND u.old_en = v.body->>'question'
+  JOIN ko431_revised u ON u.slug = l.slug AND u.old_en = v.body->>'question'
   WHERE v.variant_type = 'question'
     AND v.topic_tag = 'visual_applied'
     AND v.is_active = TRUE;
   IF matched <> expected THEN
-    RAISE EXCEPTION 'KO-429 expected % exact English source rows before update, found %', expected, matched;
+    RAISE EXCEPTION 'KO-431 expected % exact English source rows before update, found %', expected, matched;
+  END IF;
+END $$;
+
+-- KO-431: link the reviewed OJK source to every published Chapter 10 lesson.
+-- The source may remain needs_review when the official PDF is WAF-blocked;
+-- linking it does not claim fresh browser reachability.
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM public.sources WHERE source_code = 'OJK-CHART-001'
+  ) THEN
+    RAISE EXCEPTION 'KO-431 requires source OJK-CHART-001 before lesson links can be created';
+  END IF;
+END $$;
+
+INSERT INTO public.lesson_sources (
+  lesson_id, source_id, relevance_type, citation_label, is_primary, display_order
+)
+SELECT lesson.id, source.id, 'primary', 'OJK: capital-market literacy', TRUE, 10
+FROM public.lessons AS lesson
+JOIN public.topics AS topic ON topic.id = lesson.topic_id
+JOIN public.sources AS source ON source.source_code = 'OJK-CHART-001'
+WHERE topic.chapter = 'Reading Trading Charts'
+  AND lesson.is_published = TRUE
+ON CONFLICT (lesson_id, source_id) DO UPDATE SET
+  relevance_type = EXCLUDED.relevance_type,
+  citation_label = EXCLUDED.citation_label,
+  is_primary = EXCLUDED.is_primary,
+  display_order = EXCLUDED.display_order;
+
+-- The old chapter-tagged pool repeats the same generic question across all
+-- lessons. Keep the authored visual_applied pool as the single practice pool.
+UPDATE public.content_variants AS variant
+SET is_active = FALSE
+FROM public.lessons AS lesson
+JOIN public.topics AS topic ON topic.id = lesson.topic_id
+WHERE variant.lesson_id = lesson.id
+  AND topic.chapter = 'Reading Trading Charts'
+  AND lesson.is_published = TRUE
+  AND variant.variant_type = 'question'
+  AND variant.topic_tag = 'Reading Trading Charts';
+
+DO $$
+DECLARE
+  linked_lessons INTEGER;
+  active_applied INTEGER;
+  active_legacy INTEGER;
+BEGIN
+  SELECT COUNT(*) INTO linked_lessons
+  FROM public.lesson_sources AS link
+  JOIN public.lessons AS lesson ON lesson.id = link.lesson_id
+  JOIN public.topics AS topic ON topic.id = lesson.topic_id
+  JOIN public.sources AS source ON source.id = link.source_id
+  WHERE topic.chapter = 'Reading Trading Charts'
+    AND lesson.is_published = TRUE
+    AND source.source_code = 'OJK-CHART-001'
+    AND link.is_primary = TRUE;
+
+  SELECT COUNT(*) INTO active_applied
+  FROM public.content_variants AS variant
+  JOIN public.lessons AS lesson ON lesson.id = variant.lesson_id
+  JOIN public.topics AS topic ON topic.id = lesson.topic_id
+  WHERE topic.chapter = 'Reading Trading Charts'
+    AND lesson.is_published = TRUE
+    AND variant.variant_type = 'question'
+    AND variant.topic_tag = 'visual_applied'
+    AND variant.is_active = TRUE;
+
+  SELECT COUNT(*) INTO active_legacy
+  FROM public.content_variants AS variant
+  JOIN public.lessons AS lesson ON lesson.id = variant.lesson_id
+  JOIN public.topics AS topic ON topic.id = lesson.topic_id
+  WHERE topic.chapter = 'Reading Trading Charts'
+    AND lesson.is_published = TRUE
+    AND variant.variant_type = 'question'
+    AND variant.topic_tag = 'Reading Trading Charts'
+    AND variant.is_active = TRUE;
+
+  IF linked_lessons <> 8 THEN
+    RAISE EXCEPTION 'KO-431 expected 8 primary OJK lesson links, found %', linked_lessons;
+  END IF;
+  IF active_applied <> 24 THEN
+    RAISE EXCEPTION 'KO-431 expected 24 active visual_applied variants, found %', active_applied;
+  END IF;
+  IF active_legacy <> 0 THEN
+    RAISE EXCEPTION 'KO-431 expected 0 active legacy chapter variants, found %', active_legacy;
   END IF;
 END $$;
 
 UPDATE public.content_variants v
 SET body = jsonb_set(jsonb_set(jsonb_set(jsonb_set(jsonb_set(v.body, '{question}', to_jsonb(u.question_en)), '{options}', u.options_en), '{answer}', to_jsonb(u.answer_en)), '{explanation}', to_jsonb(u.explanation_en)), '{difficulty}', '"intermediate"'::jsonb),
     body_id = jsonb_set(jsonb_set(jsonb_set(jsonb_set(jsonb_set(v.body_id, '{question}', to_jsonb(u.question_id)), '{options}', u.options_id), '{answer}', to_jsonb(u.answer_id)), '{explanation}', to_jsonb(u.explanation_id)), '{difficulty}', '"intermediate"'::jsonb)
-FROM ko429_revised u
+FROM ko431_revised u
 JOIN public.lessons l ON l.slug = u.slug
 WHERE v.lesson_id = l.id
   AND v.variant_type = 'question'
@@ -75,12 +161,22 @@ DECLARE
 BEGIN
   SELECT COUNT(*) INTO changed
   FROM public.content_variants v
-  JOIN ko429_revised u ON u.question_en = v.body->>'question'
-  AND v.variant_type = 'question'
-  AND v.topic_tag = 'visual_applied'
-  AND v.is_active = TRUE
-  AND v.body->>'difficulty' = 'intermediate';
+  JOIN public.lessons l ON l.id = v.lesson_id
+  JOIN ko431_revised u
+   ON u.slug = l.slug
+   AND u.question_en = v.body->>'question'
+   AND u.question_id = v.body_id->>'question'
+   AND u.options_en = v.body->'options'
+   AND u.options_id = v.body_id->'options'
+   AND u.answer_en = v.body->>'answer'
+   AND u.answer_id = v.body_id->>'answer'
+   AND u.explanation_en = v.body->>'explanation'
+   AND u.explanation_id = v.body_id->>'explanation'
+   AND v.variant_type = 'question'
+   AND v.topic_tag = 'visual_applied'
+   AND v.is_active = TRUE
+   AND v.body->>'difficulty' = 'intermediate';
   IF changed <> expected THEN
-    RAISE EXCEPTION 'KO-429 expected % rewritten English payloads, found %', expected, changed;
+    RAISE EXCEPTION 'KO-431 expected % rewritten English payloads, found %', expected, changed;
   END IF;
 END $$;

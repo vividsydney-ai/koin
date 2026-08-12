@@ -42,6 +42,9 @@ async function main() {
   const failures = [];
   const rows = lessons.map((lesson) => {
     const lessonLinks = (links ?? []).filter((link) => link.lesson_id === lesson.id);
+    if (lessonLinks.length === 0) {
+      failures.push(`${lesson.slug}: no lesson_sources link`);
+    }
     const missing = lessonLinks.flatMap((link) => {
       const source = link.sources;
       if (!source) return [`${lesson.slug}/${link.source_id}: missing source row`];

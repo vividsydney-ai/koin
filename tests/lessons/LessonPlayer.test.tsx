@@ -365,6 +365,74 @@ describe("LessonPlayer", () => {
     expect(secondOrder).not.toEqual(firstOrder);
   });
 
+  it("does not rotate to a duplicate prompt when another distinct question exists", async () => {
+    const duplicateVariants: ContentVariant[] = [
+      {
+        id: "duplicate-one",
+        variantType: "question",
+        body: {
+          type: "multiple_choice",
+          question: "What does this candle show?",
+          options: ["A bounded observation", "A guaranteed forecast"],
+          answer: "A bounded observation",
+          explanation: "The candle records the displayed period.",
+          parameters: {},
+        },
+        difficulty: "intermediate",
+        topicTag: "visual_applied",
+      },
+      {
+        id: "duplicate-two",
+        variantType: "question",
+        body: {
+          type: "multiple_choice",
+          question: "What does this candle show?",
+          options: ["A bounded observation", "A guaranteed forecast"],
+          answer: "A bounded observation",
+          explanation: "The same prompt must not be treated as new content.",
+          parameters: {},
+        },
+        difficulty: "intermediate",
+        topicTag: "visual_applied",
+      },
+      {
+        id: "distinct-three",
+        variantType: "question",
+        body: {
+          type: "multiple_choice",
+          question: "Which context should you check next?",
+          options: ["The timeframe and surrounding trend", "A guaranteed next move"],
+          answer: "The timeframe and surrounding trend",
+          explanation: "Context adds evidence without promising an outcome.",
+          parameters: {},
+        },
+        difficulty: "intermediate",
+        topicTag: "visual_applied",
+      },
+    ];
+
+    vi.mocked(lessonsClient.getLessonVisualBlocks).mockResolvedValue([visualBlock]);
+    vi.mocked(lessonsClient.getLessonVariants).mockImplementation(async (_lessonId, variantType) => {
+      if (variantType === "example") return exampleVariants;
+      if (variantType === "question") return duplicateVariants;
+      if (variantType === "explanation") return [];
+      return [];
+    });
+
+    render(<LessonPlayer slug="test-lesson" chapterNumber={8} />);
+
+    await waitFor(() => expect(screen.queryByText("Loading lesson…")).not.toBeInTheDocument(), { timeout: 2000 });
+    fireEvent.click(screen.getByText("Continue"));
+    fireEvent.click(screen.getByText("Continue"));
+    fireEvent.click(screen.getByText("Continue"));
+    await waitFor(() => expect(screen.getByText("What does this candle show?")).toBeInTheDocument(), { timeout: 2000 });
+
+    fireEvent.click(screen.getByRole("button", { name: "A bounded observation" }));
+    fireEvent.click(screen.getByRole("button", { name: "Next check" }));
+
+    await waitFor(() => expect(screen.getByText("Which context should you check next?")).toBeInTheDocument(), { timeout: 2000 });
+  });
+
   it("in Indonesian locale shows a different example when clicking Lihat contoh lain", async () => {
     mockLocale.mockReturnValue("id");
     render(<LessonPlayer slug="test-lesson" />);
