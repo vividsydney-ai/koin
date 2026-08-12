@@ -3,6 +3,7 @@
 -- giveaway distractors with chart-evidence and uncertainty reasoning.
 -- All figures remain illustrative and are not trading instructions.
 
+CREATE TEMP TABLE ko429_revised AS
 WITH revised(slug, old_en, old_id, question_en, question_id, options_en, options_id, answer_en, answer_id, explanation_en, explanation_id) AS (
   VALUES
   ('chart-ohcl-basics', 'Which price tells you where the period ended?', 'Harga mana yang menunjukkan di mana periode berakhir?', 'A candle opens at 100, trades from 94 to 116, and closes at 109. Which conclusion is directly supported?', 'Sebuah candle dibuka di 100, bergerak antara 94 dan 116, lalu ditutup di 109. Kesimpulan mana yang langsung didukung?', jsonb_build_array('Buyers finished the period above the open; the candle alone does not establish a future trend', 'The next period must close higher', 'The high of 116 was the closing price', 'The candle proves the company is strong'), jsonb_build_array('Pembeli mengakhiri periode di atas open; candle saja tidak menentukan tren berikutnya', 'Periode berikutnya pasti ditutup lebih tinggi', 'High 116 adalah harga penutupan', 'Candle membuktikan perusahaan itu kuat'), 'Buyers finished the period above the open; the candle alone does not establish a future trend', 'Pembeli mengakhiri periode di atas open; candle saja tidak menentukan tren berikutnya', 'The close above the open describes this period''s net direction, but it does not forecast the next period or explain the company.', 'Close di atas open menggambarkan arah bersih periode ini, tetapi tidak meramalkan periode berikutnya atau menjelaskan perusahaan.'),
@@ -36,14 +37,30 @@ WITH revised(slug, old_en, old_id, question_en, question_id, options_en, options
   ('chart-reading-limits', 'Why should chart reading be combined with goals and risk limits?', 'Mengapa membaca grafik harus dikombinasikan dengan tujuan dan batas risiko?', 'A chart shows a possible setup. Why should goals and risk limits still be checked?', 'Grafik menunjukkan kemungkinan setup. Mengapa tujuan dan batas risiko tetap harus diperiksa?', jsonb_build_array('Price history does not determine whether a decision fits the learner''s situation', 'A chart replaces personal planning', 'A pattern guarantees a profitable outcome', 'A chart contains complete business research'), jsonb_build_array('Riwayat harga tidak menentukan apakah keputusan cocok dengan situasi pelajar', 'Grafik menggantikan perencanaan pribadi', 'Pola menjamin hasil menguntungkan', 'Grafik berisi riset bisnis lengkap'), 'Price history does not determine whether a decision fits the learner''s situation', 'Riwayat harga tidak menentukan apakah keputusan cocok dengan situasi pelajar', 'Chart evidence and personal suitability answer different questions; both need separate consideration.', 'Bukti grafik dan kecocokan pribadi menjawab pertanyaan berbeda; keduanya perlu dipertimbangkan terpisah.'),
   ('chart-reading-limits', 'Which of these can a price chart show?', 'Manakah dari berikut ini yang bisa ditunjukkan grafik harga?', 'Which statement stays within what a historical price chart can actually support?', 'Pernyataan mana yang tetap berada dalam batas yang dapat didukung grafik harga historis?', jsonb_build_array('It can show past open, high, low, and close data', 'It can guarantee a future price', 'It can judge management quality', 'It can decide whether an investment suits every learner'), jsonb_build_array('Grafik dapat menunjukkan data open, high, low, dan close masa lalu', 'Grafik dapat menjamin harga masa depan', 'Grafik dapat menilai kualitas manajemen', 'Grafik dapat menentukan investasi cocok untuk setiap pelajar'), 'It can show past open, high, low, and close data', 'Grafik dapat menunjukkan data open, high, low, dan close masa lalu', 'A price chart is historical market evidence. Fundamental quality and personal suitability require other sources and reasoning.', 'Grafik harga adalah bukti pasar historis. Kualitas fundamental dan kecocokan pribadi membutuhkan sumber serta penalaran lain.'),
   ('chart-reading-limits', 'A chart pattern alone cannot tell you what?', 'Pola grafik saja tidak dapat memberitahumu apa?', 'After spotting a pattern, which question remains outside the chart itself?', 'Setelah menemukan pola, pertanyaan mana yang tetap berada di luar grafik itu sendiri?', jsonb_build_array('Whether the investment fits the learner''s goals, risk capacity, and circumstances', 'Where price reacted in the displayed history', 'How wide the displayed period''s range was', 'What the displayed candle''s close was'), jsonb_build_array('Apakah investasi cocok dengan tujuan, kapasitas risiko, dan keadaan pelajar', 'Di mana harga bereaksi dalam riwayat yang ditampilkan', 'Seberapa lebar rentang periode yang ditampilkan', 'Berapa harga close candle yang ditampilkan'), 'Whether the investment fits the learner''s goals, risk capacity, and circumstances', 'Apakah investasi cocok dengan tujuan, kapasitas risiko, dan keadaan pelajar', 'Suitability is a personal decision boundary, not a property that can be read from a price pattern alone.', 'Kecocokan adalah batas keputusan pribadi, bukan sesuatu yang dapat dibaca dari pola harga saja.')
-),
-updated AS (
-  SELECT * FROM revised
 )
+SELECT * FROM revised;
+
+DO $$
+DECLARE
+  expected INTEGER := 24;
+  matched INTEGER;
+BEGIN
+  SELECT COUNT(*) INTO matched
+  FROM public.content_variants v
+  JOIN public.lessons l ON l.id = v.lesson_id
+  JOIN ko429_revised u ON u.slug = l.slug AND u.old_en = v.body->>'question'
+  WHERE v.variant_type = 'question'
+    AND v.topic_tag = 'visual_applied'
+    AND v.is_active = TRUE;
+  IF matched <> expected THEN
+    RAISE EXCEPTION 'KO-429 expected % exact English source rows before update, found %', expected, matched;
+  END IF;
+END $$;
+
 UPDATE public.content_variants v
 SET body = jsonb_set(jsonb_set(jsonb_set(jsonb_set(jsonb_set(v.body, '{question}', to_jsonb(u.question_en)), '{options}', u.options_en), '{answer}', to_jsonb(u.answer_en)), '{explanation}', to_jsonb(u.explanation_en)), '{difficulty}', '"intermediate"'::jsonb),
     body_id = jsonb_set(jsonb_set(jsonb_set(jsonb_set(jsonb_set(v.body_id, '{question}', to_jsonb(u.question_id)), '{options}', u.options_id), '{answer}', to_jsonb(u.answer_id)), '{explanation}', to_jsonb(u.explanation_id)), '{difficulty}', '"intermediate"'::jsonb)
-FROM updated u
+FROM ko429_revised u
 JOIN public.lessons l ON l.slug = u.slug
 WHERE v.lesson_id = l.id
   AND v.variant_type = 'question'
@@ -58,14 +75,12 @@ DECLARE
 BEGIN
   SELECT COUNT(*) INTO changed
   FROM public.content_variants v
-  JOIN public.lessons l ON l.id = v.lesson_id
-  JOIN public.topics t ON t.id = l.topic_id
-  WHERE t.chapter = 'Reading Trading Charts'
-    AND v.variant_type = 'question'
-    AND v.topic_tag = 'visual_applied'
-    AND v.is_active = TRUE
-    AND v.body->>'difficulty' = 'intermediate';
-  IF changed < expected THEN
-    RAISE EXCEPTION 'KO-429 expected at least % intermediate visual_applied payloads, found %', expected, changed;
+  JOIN ko429_revised u ON u.question_en = v.body->>'question'
+  AND v.variant_type = 'question'
+  AND v.topic_tag = 'visual_applied'
+  AND v.is_active = TRUE
+  AND v.body->>'difficulty' = 'intermediate';
+  IF changed <> expected THEN
+    RAISE EXCEPTION 'KO-429 expected % rewritten English payloads, found %', expected, changed;
   END IF;
 END $$;
