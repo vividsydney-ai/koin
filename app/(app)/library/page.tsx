@@ -19,13 +19,6 @@ const TIER_CLASSES: Record<number, string> = {
   3: "bg-muted/50 text-muted-foreground border-muted",
 };
 
-const STATUS_LABELS: Record<Source["status"], string> = {
-  verified: "Verified",
-  needs_review: "Needs review",
-  use_carefully: "Use carefully",
-  deprecated: "Deprecated",
-};
-
 export default function LibraryPage() {
   const { t } = useLocale();
   const [sources, setSources] = useState<Source[]>([]);
@@ -361,24 +354,15 @@ function SourceCard({ source }: { source: Source }) {
 }
 
 function StatusPill({ status, variant }: { status: Source["status"]; variant: "dark" | "light" }) {
-  const label = STATUS_LABELS[status];
+  // Editorial review states are internal. Only expose a positive verification
+  // signal; unavailable or provisional sources are handled by reachability and
+  // fallback selection instead of alarming learners with workflow labels.
+  if (status !== "verified") return null;
   const base = variant === "dark"
     ? "rounded-md bg-white/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide"
     : "rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide";
-  const tone = variant === "dark"
-    ? status === "verified"
-      ? "text-success"
-      : status === "needs_review"
-      ? "text-warning"
-      : "text-white/70"
-    : status === "verified"
-    ? "bg-success/10 text-success"
-    : status === "needs_review"
-    ? "bg-warning/10 text-warning"
-    : status === "use_carefully"
-    ? "bg-info/10 text-info"
-    : "bg-muted text-muted-foreground";
-  return <span className={`${base} ${tone}`}>{label}</span>;
+  const tone = variant === "dark" ? "text-success" : "bg-success/10 text-success";
+  return <span className={`${base} ${tone}`}>Verified</span>;
 }
 
 function ChevronIcon({ expanded }: { expanded: boolean }) {
