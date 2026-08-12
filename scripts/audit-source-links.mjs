@@ -51,8 +51,9 @@ async function checkUrlReachability(url, options = {}) {
       clearTimeout(timeout);
 
       const status = response.status;
-      // 403 is treated as reachable because many Indonesian regulator sites block bots.
-      if (status < 400 || status === 403) {
+      // Forbidden, missing, throttled, and server-error responses are not
+      // usable source links for learners.
+      if (status < 400) {
         return { ok: true, status };
       }
       if (attempt === attempts) {

@@ -13,14 +13,14 @@ describe("checkUrlReachability", () => {
     expect(result.status).toBe(200);
   });
 
-  it("treats 403 as reachable", async () => {
+  it("treats 403 as unavailable", async () => {
     global.fetch = vi.fn().mockResolvedValue({
       status: 403,
       statusText: "Forbidden",
     } as Response);
 
     const result = await checkUrlReachability("https://example.com", { attempts: 1 });
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBe(false);
     expect(result.status).toBe(403);
   });
 

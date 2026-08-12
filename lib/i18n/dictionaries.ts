@@ -64,6 +64,9 @@ export interface Dictionary {
   "lesson.verified": string;
   "lesson.needsReview": string;
   "lesson.readSource": string;
+  "lesson.checkingSources": string;
+  "lesson.sourceFallback": string;
+  "lesson.sourceUnavailable": string;
   "sources.readOnWikipedia": string;
   "sources.originalUnavailable": string;
   "lesson.quizBonus": string;
@@ -474,6 +477,9 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "lesson.verified": "Verified",
     "lesson.needsReview": "Needs review",
     "lesson.readSource": "Read source",
+    "lesson.checkingSources": "Checking approved source links…",
+    "lesson.sourceFallback": "The primary source is unavailable, so we’re showing the best accessible approved source.",
+    "lesson.sourceUnavailable": "No approved source link is currently reachable. The summary remains available for review.",
     "sources.readOnWikipedia": "Read on Wikipedia",
     "sources.originalUnavailable": "Original link unavailable",
     "lesson.quizBonus": "Includes +{bonus} quiz bonus",
@@ -876,6 +882,9 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "lesson.verified": "Terverifikasi",
     "lesson.needsReview": "Perlu ditinjau",
     "lesson.readSource": "Baca sumber",
+    "lesson.checkingSources": "Memeriksa tautan sumber yang disetujui…",
+    "lesson.sourceFallback": "Sumber utama tidak tersedia, jadi kami menampilkan sumber disetujui terbaik yang dapat diakses.",
+    "lesson.sourceUnavailable": "Belum ada tautan sumber disetujui yang dapat diakses. Ringkasannya tetap tersedia untuk ditinjau.",
     "sources.readOnWikipedia": "Baca di Wikipedia",
     "sources.originalUnavailable": "Tautan asli tidak tersedia",
     "lesson.quizBonus": "Termasuk +{bonus} bonus kuis",
