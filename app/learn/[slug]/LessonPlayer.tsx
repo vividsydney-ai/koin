@@ -1272,14 +1272,12 @@ function SourceCard({ source, highlighted = false }: { source: LessonSource; hig
             <FileTextIcon size={14} />
             {t("lesson.tier")} {source.sourceTier}
           </span>
-          <span
-            className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide ${
-              verified ? "bg-success/10 text-success" : "bg-warning/10 text-warning"
-            }`}
-          >
-            {verified && <CheckIconMini />}
-            {verified ? t("lesson.verified") : t("lesson.needsReview")}
-          </span>
+          {verified && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-success">
+              <CheckIconMini />
+              {t("lesson.verified")}
+            </span>
+          )}
         </div>
         <h4 className="mt-3 font-display text-lg font-bold text-foreground">{displayTitle}</h4>
         <p className="mt-1 text-sm text-muted-foreground">{source.organization}</p>
@@ -1350,14 +1348,12 @@ function SourceCard({ source, highlighted = false }: { source: LessonSource; hig
           <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary">
             {t("lesson.tier")} {source.sourceTier}
           </span>
-          <span
-            className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
-              verified ? "bg-success/10 text-success" : "bg-warning/10 text-warning"
-            }`}
-          >
-            {verified && <CheckIconMini />}
-            {verified ? t("lesson.verified") : t("lesson.needsReview")}
-          </span>
+          {verified && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-success">
+              <CheckIconMini />
+              {t("lesson.verified")}
+            </span>
+          )}
           <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
             {source.sourceCode}
           </span>

@@ -62,7 +62,6 @@ export interface Dictionary {
   "lesson.complete": string;
   "lesson.tier": string;
   "lesson.verified": string;
-  "lesson.needsReview": string;
   "lesson.readSource": string;
   "lesson.checkingSources": string;
   "lesson.sourceFallback": string;
@@ -475,7 +474,6 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "lesson.complete": "Lesson complete",
     "lesson.tier": "Tier",
     "lesson.verified": "Verified",
-    "lesson.needsReview": "Needs review",
     "lesson.readSource": "Read source",
     "lesson.checkingSources": "Checking approved source links…",
     "lesson.sourceFallback": "The primary source is unavailable, so we’re showing the best accessible approved source.",
@@ -880,7 +878,6 @@ export const dictionaries: Record<Locale, Dictionary> = {
     "lesson.complete": "Pelajaran selesai",
     "lesson.tier": "Tingkat",
     "lesson.verified": "Terverifikasi",
-    "lesson.needsReview": "Perlu ditinjau",
     "lesson.readSource": "Baca sumber",
     "lesson.checkingSources": "Memeriksa tautan sumber yang disetujui…",
     "lesson.sourceFallback": "Sumber utama tidak tersedia, jadi kami menampilkan sumber disetujui terbaik yang dapat diakses.",
