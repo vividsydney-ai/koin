@@ -71,7 +71,9 @@ describe("PracticeMarketSeasonPortfolio", () => {
 
     const chart = await screen.findByTestId("season-valuation-chart");
     expect(chart).toHaveAttribute("data-series", "season-valuation-ledger");
-    expect(chart.querySelector("linearGradient[id^='season-valuation-fill']")).toBeInTheDocument();
+    const gradient = chart.querySelector("linearGradient[id^='season-valuation-fill']");
+    expect(gradient).toBeInTheDocument();
+    expect(gradient?.querySelector("stop")?.getAttribute("stop-color")).toBe("var(--color-primary)");
     expect(chart.querySelector(".recharts-cartesian-grid-horizontal")).toBeInTheDocument();
     expect(screen.getByText("S1")).toBeInTheDocument();
     expect(screen.getByText("S3")).toBeInTheDocument();
@@ -89,6 +91,17 @@ describe("PracticeMarketSeasonPortfolio", () => {
     const tooltip = await screen.findByTestId("season-chart-tooltip");
     expect(tooltip).toHaveTextContent("Session 3");
     expect(tooltip).toHaveTextContent("Rp 10.100.000");
+    expect(screen.getByText("+ Rp 100.000 from the first released session in this view")).toBeInTheDocument();
+    expect(screen.getByText(/latest released valuation is session 3/i)).toBeInTheDocument();
+  });
+
+  it("recalculates the period change from the same ledger points after a range switch", async () => {
+    render(<SeasonPortfolioChart valuations={valuations} />);
+
+    expect(await screen.findByText("+ Rp 100.000 from the first released session in this view")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("tab", { name: "Session" }));
+
+    expect(screen.getByText("Rp 0 from the first released session in this view")).toBeInTheDocument();
     expect(screen.getByText(/latest released valuation is session 3/i)).toBeInTheDocument();
   });
 
@@ -103,6 +116,17 @@ describe("PracticeMarketSeasonPortfolio", () => {
     expect(await screen.findByTestId("season-chart-tooltip")).toHaveTextContent("Session 3");
     expect(screen.getByTestId("season-chart-marker")).toHaveClass("rounded-full");
     expect(screen.getByTestId("season-chart-marker")).toHaveClass("size-3");
+  });
+
+  it("lets keyboard users inspect a session and dismiss it", async () => {
+    render(<SeasonPortfolioChart valuations={valuations} />);
+
+    const chart = await screen.findByRole("img", { name: /season portfolio valuation/i });
+    fireEvent.keyDown(chart, { key: "End" });
+
+    expect(await screen.findByTestId("season-chart-tooltip")).toHaveTextContent("Session 3");
+    fireEvent.keyDown(chart, { key: "Escape" });
+    await waitFor(() => expect(screen.queryByTestId("season-chart-tooltip")).not.toBeInTheDocument());
   });
 
   it("does not reveal unavailable future sessions in Session and Week ranges", async () => {
