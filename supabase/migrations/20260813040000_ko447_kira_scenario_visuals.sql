@@ -44,8 +44,8 @@ WITH visuals(slug, block_type, content) AS (VALUES
 )
 UPDATE public.lesson_visual_blocks b
 SET block_type = visuals.block_type, content = visuals.content, is_published = TRUE, updated_at = NOW()
-FROM visuals JOIN public.lessons l ON l.slug = visuals.slug AND l.id = b.lesson_id
-WHERE b.placement = 'example' AND b.display_order = 10 AND l.is_published;
+FROM visuals JOIN public.lessons l ON l.slug = visuals.slug
+WHERE b.lesson_id = l.id AND b.placement = 'example' AND b.display_order = 10 AND l.is_published;
 
 -- The remaining five lessons already use the correct visual primitive
 -- (timeframe, ratio, sizing, bias, or invalidation). Keep those payloads, but
