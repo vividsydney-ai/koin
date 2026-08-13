@@ -92,7 +92,7 @@ DECLARE example_count INT; kira_count INT; visual_count INT;
 BEGIN
   SELECT COUNT(*) INTO example_count FROM public.content_variants v JOIN public.lessons l ON l.id=v.lesson_id JOIN public.topics t ON t.id=l.topic_id WHERE t.chapter='Decision Analysis Lab' AND l.is_published AND v.variant_type='example' AND v.is_active AND v.body->>'text' LIKE '%Kira%';
   SELECT COUNT(*) INTO kira_count FROM public.content_variants v JOIN public.lessons l ON l.id=v.lesson_id JOIN public.topics t ON t.id=l.topic_id WHERE t.chapter='Decision Analysis Lab' AND l.is_published AND v.variant_type='example' AND v.is_active AND v.body_id->>'text' LIKE '%Kira%';
-  SELECT COUNT(*) INTO visual_count FROM public.lesson_visual_blocks b JOIN public.lessons l ON l.id=b.lesson_id JOIN public.topics t ON t.id=l.topic_id WHERE t.chapter='Decision Analysis Lab' AND l.is_published AND b.placement='example' AND b.is_published AND b.content->'en'->>'title' LIKE '%Kira%';
+  SELECT COUNT(*) INTO visual_count FROM public.lesson_visual_blocks b JOIN public.lessons l ON l.id=b.lesson_id JOIN public.topics t ON t.id=l.topic_id WHERE t.chapter='Decision Analysis Lab' AND l.is_published AND b.placement='example' AND b.is_published AND (b.content->'en'->>'title' LIKE '%Kira%' OR b.content->'en'->>'eyebrow' LIKE '%Kira%');
   IF example_count<>8 OR kira_count<>8 OR visual_count<>8 THEN RAISE EXCEPTION 'KO-447 Kira coverage mismatch: en %, id %, visuals %', example_count, kira_count, visual_count; END IF;
 END $$;
 
